@@ -1,31 +1,30 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router";
-import { useAuthStore } from "./store";
+import { useCurrentUserQuery } from "./queries";
+import { useLogoutMutation } from "./mutations";
 import type { User } from "./types";
 
 export interface UseAuthReturn {
   user: User | null;
   isLoading: boolean;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<unknown>;
   logout: () => Promise<void>;
 }
 
 export function useAuth(): UseAuthReturn {
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
-  const isLoading = useAuthStore((s) => s.isLoading);
-  const loadUser = useAuthStore((s) => s.loadUser);
-  const logoutFromStore = useAuthStore((s) => s.logout);
+  const { data: user, isLoading, refetch } = useCurrentUserQuery();
+  const { mutateAsync: logoutMutation } = useLogoutMutation();
 
   const logout = useCallback(async () => {
-    await logoutFromStore();
+    await logoutMutation();
     navigate("/login", { replace: true });
-  }, [logoutFromStore, navigate]);
+  }, [logoutMutation, navigate]);
 
   return {
-    user,
+    user: user ?? null,
     isLoading,
-    refetch: loadUser,
+    refetch,
     logout,
   };
 }
