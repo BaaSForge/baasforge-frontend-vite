@@ -11,7 +11,9 @@ export function AuthGuard() {
   }
 
   if (user == null) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    const currentUrl = `${window.location.origin}${location.pathname}${location.search}`;
+    const encodedCallbackUrl = encodeURIComponent(currentUrl);
+    return <Navigate to={`/login?callback-url=${encodedCallbackUrl}`} replace />;
   }
 
   return <Outlet />;

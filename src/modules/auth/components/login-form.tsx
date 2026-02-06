@@ -1,4 +1,5 @@
 import { GalleryVerticalEnd } from "lucide-react"
+import { useSearchParams } from "react-router"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -15,7 +16,19 @@ export function LoginForm({
   className,
   ...props
 }: LoginFormProps) {
-  const callbackUrl = `${window.location.origin}/dashboard?logged-in-from=google`;
+  const [searchParams] = useSearchParams();
+  const callbackUrlParam = searchParams.get("callback-url");
+  
+  let callbackUrl: string;
+  if (callbackUrlParam) {
+    const decodedUrl = decodeURIComponent(callbackUrlParam);
+    const url = new URL(decodedUrl, window.location.origin);
+    url.searchParams.set("logged-in-from", "google");
+    callbackUrl = url.toString();
+  } else {
+    callbackUrl = `${window.location.origin}/dashboard?logged-in-from=google`;
+  }
+  
   const googleInitiateAction = getGoogleInitiateFormAction(callbackUrl);
 
   return (
