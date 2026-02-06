@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { createBrowserRouter, Outlet } from "react-router";
-import { AuthGuard } from "@/modules/auth/components/auth-guard";
+import { AuthClosedGuard } from "@/modules/auth/components/auth-closed-guard";
 import { AuthOpenGuard } from "@/modules/auth/components/auth-open-guard";
 import { AuthProvider } from "@/modules/auth";
 import { Loadable } from "./loadable";
@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
             element: <HomePage />,
           },
           {
-            element: <AuthGuard />,
+            element: <AuthClosedGuard />,
             children: [
               {
                 path: "dashboard",
