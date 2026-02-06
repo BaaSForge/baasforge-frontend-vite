@@ -1,5 +1,7 @@
 import { envConfig } from "./env";
 
+const AUTH_REFRESH_ENDPOINT = "/v1/auth/refresh";
+
 export interface ApiResponse<T = any> {
   isSuccess: boolean;
   data?: T;
@@ -19,16 +21,71 @@ export interface ApiError {
   data?: any;
 }
 
+function isNeedsRefreshBody(body: unknown): body is { data: { needs_refresh_token: true } } {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "data" in body &&
+    typeof body.data === "object" &&
+    body.data !== null &&
+    "needs_refresh_token" in body.data &&
+    typeof body.data.needs_refresh_token === "boolean" &&
+    body.data.needs_refresh_token
+  );
+}
+
+export interface ApiClientOptions {
+  onSessionExpired?: () => void;
+}
+
 class ApiClient {
   private baseUrl: string;
   private timeoutDuration = 10_000;
+  private onSessionExpired: (() => void) | undefined;
+  private refreshPromise: Promise<void> | null = null;
 
-  constructor(baseUrl: string) {
+  constructor(baseUrl: string, options: ApiClientOptions = {}) {
     this.baseUrl = baseUrl;
+    this.onSessionExpired = options.onSessionExpired;
+  }
+
+  setOnSessionExpired(callback: (() => void) | undefined): void {
+    this.onSessionExpired = callback;
+  }
+
+  private buildUrl(endpoint: string): string {
+    return `${this.baseUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+  }
+
+  private async doRefresh(): Promise<void> {
+    const url = this.buildUrl(AUTH_REFRESH_ENDPOINT);
+    const response = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || isNeedsRefreshBody(data)) {
+      this.onSessionExpired?.();
+      throw data;
+    }
+  }
+
+  private async refreshToken(): Promise<void> {
+    if (this.refreshPromise) {
+      await this.refreshPromise;
+      return;
+    }
+    this.refreshPromise = this.doRefresh();
+    try {
+      await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
   }
 
   private async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+    const url = this.buildUrl(endpoint);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutDuration);
@@ -36,42 +93,42 @@ class ApiClient {
     const isFormData = options.body instanceof FormData;
     const defaultHeaders: HeadersInit = isFormData
       ? {}
-      : {
-        "Content-Type": "application/json",
-      };
+      : { "Content-Type": "application/json" };
 
     const config: RequestInit = {
       ...options,
-
       signal: controller.signal,
       credentials: "include",
-      headers: {
-        ...defaultHeaders,
-        ...options.headers,
-      },
+      headers: { ...defaultHeaders, ...options.headers },
     };
 
+    let response: Response;
     try {
-      const response = await fetch(url, config);
-
+      response = await fetch(url, config);
       clearTimeout(timeoutId);
-
-      const responseData = await response.json();
-
-      if (!response.ok || responseData.isSuccess === false) {
-        throw responseData;
-      }
-
-      return responseData;
     } catch (error) {
       clearTimeout(timeoutId);
-
       if (error instanceof Error && error.name === "AbortError") {
         throw new Error(`Request timed out after ${this.timeoutDuration / 1000} seconds`);
       }
-
       throw error;
     }
+
+    const responseData = await response.json().catch(() => ({}));
+
+    if (!response.ok || responseData.isSuccess === false) {
+      if (response.status === 401) {
+        if (isNeedsRefreshBody(responseData)) {
+          await this.refreshToken();
+          return this.request<T>(endpoint, options);
+        }
+    
+        this.onSessionExpired?.();
+      }
+      throw responseData;
+    }
+
+    return responseData;
   }
 
   async get<T = any>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -110,29 +167,31 @@ class ApiClient {
     const formData = new FormData();
     formData.append("file", file);
 
-    const url = `${this.baseUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
-
+    const url = this.buildUrl(endpoint);
     const config: RequestInit = {
       ...options,
       method: "POST",
       body: formData,
-      headers: {
-        ...options?.headers,
-      },
+      credentials: "include",
+      headers: { ...options?.headers },
     };
 
-    try {
-      const response = await fetch(url, config);
-      const responseData = await response.json();
+    const response = await fetch(url, config);
+    const responseData = await response.json().catch(() => ({}));
 
-      if (!response.ok || responseData.isSuccess === false) {
-        throw responseData;
+    if (!response.ok || responseData.isSuccess === false) {
+      if (response.status === 401) {
+        if (isNeedsRefreshBody(responseData)) {
+          await this.refreshToken();
+          return this.uploadFile<T>(endpoint, file, options);
+        }
+    
+        this.onSessionExpired?.();
       }
-
-      return responseData;
-    } catch (error) {
-      throw error;
+      throw responseData;
     }
+
+    return responseData;
   }
 }
 

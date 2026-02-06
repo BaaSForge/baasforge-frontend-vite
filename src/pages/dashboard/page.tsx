@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import { useAuth } from "@/modules/auth";
 import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
@@ -10,9 +9,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useGetTokensQuery } from "@/modules/auth/queries";
 
 export default function DashboardPage() {
-  const { logout } = useAuth();
+  const { refetch: refetchTokens } = useGetTokensQuery();
 
   return (
     <section className="flex flex-col gap-4">
@@ -34,8 +34,8 @@ export default function DashboardPage() {
       </header>
       <div className="flex-1 p-4">
         <div>DashboardPage</div>
-        <Button type="button" variant="outline" onClick={() => logout()}>
-          Logout
+        <Button type="button" variant="outline" onClick={() => refetchTokens()}>
+          Refetch Tokens
         </Button>
       </div>
     </section>
