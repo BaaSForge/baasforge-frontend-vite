@@ -1,4 +1,5 @@
-export { AuthGuard } from "./components/auth-guard";
+export { AuthClosedGuard } from "./components/auth-closed-guard";
+export { AuthLayout } from "./components/auth-layout";
 export { AuthOpenGuard } from "./components/auth-open-guard";
 export { LoginForm } from "./components/login-form";
 export { getGoogleInitiateFormAction } from "./lib/google-auth";
