@@ -6,5 +6,5 @@
     "importOrder": ["^react$", "^react-dom$", "^(?!react$|react-dom$|@/|\\.).*", "^@/.*", "^\\.{1,2}/.*"],
     "importOrderSeparation": false,
     "importOrderSortSpecifiers": true,
-    "tailwindStylesheet": "./src/styles/globals.css"
+    "tailwindStylesheet": "./src/styles/global.css"
 }

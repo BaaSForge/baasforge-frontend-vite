@@ -3,6 +3,7 @@ import { createBrowserRouter, Outlet } from "react-router";
 import { AuthClosedGuard } from "@/modules/auth/components/auth-closed-guard";
 import { AuthOpenGuard } from "@/modules/auth/components/auth-open-guard";
 import { AuthLayout, AuthProvider } from "@/modules/auth";
+import { AppShell } from "@/modules/layout";
 import { Loadable } from "./loadable";
 
 const GeneralErrorPage = lazy(() => import("./errors/global/page"));
@@ -42,11 +43,16 @@ export const router = createBrowserRouter([
                 element: <AuthLayout />,
                 children: [
                   {
-                    path: "dashboard",
+                    element: <AppShell />,
                     children: [
                       {
-                        index: true,
-                        element: <DashboardPage />,
+                        path: "dashboard",
+                        children: [
+                          {
+                            index: true,
+                            element: <DashboardPage />,
+                          },
+                        ],
                       },
                     ],
                   },
