@@ -14,10 +14,10 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { NavMain } from "./nav-main";
+import { NavProjects } from "./nav-projects";
+import { NavUser } from "./nav-user";
+import { ProjectSwitcher } from "./project-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -32,7 +32,7 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
+  projects: [
     {
       name: "Acme Inc",
       logo: GalleryVerticalEnd,
@@ -88,13 +88,13 @@ const data = {
       icon: Settings2,
       items: [
         { title: "General", url: "#" },
-        { title: "Team", url: "#" },
+        { title: "Project", url: "#" },
         { title: "Billing", url: "#" },
         { title: "Limits", url: "#" },
       ],
     },
   ],
-  projects: [
+  projectLinks: [
     { name: "Design Engineering", url: "#", icon: Frame },
     { name: "Sales & Marketing", url: "#", icon: PieChart },
     { name: "Travel", url: "#", icon: Map },
@@ -107,11 +107,11 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <ProjectSwitcher projects={data.projects} />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={data.projectLinks} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
