@@ -1,5 +1,8 @@
 import { lazy } from "react";
 import { createBrowserRouter, Outlet } from "react-router";
+import { AuthGuard } from "@/modules/auth/components/auth-guard";
+import { AuthOpenGuard } from "@/modules/auth/components/auth-open-guard";
+import { AuthProvider } from "@/modules/auth/context";
 import { Loadable } from "./loadable";
 
 const GeneralErrorPage = lazy(() => import("./errors/global/page"));
@@ -11,14 +14,6 @@ const HomePage = lazy(() => import("./home/page"));
 const LoginPage = lazy(() => import("./login/page"));
 
 const RootLayout = () => {
-  return (
-    <Loadable>
-      <Outlet />
-    </Loadable>
-  );
-};
-
-const PublicLayout = () => {
   return (
     <Loadable>
       <Outlet />
@@ -39,18 +34,31 @@ export const router = createBrowserRouter([
             element: <HomePage />,
           },
           {
-            path: "dashboard",
+            element: (
+              <AuthProvider>
+                <AuthGuard />
+              </AuthProvider>
+            ),
             children: [
               {
-                index: true,
-                element: <DashboardPage />,
+                path: "dashboard",
+                children: [
+                  {
+                    index: true,
+                    element: <DashboardPage />,
+                  },
+                ],
               },
             ],
           },
         ],
       },
       {
-        element: <PublicLayout />,
+        element: (
+          <AuthProvider>
+            <AuthOpenGuard />
+          </AuthProvider>
+        ),
         children: [
           {
             path: "login",
