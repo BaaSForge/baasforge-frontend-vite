@@ -1,6 +1,6 @@
 import { LoadingFallback } from "@/components/ui/loading-fallback";
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAuth } from "../context";
+import { useAuth } from "../hooks";
 
 export function AuthGuard() {
   const { user, isLoading } = useAuth();
