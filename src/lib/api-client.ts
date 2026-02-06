@@ -1,7 +1,4 @@
-const isDev = import.meta.env.DEV;
-const BASE_URL = isDev
-  ? `${import.meta.env.VITE_API_PREFIX}${import.meta.env.VITE_MODULE_SCOPE}`
-  : `${import.meta.env.VITE_API_HOST}${import.meta.env.VITE_API_PREFIX}${import.meta.env.VITE_MODULE_SCOPE}`;
+import { envConfig } from "./env";
 
 export interface ApiResponse<T = any> {
   isSuccess: boolean;
@@ -139,4 +136,4 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient(BASE_URL);
+export const apiClient = new ApiClient(envConfig.apiBaseUrl);

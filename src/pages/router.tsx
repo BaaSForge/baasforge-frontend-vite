@@ -8,6 +8,7 @@ const ServerErrorPage = lazy(() => import("./errors/server/page"));
 
 const DashboardPage = lazy(() => import("./dashboard/page"));
 const HomePage = lazy(() => import("./home/page"));
+const LoginPage = lazy(() => import("./login/page"));
 
 const RootLayout = () => {
   return (
@@ -56,6 +57,7 @@ export const router = createBrowserRouter([
             children: [
               {
                 index: true,
+                element: <LoginPage />,
               },
             ],
           },
