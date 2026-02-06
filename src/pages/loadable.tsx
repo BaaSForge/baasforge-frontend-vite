@@ -1,4 +1,4 @@
-import { Spinner } from "@/components/ui/spinner";
+import { LoadingFallback } from "@/components/ui/loading-fallback";
 import { Suspense, type ReactNode } from "react";
 
 interface LoadableProps {
@@ -7,11 +7,7 @@ interface LoadableProps {
 
 export const Loadable = ({ children }: LoadableProps) => {
   return (
-    <Suspense
-      fallback={
-        <Spinner />
-      }
-    >
+    <Suspense fallback={<LoadingFallback />}>
       {children}
     </Suspense>
   );

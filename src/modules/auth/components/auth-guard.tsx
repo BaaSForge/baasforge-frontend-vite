@@ -1,5 +1,5 @@
+import { LoadingFallback } from "@/components/ui/loading-fallback";
 import { Navigate, Outlet, useLocation } from "react-router";
-import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "../context";
 
 export function AuthGuard() {
@@ -7,11 +7,7 @@ export function AuthGuard() {
   const location = useLocation();
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center" role="status" aria-label="Checking authentication">
-        <Spinner className="size-8" />
-      </div>
-    );
+    return <LoadingFallback aria-label="Checking authentication" />;
   }
 
   if (user == null) {
