@@ -1,49 +1,22 @@
 import * as React from "react";
-import { InfoIcon } from "lucide-react";
-import {
-  Card,
-  CardAction,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export interface PageTitleBoxProps {
   title: string;
-  tooltip?: React.ReactNode;
+  tools?: React.ReactNode;
   className?: string;
 }
 
-export function PageTitleBox({ title, tooltip, className }: PageTitleBoxProps) {
+export function PageTitleBox({ title, tools, className }: PageTitleBoxProps) {
   return (
-    <Card className={cn("py-4", className)}>
-      <CardHeader className="flex flex-row items-center gap-2 pb-0">
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
-        {tooltip != null && (
-          <CardAction className="relative -top-0.5">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    className="text-muted-foreground hover:text-foreground rounded p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-label="More information"
-                  >
-                    <InfoIcon className="size-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="max-w-xs">
-                  {tooltip}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </CardAction>
+    <Card className={cn("overflow-hidden", className)}>
+      <CardHeader className="flex flex-row items-center justify-between gap-4">
+        <CardTitle className="text-lg font-semibold tracking-tight">
+          {title}
+        </CardTitle>
+        {tools != null && (
+          <div className="flex shrink-0 items-center">{tools}</div>
         )}
       </CardHeader>
     </Card>

@@ -130,8 +130,9 @@ class ApiClient {
           return this.request<T>(endpoint, options);
         }
         this.onSessionExpired?.();
+      } else {
+        this.onError?.(responseData);
       }
-      this.onError?.(responseData);
       throw responseData;
     }
 

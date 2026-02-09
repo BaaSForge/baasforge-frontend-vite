@@ -10,6 +10,11 @@ export enum TokenType {
   REFRESH = "refresh",
 }
 
+export interface GetTokensFilter {
+  revoked: boolean;
+  type: TokenType;
+}
+
 export interface Token {
   id: number;
   token_type: TokenType;

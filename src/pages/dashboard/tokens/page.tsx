@@ -56,28 +56,27 @@ export default function DashboardTokensPage() {
     <section className="flex flex-1 flex-col gap-4 p-4">
       <PageTitleBox
         title="Sessions & tokens"
-        tooltip="These are your active sessions and tokens. Revoking a token signs out that session."
+        tools={
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDeleteSelected}
+            disabled={!someSelected || deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? (
+              <Loader2Icon className="size-4 animate-spin" />
+            ) : (
+              <Trash2Icon className="size-4" />
+            )}
+            <span className="ml-1.5">
+              {someSelected
+                ? `Delete ${selectedList.length} selected`
+                : "Delete selected"}
+            </span>
+          </Button>
+        }
       />
       <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
-        {someSelected && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDeleteSelected}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? (
-                <Loader2Icon className="size-4 animate-spin" />
-              ) : (
-                <Trash2Icon className="size-4" />
-              )}
-              <span className="ml-1.5">
-                Delete {selectedList.length} selected
-              </span>
-            </Button>
-          </div>
-        )}
         <div className="overflow-x-auto">
           {isLoading ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
@@ -98,11 +97,8 @@ export default function DashboardTokensPage() {
                       aria-label="Select all"
                     />
                   </TableHead>
-                  <TableHead>Type</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Expires</TableHead>
-                  <TableHead>Revoked</TableHead>
-                  <TableHead>Sign-up token</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -115,11 +111,8 @@ export default function DashboardTokensPage() {
                         aria-label={`Select token ${token.id}`}
                       />
                     </TableCell>
-                    <TableCell>{token.token_type}</TableCell>
                     <TableCell>{formatDate(token.created_at)}</TableCell>
                     <TableCell>{formatDate(token.expires_at)}</TableCell>
-                    <TableCell>{token.revoked ? "Yes" : "No"}</TableCell>
-                    <TableCell>{token.is_signup_token ? "Yes" : "No"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

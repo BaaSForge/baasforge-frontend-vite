@@ -8,5 +8,5 @@ export { useAuth } from "./hooks";
 export { useCurrentUserQuery, useGetTokensQuery } from "./queries";
 export { useDeleteTokensMutation, useLogoutMutation } from "./mutations";
 export { getCurrentUser, logout, getTokens, deleteTokens } from "./api";
-export type { User, Token, TokenType } from "./types";
+export type { User, Token, TokenType, GetTokensFilter } from "./types";
 export type { UseAuthReturn } from "./hooks";

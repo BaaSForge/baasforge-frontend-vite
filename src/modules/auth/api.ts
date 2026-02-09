@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiResponse } from "@/lib/api-client";
-import type { User, Token } from "./types";
+import type { User, Token, GetTokensFilter } from "./types";
 
 const AUTH_ME_ENDPOINT = "/v1/auth/me";
 const AUTH_LOGOUT_ENDPOINT = "/v1/auth/logout";
@@ -17,8 +17,13 @@ export function logout(): Promise<void> {
   return apiClient.post(AUTH_LOGOUT_ENDPOINT);
 }
 
-export function getTokens(): Promise<Token[]> {
-  return apiClient.get<ApiResponse<Token[]>>(AUTH_TOKENS_ENDPOINT).then((res) => res.data ?? []);
+export function getTokens(filter: GetTokensFilter): Promise<Token[]> {
+  const params = new URLSearchParams({
+    revoked: String(filter.revoked),
+    type: filter.type,
+  });
+  const url = `${AUTH_TOKENS_ENDPOINT}?${params.toString()}`;
+  return apiClient.get<ApiResponse<Token[]>>(url).then((res) => res.data ?? []);
 }
 
 export function deleteTokens(tokenIds: number[]): Promise<void> {
