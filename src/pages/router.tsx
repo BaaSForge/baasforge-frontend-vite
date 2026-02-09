@@ -11,6 +11,7 @@ const NotFoundPage = lazy(() => import("./errors/not-found/page"));
 const ServerErrorPage = lazy(() => import("./errors/server/page"));
 
 const DashboardPage = lazy(() => import("./dashboard/page"));
+const DashboardTokensPage = lazy(() => import("./dashboard/tokens/page"));
 const HomePage = lazy(() => import("./home/page"));
 const LoginPage = lazy(() => import("./login/page"));
 
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
                           {
                             index: true,
                             element: <DashboardPage />,
+                          },
+                          {
+                            path: "tokens",
+                            element: <DashboardTokensPage />,
                           },
                         ],
                       },

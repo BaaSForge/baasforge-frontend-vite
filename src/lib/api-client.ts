@@ -36,21 +36,28 @@ function isNeedsRefreshBody(body: unknown): body is { data: { needs_refresh_toke
 
 export interface ApiClientOptions {
   onSessionExpired?: () => void;
+  onError?: (error: unknown) => void;
 }
 
 class ApiClient {
   private baseUrl: string;
   private timeoutDuration = 10_000;
   private onSessionExpired: (() => void) | undefined;
+  private onError: ((error: unknown) => void) | undefined;
   private refreshPromise: Promise<void> | null = null;
 
   constructor(baseUrl: string, options: ApiClientOptions = {}) {
     this.baseUrl = baseUrl;
     this.onSessionExpired = options.onSessionExpired;
+    this.onError = options.onError;
   }
 
   setOnSessionExpired(callback: (() => void) | undefined): void {
     this.onSessionExpired = callback;
+  }
+
+  setOnError(callback: ((error: unknown) => void) | undefined): void {
+    this.onError = callback;
   }
 
   private buildUrl(endpoint: string): string {
@@ -122,9 +129,9 @@ class ApiClient {
           await this.refreshToken();
           return this.request<T>(endpoint, options);
         }
-    
         this.onSessionExpired?.();
       }
+      this.onError?.(responseData);
       throw responseData;
     }
 
@@ -185,9 +192,9 @@ class ApiClient {
           await this.refreshToken();
           return this.uploadFile<T>(endpoint, file, options);
         }
-    
         this.onSessionExpired?.();
       }
+      this.onError?.(responseData);
       throw responseData;
     }
 

@@ -20,3 +20,11 @@ export function logout(): Promise<void> {
 export function getTokens(): Promise<Token[]> {
   return apiClient.get<ApiResponse<Token[]>>(AUTH_TOKENS_ENDPOINT).then((res) => res.data ?? []);
 }
+
+export function deleteTokens(tokenIds: number[]): Promise<void> {
+  return apiClient
+    .delete<ApiResponse<void>>(AUTH_TOKENS_ENDPOINT, {
+      body: JSON.stringify({ token_ids: tokenIds }),
+    })
+    .then(() => undefined);
+}

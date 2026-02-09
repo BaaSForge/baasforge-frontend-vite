@@ -91,6 +91,7 @@ const data = {
         { title: "Project", url: "#" },
         { title: "Billing", url: "#" },
         { title: "Limits", url: "#" },
+        { title: "Sessions & tokens", url: "/dashboard/tokens" },
       ],
     },
   ],

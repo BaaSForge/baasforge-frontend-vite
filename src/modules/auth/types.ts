@@ -15,6 +15,6 @@ export interface Token {
   token_type: TokenType;
   expires_at: string;
   created_at: string;
-  revoked: boolean;
+  revoked?: boolean;
   is_signup_token: boolean;
 }
