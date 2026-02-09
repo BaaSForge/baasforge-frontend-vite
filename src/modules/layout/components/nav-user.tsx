@@ -5,8 +5,10 @@ import {
   CreditCard,
   Github,
   LogOut,
+  Receipt,
   Sparkles,
 } from "lucide-react";
+import { Link } from "react-router";
 
 import {
   Avatar,
@@ -176,6 +178,12 @@ export function NavUser() {
               <DropdownMenuItem>
                 <BadgeCheck />
                 Account
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/payments">
+                  <Receipt />
+                  Payments
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />
