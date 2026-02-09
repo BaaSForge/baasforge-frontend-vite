@@ -8,7 +8,7 @@ export function useLogoutMutation() {
   return useMutation({
     mutationFn: logoutApi,
     onSettled: () => {
-      queryClient.setQueryData(QueryKeys.AUTH_ME, null);
+      queryClient.clear();
     },
   });
 }

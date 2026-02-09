@@ -176,10 +176,6 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/dashboard/packages">
                   <Package />
@@ -188,17 +184,9 @@ export function NavUser() {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/dashboard/payments">
-                  <Receipt />
+                  <CreditCard />
                   Payments
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
