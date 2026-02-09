@@ -115,7 +115,7 @@ export function AppSidebar({
         <NavProjects projects={data.projectLinks} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

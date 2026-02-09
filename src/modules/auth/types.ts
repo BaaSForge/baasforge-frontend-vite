@@ -1,13 +1,19 @@
 export interface User {
   id: number;
-  platform: string;
+  platform: PlatformType;
   id_in_platform: string;
   full_name: string | null;
+  email_in_platform?: string | null;
 }
 
 export enum TokenType {
   ACCESS = "access",
   REFRESH = "refresh",
+}
+
+export enum PlatformType {
+  GOOGLE = "google",
+  GITHUB = "github",
 }
 
 export interface GetTokensFilter {
