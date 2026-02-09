@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
+import { usePackagesQuery, usePaidPackagesQuery, usePurchasePackageMutation } from "@/modules/payment";
 import { InfoIcon, ShoppingCartIcon } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { TrialBadge } from "@/modules/payment/components/trial-badge";
@@ -19,12 +19,13 @@ import { TrialBadge } from "@/modules/payment/components/trial-badge";
 export default function DashboardPackagesPage() {
   const { data: packages = [], isLoading } = usePackagesQuery();
   const { data: paidPackagesData } = usePaidPackagesQuery();
+  const purchaseMutation = usePurchasePackageMutation();
   const paidPackages = paidPackagesData?.paid_packages ?? [];
   const largestTier = paidPackagesData?.largest_tier ?? 0;
+  const isProcessing = purchaseMutation.isPending;
 
-  const handlePurchase = (slug: string) => {
-    // TODO: wire to payment flow (e.g. redirect to checkout or open modal)
-    console.log("Purchase package:", slug);
+  const handlePurchase = (packageId: number) => {
+    purchaseMutation.mutate(packageId);
   };
 
   const purchasedSlugs = new Set(paidPackages.map((p) => p.slug));
@@ -33,7 +34,7 @@ export default function DashboardPackagesPage() {
     <section className="flex flex-1 flex-col gap-4 p-4">
       {paidPackages.length > 0 && (
         <p className="text-muted-foreground text-sm">
-          Your paid packages: {paidPackages.map((p) => p.title).join(", ")}
+          You have purchased the following package: {paidPackages.map((p) => p.title).join(", ")}
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -53,7 +54,8 @@ export default function DashboardPackagesPage() {
               : pkg.price;
 
             const isPurchased = purchasedSlugs.has(pkg.slug);
-            const isDisabled = isPurchased || pkg.tier <= largestTier;
+            const isTierTooLow = pkg.tier <= largestTier;
+            const isDisabled = isPurchased || isTierTooLow || isProcessing;
 
             return (
               <Card key={pkg.id} className="flex flex-col">
@@ -84,7 +86,7 @@ export default function DashboardPackagesPage() {
                   <PackageDescription content={pkg.description} />
                 </CardContent>
                 <CardFooter className="pt-4 flex flex-col gap-2">
-                  {isDisabled && (
+                  {(isPurchased || isTierTooLow) && (
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                       <InfoIcon className="mr-2 text-blue-500 size-4" aria-hidden />
                       {isPurchased ? "You have already purchased this package." : "You can’t purchase packages with a tier lower than your current package."}
@@ -92,11 +94,11 @@ export default function DashboardPackagesPage() {
                   )}
                   <Button
                     className="w-full"
-                    onClick={() => handlePurchase(pkg.slug)}
+                    onClick={() => handlePurchase(pkg.id)}
                     disabled={isDisabled}
                   >
                     <ShoppingCartIcon className="size-4" aria-hidden />
-                    {isPurchased ? "Purchased" : "Purchase"}
+                    {isProcessing && purchaseMutation.variables === pkg.id ? "Processing…" : isPurchased ? "Purchased" : "Purchase"}
                   </Button>
                 </CardFooter>
               </Card>

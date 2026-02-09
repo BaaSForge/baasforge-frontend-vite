@@ -25,3 +25,8 @@ export interface PaidPackageResponse {
   paid_packages: Package[];
   largest_tier: number;
 }
+
+export interface PurchaseResponse {
+  package_id: number;
+  expires_at: string;
+}
