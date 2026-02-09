@@ -5,6 +5,7 @@ import {
   CreditCard,
   Github,
   LogOut,
+  Package,
   Receipt,
   Sparkles,
 } from "lucide-react";
@@ -178,6 +179,12 @@ export function NavUser() {
               <DropdownMenuItem>
                 <BadgeCheck />
                 Account
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/packages">
+                  <Package />
+                  Packages
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/dashboard/payments">

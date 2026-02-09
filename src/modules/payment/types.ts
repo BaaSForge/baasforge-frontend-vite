@@ -14,8 +14,14 @@ export interface Package {
   id: number;
   title: string;
   slug: string;
+  tier: number;
   description: string | null;
   price: number;
   discount_percent: number | null;
   is_trial: boolean | null;
+}
+
+export interface PaidPackageResponse {
+  paid_packages: Package[];
+  largest_tier: number;
 }

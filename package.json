@@ -73,6 +73,7 @@
         "react-hot-toast": "^2.6.0",
         "react-hotkeys-hook": "^5.1.0",
         "react-leaflet": "^5.0.0",
+        "react-markdown": "^10.1.0",
         "react-resizable-panels": "^4.4.1",
         "react-router": "^7.11.0",
         "react-world-flags": "^1.6.0",

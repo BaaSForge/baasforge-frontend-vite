@@ -1,3 +1,3 @@
-export { getPayments, getPackages } from "./api";
-export { usePaymentsQuery, usePackagesQuery } from "./queries";
-export type { PaymentResponse, Package } from "./types";
+export { getPayments, getPackages, getPaidPackages } from "./api";
+export { usePaymentsQuery, usePackagesQuery, usePaidPackagesQuery } from "./queries";
+export type { PaymentResponse, Package, PaidPackage, PaidPackageResponse } from "./types";

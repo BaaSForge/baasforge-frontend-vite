@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { usePaymentsQuery } from "@/modules/payment";
 import { Badge } from "@/components/ui/badge";
-import { SparklesIcon } from "lucide-react";
+import { TrialBadge } from "@/modules/payment/components/trial-badge";
 
 
 function formatAmount(amount: number) {
@@ -85,10 +85,7 @@ export default function DashboardPaymentsPage() {
                       </TableCell>
                       <TableCell>
                         {payment.package_is_tiral ? (
-                          <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-500">
-                            <SparklesIcon className="size-4" aria-hidden />
-                            <span className="text-sm font-medium">Trial</span>
-                          </span>
+                          <TrialBadge />
                         ) : (
                           <span className="text-muted-foreground inline-flex items-center gap-1 text-sm">
                             No
