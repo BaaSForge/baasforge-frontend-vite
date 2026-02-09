@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
+import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
 
 function PlatformIcon({ platform, className }: { platform: PlatformType; className?: string }) {
   if (platform === PlatformType.GITHUB) {
@@ -87,6 +88,13 @@ function getInitials(user: User): string {
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, isLoading, logout } = useAuth();
+  const { data: packages = [] } = usePackagesQuery();
+  const { data: paidData } = usePaidPackagesQuery();
+  const largestTier = paidData?.largest_tier ?? 0;
+  const nextTierPackage = packages
+    .filter((p) => (p.tier > largestTier && !p.is_trial))
+    .sort((a, b) => a.tier - b.tier)[0];
+  const hasMaxTier = !nextTierPackage;
 
   if (isLoading) {
     return (
@@ -169,10 +177,19 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
+              {hasMaxTier ? (
+                <DropdownMenuItem disabled className="cursor-default">
+                  <Sparkles />
+                  You have purchased our greatest tier!
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/packages">
+                    <Sparkles />
+                    Upgrade to {nextTierPackage.title}
+                  </Link>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>

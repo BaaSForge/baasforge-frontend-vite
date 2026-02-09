@@ -22,7 +22,12 @@ export default function DashboardPackagesPage() {
   const purchaseMutation = usePurchasePackageMutation();
   const paidPackages = paidPackagesData?.paid_packages ?? [];
   const largestTier = paidPackagesData?.largest_tier ?? 0;
+  const canPurchaseTrial = paidPackagesData?.can_purchase_trial ?? false;
   const isProcessing = purchaseMutation.isPending;
+
+  const visiblePackages = canPurchaseTrial
+    ? packages
+    : packages.filter((pkg) => !pkg.is_trial);
 
   const handlePurchase = (packageId: number) => {
     purchaseMutation.mutate(packageId);
@@ -42,12 +47,12 @@ export default function DashboardPackagesPage() {
           <p className="text-muted-foreground col-span-full py-12 text-center text-sm">
             Loading packages…
           </p>
-        ) : packages.length === 0 ? (
+        ) : visiblePackages.length === 0 ? (
           <p className="text-muted-foreground col-span-full py-12 text-center text-sm">
             No packages available.
           </p>
         ) : (
-          packages.map((pkg) => {
+          visiblePackages.map((pkg) => {
             const hasDiscount = pkg.discount_percent != null && pkg.discount_percent > 0;
             const discountedPrice = hasDiscount
               ? pkg.price * (1 - (pkg.discount_percent ?? 0) / 100)

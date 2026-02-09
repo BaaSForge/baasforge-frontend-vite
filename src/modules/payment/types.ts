@@ -24,6 +24,7 @@ export interface Package {
 export interface PaidPackageResponse {
   paid_packages: Package[];
   largest_tier: number;
+  can_purchase_trial: boolean;
 }
 
 export interface PurchaseResponse {
