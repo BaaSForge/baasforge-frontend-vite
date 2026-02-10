@@ -20,7 +20,7 @@ export default function DashboardPackagesPage() {
   const { data: packages = [], isLoading } = usePackagesQuery();
   const { data: paidPackagesData } = usePaidPackagesQuery();
   const purchaseMutation = usePurchasePackageMutation();
-  const paidPackages = paidPackagesData?.paid_packages ?? [];
+  const paidPackages = paidPackagesData?.payments?.map((p) => p.package) ?? [];
   const largestTier = paidPackagesData?.largest_tier ?? 0;
   const canPurchaseTrial = paidPackagesData?.can_purchase_trial ?? false;
   const isProcessing = purchaseMutation.isPending;
@@ -37,11 +37,6 @@ export default function DashboardPackagesPage() {
 
   return (
     <section className="flex flex-1 flex-col gap-4 p-4">
-      {paidPackages.length > 0 && (
-        <p className="text-muted-foreground text-sm">
-          You have purchased the following package: {paidPackages.map((p) => p.title).join(", ")}
-        </p>
-      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
           <p className="text-muted-foreground col-span-full py-12 text-center text-sm">

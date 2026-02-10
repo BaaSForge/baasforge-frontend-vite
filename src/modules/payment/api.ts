@@ -22,7 +22,7 @@ export function getPackages(): Promise<Package[]> {
 export function getPaidPackages(): Promise<PaidPackageResponse> {
   return apiClient
     .get<ApiResponse<PaidPackageResponse>>(PAID_PACKAGES_ENDPOINT)
-    .then((res) => res.data ?? { paid_packages: [], largest_tier: 0, can_purchase_trial: false });
+    .then((res) => res.data ?? { payments: [], largest_tier: 0, can_purchase_trial: false });
 }
 
 export function purchasePackage(packageId: number): Promise<PurchaseResponse> {

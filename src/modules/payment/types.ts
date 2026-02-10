@@ -21,8 +21,13 @@ export interface Package {
   is_trial: boolean | null;
 }
 
+export interface PaymentWithPackage {
+  payment: PaymentResponse;
+  package: Package;
+}
+
 export interface PaidPackageResponse {
-  paid_packages: Package[];
+  payments: PaymentWithPackage[];
   largest_tier: number;
   can_purchase_trial: boolean;
 }

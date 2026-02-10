@@ -1,12 +1,9 @@
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   Github,
   LogOut,
   Package,
-  Receipt,
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router";
@@ -31,8 +28,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
+import type { PaymentResponse } from "@/modules/payment";
 import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
 
 function PlatformIcon({ platform, className }: { platform: PlatformType; className?: string }) {
@@ -85,11 +84,46 @@ function getInitials(user: User): string {
   return "?";
 }
 
+const EXPIRY_WARNING_DAYS = 30;
+
+function getExpiryIndicatorClass(daysLeft: number): string {
+  if (daysLeft <= 7) return "bg-destructive";
+  if (daysLeft <= 14) return "bg-chart-4";
+  return "bg-primary";
+}
+
+function getDaysUntilExpiry(expiresAt: string | null): number | null {
+  if (!expiresAt) return null;
+  const now = new Date();
+  const expiry = new Date(expiresAt);
+  const days = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return days;
+}
+
+function getNearestExpiringPayment(payments: PaymentResponse[]): {
+  payment: PaymentResponse;
+  daysLeft: number;
+} | null {
+  const candidates = payments
+    .filter((p) => p.is_success && p.expires_at != null)
+    .map((p) => ({
+      payment: p,
+      daysLeft: getDaysUntilExpiry(p.expires_at) ?? Infinity,
+    }))
+    .filter(({ daysLeft }) => daysLeft >= 0 && daysLeft <= EXPIRY_WARNING_DAYS)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+  const first = candidates[0];
+  return first ? { payment: first.payment, daysLeft: first.daysLeft } : null;
+}
+
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, isLoading, logout } = useAuth();
   const { data: packages = [] } = usePackagesQuery();
   const { data: paidData } = usePaidPackagesQuery();
+  const nearestExpiring = getNearestExpiringPayment(
+    (paidData?.payments ?? []).map((p) => p.payment)
+  );
   const largestTier = paidData?.largest_tier ?? 0;
   const nextTierPackage = packages
     .filter((p) => (p.tier > largestTier && !p.is_trial))
@@ -121,6 +155,27 @@ export function NavUser() {
 
   return (
     <SidebarMenu>
+      <SidebarMenuItem>
+        {nearestExpiring && (
+          <div className="px-3 py-2.5">
+            <p className="text-muted-foreground mb-1 truncate text-xs">
+              {nearestExpiring.payment.package_title ?? "Payment"} expiring soon
+            </p>
+            <Progress
+              value={((EXPIRY_WARNING_DAYS - nearestExpiring.daysLeft) / EXPIRY_WARNING_DAYS) * 100}
+              className="h-1.5 bg-muted"
+              indicatorClassName={getExpiryIndicatorClass(nearestExpiring.daysLeft)}
+            />
+            <p className="text-muted-foreground mt-1 text-xs">
+              {nearestExpiring.daysLeft === 0
+                ? "Expires today"
+                : nearestExpiring.daysLeft === 1
+                  ? "1 day left"
+                  : `${nearestExpiring.daysLeft} days left`}
+            </p>
+          </div>
+        )}
+      </SidebarMenuItem>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
