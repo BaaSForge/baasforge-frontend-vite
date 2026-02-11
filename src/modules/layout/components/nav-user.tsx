@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 
+import { cn } from "@/lib/utils";
+
 import {
   Avatar,
   AvatarFallback,
@@ -28,6 +30,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
@@ -132,14 +135,24 @@ function getNearestExpiringPayment(
   return candidates[0] ?? null;
 }
 
+function hasAnyActivePayment(payments: PaymentResponse[]): boolean {
+  return payments.some(
+    (p) =>
+      p.is_success &&
+      p.expires_at &&
+      getTimeLeft(p.expires_at).type === "active"
+  );
+}
+
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, isLoading, logout } = useAuth();
   const { data: packages = [] } = usePackagesQuery();
   const { data: paidData } = usePaidPackagesQuery();
-  const nearestExpiring = getNearestExpiringPayment(
-    (paidData?.payments ?? []).map((p) => p.payment)
-  );
+  const payments = (paidData?.payments ?? []).map((p) => p.payment);
+  const hasActivePayment = hasAnyActivePayment(payments);
+  const nearestExpiring = getNearestExpiringPayment(payments);
+  const canPurchaseTrial = paidData?.can_purchase_trial ?? false;
   const largestTier = paidData?.largest_tier ?? 0;
   const nextTierPackage = packages
     .filter((p) => (p.tier > largestTier && !p.is_trial))
@@ -171,8 +184,39 @@ export function NavUser() {
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
-        {nearestExpiring && (
+      <SidebarMenuItem className="mb-5">
+        {!hasActivePayment ? (
+          <Link
+            to="/dashboard/packages"
+            className="focus-visible:ring-blue-500 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar rounded-xl"
+          >
+            <Card
+              className={cn(
+                "border-0 bg-blue-50 shadow-none transition-colors duration-200 py-0",
+                "hover:bg-blue-100"
+              )}
+            >
+              <CardContent className="flex flex-row items-start gap-3 p-4">
+                <span className="bg-blue-500/15 text-blue-600 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                  <Sparkles className="size-5" />
+                </span>
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <p className="text-blue-700 text-sm font-semibold leading-snug">
+                    Unlock all features
+                  </p>
+                  <p className="text-blue-900/70 text-xs leading-relaxed">
+                    Buy a package to get the full experience.
+                  </p>
+                  {canPurchaseTrial && (
+                    <p className="text-blue-500 text-xs font-medium">
+                      Start with a free trial →
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        ) : nearestExpiring ? (
           <div className="px-3 py-2.5">
             <p className="text-muted-foreground mb-1 truncate text-xs">
               {nearestExpiring.payment.package_title ?? "Payment"} expiring soon
@@ -186,7 +230,7 @@ export function NavUser() {
               <TimeLeftLabel expiresAt={nearestExpiring.payment.expires_at} />
             </p>
           </div>
-        )}
+        ) : null}
       </SidebarMenuItem>
       <SidebarMenuItem>
         <DropdownMenu>
