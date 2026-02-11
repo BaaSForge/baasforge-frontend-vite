@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  GalleryVerticalEnd,
   Settings2,
   Folder,
 } from "lucide-react";
@@ -19,26 +18,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const MAIN_NAV_ITEMS = [
-  {
-    title: "Projects",
-    url: "#",
-    icon: Folder,
-    items: [
-      { title: "List Projects", url: "/dashboard/projects" },
-      { title: "Create Project", url: "/dashboard/projects/new" },
-    ],
-  },
-  {
-    title: "Account",
-    url: "#",
-    icon: Settings2,
-    items: [
-      { title: "Sessions", url: "/dashboard/tokens" },
-    ],
-  },
-];
-
 export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
@@ -49,7 +28,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavProjects />
-        <NavMain items={MAIN_NAV_ITEMS} />
+        <NavMain />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

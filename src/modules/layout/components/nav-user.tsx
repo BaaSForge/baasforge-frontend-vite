@@ -39,7 +39,6 @@ import { TimeLeftLabel } from "@/components/time-left-label";
 import { getTimeLeft } from "@/utils/time";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useUpdateEffect } from "@/hooks/use-updated";
-import { useEffect } from "react";
 import { usePrevious } from "@/hooks/use-previous";
 
 function PlatformIcon({ platform, className }: { platform: PlatformType; className?: string }) {

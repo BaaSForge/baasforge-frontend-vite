@@ -1,7 +1,7 @@
 "use client";
 
 import { Settings } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useLocation } from "react-router";
 
 import {
   SidebarGroup,
@@ -16,6 +16,7 @@ const PROJECT_SETTINGS_ID = "1";
 
 export function NavProjects() {
   const { projectId: projectIdParam } = useParams();
+  const { pathname } = useLocation();
   const projectId = projectIdParam != null ? Number(projectIdParam) : undefined;
   const { data: project } = useProjectQuery(projectId);
 
@@ -23,13 +24,16 @@ export function NavProjects() {
     return null;
   }
 
+  const settingsUrl = `/dashboard/projects/${PROJECT_SETTINGS_ID}/settings`;
+  const isSettingsActive = pathname.startsWith(settingsUrl);
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>{project.name} Area</SidebarGroupLabel>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
-            <Link to={`/dashboard/projects/${PROJECT_SETTINGS_ID}/settings`}>
+          <SidebarMenuButton asChild isActive={isSettingsActive}>
+            <Link to={settingsUrl}>
               <Settings />
               <span>Settings</span>
             </Link>
