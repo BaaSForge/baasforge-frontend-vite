@@ -38,6 +38,7 @@ import type { PaymentResponse } from "@/modules/payment";
 import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
 import { TimeLeftLabel } from "@/components/time-left-label";
 import { getTimeLeft } from "@/utils/time";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 function PlatformIcon({ platform, className }: { platform: PlatformType; className?: string }) {
   if (platform === PlatformType.GITHUB) {
@@ -145,7 +146,7 @@ function hasAnyActivePayment(payments: PaymentResponse[]): boolean {
 }
 
 export function NavUser() {
-  const { isMobile } = useSidebar();
+  const { isMobile, open } = useSidebar();
   const { user, isLoading, logout } = useAuth();
   const { data: packages = [] } = usePackagesQuery();
   const { data: paidData } = usePaidPackagesQuery();
@@ -181,41 +182,71 @@ export function NavUser() {
 
   const displayName = user.full_name ?? "User";
   const displayEmail = user.email_in_platform ?? "—";
+  const promotionBoxExpanded = open || isMobile;
 
   return (
     <SidebarMenu>
       <SidebarMenuItem className="mb-5">
         {!hasActivePayment ? (
-          <Link
-            to="/dashboard/packages"
-            className="focus-visible:ring-blue-500 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar rounded-xl"
-          >
-            <Card
-              className={cn(
-                "border-0 bg-blue-50 dark:bg-blue-950/60 shadow-none transition-colors duration-200 py-0",
-                "hover:bg-blue-100 dark:hover:bg-blue-900/80"
-              )}
-            >
-              <CardContent className="flex flex-row items-start gap-3 p-4">
-                <span className="bg-blue-500/15 dark:bg-blue-500/25 text-blue-600 dark:text-blue-300 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
-                  <Sparkles className="size-5" />
+          <HoverCard openDelay={0} closeDelay={0} >
+            <HoverCardTrigger asChild>
+              <Link
+                to="/dashboard/packages"
+                className={cn(
+                  "p-2 bg-blue-50 dark:bg-blue-950/60 transition-colors duration-200 hover:bg-blue-100 dark:hover:bg-blue-900/80 focus-visible:ring-blue-500 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar rounded-xl flex items-center",
+                  !promotionBoxExpanded && "p-0 bg-transparent hover:bg-transparent"
+                )}
+                tabIndex={0}
+              >
+                <span className={cn(
+                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                  "bg-blue-500/15 dark:bg-blue-500/25 text-blue-600 dark:text-blue-300",
+                  !promotionBoxExpanded && "w-8 h-8",
+                )}>
+                  <Sparkles
+                    className={cn("size-5", !promotionBoxExpanded && "size-4")}
+                  />
                 </span>
-                <div className="min-w-0 flex-1 space-y-1.5">
-                  <p className="text-blue-700 dark:text-blue-200 text-sm font-semibold leading-snug">
-                    Unlock all features
-                  </p>
-                  <p className="text-blue-900/70 dark:text-blue-300/80 text-xs leading-relaxed">
-                    Buy a package to get the full experience.
-                  </p>
-                  {canPurchaseTrial && (
-                    <p className="text-blue-500 dark:text-blue-400 text-xs font-medium">
-                      Start with a free trial →
+                {promotionBoxExpanded && (
+                  <div className="min-w-0 flex-1 space-y-1.5 ml-3">
+                    <p className="text-blue-700 dark:text-blue-200 text-sm font-semibold leading-snug">
+                      Unlock all features
                     </p>
-                  )}
+                    <p className="text-blue-900/70 dark:text-blue-300/80 text-xs leading-relaxed">
+                      Buy a package to get the full experience.
+                    </p>
+                    {canPurchaseTrial && (
+                      <p className="text-blue-500 dark:text-blue-400 text-xs font-medium">
+                        Start with a free trial →
+                      </p>
+                    )}
+                  </div>
+                )}
+              </Link>
+            </HoverCardTrigger>
+            {!promotionBoxExpanded && (
+              <HoverCardContent side="right" align="center" className="shadow-none rounded-xl">
+                <div className="flex flex-row items-start gap-3">
+                  <span className="bg-blue-500/15 dark:bg-blue-500/25 text-blue-600 dark:text-blue-300 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                    <Sparkles className="size-5" />
+                  </span>
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <p className="text-blue-700 dark:text-blue-200 text-sm font-semibold leading-snug">
+                      Unlock all features
+                    </p>
+                    <p className="text-blue-900/70 dark:text-blue-300/80 text-xs leading-relaxed">
+                      Buy a package to get the full experience.
+                    </p>
+                    {canPurchaseTrial && (
+                      <p className="text-blue-500 dark:text-blue-400 text-xs font-medium">
+                        Start with a free trial →
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </Link>
+              </HoverCardContent>
+            )}
+          </HoverCard>
         ) : nearestExpiring ? (
           <div className="px-3 py-2.5">
             <p className="text-muted-foreground mb-1 truncate text-xs">

@@ -19,39 +19,25 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+const MAIN_NAV_ITEMS = [
+  {
+    title: "Projects",
+    url: "#",
+    icon: Folder,
+    items: [
+      { title: "List Projects", url: "/dashboard/projects" },
+      { title: "Create Project", url: "/dashboard/projects/new" },
+    ],
   },
-  projects: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-  ],
-  navMain: [
-    {
-      title: "Projects",
-      url: "#",
-      icon: Folder,
-      items: [
-        { title: "List Projects", url: "/dashboard/projects" },
-        { title: "Create Project", url: "/dashboard/projects/new" },
-      ],
-    },
-    {
-      title: "Account",
-      url: "#",
-      icon: Settings2,
-      items: [
-        { title: "Sessions", url: "/dashboard/tokens" },
-      ],
-    },
-  ],
-};
+  {
+    title: "Account",
+    url: "#",
+    icon: Settings2,
+    items: [
+      { title: "Sessions", url: "/dashboard/tokens" },
+    ],
+  },
+];
 
 export function AppSidebar({
   ...props
@@ -59,11 +45,11 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <ProjectSwitcher projects={data.projects} />
+        <ProjectSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavProjects />
-        <NavMain items={data.navMain} />
+        <NavMain items={MAIN_NAV_ITEMS} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

@@ -6,18 +6,36 @@ import {
   ItemContent,
   ItemGroup,
   ItemMedia,
-  ItemSeparator,
   ItemTitle,
 } from "@/components/ui/item";
 import { useProjectsQuery } from "@/modules/project";
-import { ChevronRightIcon, FolderIcon } from "lucide-react";
+import {
+  ChevronRightIcon,
+  FolderIcon,
+  PlusIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ProjectsIndexPage() {
   const { data: projects = [], isLoading } = useProjectsQuery();
 
   return (
     <Container>
-      <PageTitleBox title="Projects" />
+      <PageTitleBox
+      title="Projects"
+        tools={
+          <Button
+            variant="secondary"
+            asChild
+            size="sm"
+          >
+            <Link to="/dashboard/projects/new">
+              <PlusIcon className="size-4" />
+              Create Project
+            </Link>
+          </Button>
+        }
+      />
       <Container.MainContent>
         {isLoading ? (
           <p className="text-muted-foreground py-8 text-center text-sm">
@@ -30,8 +48,7 @@ export default function ProjectsIndexPage() {
         ) : (
           <ItemGroup className="bg-card overflow-hidden">
             {projects.map((project, index) => (
-              <div key={project.id}>
-                {index > 0 && <ItemSeparator />}
+              <div key={project.id} className="mb-2">
                 <Item variant="outline" size="default" asChild>
                   <Link to={`/dashboard/projects/${project.id}`}>
                     <ItemMedia variant="icon">

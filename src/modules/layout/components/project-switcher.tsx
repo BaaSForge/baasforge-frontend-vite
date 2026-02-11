@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown, FolderIcon, Plus, Check } from "lucide-react";
+import { useLocation, useParams, Link } from "react-router";
 
 import {
   DropdownMenu,
@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -18,22 +17,19 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useProjectQuery, useProjectsQuery } from "@/modules/project/queries";
+import { getSwitchProjectLink } from "@/modules/project/libs";
 
-export function ProjectSwitcher({
-  projects,
-}: {
-  projects: {
-    name: string;
-    logo: React.ElementType;
-    plan: string;
-  }[];
-}) {
+export function ProjectSwitcher() {
   const { isMobile } = useSidebar();
-  const [activeProject, setActiveProject] = React.useState(projects[0]);
 
-  if (!activeProject) {
-    return null;
-  }
+  const params = useParams();
+  const location = useLocation();
+
+  const projectIdParam = params.projectId;
+  const projectId = projectIdParam != null ? Number(projectIdParam) : undefined;
+  const { data: activeProject } = useProjectQuery(projectId);
+  const { data: projects } = useProjectsQuery();
 
   return (
     <SidebarMenu>
@@ -45,11 +41,11 @@ export function ProjectSwitcher({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <activeProject.logo className="size-4" />
+                <FolderIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{activeProject.name}</span>
-                <span className="truncate text-xs">{activeProject.plan}</span>
+                <span className="truncate font-medium">{activeProject?.name}</span>
+                <span className="truncate text-xs">{activeProject?.slug}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -63,25 +59,37 @@ export function ProjectSwitcher({
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Projects
             </DropdownMenuLabel>
-            {projects.map((project, index) => (
-              <DropdownMenuItem
-                key={project.name}
-                onClick={() => setActiveProject(project)}
-                className="gap-2 p-2"
-              >
-                <div className="flex size-6 items-center justify-center rounded-md border">
-                  <project.logo className="size-3.5 shrink-0" />
-                </div>
-                {project.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            ))}
+            {projects?.map((project, index) => {
+              const linkObj = getSwitchProjectLink(location, params, project.id);
+              const isActive = project.id === activeProject?.id;
+              return (
+                <DropdownMenuItem
+                  asChild
+                  key={project.name}
+                  className={`gap-2 p-2 ${isActive ? "bg-accent/60 text-accent-foreground font-semibold" : ""}`}
+                  aria-current={isActive ? "true" : undefined}
+                >
+                  <Link to={linkObj.pathname + linkObj.search}>
+                    <div className={`flex size-6 items-center justify-center rounded-md border ${isActive ? "border-accent bg-accent/30" : ""}`}>
+                      <FolderIcon className="size-4" />
+                    </div>
+                    {project.name}
+                    {isActive && (
+                      <Check className="ml-auto size-4 text-accent-foreground" />
+                    )}
+                    {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                <Plus className="size-4" />
-              </div>
-              <div className="text-muted-foreground font-medium">Add project</div>
+            <DropdownMenuItem asChild className="gap-2 p-2">
+              <Link to="/dashboard/projects/new">
+                <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Plus className="size-4" />
+                </div>
+                <div className="text-muted-foreground font-medium">Add project</div>
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
