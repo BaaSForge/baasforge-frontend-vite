@@ -48,12 +48,13 @@ export function ProjectSwitcher() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border"
             >
               <div
                 className={
                   cn(
-                    "bg-sidebar-secondary text-sidebar-secondary-foreground flex aspect-square size-8 items-center justify-center rounded-lg",
+                    "bg-sidebar-secondary text-sidebar-secondary-foreground flex",
+                    "aspect-square size-8 items-center justify-center rounded-lg",
                     hasActiveProject && "bg-sidebar-primary text-sidebar-primary-foreground",
                   )
                 }
@@ -80,7 +81,7 @@ export function ProjectSwitcher() {
                   </span>
                 )}
               </div>
-              <ChevronsUpDown className="ml-auto" />
+              {hasActiveProject && <ChevronsUpDown className="ml-auto" />}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
