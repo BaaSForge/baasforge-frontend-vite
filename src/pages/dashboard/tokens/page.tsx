@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -47,7 +48,7 @@ export default function DashboardTokensPage() {
   };
 
   return (
-    <section className="flex flex-1 flex-col gap-4">
+    <Container>
       <PageTitleBox
         title="Sessions & tokens"
         tools={
@@ -70,7 +71,8 @@ export default function DashboardTokensPage() {
           </Button>
         }
       />
-      <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 mx-4">
+      <Container.MainContent>
+        <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
         <div className="overflow-x-auto">
           {isLoading ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
@@ -113,7 +115,8 @@ export default function DashboardTokensPage() {
             </Table>
           )}
         </div>
-      </div>
-    </section>
+        </div>
+      </Container.MainContent>
+    </Container>
   );
 }

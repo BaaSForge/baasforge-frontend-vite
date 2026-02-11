@@ -1,7 +1,24 @@
+import { Container } from "@/components/page-container";
+import { PageTitleBox } from "@/components/page-title-box";
+import { SectionLinkCard } from "@/components/section-link-card";
+import { SectionTitle } from "@/components/section-title";
+import { KeyRoundIcon } from "lucide-react";
+
 export default function DashboardPage() {
   return (
-    <section className="flex flex-1 flex-col gap-4">
-      
-    </section>
+    <Container>
+      <PageTitleBox title="Dashboard" />
+      <Container.MainContent>
+        <SectionTitle>Account</SectionTitle>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <SectionLinkCard
+            to="/dashboard/tokens"
+            title="Sessions"
+            description="View and manage your active sessions and tokens."
+            icon={KeyRoundIcon}
+          />
+        </div>
+      </Container.MainContent>
+    </Container>
   );
 }

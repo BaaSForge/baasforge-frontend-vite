@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import {
   Item,
@@ -15,9 +16,9 @@ export default function ProjectsIndexPage() {
   const { data: projects = [], isLoading } = useProjectsQuery();
 
   return (
-    <section className="flex flex-1 flex-col gap-4">
+    <Container>
       <PageTitleBox title="Projects" />
-      <div className="px-4">
+      <Container.MainContent>
         {isLoading ? (
           <p className="text-muted-foreground py-8 text-center text-sm">
             Loading projects…
@@ -52,7 +53,7 @@ export default function ProjectsIndexPage() {
             ))}
           </ItemGroup>
         )}
-      </div>
-    </section>
+      </Container.MainContent>
+    </Container>
   );
 }

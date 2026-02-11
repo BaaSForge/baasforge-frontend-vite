@@ -1,6 +1,7 @@
 "use client";
 
 import { Link, Outlet, useLocation, useParams } from "react-router";
+import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectQuery } from "@/modules/project";
@@ -20,11 +21,12 @@ export default function ProjectSettingsLayout() {
   const basePath = `/dashboard/projects/${projectId}/settings`;
 
   return (
-    <section className="flex flex-1 flex-col gap-4">
+    <Container>
       <PageTitleBox
         title={project ? `Settings — ${project.name}` : "Project settings"}
       />
-      <Tabs value={tab} className="flex flex-col gap-4 mx-4">
+      <Container.MainContent>
+        <Tabs value={tab} className="flex flex-col gap-4">
         <TabsList className="w-fit">
           <TabsTrigger value="info" asChild>
             <Link to={`${basePath}/info`}>Project info</Link>
@@ -40,6 +42,7 @@ export default function ProjectSettingsLayout() {
           <Outlet />
         </TabsContent>
       </Tabs>
-    </section>
+      </Container.MainContent>
+    </Container>
   );
 }

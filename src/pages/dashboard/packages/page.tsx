@@ -1,6 +1,8 @@
 "use client";
 
+import { Container } from "@/components/page-container";
 import { PackageDescription } from "@/components/package-description";
+import { PageTitleBox } from "@/components/page-title-box";
 import {
   Card,
   CardContent,
@@ -36,8 +38,9 @@ export default function DashboardPackagesPage() {
   const purchasedSlugs = new Set(paidPackages.map((p) => p.slug));
 
   return (
-    <section className="flex flex-1 flex-col gap-4 p-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <Container>
+      <Container.MainContent>
+        <div className="py-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
           <p className="text-muted-foreground col-span-full py-12 text-center text-sm">
             Loading packages…
@@ -105,7 +108,8 @@ export default function DashboardPackagesPage() {
             );
           })
         )}
-      </div>
-    </section>
+        </div>
+      </Container.MainContent>
+    </Container>
   );
 }
