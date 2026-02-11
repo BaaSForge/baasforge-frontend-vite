@@ -4,6 +4,12 @@ import type { ProjectResponse, ProjectPatchRequest } from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
 
+export function getProjects(): Promise<ProjectResponse[]> {
+  return apiClient
+    .get<ApiResponse<ProjectResponse[]>>(PROJECTS_ENDPOINT)
+    .then((res) => res.data ?? []);
+}
+
 export function getProject(id: number): Promise<ProjectResponse> {
   return apiClient
     .get<ApiResponse<ProjectResponse>>(`${PROJECTS_ENDPOINT}/${id}`)

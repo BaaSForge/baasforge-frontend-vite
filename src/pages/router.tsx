@@ -19,6 +19,9 @@ const ProjectsIndexPage = lazy(() => import("./dashboard/projects/page"));
 const ProjectShellPage = lazy(
   () => import("./dashboard/projects/[projectId]/page")
 );
+const ProjectOverviewPage = lazy(
+  () => import("./dashboard/projects/[projectId]/project-overview-page")
+);
 const ProjectSettingsLayout = lazy(
   () => import("./dashboard/projects/[projectId]/settings/layout")
 );
@@ -93,6 +96,10 @@ export const router = createBrowserRouter([
                                 path: ":projectId",
                                 element: <ProjectShellPage />,
                                 children: [
+                                  {
+                                    index: true,
+                                    element: <ProjectOverviewPage />,
+                                  },
                                   {
                                     path: "settings",
                                     element: <ProjectSettingsLayout />,

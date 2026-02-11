@@ -11,6 +11,7 @@ export function usePatchProjectMutation(projectId: number) {
     mutationFn: (body: ProjectPatchRequest) => patchProject(projectId, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QueryKeys.projectDetail(projectId) });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
     },
   });
 }
@@ -23,6 +24,7 @@ export function useDeleteProjectMutation(projectId: number) {
     mutationFn: () => deleteProject(projectId),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(projectId) });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
       navigate("/dashboard", { replace: true });
     },
   });

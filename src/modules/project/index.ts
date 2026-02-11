@@ -1,5 +1,5 @@
-export { getProject, patchProject, deleteProject } from "./api";
-export { useProjectQuery } from "./queries";
+export { getProject, getProjects, patchProject, deleteProject } from "./api";
+export { useProjectQuery, useProjectsQuery } from "./queries";
 export {
   usePatchProjectMutation,
   useDeleteProjectMutation,
