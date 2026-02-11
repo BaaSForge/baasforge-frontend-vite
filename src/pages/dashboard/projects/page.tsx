@@ -46,9 +46,9 @@ export default function ProjectsIndexPage() {
             No projects yet. Create one to get started.
           </p>
         ) : (
-          <ItemGroup className="bg-card overflow-hidden">
-            {projects.map((project, index) => (
-              <div key={project.id} className="mb-2">
+          <ItemGroup className="overflow-hidden">
+            {projects.map((project) => (
+              <div key={project.id} className="mb-2 bg-card">
                 <Item variant="outline" size="default" asChild>
                   <Link to={`/dashboard/projects/${project.id}`}>
                     <ItemMedia variant="icon">
