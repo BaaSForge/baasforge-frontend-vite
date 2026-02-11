@@ -33,6 +33,8 @@ import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
 import type { PaymentResponse } from "@/modules/payment";
 import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
+import { TimeLeftLabel } from "@/components/time-left-label";
+import { getTimeLeft } from "@/utils/time";
 
 function PlatformIcon({ platform, className }: { platform: PlatformType; className?: string }) {
   if (platform === PlatformType.GITHUB) {
@@ -92,28 +94,42 @@ function getExpiryIndicatorClass(daysLeft: number): string {
   return "bg-primary";
 }
 
-function getDaysUntilExpiry(expiresAt: string | null): number | null {
-  if (!expiresAt) return null;
-  const now = new Date();
-  const expiry = new Date(expiresAt);
-  const days = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  return days;
-}
-
-function getNearestExpiringPayment(payments: PaymentResponse[]): {
+function getNearestExpiringPayment(
+  payments: PaymentResponse[]
+): {
   payment: PaymentResponse;
   daysLeft: number;
+  minutesLeft?: number;
+  hoursLeft?: number;
 } | null {
   const candidates = payments
-    .filter((p) => p.is_success && p.expires_at != null)
-    .map((p) => ({
-      payment: p,
-      daysLeft: getDaysUntilExpiry(p.expires_at) ?? Infinity,
-    }))
-    .filter(({ daysLeft }) => daysLeft >= 0 && daysLeft <= EXPIRY_WARNING_DAYS)
-    .sort((a, b) => a.daysLeft - b.daysLeft);
-  const first = candidates[0];
-  return first ? { payment: first.payment, daysLeft: first.daysLeft } : null;
+    .filter((p) => p.is_success && p.expires_at)
+    .map((p) => {
+      const info = getTimeLeft(p.expires_at);
+
+      if (info.type !== "active") return null;
+
+      return {
+        payment: p,
+        daysLeft: info.days,
+        hoursLeft: info.days === 0 ? info.hours : undefined,
+        minutesLeft: info.days === 0 ? info.minutes : undefined,
+      };
+    })
+    .filter(
+      (x): x is NonNullable<typeof x> =>
+        !!x &&
+        x.daysLeft >= 0 &&
+        x.daysLeft <= EXPIRY_WARNING_DAYS
+    )
+    .sort((a, b) => {
+      if (a.daysLeft === 0 && b.daysLeft === 0 && a.minutesLeft && b.minutesLeft) {
+        return a.minutesLeft - b.minutesLeft;
+      }
+      return a.daysLeft - b.daysLeft;
+    });
+
+  return candidates[0] ?? null;
 }
 
 export function NavUser() {
@@ -167,11 +183,7 @@ export function NavUser() {
               indicatorClassName={getExpiryIndicatorClass(nearestExpiring.daysLeft)}
             />
             <p className="text-muted-foreground mt-1 text-xs">
-              {nearestExpiring.daysLeft === 0
-                ? "Expires today"
-                : nearestExpiring.daysLeft === 1
-                  ? "1 day left"
-                  : `${nearestExpiring.daysLeft} days left`}
+              <TimeLeftLabel expiresAt={nearestExpiring.payment.expires_at} />
             </p>
           </div>
         )}

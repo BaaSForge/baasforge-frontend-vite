@@ -14,13 +14,7 @@ import {
 } from "@/components/ui/table";
 import { useGetTokensQuery, useDeleteTokensMutation } from "@/modules/auth";
 import { Loader2Icon, Trash2Icon } from "lucide-react";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
+import { formatDateTimeMedium } from "@/utils/time";
 
 export default function DashboardTokensPage() {
   const { data: tokens = [], isLoading } = useGetTokensQuery();
@@ -111,8 +105,8 @@ export default function DashboardTokensPage() {
                         aria-label={`Select token ${token.id}`}
                       />
                     </TableCell>
-                    <TableCell>{formatDate(token.created_at)}</TableCell>
-                    <TableCell>{formatDate(token.expires_at)}</TableCell>
+                    <TableCell>{formatDateTimeMedium(token.created_at)}</TableCell>
+                    <TableCell>{formatDateTimeMedium(token.expires_at)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

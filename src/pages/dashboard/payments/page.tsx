@@ -12,7 +12,12 @@ import {
 import { usePaymentsQuery } from "@/modules/payment";
 import { Badge } from "@/components/ui/badge";
 import { TrialBadge } from "@/modules/payment/components/trial-badge";
-
+import { TimeLeftLabel } from "@/components/time-left-label";
+import {
+  getTimeLeft,
+  formatDateTime,
+  type TimeLeft,
+} from "@/utils/time";
 
 function formatAmount(amount: number) {
   return new Intl.NumberFormat(undefined, {
@@ -21,18 +26,13 @@ function formatAmount(amount: number) {
   }).format(amount);
 }
 
-type ExpiryInfo =
-  | { type: "no_date" }
-  | { type: "expired" }
-  | { type: "active"; days: number };
-
-function getExpiryInfo(expiresAt: string | null): ExpiryInfo {
-  if (!expiresAt) return { type: "no_date" };
-  const now = new Date();
-  const expiry = new Date(expiresAt);
-  const days = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  if (days < 0) return { type: "expired" };
-  return { type: "active", days };
+function getExpiryBadgeVariant(info: TimeLeft): "destructive" | "secondary" | null {
+  if (info.type === "no_date" || info.type === "expired") return "destructive";
+  if (info.type === "active") {
+    if (info.days >= 1) return info.days <= 3 ? "destructive" : "secondary";
+    return "destructive";
+  }
+  return null;
 }
 
 export default function DashboardPaymentsPage() {
@@ -64,7 +64,11 @@ export default function DashboardPaymentsPage() {
               </TableHeader>
               <TableBody>
                 {payments.map((payment) => {
-                  const expiry = getExpiryInfo(payment.expires_at);
+                  const expiry = getTimeLeft(payment.expires_at);
+                  const expireTooltip = payment.expires_at
+                    ? `Expires at: ${formatDateTime(payment.expires_at)}`
+                    : "";
+                  const variant = getExpiryBadgeVariant(expiry);
                   return (
                     <TableRow key={payment.id}>
                       <TableCell className="font-medium">
@@ -105,23 +109,19 @@ export default function DashboardPaymentsPage() {
                             No expiry
                           </span>
                         )}
-                        {expiry.type === "expired" && (
-                          <Badge variant="destructive" className="text-xs">
-                            Expired
-                          </Badge>
-                        )}
-                        {expiry.type === "active" && (
-                          <Badge
-                            variant={expiry.days <= 3 ? "destructive" : "secondary"}
-                            className="text-xs"
-                          >
-                            {expiry.days === 0
-                              ? "Expires today"
-                              : expiry.days === 1
-                                ? "1 day left"
-                                : `${expiry.days} days left`}
-                          </Badge>
-                        )}
+                        {(expiry.type === "expired" || expiry.type === "active") && (
+                            <Badge
+                              variant={
+                                variant === "destructive"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                              className="text-xs"
+                              title={expireTooltip}
+                            >
+                              <TimeLeftLabel expiresAt={payment.expires_at} />
+                            </Badge>
+                          )}
                       </TableCell>
                     </TableRow>
                   );
