@@ -6,7 +6,7 @@ import {
   Package,
   Sparkles,
 } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 
 import { cn } from "@/lib/utils";
 
@@ -30,7 +30,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
@@ -39,6 +38,9 @@ import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
 import { TimeLeftLabel } from "@/components/time-left-label";
 import { getTimeLeft } from "@/utils/time";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { useUpdateEffect } from "@/hooks/use-updated";
+import { useEffect } from "react";
+import { usePrevious } from "@/hooks/use-previous";
 
 function PlatformIcon({ platform, className }: { platform: PlatformType; className?: string }) {
   if (platform === PlatformType.GITHUB) {
@@ -146,7 +148,8 @@ function hasAnyActivePayment(payments: PaymentResponse[]): boolean {
 }
 
 export function NavUser() {
-  const { isMobile, open } = useSidebar();
+  const { isMobile, open, openMobile, setOpenMobile } = useSidebar();
+  const previousOpenMobile = usePrevious(openMobile);
   const { user, isLoading, logout } = useAuth();
   const { data: packages = [] } = usePackagesQuery();
   const { data: paidData } = usePaidPackagesQuery();
@@ -159,6 +162,14 @@ export function NavUser() {
     .filter((p) => (p.tier > largestTier && !p.is_trial))
     .sort((a, b) => a.tier - b.tier)[0];
   const hasMaxTier = !nextTierPackage;
+  const location = useLocation();
+
+  useUpdateEffect(() => {
+    if (previousOpenMobile !== openMobile && openMobile) {
+      return;
+    }
+    setOpenMobile(false);
+  }, [location.pathname, setOpenMobile, openMobile, previousOpenMobile]);
 
   if (isLoading) {
     return (
