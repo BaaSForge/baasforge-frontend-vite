@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ChevronRight, Folder, Settings2 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
@@ -7,6 +8,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
@@ -15,6 +23,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const MAIN_NAV_ITEMS = [
@@ -45,6 +54,8 @@ function isPathUnderItem(pathname: string, itemUrl: string): boolean {
 
 export function NavMain() {
   const { pathname } = useLocation();
+  const { open, isMobile } = useSidebar();
+  const isCollapsed = !open;
 
   return (
     <SidebarGroup>
@@ -54,6 +65,47 @@ export function NavMain() {
           const isParentOpen = item.items?.some((sub) =>
             isPathUnderItem(pathname, sub.url)
           ) ?? false;
+
+          if (isCollapsed && item.items?.length) {
+            return (
+              <DropdownMenu key={item.title} modal={false}>
+                <SidebarMenuItem>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton>
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side={isMobile ? "bottom" : "right"}
+                    align="start"
+                    sideOffset={8}
+                    className="min-w-48"
+                  >
+                    <DropdownMenuLabel>{item.title}</DropdownMenuLabel>
+                    {item.items.map((subItem) => {
+                      const isActive = pathname === subItem.url;
+                      return (
+                        <DropdownMenuItem key={subItem.title} asChild>
+                          {subItem.url.startsWith("/") ? (
+                            <Link
+                              to={subItem.url}
+                              className={isActive ? "bg-accent" : undefined}
+                            >
+                              {subItem.title}
+                            </Link>
+                          ) : (
+                            <a href={subItem.url}>{subItem.title}</a>
+                          )}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </SidebarMenuItem>
+              </DropdownMenu>
+            );
+          }
 
           return (
             <Collapsible

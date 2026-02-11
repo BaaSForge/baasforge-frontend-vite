@@ -1,10 +1,6 @@
 "use client";
 
 import * as React from "react";
-import {
-  Settings2,
-  Folder,
-} from "lucide-react";
 
 import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
