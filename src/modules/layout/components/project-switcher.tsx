@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronsUpDown, FolderIcon, Plus, Check } from "lucide-react";
+import {
+  ChevronsUpDown,
+  FolderIcon,
+  Plus,
+  Check,
+  Boxes,
+  MousePointerClick,
+} from "lucide-react";
 import { useLocation, useParams, Link } from "react-router";
 
 import {
@@ -19,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useProjectQuery, useProjectsQuery } from "@/modules/project/queries";
 import { getSwitchProjectLink } from "@/modules/project/libs";
+import { cn } from "@/lib/utils";
 
 export function ProjectSwitcher() {
   const { isMobile } = useSidebar();
@@ -31,21 +39,46 @@ export function ProjectSwitcher() {
   const { data: activeProject } = useProjectQuery(projectId);
   const { data: projects } = useProjectsQuery();
 
+  const hasActiveProject = !!activeProject?.id;
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <FolderIcon className="size-4" />
+              <div
+                className={
+                  cn(
+                    "bg-sidebar-secondary text-sidebar-secondary-foreground flex aspect-square size-8 items-center justify-center rounded-lg",
+                    hasActiveProject && "bg-sidebar-primary text-sidebar-primary-foreground",
+                  )
+                }
+              >
+                {hasActiveProject ? (
+                  <Boxes className="size-4" />
+                ) : (
+                  <MousePointerClick className="size-4 opacity-60" />
+                )}
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{activeProject?.name}</span>
-                <span className="truncate text-xs">{activeProject?.slug}</span>
+                {hasActiveProject ? (
+                  <>
+                    <span className="truncate font-medium">
+                      {activeProject?.name}
+                    </span>
+                    <span className="truncate text-xs">
+                      {activeProject?.slug}
+                    </span>
+                  </>
+                ) : (
+                  <span className="truncate font-medium text-muted-foreground">
+                    Select a project here
+                  </span>
+                )}
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -59,7 +92,7 @@ export function ProjectSwitcher() {
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Projects
             </DropdownMenuLabel>
-            {projects?.map((project, index) => {
+            {projects?.map((project) => {
               const linkObj = getSwitchProjectLink(location, params, project.id);
               const isActive = project.id === activeProject?.id;
               return (
@@ -88,7 +121,9 @@ export function ProjectSwitcher() {
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <Plus className="size-4" />
                 </div>
-                <div className="text-muted-foreground font-medium">Add project</div>
+                <div className="text-muted-foreground font-medium">
+                  Add project
+                </div>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

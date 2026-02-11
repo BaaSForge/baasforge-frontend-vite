@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ChevronRight, Folder, Settings2 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
