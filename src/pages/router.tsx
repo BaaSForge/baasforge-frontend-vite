@@ -16,6 +16,7 @@ const DashboardPaymentsPage = lazy(() => import("./dashboard/payments/page"));
 const DashboardTokensPage = lazy(() => import("./dashboard/tokens/page"));
 const ShellLayout = lazy(() => import("./dashboard/shell-layout"));
 const ProjectsIndexPage = lazy(() => import("./dashboard/projects/page"));
+const CreateProjectPage = lazy(() => import("./dashboard/projects/new/page"));
 const ProjectShellPage = lazy(
   () => import("./dashboard/projects/[projectId]/page")
 );
@@ -91,6 +92,10 @@ export const router = createBrowserRouter([
                               {
                                 index: true,
                                 element: <ProjectsIndexPage />,
+                              },
+                              {
+                                path: "new",
+                                element: <CreateProjectPage />,
                               },
                               {
                                 path: ":projectId",

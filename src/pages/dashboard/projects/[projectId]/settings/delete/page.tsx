@@ -59,7 +59,7 @@ export default function ProjectSettingsDeletePage() {
   }
 
   return (
-    <div className="rounded-xl border border-destructive/50 bg-card p-4">
+    <div className="rounded-xl border border-destructive/50 bg-card p-4 max-w-lg">
       <div className="flex flex-col gap-4">
         <div>
           <h3 className="text-destructive font-semibold">Danger zone</h3>

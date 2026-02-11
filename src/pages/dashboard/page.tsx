@@ -2,7 +2,7 @@ import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { SectionLinkCard } from "@/components/section-link-card";
 import { SectionTitle } from "@/components/section-title";
-import { FolderIcon, KeyRoundIcon } from "lucide-react";
+import { FolderIcon, FolderPlusIcon, KeyRoundIcon } from "lucide-react";
 
 export default function DashboardPage() {
   return (
@@ -16,6 +16,12 @@ export default function DashboardPage() {
             title="List Projects"
             description="View and manage your projects."
             icon={FolderIcon}
+          />
+          <SectionLinkCard
+            to="/dashboard/projects/new"
+            title="Create Project"
+            description="Create a new project."
+            icon={FolderPlusIcon}
           />
         </div>
         <SectionTitle>Account</SectionTitle>

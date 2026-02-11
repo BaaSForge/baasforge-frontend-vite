@@ -50,7 +50,7 @@ export default function ProjectSettingsInfoPage() {
   const isDirty = name.trim() !== (project.name ?? "");
 
   return (
-    <div className="rounded-xl border bg-card p-4">
+    <div className="rounded-xl border bg-card p-4 max-w-lg">
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <FieldGroup>
           <Field>

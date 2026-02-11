@@ -39,6 +39,7 @@ const data = {
       icon: Folder,
       items: [
         { title: "List Projects", url: "/dashboard/projects" },
+        { title: "Create Project", url: "/dashboard/projects/new" },
       ],
     },
     {

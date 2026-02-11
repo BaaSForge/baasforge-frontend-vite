@@ -1,7 +1,7 @@
 "use client";
 
 import { Settings } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 
 import {
   SidebarGroup,
@@ -9,17 +9,23 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  // useSidebar,
 } from "@/components/ui/sidebar";
+import { useProjectQuery } from "@/modules/project/queries";
 
 const PROJECT_SETTINGS_ID = "1";
 
 export function NavProjects() {
-  // const { isMobile } = useSidebar();
+  const { projectId: projectIdParam } = useParams();
+  const projectId = projectIdParam != null ? Number(projectIdParam) : undefined;
+  const { data: project } = useProjectQuery(projectId);
+
+  if (!project) {
+    return null;
+  }
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Project</SidebarGroupLabel>
+      <SidebarGroupLabel>{project.name} Area</SidebarGroupLabel>
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>

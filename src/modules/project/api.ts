@@ -1,8 +1,19 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiResponse } from "@/lib/api-client";
-import type { ProjectResponse, ProjectPatchRequest } from "./types";
+import type { ProjectResponse, ProjectRequest, ProjectPatchRequest } from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
+
+export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
+  return apiClient
+    .post<ApiResponse<ProjectResponse>>(PROJECTS_ENDPOINT, body)
+    .then((res) => {
+      if (!res.data) {
+        throw new Error("Project response missing data");
+      }
+      return res.data;
+    });
+}
 
 export function getProjects(): Promise<ProjectResponse[]> {
   return apiClient

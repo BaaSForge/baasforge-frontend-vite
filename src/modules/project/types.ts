@@ -10,6 +10,13 @@ export interface ProjectResponse {
   language: LanguageType;
 }
 
+export interface ProjectRequest {
+  framework: FrameworkType;
+  name: string;
+  slug: string;
+  language: LanguageType;
+}
+
 export interface ProjectPatchRequest {
   name: string;
 }
