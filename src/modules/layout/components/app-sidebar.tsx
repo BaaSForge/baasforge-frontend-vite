@@ -34,19 +34,19 @@ const data = {
   ],
   navMain: [
     {
-      title: "Account",
-      url: "#",
-      icon: Settings2,
-      items: [
-        { title: "Sessions", url: "/dashboard/tokens" },
-      ],
-    },
-    {
       title: "Projects",
       url: "#",
       icon: Folder,
       items: [
         { title: "List Projects", url: "/dashboard/projects" },
+      ],
+    },
+    {
+      title: "Account",
+      url: "#",
+      icon: Settings2,
+      items: [
+        { title: "Sessions", url: "/dashboard/tokens" },
       ],
     },
   ],
