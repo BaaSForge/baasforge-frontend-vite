@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { createBrowserRouter, Outlet } from "react-router";
+import { createBrowserRouter, Navigate, Outlet } from "react-router";
 import { AuthClosedGuard } from "@/modules/auth/components/auth-closed-guard";
 import { AuthOpenGuard } from "@/modules/auth/components/auth-open-guard";
 import { AuthLayout, AuthProvider } from "@/modules/auth";
@@ -14,6 +14,20 @@ const DashboardPage = lazy(() => import("./dashboard/page"));
 const DashboardPackagesPage = lazy(() => import("./dashboard/packages/page"));
 const DashboardPaymentsPage = lazy(() => import("./dashboard/payments/page"));
 const DashboardTokensPage = lazy(() => import("./dashboard/tokens/page"));
+const ShellLayout = lazy(() => import("./dashboard/shell-layout"));
+const ProjectsIndexPage = lazy(() => import("./dashboard/projects/page"));
+const ProjectShellPage = lazy(
+  () => import("./dashboard/projects/[projectId]/page")
+);
+const ProjectSettingsLayout = lazy(
+  () => import("./dashboard/projects/[projectId]/settings/layout")
+);
+const ProjectSettingsInfoPage = lazy(
+  () => import("./dashboard/projects/[projectId]/settings/info/page")
+);
+const ProjectSettingsDeletePage = lazy(
+  () => import("./dashboard/projects/[projectId]/settings/delete/page")
+);
 const HomePage = lazy(() => import("./home/page"));
 const LoginPage = lazy(() => import("./login/page"));
 
@@ -66,6 +80,42 @@ export const router = createBrowserRouter([
                           {
                             path: "tokens",
                             element: <DashboardTokensPage />,
+                          },
+                          {
+                            path: "projects",
+                            element: <ShellLayout />,
+                            children: [
+                              {
+                                index: true,
+                                element: <ProjectsIndexPage />,
+                              },
+                              {
+                                path: ":projectId",
+                                element: <ProjectShellPage />,
+                                children: [
+                                  {
+                                    path: "settings",
+                                    element: <ProjectSettingsLayout />,
+                                    children: [
+                                      {
+                                        index: true,
+                                        element: (
+                                          <Navigate to="info" replace />
+                                        ),
+                                      },
+                                      {
+                                        path: "info",
+                                        element: <ProjectSettingsInfoPage />,
+                                      },
+                                      {
+                                        path: "delete",
+                                        element: <ProjectSettingsDeletePage />,
+                                      },
+                                    ],
+                                  },
+                                ],
+                              },
+                            ],
                           },
                         ],
                       },

@@ -2,16 +2,8 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
   Settings2,
-  SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
@@ -41,18 +33,13 @@ const data = {
   ],
   navMain: [
     {
-      title: "Settings",
+      title: "Account",
       url: "#",
       icon: Settings2,
       items: [
-        { title: "Sessions & tokens", url: "/dashboard/tokens" },
+        { title: "Sessions", url: "/dashboard/tokens" },
       ],
     },
-  ],
-  projectLinks: [
-    { name: "Design Engineering", url: "#", icon: Frame },
-    { name: "Sales & Marketing", url: "#", icon: PieChart },
-    { name: "Travel", url: "#", icon: Map },
   ],
 };
 
@@ -65,7 +52,7 @@ export function AppSidebar({
         <ProjectSwitcher projects={data.projects} />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.projectLinks} />
+        <NavProjects />
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>

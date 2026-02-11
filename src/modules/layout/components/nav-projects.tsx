@@ -1,8 +1,7 @@
 "use client";
 
-import {
-  Settings,
-} from "lucide-react";
+import { Settings } from "lucide-react";
+import { Link } from "react-router";
 
 import {
   SidebarGroup,
@@ -13,6 +12,8 @@ import {
   // useSidebar,
 } from "@/components/ui/sidebar";
 
+const PROJECT_SETTINGS_ID = "1";
+
 export function NavProjects() {
   // const { isMobile } = useSidebar();
 
@@ -22,10 +23,10 @@ export function NavProjects() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href="#">
+            <Link to={`/dashboard/projects/${PROJECT_SETTINGS_ID}/settings`}>
               <Settings />
               <span>Settings</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
           {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -192,23 +192,23 @@ export function NavUser() {
           >
             <Card
               className={cn(
-                "border-0 bg-blue-50 shadow-none transition-colors duration-200 py-0",
-                "hover:bg-blue-100"
+                "border-0 bg-blue-50 dark:bg-blue-950/60 shadow-none transition-colors duration-200 py-0",
+                "hover:bg-blue-100 dark:hover:bg-blue-900/80"
               )}
             >
               <CardContent className="flex flex-row items-start gap-3 p-4">
-                <span className="bg-blue-500/15 text-blue-600 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                <span className="bg-blue-500/15 dark:bg-blue-500/25 text-blue-600 dark:text-blue-300 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
                   <Sparkles className="size-5" />
                 </span>
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <p className="text-blue-700 text-sm font-semibold leading-snug">
+                  <p className="text-blue-700 dark:text-blue-200 text-sm font-semibold leading-snug">
                     Unlock all features
                   </p>
-                  <p className="text-blue-900/70 text-xs leading-relaxed">
+                  <p className="text-blue-900/70 dark:text-blue-300/80 text-xs leading-relaxed">
                     Buy a package to get the full experience.
                   </p>
                   {canPurchaseTrial && (
-                    <p className="text-blue-500 text-xs font-medium">
+                    <p className="text-blue-500 dark:text-blue-400 text-xs font-medium">
                       Start with a free trial →
                     </p>
                   )}
