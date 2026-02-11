@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   GalleryVerticalEnd,
   Settings2,
+  Folder,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
@@ -38,6 +39,14 @@ const data = {
       icon: Settings2,
       items: [
         { title: "Sessions", url: "/dashboard/tokens" },
+      ],
+    },
+    {
+      title: "Projects",
+      url: "#",
+      icon: Folder,
+      items: [
+        { title: "List Projects", url: "/dashboard/projects" },
       ],
     },
   ],

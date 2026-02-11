@@ -72,11 +72,6 @@ export function AppShell() {
           <SidebarTrigger />
           <Breadcrumb>
             <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
               {segments.map((segment, i) => {
                 const path = "/" + segments.slice(0, i + 1).join("/");
                 const label = getBreadcrumbLabel(segment);
