@@ -59,7 +59,10 @@ export function NavProjects() {
           <SidebarMenuSub className="max-h-60 overflow-y-auto">
             {visibleSessions.map((chatSession) => {
               const url = `/dashboard/projects/${projectId}/conversations/${chatSession.id}`;
-              const isActive = pathname.startsWith(url);
+
+              // The trailing slash is important to match the end of the pathname correctly
+              // Otherwise, /conversations/1 will match to /conversations/10
+              const isActive = `${pathname}/`.startsWith(`${url}/`);
 
               return (
                 <SidebarMenuSubItem key={chatSession.id}>
