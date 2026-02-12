@@ -12,6 +12,8 @@ export interface BreadcrumbState {
   setStickyBarVisible: (visible: boolean) => void;
   stickyBarHeight: number;
   setStickyBarHeight: (height: number) => void;
+  pageTitleBoxHeight: number;
+  setPageTitleBoxHeight: (height: number) => void;
   stickyBarTransitionDurationMs: number;
   stickyBarTransitionEasing: string;
 }
@@ -32,6 +34,8 @@ const breadcrumbStore = createStore<BreadcrumbState>((set) => ({
   setStickyBarVisible: (visible) => set({ stickyBarVisible: visible }),
   stickyBarHeight: 0,
   setStickyBarHeight: (height) => set({ stickyBarHeight: height }),
+  pageTitleBoxHeight: 0,
+  setPageTitleBoxHeight: (height) => set({ pageTitleBoxHeight: height }),
   stickyBarTransitionDurationMs: STICKY_BAR_TRANSITION_DURATION_MS,
   stickyBarTransitionEasing: STICKY_BAR_TRANSITION_EASING,
 }));
@@ -55,6 +59,10 @@ export function useStickyBreadcrumbBarVisible(): boolean {
 
 export function useStickyBreadcrumbBarHeight(): number {
   return useStore(breadcrumbStore, (s) => s.stickyBarHeight);
+}
+
+export function usePageTitleBoxHeight(): number {
+  return useStore(breadcrumbStore, (s) => s.pageTitleBoxHeight);
 }
 
 export function useStickyBreadcrumbBarState() {
