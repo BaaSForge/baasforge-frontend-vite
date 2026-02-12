@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { QueryKeys } from "@/constants/query-keys";
-import { getProject, getProjects } from "./api";
+import { getProject, getProjects, getProjectUnits, getDraftUnits } from "./api";
 
 export function useProjectsQuery() {
   return useQuery({
@@ -14,5 +14,28 @@ export function useProjectQuery(projectId: number | undefined) {
     queryKey: QueryKeys.projectDetail(projectId ?? 0),
     queryFn: () => getProject(projectId!),
     enabled: projectId != null && projectId > 0,
+  });
+}
+
+export function useProjectUnitsQuery(projectId: number | undefined) {
+  return useQuery({
+    queryKey: QueryKeys.projectUnits(projectId ?? 0),
+    queryFn: () => getProjectUnits(projectId!),
+    enabled: projectId != null && projectId > 0,
+  });
+}
+
+export function useProjectDraftUnitsQuery(
+  projectId: number | undefined,
+  chatSessionId: number | undefined
+) {
+  return useQuery({
+    queryKey: QueryKeys.projectDraftUnits(projectId ?? 0, chatSessionId ?? 0),
+    queryFn: () => getDraftUnits(projectId!, chatSessionId!),
+    enabled:
+      projectId != null &&
+      projectId > 0 &&
+      chatSessionId != null &&
+      chatSessionId > 0,
   });
 }

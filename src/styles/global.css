@@ -178,6 +178,17 @@ input[type="search"]::-webkit-search-cancel-button {
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
+@keyframes status-pulse-ring {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

@@ -6,6 +6,9 @@ export const QueryKeys = {
   PAYMENT_PACKAGES: ["payment", "packages"] as const,
   PAYMENT_PAID_PACKAGES: ["payment", "paid-packages"] as const,
   projectDetail: (id: number) => ["project", "detail", id] as const,
+  projectUnits: (projectId: number) => ["project", "units", projectId] as const,
+  projectDraftUnits: (projectId: number, chatSessionId: number) =>
+    ["project", "draft-units", projectId, chatSessionId] as const,
   PROJECTS_LIST: ["project", "list"] as const,
   projectChatSessionList: (projectId: number) => ["chat", "sessions", "list", projectId] as const,
 };
