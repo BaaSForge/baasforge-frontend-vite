@@ -10,39 +10,76 @@ interface FadedScrollAreaProps {
   className?: string;
 }
 
+function getScrollFlags(el: HTMLDivElement) {
+  const { scrollTop, scrollHeight, clientHeight } = el;
+  const canScroll = scrollHeight > clientHeight;
+  return {
+    canScroll,
+    showTop: canScroll && scrollTop > SCROLL_END_THRESHOLD,
+    showBottom:
+      canScroll && scrollTop + clientHeight < scrollHeight - SCROLL_END_THRESHOLD,
+  };
+}
+
 export function FadedScrollArea({ children, className }: FadedScrollAreaProps) {
   const viewportRef = React.useRef<HTMLDivElement>(null);
-  const [showTopFade, setShowTopFade] = React.useState(false);
-  const [showBottomFade, setShowBottomFade] = React.useState(true);
+  const topFadeRef = React.useRef<HTMLDivElement>(null);
+  const bottomFadeRef = React.useRef<HTMLDivElement>(null);
+  const rafRef = React.useRef<number | null>(null);
+  const lastRef = React.useRef({ canScroll: false, showTop: false, showBottom: true });
+  const [canScroll, setCanScroll] = React.useState(false);
 
-  const updateFaders = React.useCallback(() => {
+  const flush = React.useCallback(() => {
     const el = viewportRef.current;
     if (!el) return;
-    const { scrollTop, scrollHeight, clientHeight } = el;
-    const canScroll = scrollHeight > clientHeight;
-    setShowTopFade(canScroll && scrollTop > SCROLL_END_THRESHOLD);
-    setShowBottomFade(
-      canScroll && scrollTop + clientHeight < scrollHeight - SCROLL_END_THRESHOLD
-    );
+    const next = getScrollFlags(el);
+    const prev = lastRef.current;
+    const unchanged =
+      prev.canScroll === next.canScroll &&
+      prev.showTop === next.showTop &&
+      prev.showBottom === next.showBottom;
+    lastRef.current = next;
+    if (unchanged) return;
+
+    if (prev.canScroll !== next.canScroll) setCanScroll(next.canScroll);
+    if (topFadeRef.current)
+      topFadeRef.current.style.opacity = next.showTop ? "1" : "0";
+    if (bottomFadeRef.current)
+      bottomFadeRef.current.style.opacity = next.showBottom ? "1" : "0";
   }, []);
+
+  const onScroll = React.useCallback(() => {
+    if (rafRef.current != null) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      flush();
+    });
+  }, [flush]);
 
   React.useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
-    updateFaders();
-    const ro = new ResizeObserver(updateFaders);
+    flush();
+    const ro = new ResizeObserver(flush);
     ro.observe(el);
-    return () => ro.disconnect();
-  }, [updateFaders, children]);
+    return () => {
+      ro.disconnect();
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [flush]);
 
   return (
     <ScrollAreaPrimitive.Root
       type="always"
-      className={cn("relative max-h-[50vh]", className)}
+      className={cn(
+        "relative max-h-[50vh]",
+        canScroll && "pr-4",
+        className
+      )}
     >
       <ScrollAreaPrimitive.Viewport
         ref={viewportRef}
-        onScroll={updateFaders}
+        onScroll={onScroll}
         className="focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
       >
         {children}
@@ -50,17 +87,15 @@ export function FadedScrollArea({ children, className }: FadedScrollAreaProps) {
       <ScrollBar />
       <ScrollAreaPrimitive.Corner />
       <div
-        className={cn(
-          "pointer-events-none absolute top-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-background to-transparent transition-opacity duration-200",
-          showTopFade ? "opacity-100" : "opacity-0"
-        )}
+        ref={topFadeRef}
+        className="pointer-events-none absolute top-0 left-0 right-4 z-10 h-8 bg-gradient-to-b from-background to-transparent transition-opacity duration-150"
+        style={{ opacity: 0 }}
         aria-hidden
       />
       <div
-        className={cn(
-          "pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-8 bg-gradient-to-t from-background to-transparent transition-opacity duration-300",
-          showBottomFade ? "opacity-100" : "opacity-0"
-        )}
+        ref={bottomFadeRef}
+        className="pointer-events-none absolute bottom-0 left-0 right-4 z-10 h-8 bg-gradient-to-t from-background to-transparent transition-opacity duration-150"
+        style={{ opacity: 1 }}
         aria-hidden
       />
     </ScrollAreaPrimitive.Root>

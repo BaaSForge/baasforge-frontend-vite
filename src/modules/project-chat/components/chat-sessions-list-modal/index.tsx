@@ -35,7 +35,7 @@ function SessionItem({
   const url = `/dashboard/projects/${projectId}/conversations/${session.id}`;
 
   return (
-    <Item asChild size="sm">
+    <Item asChild size="default" className="border border-border rounded-md">
       <Link to={url} onClick={onNavigate}>
         <ItemMedia variant="icon">
           <MessageSquare className="size-4" />
@@ -77,7 +77,7 @@ export function ChatSessionsListModal() {
               No chat sessions yet.
             </div>
           ) : projectId != null ? (
-            <ItemGroup className="gap-1">
+            <ItemGroup className="gap-2">
               {sessions.map((session) => (
                 <SessionItem
                   key={session.id}
