@@ -11,7 +11,7 @@ export function PageTitleBox({ title, tools, className }: PageTitleBoxProps) {
   return (
     <div
       className={cn(
-        "w-full border-b bg-transparent px-4 py-4 flex flex-row items-center justify-between gap-4",
+        "w-full border-b bg-transparent px-4 py-4 flex flex-row items-center justify-between gap-4 h-14",
         className
       )}
     >

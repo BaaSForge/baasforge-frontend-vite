@@ -1,10 +1,19 @@
 import { createStore, useStore } from "zustand";
 
+export const STICKY_BAR_TRANSITION_DURATION_MS = 200;
+export const STICKY_BAR_TRANSITION_EASING = "ease-out";
+
 export interface BreadcrumbState {
   segmentLabels: Record<string, string>;
   setSegmentLabel: (paramName: string, label: string) => void;
   clearSegmentLabel: (paramName: string) => void;
   clearAllSegmentLabels: () => void;
+  stickyBarVisible: boolean;
+  setStickyBarVisible: (visible: boolean) => void;
+  stickyBarHeight: number;
+  setStickyBarHeight: (height: number) => void;
+  stickyBarTransitionDurationMs: number;
+  stickyBarTransitionEasing: string;
 }
 
 const breadcrumbStore = createStore<BreadcrumbState>((set) => ({
@@ -19,6 +28,12 @@ const breadcrumbStore = createStore<BreadcrumbState>((set) => ({
       return { segmentLabels: rest };
     }),
   clearAllSegmentLabels: () => set({ segmentLabels: {} }),
+  stickyBarVisible: true,
+  setStickyBarVisible: (visible) => set({ stickyBarVisible: visible }),
+  stickyBarHeight: 0,
+  setStickyBarHeight: (height) => set({ stickyBarHeight: height }),
+  stickyBarTransitionDurationMs: STICKY_BAR_TRANSITION_DURATION_MS,
+  stickyBarTransitionEasing: STICKY_BAR_TRANSITION_EASING,
 }));
 
 export { breadcrumbStore };
@@ -32,4 +47,37 @@ export function useBreadcrumbActions() {
   const clearSegmentLabel = useStore(breadcrumbStore, (s) => s.clearSegmentLabel);
   const clearAllSegmentLabels = useStore(breadcrumbStore, (s) => s.clearAllSegmentLabels);
   return { setSegmentLabel, clearSegmentLabel, clearAllSegmentLabels };
+}
+
+export function useStickyBreadcrumbBarVisible(): boolean {
+  return useStore(breadcrumbStore, (s) => s.stickyBarVisible);
+}
+
+export function useStickyBreadcrumbBarHeight(): number {
+  return useStore(breadcrumbStore, (s) => s.stickyBarHeight);
+}
+
+export function useStickyBreadcrumbBarState() {
+  return useStore(breadcrumbStore, (s) => ({
+    stickyBarVisible: s.stickyBarVisible,
+    stickyBarHeight: s.stickyBarHeight,
+    setStickyBarVisible: s.setStickyBarVisible,
+    setStickyBarHeight: s.setStickyBarHeight,
+  }));
+}
+
+export function useStickyBreadcrumbBarTransition(): string {
+  return useStore(breadcrumbStore, (s) =>
+    `${s.stickyBarTransitionDurationMs}ms ${s.stickyBarTransitionEasing}`
+  );
+}
+
+export function useStickyBreadcrumbBarTransitionConfig(): {
+  durationMs: number;
+  easing: string;
+} {
+  return useStore(breadcrumbStore, (s) => ({
+    durationMs: s.stickyBarTransitionDurationMs,
+    easing: s.stickyBarTransitionEasing,
+  }));
 }

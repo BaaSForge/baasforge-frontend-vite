@@ -32,6 +32,9 @@ const ProjectSettingsInfoPage = lazy(
 const ProjectSettingsDeletePage = lazy(
   () => import("./dashboard/projects/[projectId]/settings/delete/page")
 );
+const ProjectConversationsPage = lazy(
+  () => import("./dashboard/projects/[projectId]/conversations/page")
+);
 const HomePage = lazy(() => import("./home/page"));
 const LoginPage = lazy(() => import("./login/page"));
 
@@ -122,6 +125,19 @@ export const router = createBrowserRouter([
                                       {
                                         path: "delete",
                                         element: <ProjectSettingsDeletePage />,
+                                      },
+                                    ],
+                                  },
+                                  {
+                                    path: "conversations",
+                                    children: [
+                                      {
+                                        index: true,
+                                        element: <ProjectConversationsPage />,
+                                      },
+                                      {
+                                        path: ":conversationId",
+                                        element: <ProjectConversationsPage />,
                                       },
                                     ],
                                   },
