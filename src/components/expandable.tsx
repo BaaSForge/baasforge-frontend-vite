@@ -15,6 +15,22 @@ export interface ExpandableProps {
   className?: string;
 }
 
+// Full class names so Tailwind JIT includes them (dynamic `line-clamp-${n}` is purged)
+const LINE_CLAMP_CLASSES: Record<number, string> = {
+  1: "line-clamp-1",
+  2: "line-clamp-2",
+  3: "line-clamp-3",
+  4: "line-clamp-4",
+  5: "line-clamp-5",
+  6: "line-clamp-6",
+  7: "line-clamp-7",
+  8: "line-clamp-8",
+  9: "line-clamp-9",
+  10: "line-clamp-10",
+  11: "line-clamp-11",
+  12: "line-clamp-12",
+};
+
 export function Expandable({
   children,
   trigger,
@@ -24,7 +40,7 @@ export function Expandable({
   const [open, setOpen] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const clampClass = `line-clamp-${maxLines}`;
+  const clampClass = LINE_CLAMP_CLASSES[maxLines] ?? LINE_CLAMP_CLASSES[5];
 
   useEffect(() => {
     if (open) return;
@@ -45,10 +61,7 @@ export function Expandable({
   return (
     <div
       ref={contentRef}
-      className={cn(
-        !open && clampClass,
-        className
-      )}
+      className={cn(!open && clampClass, className)}
     >
       {children}
       {trigger?.(open, setOpen, isOverflowing)}
