@@ -8,6 +8,7 @@ const SCROLL_END_THRESHOLD = 2;
 interface FadedScrollAreaProps {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 function getScrollFlags(el: HTMLDivElement) {
@@ -21,7 +22,7 @@ function getScrollFlags(el: HTMLDivElement) {
   };
 }
 
-export function FadedScrollArea({ children, className }: FadedScrollAreaProps) {
+export function FadedScrollArea({ children, className, style }: FadedScrollAreaProps) {
   const viewportRef = React.useRef<HTMLDivElement>(null);
   const topFadeRef = React.useRef<HTMLDivElement>(null);
   const bottomFadeRef = React.useRef<HTMLDivElement>(null);
@@ -76,6 +77,7 @@ export function FadedScrollArea({ children, className }: FadedScrollAreaProps) {
         canScroll && "pr-4",
         className
       )}
+      style={style}
     >
       <ScrollAreaPrimitive.Viewport
         ref={viewportRef}

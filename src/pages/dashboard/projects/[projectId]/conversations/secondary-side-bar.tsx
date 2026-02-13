@@ -2,6 +2,7 @@ import { useParams } from "react-router";
 import { UnitCardCompact, useProjectDraftUnitsQuery } from "@/modules/project";
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
+import { FadedScrollArea } from "@/components/faded-scroll-area";
 
 export function SecondarySideBar() {
   const { projectId, conversationId } = useParams<{
@@ -51,7 +52,7 @@ export function SecondarySideBar() {
   }
 
   return (
-    <div className="flex flex-col gap-2 p-2">
+    <div className="flex flex-col gap-2 p-2 mt-1.5">
       <div className="flex items-center justify-between mb-2">
         <SectionTitle className="mb-0">Draft units</SectionTitle>
         <Button variant="outline" size="xs">
@@ -59,11 +60,11 @@ export function SecondarySideBar() {
           all units
         </Button>
       </div>
-      <div className="flex flex-col gap-2">
+      <FadedScrollArea className="flex flex-col gap-2 max-h-none h-full">
         {draftUnits.map((unit) => (
-          <UnitCardCompact key={unit.id} unit={unit} />
+          <UnitCardCompact className="mb-2" key={unit.id} unit={unit} />
         ))}
-      </div>
+      </FadedScrollArea>
     </div>
   );
 }

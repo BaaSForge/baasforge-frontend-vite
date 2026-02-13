@@ -4,7 +4,6 @@ import { PageTitleBox } from "@/components/page-title-box";
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarInset,
   SidebarProvider,
   useSidebar,
@@ -56,10 +55,9 @@ export default function ProjectConversationsPage() {
             transition: `top ${stickyBarTransition}`,
           }}
         >
-          <SidebarHeader>
+          <SidebarContent>
             <SecondarySideBar />
-          </SidebarHeader>
-          <SidebarContent />
+          </SidebarContent>
         </Sidebar>
       </SidebarProvider>
     </Container>

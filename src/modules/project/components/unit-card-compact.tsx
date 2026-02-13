@@ -1,8 +1,13 @@
-import { Card, CardAction, CardDescription } from "@/components/ui/card";
+"use client";
+
+import { Card, CardAction } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ChevronDownIcon } from "lucide-react";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import type { ProjectUnitResponse, ProjectUnitType } from "../types";
 import ReactMarkdown from "react-markdown";
+import { Expandable } from "@/components/expandable";
+import { ToggleButton } from "@/components/expandable";
 
 function UnitStatusChip({ isDraft }: { isDraft: boolean }) {
   const baseClass = "inline-flex items-center gap-1 text-[10px] text-muted-foreground/50";
@@ -43,6 +48,7 @@ function UnitStatusChip({ isDraft }: { isDraft: boolean }) {
 
 export interface UnitCardCompactProps {
   unit: ProjectUnitResponse;
+  className?: string;
 }
 
 function getTypeBadgeClass(type: ProjectUnitType): string {
@@ -52,29 +58,43 @@ function getTypeBadgeClass(type: ProjectUnitType): string {
   return "bg-muted text-muted-foreground border-border";
 }
 
-export function UnitCardCompact({ unit }: UnitCardCompactProps) {
+export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
   const hasParent = unit.parent_unit_id != null;
   const explanation = unit.explanation?.trim() ?? "No description";
 
   return (
-    <div className="relative inline-block w-full min-w-0">
+    <div className={cn("relative inline-block w-full min-w-0", className)}>
       {hasParent && (
         <Card
           className="absolute left-1.5 w-full h-full top-1.5 z-0 rounded-xl border shadow-none"
           aria-hidden
         />
       )}
-      <Card className="p-0 relative z-10 rounded-xl border shadow-none overflow-hidden gap-0">
-        <CardDescription className="p-2 text-xs">
+      <Card className="p-0 z-10 rounded-xl border shadow-none overflow-hidden gap-0">
+        <Expandable
+          className="p-2 text-xs text-muted-foreground relative"
+          maxLines={7}
+          trigger={(isOpen, setOpen, isOverflowing) => (
+            isOverflowing && !isOpen && (
+              <ToggleButton
+                className="rounded-none absolute left-0 right-0 bottom-0 z-[2]"
+                isOpen={isOpen}
+                setOpen={setOpen}
+              >
+                <ChevronDownIcon />
+              </ToggleButton>
+            )
+          )}
+        >
           <ReactMarkdown>{explanation}</ReactMarkdown>
-        </CardDescription>
+        </Expandable>
         <CardAction className="bg-muted/30 w-full flex items-center justify-start p-2 gap-2 border-t">
           <Badge
             variant="secondary"
             className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[10px] font-semibold px-1.5 py-0 truncate max-w-full"
             title={`Version ${unit.version}`}
           >
-            v{unit.version}
+            {unit.version}
           </Badge>
           <Badge
             variant="outline"
