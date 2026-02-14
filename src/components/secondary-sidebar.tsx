@@ -15,6 +15,7 @@ import {
 
 export enum SECONDARY_SIDEBAR_STORAGE_KEYS {
   CONVERSATION = "conversation_sidebar",
+  UNITS_AND_RELEASES = "units_and_releases_sidebar",
 }
 
 type Props = {

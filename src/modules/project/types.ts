@@ -34,3 +34,11 @@ export interface ProjectUnitResponse {
   is_draft: boolean;
   chat_session_id: number | null;
 }
+
+export interface ReleaseResponse {
+  id: number;
+  project_id: number;
+  notes: string | null;
+  version: string;
+  created_at: string;
+}

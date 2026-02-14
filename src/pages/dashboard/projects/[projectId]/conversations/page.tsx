@@ -86,7 +86,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               New conversation for project {projectId}
             </p>
           )}
-          <div style={{ height: 3000 }} />
         </Container>
       </SidebarInset>
     </>

@@ -5,12 +5,14 @@ import type {
   ProjectRequest,
   ProjectPatchRequest,
   ProjectUnitResponse,
+  ReleaseResponse,
 } from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
 const projectUnitsEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/units`;
 const projectDraftUnitsEndpoint = (projectId: number, chatSessionId: number) =>
   `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units`;
+const projectReleasesEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
 
 export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
   return apiClient
@@ -73,6 +75,17 @@ export function getDraftUnits(
   return apiClient
     .get<ApiResponse<ProjectUnitResponse[]>>(
       projectDraftUnitsEndpoint(projectId, chatSessionId)
+    )
+    .then((res) => res.data ?? []);
+}
+
+
+export function getReleases(
+  projectId: number,
+): Promise<ReleaseResponse[]> {
+  return apiClient
+    .get<ApiResponse<ReleaseResponse[]>>(
+      projectReleasesEndpoint(projectId)
     )
     .then((res) => res.data ?? []);
 }

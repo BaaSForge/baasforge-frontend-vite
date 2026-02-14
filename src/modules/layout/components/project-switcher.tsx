@@ -2,10 +2,9 @@
 
 import {
   ChevronsUpDown,
-  FolderIcon,
   Plus,
   Check,
-  Boxes,
+  Package,
   MousePointerClick,
 } from "lucide-react";
 import { useLocation, useParams, Link } from "react-router";
@@ -60,7 +59,7 @@ export function ProjectSwitcher() {
                 }
               >
                 {hasActiveProject ? (
-                  <Boxes className="size-4" />
+                  <Package className="size-4" />
                 ) : (
                   <MousePointerClick className="size-4 opacity-60" />
                 )}
@@ -105,7 +104,7 @@ export function ProjectSwitcher() {
                 >
                   <Link to={linkObj.pathname + linkObj.search}>
                     <div className={`flex size-6 items-center justify-center rounded-md border ${isActive ? "border-accent bg-accent/30" : ""}`}>
-                      <FolderIcon className="size-4" />
+                      <Package className="size-4" />
                     </div>
                     {project.name}
                     {isActive && (

@@ -5,6 +5,7 @@ import { AuthOpenGuard } from "@/modules/auth/components/auth-open-guard";
 import { AuthLayout, AuthProvider } from "@/modules/auth";
 import { AppShell } from "@/modules/layout";
 import { Loadable } from "./loadable";
+import ProjectUnitsAndReleasesPage from "./dashboard/projects/[projectId]/units-and-releases/page";
 
 const GeneralErrorPage = lazy(() => import("./errors/global/page"));
 const NotFoundPage = lazy(() => import("./errors/not-found/page"));
@@ -140,6 +141,10 @@ export const router = createBrowserRouter([
                                         element: <ProjectConversationsPage />,
                                       },
                                     ],
+                                  },
+                                  {
+                                    path: "units-releases",
+                                    element: <ProjectUnitsAndReleasesPage />,
                                   },
                                 ],
                               },
