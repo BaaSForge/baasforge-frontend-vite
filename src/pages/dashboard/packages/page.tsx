@@ -39,7 +39,7 @@ export default function DashboardPackagesPage() {
 
   return (
     <>
-      <Container>
+      <Container className="pt-0">
         <div className="py-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {isLoading ? (
           <p className="text-muted-foreground col-span-full py-12 text-center text-sm">

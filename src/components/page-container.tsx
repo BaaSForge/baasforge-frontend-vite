@@ -1,5 +1,6 @@
+import { cn } from "@/lib/utils";
 import * as React from "react";
 
-export function Container({ children }: { children: React.ReactNode }) {
-  return <div className="p-4">{children}</div>;
+export function Container({ children, className }: { children: React.ReactNode, className?: string }) {
+  return <div className={cn("p-4", className)}>{children}</div>;
 }
