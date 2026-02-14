@@ -1,21 +1,22 @@
 import React from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { SectionTitle } from "@/components/section-title";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useProjectReleasesQuery } from "@/modules/project/queries";
+import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 
 export function SecondarySideBar() {
-  const { projectId } = useParams<{
+  const navigate = useNavigate();
+  const { projectId, releaseVersion } = useParams<{
     projectId: string;
+    releaseVersion: string;
   }>();
 
   const projectIdNum = projectId != null ? Number(projectId) : undefined;
 
-  const { data: releases, isLoading, error } = useProjectReleasesQuery(
-    projectIdNum
-  );
+  const { data: releases, isLoading, error } = useProjectReleasesQuery(projectIdNum);
+  const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesQuery(projectIdNum);
 
   if (projectIdNum == null) {
     return (
@@ -25,23 +26,23 @@ export function SecondarySideBar() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || isRuntimesLoading) {
     return (
       <div className="p-2 text-sm text-muted-foreground">
-        Loading releases…
+        Loading releases or runtimes…
       </div>
     );
   }
 
-  if (error) {
+  if (error || isRuntimesError) {
     return (
       <div className="p-2 text-sm text-destructive">
-        Failed to load releases.
+        Failed to load releases or runtimes.
       </div>
     );
   }
 
-  if (releases == null || releases.length === 0) {
+  if (releases == null || releases.length === 0 || runtimes == null || runtimes.length === 0) {
     return (
       <div className="p-2 text-sm text-muted-foreground">
         No releases yet.
@@ -52,7 +53,7 @@ export function SecondarySideBar() {
   return (
     <div className="flex flex-col gap-2 p-2 mt-1.5">
       <div className="flex items-center justify-between mb-2">
-        <SectionTitle className="mb-0">Releases</SectionTitle>
+        <SectionTitle className="mb-0">Choose release to view units</SectionTitle>
       </div>
       <FadedScrollArea className="flex flex-col gap-2 max-h-none h-full">
         {releases.map((release, index) => (
@@ -62,7 +63,15 @@ export function SecondarySideBar() {
                 <Separator orientation="vertical" />
               </div>
             )}
-            <ReleaseCardCompact release={release} />
+            <ReleaseCardCompact
+              release={release}
+              selected={release.version === releaseVersion}
+              runtime={runtimes.find((runtime) => runtime.live_release_version === release.version)}
+              onClick={() => {
+                navigate(`/dashboard/projects/${projectId}/units-releases/${release.version}`);
+              }}
+              className="cursor-pointer"
+            />
           </React.Fragment>
         ))}
       </FadedScrollArea>

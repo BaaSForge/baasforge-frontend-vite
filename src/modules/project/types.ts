@@ -42,3 +42,25 @@ export interface ReleaseResponse {
   version: string;
   created_at: string;
 }
+
+export type PlatformEnvironmentType = "stage" | "prod";
+
+export type DeploymentStatusType =
+  | "deploying"
+  | "stopped"
+  | "pruned"
+  | "up"
+  | "failed";
+
+export interface ProjectRuntimeResponse {
+  id: number;
+  project_id: number;
+  name: string;
+  slug: string;
+  environment: PlatformEnvironmentType;
+  db_cluster_id: number | null;
+  db_cluster_deployment_status: DeploymentStatusType | null;
+  server_cluster_id: number | null;
+  server_cluster_deployment_status: DeploymentStatusType | null;
+  live_release_version: string | null;
+}

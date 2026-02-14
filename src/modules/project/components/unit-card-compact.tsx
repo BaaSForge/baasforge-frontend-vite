@@ -14,43 +14,7 @@ import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import type { ProjectUnitResponse, ProjectUnitType } from "../types";
 import ReactMarkdown from "react-markdown";
 import { Expandable } from "@/components/expandable";
-
-function UnitStatusChip({ isDraft }: { isDraft: boolean }) {
-  const baseClass = "inline-flex items-center gap-1 text-[10px] text-muted-foreground/50";
-  const circleClass = "size-1.5 shrink-0 rounded-full bg-muted-foreground/20";
-
-  if (isDraft) {
-    return (
-      <span
-        className={baseClass}
-        title="Draft — not released yet"
-        aria-label="Draft, not released"
-      >
-        <span
-          className={circleClass}
-          aria-hidden
-        />
-        <span>draft</span>
-      </span>
-    );
-  }
-  return (
-    <span
-      className={cn(baseClass, "text-foreground")}
-      title="Published / live"
-      aria-label="Live"
-    >
-      <span className="relative flex size-3 shrink-0 items-center justify-center bg-secondary border border-blue-500 rounded-full" aria-hidden>
-        <span
-          className="absolute inset-0 origin-center rounded-full bg-blue-500 animate-[status-pulse-ring_1.2s_ease-out_infinite]"
-          aria-hidden
-        />
-        <span className={cn(circleClass, "bg-blue-500")} aria-hidden />
-      </span>
-      <span>Live</span>
-    </span>
-  );
-}
+import { LiveBadge } from "@/components/live-badge";
 
 export interface UnitCardCompactProps {
   unit: ProjectUnitResponse;
@@ -73,7 +37,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
     <>
       <Badge
         variant="secondary"
-        className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[10px] font-semibold px-1.5 py-0 truncate max-w-full"
+        className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[10px]"
         title={`Version ${unit.version}`}
       >
         {unit.version}
@@ -81,13 +45,19 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
       <Badge
         variant="outline"
         className={cn(
-          "text-[10px] font-medium px-1.5 py-0 border truncate max-w-full",
+          "text-[10px]",
           getTypeBadgeClass(unit.unit_type)
         )}
       >
         {capitalizeFirstLetter(unit.unit_type)}
       </Badge>
-      <UnitStatusChip isDraft={unit.is_draft} />
+      <LiveBadge
+        isOn={!unit.is_draft}
+        offLabel="Draft"
+        offTitle="Draft, not ready"
+        onLabel="Published"
+        onTitle="Published, ready"
+      />
     </>
   );
 
