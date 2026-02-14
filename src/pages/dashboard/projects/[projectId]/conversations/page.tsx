@@ -11,10 +11,10 @@ import {
   SecondarySidebarProvider,
   SidebarContent,
   SidebarInset,
-  SECONDARY_SIDEBAR_STORAGE_KEYS,
   useSecondarySidebar,
 } from "@/components/secondary-sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { STORAGE_KEYS } from "@/constants/storage-keys";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -23,7 +23,7 @@ export default function ProjectConversationsPage() {
 
   return (
     <SecondarySidebarProvider
-      storageKey={SECONDARY_SIDEBAR_STORAGE_KEYS.CONVERSATION}
+      storageKey={STORAGE_KEYS.CONVERSATION_SIDEBAR_COLLAPSED}
       defaultOpen
     >
       <ProjectConversationsContent mainSidebar={mainSidebar} />

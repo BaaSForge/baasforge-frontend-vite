@@ -14,13 +14,13 @@ import {
   SecondarySidebarProvider,
   SidebarContent,
   SidebarInset,
-  SECONDARY_SIDEBAR_STORAGE_KEYS,
   useSecondarySidebar,
 } from "@/components/secondary-sidebar";
 import { useProjectReleasesQuery, useProjectReleaseUnitsQuery } from "@/modules/project/queries";
 import { useEffect, useState, useMemo } from "react";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { STORAGE_KEYS } from "@/constants/storage-keys";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -29,7 +29,7 @@ export default function ProjectUnitsAndReleasesPage() {
 
   return (
     <SecondarySidebarProvider
-      storageKey={SECONDARY_SIDEBAR_STORAGE_KEYS.UNITS_AND_RELEASES}
+      storageKey={STORAGE_KEYS.UNITS_AND_RELEASES_SIDEBAR_COLLAPSED}
       defaultOpen
     >
       <ProjectUnitsAndReleasesContent mainSidebar={mainSidebar} />
@@ -42,6 +42,15 @@ type ProjectUnitsAndReleasesContentProps = {
 }
 
 type GroupMode = "ungrouped" | "grouped";
+
+function getStoredGroupMode(): GroupMode {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE);
+    if (stored === "ungrouped" || stored === "grouped") return stored;
+  } catch {
+  }
+  return "ungrouped";
+}
 
 function UnitsGroupedByType({ units }: { units: ProjectUnitResponse[] }) {
   const grouped = useMemo(() => groupUnitsByType(units), [units]);
@@ -79,7 +88,11 @@ function groupUnitsByType(units: ProjectUnitResponse[]): Map<ProjectUnitType, Pr
 function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleasesContentProps) {
   const { toggleSidebar } = useSecondarySidebar();
   const navigate = useNavigate();
-  const [groupMode, setGroupMode] = useState<GroupMode>("ungrouped");
+  const [groupMode, setGroupMode] = useState<GroupMode>(getStoredGroupMode);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, groupMode);
+  }, [groupMode]);
 
   const { projectId, releaseVersion } = useParams<{
     projectId: string;

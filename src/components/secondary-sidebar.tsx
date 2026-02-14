@@ -12,15 +12,11 @@ import {
   useStickyBreadcrumbBarTransition,
   useStickyBreadcrumbBarVisible,
 } from "@/stores/breadcrumb";
-
-export enum SECONDARY_SIDEBAR_STORAGE_KEYS {
-  CONVERSATION = "conversation_sidebar",
-  UNITS_AND_RELEASES = "units_and_releases_sidebar",
-}
+import { STORAGE_KEYS } from "@/constants/storage-keys";
 
 type Props = {
   children: React.ReactNode;
-  storageKey?: SECONDARY_SIDEBAR_STORAGE_KEYS;
+  storageKey?: STORAGE_KEYS;
   defaultOpen?: boolean;
 };
 
