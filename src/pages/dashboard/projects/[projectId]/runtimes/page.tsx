@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
-import { useProjectRuntimesQuery } from "@/modules/project/queries";
+import { useProjectRuntimesWithConnectedChatQuery } from "@/modules/project/queries";
 import { RuntimeCard } from "@/components/runtime-card";
 import { SectionTitle } from "@/components/section-title";
 
@@ -11,7 +11,7 @@ export default function ProjectRuntimesPage() {
   }>();
 
   const projectIdNum = projectId != null ? Number(projectId) : undefined;
-  const { data: runtimes, isLoading, error } = useProjectRuntimesQuery(projectIdNum);
+  const { data: runtimes, isLoading, error } = useProjectRuntimesWithConnectedChatQuery(projectIdNum);
 
   const liveRuntimes = runtimes?.filter(r => r.live_release_version != null) ?? [];
   const notLiveRuntimes = runtimes?.filter(r => r.live_release_version == null) ?? [];
@@ -31,7 +31,7 @@ export default function ProjectRuntimesPage() {
                 <SectionTitle>Online Runtimes</SectionTitle>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
                   {liveRuntimes.map((runtime) => (
-                    <RuntimeCard key={runtime.id} runtime={runtime} />
+                    <RuntimeCard key={runtime.id} runtime={runtime} connectedChatSession={runtime.connected_chat_session} />
                   ))}
                 </div>
               </>
@@ -41,7 +41,7 @@ export default function ProjectRuntimesPage() {
                 <SectionTitle>Offline Runtimes</SectionTitle>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {notLiveRuntimes.map((runtime) => (
-                    <RuntimeCard key={runtime.id} runtime={runtime} />
+                    <RuntimeCard key={runtime.id} runtime={runtime} connectedChatSession={runtime.connected_chat_session} />
                   ))}
                 </div>
               </>

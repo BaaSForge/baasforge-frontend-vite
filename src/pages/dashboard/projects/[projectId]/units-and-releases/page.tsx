@@ -111,7 +111,7 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
   );
 
   useEffect(() => {
-    if (releaseVersion == null) {
+    if (releaseVersion == null && releases != null && releases.length > 0) {
       navigate(`/dashboard/projects/${projectId}/units-releases/${releases?.[0]?.version}`, { replace: true });
     }
   }, [releaseVersion, navigate, projectId, releases]);

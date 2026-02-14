@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { SectionTitle } from "@/components/section-title";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
+import { useProjectReleasesQuery, useProjectRuntimesWithConnectedChatQuery } from "@/modules/project/queries";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 
 export function SecondarySideBar() {
@@ -16,7 +16,7 @@ export function SecondarySideBar() {
   const projectIdNum = projectId != null ? Number(projectId) : undefined;
 
   const { data: releases, isLoading, error } = useProjectReleasesQuery(projectIdNum);
-  const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesQuery(projectIdNum);
+  const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesWithConnectedChatQuery(projectIdNum);
 
   if (projectIdNum == null) {
     return (

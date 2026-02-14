@@ -6,7 +6,7 @@ import type {
   ProjectPatchRequest,
   ProjectUnitResponse,
   ReleaseResponse,
-  ProjectRuntimeResponse,
+  ProjectRuntimeWithConnectedChatResponse,
 } from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
@@ -15,7 +15,7 @@ const projectDraftUnitsEndpoint = (projectId: number, chatSessionId: number) =>
   `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units`;
 const projectReleasesEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
 const projectReleaseUnitsEndpoint = (projectId: number, releaseVersion: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseVersion}/units`;
-const projectRuntimesEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
+const projectRuntimesWithConnectedChatEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes-with-connected-chat-sessions`;
 
 export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
   return apiClient
@@ -103,12 +103,12 @@ export function getReleaseUnits(
     .then((res) => res.data ?? []);
 }
 
-export function getRuntimes(
+export function getRuntimesWithConnectedChat(
   projectId: number,
-): Promise<ProjectRuntimeResponse[]> {
+): Promise<ProjectRuntimeWithConnectedChatResponse[]> {
   return apiClient
-    .get<ApiResponse<ProjectRuntimeResponse[]>>(
-      projectRuntimesEndpoint(projectId)
+    .get<ApiResponse<ProjectRuntimeWithConnectedChatResponse[]>>(
+      projectRuntimesWithConnectedChatEndpoint(projectId)
     )
     .then((res) => res.data ?? []);
 }

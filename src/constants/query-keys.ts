@@ -14,5 +14,5 @@ export const QueryKeys = {
   projectReleases: (projectId: number) => ["project", "releases", projectId] as const,
   projectReleaseUnits: (projectId: number, releaseVersion: string) =>
     ["project", "release", "units", projectId, releaseVersion] as const,
-  projectRuntimes: (projectId: number) => ["project", "runtimes", projectId] as const,
+  projectRuntimesWithConnectedChat: (projectId: number) => ["project", "runtimes", "with-connected-chat", projectId] as const,
 };

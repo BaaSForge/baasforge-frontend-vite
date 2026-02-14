@@ -12,6 +12,7 @@ export {
   useProjectsQuery,
   useProjectUnitsQuery,
   useProjectDraftUnitsQuery,
+  useProjectRuntimesWithConnectedChatQuery,
 } from "./queries";
 export {
   useCreateProjectMutation,
@@ -28,4 +29,5 @@ export type {
   LanguageType,
   ProjectUnitType,
   ProjectUnitResponse,
+  ProjectRuntimeWithConnectedChatResponse,
 } from "./types";

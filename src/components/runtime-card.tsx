@@ -4,9 +4,15 @@ import { cn } from "@/lib/utils";
 import { LiveBadge } from "./live-badge";
 import { PlatformEnvironmentBadge } from "./platform-environment-badge";
 import { DeploymentStatusBadge } from "./deployment-status-badge";
+import type { ChatSessionResponse } from "@/modules/project-chat";
+import { MessageSquare, Unplug } from "lucide-react";
+import { Link } from "react-router";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export interface RuntimeCardProps {
   runtime: ProjectRuntimeResponse;
+  connectedChatSession?: ChatSessionResponse | null;
 }
 
 function InfoRow({
@@ -28,7 +34,7 @@ function InfoRow({
   );
 }
 
-export function RuntimeCard({ runtime }: RuntimeCardProps) {
+export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps) {
   const liveBadge = (
     <LiveBadge
       isOn={runtime.live_release_version != null}
@@ -38,6 +44,8 @@ export function RuntimeCard({ runtime }: RuntimeCardProps) {
       size={2}
     />
   );
+
+  const isStage = runtime.environment === "stage";
   
   return (
     <Card className={`p-0 gap-0 overflow-hidden shadow-none rounded-md`}>
@@ -47,9 +55,39 @@ export function RuntimeCard({ runtime }: RuntimeCardProps) {
         )}
       >
         <h3 className="font-semibold text-sm truncate">{runtime.name}</h3>
-        <div className="flex items-center gap-1.5 shrink-0">
-          
-        </div>
+        {isStage && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            {connectedChatSession && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="xs" asChild>
+                      <Link to={`/dashboard/projects/${runtime.project_id}/conversations/${connectedChatSession.id}`}>
+                        <MessageSquare className="size-4" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    Go to the connected chat session.
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={400}>
+                  <TooltipTrigger asChild>
+                    <Button variant="destructive" size="xs">
+                      <Unplug className="size-4" />
+                      Disconnect
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    Disconnect the chat session from this runtime
+                    <br />
+                    Then the runtime will be free to be used by another chat session to test new releases.
+                  </TooltipContent>
+                </Tooltip>
+              </>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="py-4 px-4 space-y-3">
         <InfoRow

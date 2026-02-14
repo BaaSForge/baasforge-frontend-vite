@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { QueryKeys } from "@/constants/query-keys";
-import { getProject, getProjects, getProjectUnits, getDraftUnits, getReleases, getReleaseUnits, getRuntimes } from "./api";
+import { getProject, getProjects, getProjectUnits, getDraftUnits, getReleases, getReleaseUnits, getRuntimesWithConnectedChat } from "./api";
 
 export function useProjectsQuery() {
   return useQuery({
@@ -56,10 +56,10 @@ export function useProjectReleaseUnitsQuery(projectId: number | undefined, relea
   });
 }
 
-export function useProjectRuntimesQuery(projectId: number | undefined) {
+export function useProjectRuntimesWithConnectedChatQuery(projectId: number | undefined) {
   return useQuery({
-    queryKey: QueryKeys.projectRuntimes(projectId ?? 0),
-    queryFn: () => getRuntimes(projectId!),
+    queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId ?? 0),
+    queryFn: () => getRuntimesWithConnectedChat(projectId!),
     enabled: projectId != null && projectId > 0,
   });
 }
