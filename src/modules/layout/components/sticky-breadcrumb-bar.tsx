@@ -20,6 +20,7 @@ import {
   useStickyBreadcrumbBarVisible,
 } from "@/stores/breadcrumb";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
@@ -141,7 +142,14 @@ function StickyBreadcrumbBarInner({
 }) {
   return (
     <>
-      <SidebarTrigger />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SidebarTrigger />
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          Toggle sidebar
+        </TooltipContent>
+      </Tooltip>
       <Breadcrumb>
         <BreadcrumbList>
           {segments.map((segment, i) => {

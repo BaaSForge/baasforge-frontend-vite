@@ -2,8 +2,12 @@ import { useNavigate, useParams } from "react-router";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { SecondarySideBar } from "./secondary-side-bar";
-import { SidebarIcon } from "lucide-react";
+import { LayersIcon, SidebarIcon, TextAlignJustifyIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { SectionTitle } from "@/components/section-title";
+import { capitalizeFirstLetter } from "@/lib/utils";
+import type { ProjectUnitResponse, ProjectUnitType } from "@/modules/project/types";
 import {
   useSidebar,
   SecondarySidebar,
@@ -14,8 +18,9 @@ import {
   useSecondarySidebar,
 } from "@/components/secondary-sidebar";
 import { useProjectReleasesQuery, useProjectReleaseUnitsQuery } from "@/modules/project/queries";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -36,9 +41,45 @@ type ProjectUnitsAndReleasesContentProps = {
   mainSidebar: Sidebar;
 }
 
+type GroupMode = "ungrouped" | "grouped";
+
+function UnitsGroupedByType({ units }: { units: ProjectUnitResponse[] }) {
+  const grouped = useMemo(() => groupUnitsByType(units), [units]);
+  const sortedTypes = useMemo(
+    () => [...grouped.keys()].sort((a, b) => a.localeCompare(b)),
+    [grouped]
+  );
+
+  return (
+    <div className="space-y-6">
+      {sortedTypes.map((unitType) => (
+        <div key={unitType}>
+          <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {grouped.get(unitType)?.map((unit) => (
+              <UnitCardCompact key={unit.id} unit={unit} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function groupUnitsByType(units: ProjectUnitResponse[]): Map<ProjectUnitType, ProjectUnitResponse[]> {
+  const map = new Map<ProjectUnitType, ProjectUnitResponse[]>();
+  for (const unit of units) {
+    const existing = map.get(unit.unit_type) ?? [];
+    existing.push(unit);
+    map.set(unit.unit_type, existing);
+  }
+  return map;
+}
+
 function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleasesContentProps) {
   const { toggleSidebar } = useSecondarySidebar();
   const navigate = useNavigate();
+  const [groupMode, setGroupMode] = useState<GroupMode>("ungrouped");
 
   const { projectId, releaseVersion } = useParams<{
     projectId: string;
@@ -68,9 +109,50 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
         title={`Units for release ${releaseVersion}`}
         mainSidebar={mainSidebar}
         tools={
-          <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
-            <SidebarIcon className="size-4" />
-          </Button>
+          <div className="flex items-center gap-3">
+            <ToggleGroup
+              type="single"
+              value={groupMode}
+              onValueChange={(v) => v != null && v !== "" && setGroupMode(v as GroupMode)}
+              variant="outline"
+              size="sm"
+            >
+              <ToggleGroupItem value="ungrouped">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <TextAlignJustifyIcon />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Ungrouped view
+                  </TooltipContent>
+                </Tooltip>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="grouped">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <LayersIcon />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Group by type
+                  </TooltipContent>
+                </Tooltip>
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
+                  <SidebarIcon className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                Toggle releases
+              </TooltipContent>
+            </Tooltip>
+          </div>
         }
       />
       <SecondarySidebar>
@@ -84,12 +166,14 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
             <div className="p-4 text-muted-foreground text-center text-sm">Loading units…</div>
           ) : error ? (
             <div className="p-4 text-destructive text-center text-sm">Failed to load units.</div>
-          ) : (
+          ) : groupMode === "ungrouped" ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {releaseUnits?.map((unit) => (
                 <UnitCardCompact key={unit.id} unit={unit} />
               ))}
             </div>
+          ) : (
+            <UnitsGroupedByType units={releaseUnits ?? []} />
           )}
         </Container>
       </SidebarInset>

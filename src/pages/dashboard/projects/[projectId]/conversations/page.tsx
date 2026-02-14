@@ -14,6 +14,7 @@ import {
   SECONDARY_SIDEBAR_STORAGE_KEYS,
   useSecondarySidebar,
 } from "@/components/secondary-sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -65,9 +66,16 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         title={title}
         mainSidebar={mainSidebar}
         tools={
-          <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
-            <SidebarIcon className="size-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
+                <SidebarIcon className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              Toggle draft units
+            </TooltipContent>
+          </Tooltip>
         }
       />
       <SecondarySidebar>
