@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Bot, List, MessageSquareText, Box } from "lucide-react";
+import { Settings, Bot, List, MessageSquareText, Box, ServerCrash } from "lucide-react";
 import { Link, useParams, useLocation } from "react-router";
 
 import {
@@ -45,6 +45,9 @@ export function NavProjects() {
 
   const unitsReleasesUrl = `/dashboard/projects/${projectId}/units-releases`;
   const isUnitsReleasesActive = pathname.startsWith(unitsReleasesUrl);
+
+  const runtimesUrl = `/dashboard/projects/${projectId}/runtimes`;
+  const isRuntimesActive = pathname.startsWith(runtimesUrl);
 
   return (
     <>
@@ -107,6 +110,14 @@ export function NavProjects() {
             <Link to={unitsReleasesUrl}>
               <Box />
               <span>Units & Releases</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild isActive={isRuntimesActive}>
+            <Link to={runtimesUrl}>
+              <ServerCrash />
+              <span>Runtimes</span>
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>

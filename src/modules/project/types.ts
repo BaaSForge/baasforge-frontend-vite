@@ -21,7 +21,7 @@ export interface ProjectPatchRequest {
   name: string;
 }
 
-export type ProjectUnitType = "controller";
+export type ProjectUnitType = "controller" | "model" | "view";
 
 export interface ProjectUnitResponse {
   id: number;
