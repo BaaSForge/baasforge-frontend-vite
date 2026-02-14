@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createStore, useStore } from "zustand";
 
 export const STICKY_BAR_TRANSITION_DURATION_MS = 200;
@@ -74,9 +75,18 @@ export function useStickyBreadcrumbBarState() {
   }));
 }
 
-export function useStickyBreadcrumbBarTransition(): string {
-  return useStore(breadcrumbStore, (s) =>
-    `${s.stickyBarTransitionDurationMs}ms ${s.stickyBarTransitionEasing}`
+export function useStickyBreadcrumbBarTransition(): { classes: string; styles: React.CSSProperties } {
+  const durationMs = useStore(breadcrumbStore, (s) => s.stickyBarTransitionDurationMs);
+  const easing = useStore(breadcrumbStore, (s) => s.stickyBarTransitionEasing);
+  return React.useMemo(
+    () => ({
+      classes: `duration-[var(--dur)] ease-[var(--ease)]`,
+      styles: {
+        ["--dur" as string]: `${durationMs}ms`,
+        ["--ease" as string]: easing,
+      } as React.CSSProperties,
+    }),
+    [durationMs, easing]
   );
 }
 

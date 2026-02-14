@@ -21,11 +21,11 @@ export default function ProjectSettingsLayout() {
   const basePath = `/dashboard/projects/${projectId}/settings`;
 
   return (
-    <Container>
+    <>
       <PageTitleBox
         title={project ? `Settings — ${project.name}` : "Project settings"}
       />
-      <Container.MainContent>
+      <Container>
         <Tabs value={tab} className="flex flex-col gap-4">
         <TabsList className="w-fit">
           <TabsTrigger value="info" asChild>
@@ -42,7 +42,7 @@ export default function ProjectSettingsLayout() {
           <Outlet />
         </TabsContent>
       </Tabs>
-      </Container.MainContent>
-    </Container>
+      </Container>
+    </>
   );
 }

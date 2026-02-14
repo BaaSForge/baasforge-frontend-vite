@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Bot, List } from "lucide-react";
+import { Settings, Bot, List, MessageSquareText } from "lucide-react";
 import { Link, useParams, useLocation } from "react-router";
 
 import {
@@ -13,6 +13,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { FancyButton } from "@/components/fancy-button";
 import { useProjectQuery } from "@/modules/project/queries";
 import {
   useProjectChatSessionsQuery,
@@ -41,7 +42,6 @@ export function NavProjects() {
   const isSettingsActive = pathname.startsWith(settingsUrl);
 
   const conversationsUrl = `/dashboard/projects/${projectId}/conversations`;
-  const isConversationsActive = pathname.startsWith(conversationsUrl);
 
   return (
     <>
@@ -49,12 +49,22 @@ export function NavProjects() {
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>{project.name} Area</SidebarGroupLabel>
       <SidebarMenu>
+        <SidebarMenuItem className="my-2">
+          <SidebarMenuButton asChild>
+            <FancyButton size="xs" asChild className="rounded-full">
+              <Link to={conversationsUrl}>
+                <Bot className="size-4" />
+                Develope by AI
+              </Link>
+            </FancyButton>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         <SidebarMenuItem>
-          <SidebarMenuButton asChild isActive={isConversationsActive}>
-            <Link to={conversationsUrl}>
-              <Bot />
-              <span>Develope by AI</span>
-            </Link>
+          <SidebarMenuButton asChild>
+            <div>
+              <MessageSquareText />
+              Previous conversations
+            </div>
           </SidebarMenuButton>
           <SidebarMenuSub className="max-h-60 overflow-y-auto">
             {visibleSessions.map((chatSession) => {

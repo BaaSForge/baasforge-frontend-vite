@@ -22,7 +22,7 @@ export function SecondarySideBar() {
   if (projectIdNum == null || chatSessionId == null) {
     return (
       <div className="p-2 text-sm text-muted-foreground">
-        Open a conversation to see draft units.
+        Start the conversation to generate draft units by using AI.
       </div>
     );
   }

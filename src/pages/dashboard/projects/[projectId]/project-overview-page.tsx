@@ -29,9 +29,9 @@ export default function ProjectOverviewPage() {
   const basePath = `/dashboard/projects/${projectId}`;
 
   return (
-    <Container>
+    <>
       <PageTitleBox title={project ? project.name : "Project"} />
-      <Container.MainContent>
+      <Container>
         <SectionTitle>Settings &amp; management</SectionTitle>
         <div className="grid gap-3 sm:grid-cols-2">
           {linkCards.map(({ to, title, description, icon }) => (
@@ -44,7 +44,7 @@ export default function ProjectOverviewPage() {
             />
           ))}
         </div>
-      </Container.MainContent>
-    </Container>
+      </Container>
+    </>
   );
 }

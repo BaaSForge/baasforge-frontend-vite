@@ -1,65 +1,94 @@
 import { useParams } from "react-router";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
+import { SecondarySideBar } from "./secondary-side-bar";
+import { useEffect } from "react";
+import { SidebarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
-  Sidebar,
+  useSidebar,
+  SecondarySidebar,
+  SecondarySidebarProvider,
   SidebarContent,
   SidebarInset,
-  SidebarProvider,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import {
-  useStickyBreadcrumbBarHeight,
-  useStickyBreadcrumbBarTransition,
-  useStickyBreadcrumbBarVisible,
-} from "@/stores/breadcrumb";
-import { SecondarySideBar } from "./secondary-side-bar";
+  SECONDARY_SIDEBAR_STORAGE_KEYS,
+  useSecondarySidebar,
+} from "@/components/secondary-sidebar";
+
+type Sidebar = ReturnType<typeof useSidebar>;
 
 export default function ProjectConversationsPage() {
-  const { isMobile } = useSidebar();
-  const stickyBarVisible = useStickyBreadcrumbBarVisible();
-  const stickyBarHeight = useStickyBreadcrumbBarHeight();
-  const stickyBarTransition = useStickyBreadcrumbBarTransition();
-  const { projectId, conversationId } = useParams<{
-    projectId: string;
+  const mainSidebar = useSidebar();
+
+  return (
+    <SecondarySidebarProvider
+      storageKey={SECONDARY_SIDEBAR_STORAGE_KEYS.CONVERSATION}
+      defaultOpen
+    >
+      <ProjectConversationsContent mainSidebar={mainSidebar} />
+    </SecondarySidebarProvider>
+  );
+}
+
+type ProjectConversationsContentProps = {
+  mainSidebar: Sidebar;
+}
+
+function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
+  const {
+    setOpenSkipStorage,
+    toggleSidebar,
+    rereadSidebarOpen,
+  } = useSecondarySidebar();
+  const { conversationId, projectId } = useParams<{
     conversationId?: string;
+    projectId: string;
   }>();
 
   const title = conversationId
     ? "Conversation"
     : "New conversation";
 
-  const pageTitleBoxClassName = isMobile ? "" : "w-[calc(100%-var(--sidebar-width))]";
+  const noConversation = conversationId == null;
 
+  useEffect(() => {
+    if (noConversation) {
+      setOpenSkipStorage(false);
+    } else {
+      rereadSidebarOpen();
+    }
+  }, [noConversation, rereadSidebarOpen]);
+  
   return (
-    <Container>
-      <PageTitleBox title={title} className={pageTitleBoxClassName} tools="something here" />
-      <SidebarProvider>
-        <SidebarInset>
-          <div className="flex flex-1 flex-col px-4">
-            {conversationId ? (
-              <p className="text-muted-foreground">
-                Conversation {conversationId} (project {projectId})
-              </p>
-            ) : (
-              <p className="text-muted-foreground">
-                New conversation for project {projectId}
-              </p>
-            )}
-          </div>
-        </SidebarInset>
-        <Sidebar
-          side="right"
-          style={{
-            top: stickyBarVisible ? stickyBarHeight : 0,
-            transition: `top ${stickyBarTransition}`,
-          }}
-        >
-          <SidebarContent>
-            <SecondarySideBar />
-          </SidebarContent>
-        </Sidebar>
-      </SidebarProvider>
-    </Container>
+    <>
+      <PageTitleBox
+        title={title}
+        mainSidebar={mainSidebar}
+        tools={
+          <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
+            <SidebarIcon className="size-4" />
+          </Button>
+        }
+      />
+      <SecondarySidebar>
+        <SidebarContent>
+          <SecondarySideBar />
+        </SidebarContent>
+      </SecondarySidebar>
+      <SidebarInset className="here-is-the-content">
+        <Container>
+          {conversationId ? (
+            <p className="text-muted-foreground">
+              Conversation {conversationId} (project {projectId})
+            </p>
+          ) : (
+            <p className="text-muted-foreground">
+              New conversation for project {projectId}
+            </p>
+          )}
+          <div style={{ height: 3000 }} />
+        </Container>
+      </SidebarInset>
+    </>
   );
 }

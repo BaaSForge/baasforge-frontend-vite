@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const DEFAULT_PAGE_TITLE_BOX_HEIGHT = 56;
+type Sidebar = ReturnType<typeof useSidebar>;
 
 export function PageTitleBoxPlaceholder() {
   const height = usePageTitleBoxHeight();
@@ -29,15 +30,22 @@ export interface PageTitleBoxProps {
   title: string;
   tools?: React.ReactNode;
   className?: string;
+  mainSidebar?: Sidebar;
 }
 
-export function PageTitleBox({ title, tools, className }: PageTitleBoxProps) {
+export function PageTitleBox({ title, tools, className, mainSidebar: passedSidebar }: PageTitleBoxProps) {
   const barRef = React.useRef<HTMLDivElement>(null);
   const stickyBarVisible = useStickyBreadcrumbBarVisible();
   const stickyBarHeight = useStickyBreadcrumbBarHeight();
-  const stickyBarTransition = useStickyBreadcrumbBarTransition();
-  const { state: sidebarState } = useSidebar();
+  const { classes: stickyBarTransition, styles: stickyBarTransitionStyles } = useStickyBreadcrumbBarTransition();
+  const useSidebarRes = useSidebar();
   const setPageTitleBoxHeight = breadcrumbStore.getState().setPageTitleBoxHeight;
+
+  const mainSidebar = passedSidebar ?? useSidebarRes;
+  const secondarySidebar = passedSidebar ? useSidebarRes : null;
+
+  const pageTitleBoxLeftClassName = (mainSidebar.open && !mainSidebar.isMobile) ? "!left-[var(--sidebar-width)]" : (mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]");
+  const pageTitleBoxRightClassName = secondarySidebar && (secondarySidebar.open && !secondarySidebar.isMobile) ? "!right-[var(--sidebar-width)]" : "right-0";
 
   React.useLayoutEffect(() => {
     const el = barRef.current;
@@ -60,16 +68,16 @@ export function PageTitleBox({ title, tools, className }: PageTitleBoxProps) {
         data-slot="page-title-box"
         className={cn(
           "fixed right-0 z-10 flex h-14 shrink-0 flex-row items-center justify-between gap-4 border-b px-4 py-4",
-          "bg-background transition-[top]",
-          "left-0",
-          sidebarState === "collapsed"
-            ? "md:left-[var(--sidebar-width-icon)]"
-            : "md:left-[var(--sidebar-width)]",
+          "bg-background transition-all",
+          stickyBarTransition,
+          `top-[var(--top)]`,
+          pageTitleBoxLeftClassName,
+          pageTitleBoxRightClassName,
           className
         )}
         style={{
-          top,
-          transition: `top ${stickyBarTransition}`,
+          ['--top' as any]: `${top}px`,
+          ...stickyBarTransitionStyles
         }}
       >
         <div className="text-lg font-semibold tracking-tight">{title}</div>

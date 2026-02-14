@@ -6,9 +6,9 @@ import { FolderIcon, FolderPlusIcon, KeyRoundIcon } from "lucide-react";
 
 export default function DashboardPage() {
   return (
-    <Container>
+    <>
       <PageTitleBox title="Dashboard" />
-      <Container.MainContent>
+      <Container>
         <SectionTitle>Projects</SectionTitle>
         <div className="grid gap-3 sm:grid-cols-2">
           <SectionLinkCard
@@ -33,7 +33,7 @@ export default function DashboardPage() {
             icon={KeyRoundIcon}
           />
         </div>
-      </Container.MainContent>
-    </Container>
+      </Container>
+    </>
   );
 }

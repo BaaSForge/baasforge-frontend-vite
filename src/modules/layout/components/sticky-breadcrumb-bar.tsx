@@ -58,7 +58,7 @@ export function StickyBreadcrumbBar() {
   const barRef = React.useRef<HTMLDivElement>(null);
   const lastScrollYRef = React.useRef(0);
   const stickyBarVisible = useStickyBreadcrumbBarVisible();
-  const stickyBarTransition = useStickyBreadcrumbBarTransition();
+  const { classes: stickyBarTransition, styles: stickyBarTransitionStyles } = useStickyBreadcrumbBarTransition();
   const { state: sidebarState } = useSidebar();
   const { pathname } = useLocation();
   const params = useParams();
@@ -114,17 +114,15 @@ export function StickyBreadcrumbBar() {
       ref={barRef}
       data-slot="sticky-breadcrumb-bar"
       className={cn(
-        "fixed top-0 right-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b",
-        "bg-background px-4 transition-transform",
-        "left-0",
+        "fixed left-0 top-0 right-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4",
+        "transition-all",
+        stickyBarTransition,
+        stickyBarVisible ? "translate-y-0" : "-translate-y-full",
         sidebarState === "collapsed"
           ? "md:left-[var(--sidebar-width-icon)]"
           : "md:left-[var(--sidebar-width)]"
       )}
-      style={{
-        transform: stickyBarVisible ? "translateY(0)" : "translateY(-100%)",
-        transition: `transform ${stickyBarTransition}`,
-      }}
+      style={{ ...stickyBarTransitionStyles }}
     >
       <StickyBreadcrumbBarInner
         segments={segments}

@@ -48,7 +48,7 @@ export default function DashboardTokensPage() {
   };
 
   return (
-    <Container>
+    <>
       <PageTitleBox
         title="Sessions & tokens"
         tools={
@@ -71,7 +71,7 @@ export default function DashboardTokensPage() {
           </Button>
         }
       />
-      <Container.MainContent>
+      <Container>
         <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
         <div className="overflow-x-auto">
           {isLoading ? (
@@ -116,7 +116,7 @@ export default function DashboardTokensPage() {
           )}
         </div>
         </div>
-      </Container.MainContent>
-    </Container>
+      </Container>
+    </>
   );
 }

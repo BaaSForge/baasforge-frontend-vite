@@ -20,9 +20,9 @@ export default function ProjectsIndexPage() {
   const { data: projects = [], isLoading } = useProjectsQuery();
 
   return (
-    <Container>
+    <>
       <PageTitleBox
-      title="Projects"
+        title="Projects"
         tools={
           <Button
             variant="secondary"
@@ -36,7 +36,7 @@ export default function ProjectsIndexPage() {
           </Button>
         }
       />
-      <Container.MainContent>
+      <Container>
         {isLoading ? (
           <p className="text-muted-foreground py-8 text-center text-sm">
             Loading projects…
@@ -70,7 +70,7 @@ export default function ProjectsIndexPage() {
             ))}
           </ItemGroup>
         )}
-      </Container.MainContent>
-    </Container>
+      </Container>
+    </>
   );
 }
