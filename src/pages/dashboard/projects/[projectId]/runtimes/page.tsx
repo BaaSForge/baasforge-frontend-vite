@@ -13,8 +13,8 @@ export default function ProjectRuntimesPage() {
   const projectIdNum = projectId != null ? Number(projectId) : undefined;
   const { data: runtimes, isLoading, error } = useProjectRuntimesWithConnectedChatQuery(projectIdNum);
 
-  const liveRuntimes = runtimes?.filter(r => r.live_release_version != null) ?? [];
-  const notLiveRuntimes = runtimes?.filter(r => r.live_release_version == null) ?? [];
+  const busyRuntimes = runtimes?.filter(r => r.connected_chat_session != null) ?? [];
+  const idleRuntimes = runtimes?.filter(r => r.connected_chat_session == null) ?? [];
 
   return (
     <>
@@ -26,27 +26,27 @@ export default function ProjectRuntimesPage() {
           <div className="p-4 text-destructive text-center text-sm">Failed to load runtimes.</div>
         ) : (
           <>
-            {liveRuntimes.length > 0 && (
+            {busyRuntimes.length > 0 && (
               <>
-                <SectionTitle>Online Runtimes</SectionTitle>
+                <SectionTitle>Busy Runtimes</SectionTitle>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-                  {liveRuntimes.map((runtime) => (
+                  {busyRuntimes.map((runtime) => (
                     <RuntimeCard key={runtime.id} runtime={runtime} connectedChatSession={runtime.connected_chat_session} />
                   ))}
                 </div>
               </>
             )}
-            {notLiveRuntimes.length > 0 && (
+            {idleRuntimes.length > 0 && (
               <>
-                <SectionTitle>Offline Runtimes</SectionTitle>
+                <SectionTitle>Idle Runtimes</SectionTitle>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {notLiveRuntimes.map((runtime) => (
+                  {idleRuntimes.map((runtime) => (
                     <RuntimeCard key={runtime.id} runtime={runtime} connectedChatSession={runtime.connected_chat_session} />
                   ))}
                 </div>
               </>
             )}
-            {(!liveRuntimes.length && !notLiveRuntimes.length) && (
+            {(!busyRuntimes.length && !idleRuntimes.length) && (
               <div className="p-4 text-muted-foreground text-center text-sm">No runtimes found.</div>
             )}
           </>

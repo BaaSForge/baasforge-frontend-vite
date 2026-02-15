@@ -5,11 +5,12 @@ import { LiveBadge } from "./live-badge";
 import { PlatformEnvironmentBadge } from "./platform-environment-badge";
 import { DeploymentStatusBadge } from "./deployment-status-badge";
 import type { ChatSessionResponse } from "@/modules/project-chat";
-import { MessageSquare, Unplug } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useRuntimeChatSessionActions } from "@/modules/project";
+import { DisconnectIcon } from "@/modules/project/stores/runtime-store";
 
 export interface RuntimeCardProps {
   runtime: ProjectRuntimeResponse;
@@ -91,7 +92,7 @@ export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps)
                       size="xs"
                       onClick={handleDisconnect}
                     >
-                      <Unplug className="size-4" />
+                      <DisconnectIcon className="size-4" />
                       Disconnect
                     </Button>
                   </TooltipTrigger>

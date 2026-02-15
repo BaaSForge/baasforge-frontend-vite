@@ -45,7 +45,10 @@ export interface ReleaseResponse {
   created_at: string;
 }
 
-export type PlatformEnvironmentType = "stage" | "prod";
+export enum PlatformEnvironmentType {
+  stage = "stage",
+  prod = "prod",
+}
 
 export type DeploymentStatusType =
   | "deploying"
@@ -69,5 +72,5 @@ export interface ProjectRuntimeResponse {
 
 export interface ProjectRuntimeWithConnectedChatResponse
   extends ProjectRuntimeResponse {
-  connected_chat_session: ChatSessionResponse | null;
+  connected_chat_session?: ChatSessionResponse;
 }

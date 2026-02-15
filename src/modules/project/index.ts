@@ -24,6 +24,7 @@ export {
   RuntimeChatSessionDialogs,
 } from "./stores/runtime-store";
 export { CreateProjectForm } from "./components/create-project-form";
+export { RuntimesModal } from "./components/runtimes-modal";
 export { UnitCardCompact } from "./components/unit-card-compact";
 export type {
   ProjectResponse,

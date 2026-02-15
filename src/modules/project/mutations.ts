@@ -67,26 +67,32 @@ export function useAttachChatSessionStageRuntimeMutation({
     mutationFn: () => attachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionDetail(projectId, chatSessionId) });
       queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId) });
     },
   });
 }
 
-export function useDetachChatSessionStageRuntimeMutation({
-  projectId,
-  chatSessionId,
-  projectRuntimeId,
-}: {
-  projectId: number;
-  chatSessionId: number;
-  projectRuntimeId: number;
-}) {
+export function useDetachChatSessionStageRuntimeMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => detachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
-    onSuccess: () => {
+    mutationFn: ({
+      projectId,
+      chatSessionId,
+      projectRuntimeId,
+    }:
+    {
+      projectId: number;
+      chatSessionId: number;
+      projectRuntimeId: number;
+    }) => detachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
+    onSuccess: (_, {
+      chatSessionId,
+      projectId,
+    }) => {
       queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionDetail(projectId, chatSessionId) });
       queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId) });
     },
   });
