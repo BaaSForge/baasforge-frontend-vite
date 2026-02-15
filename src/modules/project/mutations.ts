@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { QueryKeys } from "@/constants/query-keys";
-import { createProject, patchProject, deleteProject } from "./api";
+import { createProject, patchProject, deleteProject, detachChatSessionStageRuntime, attachChatSessionStageRuntime } from "./api";
 import type { ProjectRequest, ProjectPatchRequest } from "./types";
 import { toast } from "sonner";
 
@@ -48,6 +48,46 @@ export function useDeleteProjectMutation(projectId: number) {
       queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(projectId) });
       queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
       navigate("/dashboard", { replace: true });
+    },
+  });
+}
+
+export function useAttachChatSessionStageRuntimeMutation({
+  projectId,
+  chatSessionId,
+  projectRuntimeId,
+}: {
+  projectId: number;
+  chatSessionId: number;
+  projectRuntimeId: number;
+}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => attachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId) });
+    },
+  });
+}
+
+export function useDetachChatSessionStageRuntimeMutation({
+  projectId,
+  chatSessionId,
+  projectRuntimeId,
+}: {
+  projectId: number;
+  chatSessionId: number;
+  projectRuntimeId: number;
+}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => detachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId) });
     },
   });
 }

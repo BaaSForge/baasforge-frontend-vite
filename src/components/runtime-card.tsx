@@ -9,6 +9,7 @@ import { MessageSquare, Unplug } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { useRuntimeChatSessionActions } from "@/modules/project";
 
 export interface RuntimeCardProps {
   runtime: ProjectRuntimeResponse;
@@ -35,6 +36,18 @@ function InfoRow({
 }
 
 export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps) {
+  const { detachRuntime } = useRuntimeChatSessionActions();
+
+  const handleDisconnect = () => {
+    if (connectedChatSession) {
+      detachRuntime({
+        projectId: runtime.project_id,
+        chatSessionId: connectedChatSession.id,
+        projectRuntimeId: runtime.id,
+      });
+    }
+  };
+
   const liveBadge = (
     <LiveBadge
       isOn={runtime.live_release_version != null}
@@ -73,7 +86,11 @@ export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps)
                 </Tooltip>
                 <Tooltip delayDuration={400}>
                   <TooltipTrigger asChild>
-                    <Button variant="destructive" size="xs">
+                    <Button
+                      variant="destructive"
+                      size="xs"
+                      onClick={handleDisconnect}
+                    >
                       <Unplug className="size-4" />
                       Disconnect
                     </Button>

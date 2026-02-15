@@ -10,7 +10,7 @@ import type {
 } from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
-const projectUnitsEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/units`;
+const projectNonDraftUnitsEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/non-draft-units`;
 const projectDraftUnitsEndpoint = (projectId: number, chatSessionId: number) =>
   `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units`;
 const projectReleasesEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
@@ -65,9 +65,41 @@ export function deleteProject(id: number): Promise<void> {
     .then(() => undefined);
 }
 
-export function getProjectUnits(projectId: number): Promise<ProjectUnitResponse[]> {
+export function detachChatSessionStageRuntime({
+  projectId,
+  chatSessionId,
+  projectRuntimeId,
+}: {
+  projectId: number;
+  chatSessionId: number;
+  projectRuntimeId: number;
+}): Promise<void> {
   return apiClient
-    .get<ApiResponse<ProjectUnitResponse[]>>(projectUnitsEndpoint(projectId))
+    .post<ApiResponse<unknown>>(`${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/detach-stage-runtime`, {
+      project_runtime_id: projectRuntimeId,
+    })
+    .then(() => undefined);
+}
+
+export function attachChatSessionStageRuntime({
+  projectId,
+  chatSessionId,
+  projectRuntimeId,
+}: {
+  projectId: number;
+  chatSessionId: number;
+  projectRuntimeId: number;
+}): Promise<void> {
+  return apiClient
+    .post<ApiResponse<unknown>>(`${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/attach-stage-runtime`, {
+      project_runtime_id: projectRuntimeId,
+    })
+    .then(() => undefined);
+}
+
+export function getProjectNonDraftUnits(projectId: number): Promise<ProjectUnitResponse[]> {
+  return apiClient
+    .get<ApiResponse<ProjectUnitResponse[]>>(projectNonDraftUnitsEndpoint(projectId))
     .then((res) => res.data ?? []);
 }
 
