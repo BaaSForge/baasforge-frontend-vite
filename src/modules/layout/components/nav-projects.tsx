@@ -69,7 +69,11 @@ export function NavProjects() {
           <SidebarMenuButton asChild>
             <div>
               <MessageSquareText />
-              Previous conversations
+              {visibleSessions.length > 0 ? (
+                <span>Previous conversations</span>
+              ) : (
+                <span>No conversations yet</span>
+              )}
             </div>
           </SidebarMenuButton>
           <SidebarMenuSub className="max-h-60 overflow-y-auto">
