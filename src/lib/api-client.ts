@@ -43,7 +43,7 @@ class ApiClient {
   private baseUrl: string;
   private timeoutDuration = 10_000;
   private onSessionExpired: (() => void) | undefined;
-  private onError: ((error: unknown) => void) | undefined;
+  private onError: ((error: unknown, statusCode: number) => void) | undefined;
   private refreshPromise: Promise<void> | null = null;
 
   constructor(baseUrl: string, options: ApiClientOptions = {}) {
@@ -56,7 +56,7 @@ class ApiClient {
     this.onSessionExpired = callback;
   }
 
-  setOnError(callback: ((error: unknown) => void) | undefined): void {
+  setOnError(callback: ((error: unknown, statusCode: number) => void) | undefined): void {
     this.onError = callback;
   }
 
@@ -121,7 +121,7 @@ class ApiClient {
       throw error;
     }
 
-    const responseData = await response.json().catch(() => ({}));
+    const responseData = await response.json();
 
     if (!response.ok || responseData.isSuccess === false) {
       if (response.status === 401) {
@@ -131,7 +131,7 @@ class ApiClient {
         }
         this.onSessionExpired?.();
       } else {
-        this.onError?.(responseData);
+        this.onError?.(responseData, response.status);
       }
       throw responseData;
     }
@@ -195,7 +195,7 @@ class ApiClient {
         }
         this.onSessionExpired?.();
       }
-      this.onError?.(responseData);
+      this.onError?.(responseData, response.status);
       throw responseData;
     }
 
