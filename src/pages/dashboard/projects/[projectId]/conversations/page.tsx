@@ -71,10 +71,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     return <div>Loading chat session...</div>;
   }
 
-  if (chatSession == null) {
-    return <div>Chat session not found</div>;
-  }
-
   return (
     <>
       <PageTitleBox
@@ -82,24 +78,26 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         mainSidebar={mainSidebar}
         tools={
           <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {chatSession.stage_project_runtime_id ? (
-                  <FancyButton size="sm" className="mr-2" color="green" onClick={() => setRuntimesModalOpen(true)}>
-                    <ConnectIcon className="size-4" />
-                    Connected
-                  </FancyButton>
-                ) : (
-                  <Button variant="secondary" size="sm" className="mr-2" onClick={() => setRuntimesModalOpen(true)}>
-                    <DisconnectIcon className="size-4" />
-                    Disconnected
-                  </Button>
-                )}
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                See runtimes operations
-              </TooltipContent>
-            </Tooltip>
+            {chatSession && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {chatSession.stage_project_runtime_id ? (
+                    <FancyButton size="sm" className="mr-2" color="green" onClick={() => setRuntimesModalOpen(true)}>
+                      <ConnectIcon className="size-4" />
+                      Connected
+                    </FancyButton>
+                  ) : (
+                    <Button variant="secondary" size="sm" className="mr-2" onClick={() => setRuntimesModalOpen(true)}>
+                      <DisconnectIcon className="size-4" />
+                      Disconnected
+                    </Button>
+                  )}
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  See runtimes operations
+                </TooltipContent>
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="secondary" size="sm" onClick={toggleSidebar}>
@@ -120,7 +118,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       </SecondarySidebar>
       <SidebarInset className="here-is-the-content">
         <Container>
-          {conversationId ? (
+          {chatSession ? (
             <p className="text-muted-foreground">
               Conversation {chatSession.title} (project {projectId})
             </p>
@@ -131,13 +129,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
           )}
         </Container>
       </SidebarInset>
+      {chatSession && (
       <RuntimesModal
-        open={runtimesModalOpen}
-        onOpenChange={setRuntimesModalOpen}
-        projectId={Number(projectId)}
-        chatSessionId={Number(chatSession.id)}
-        alreadyConnectedRuntimeId={chatSession.stage_project_runtime_id}
-      />
+          open={runtimesModalOpen}
+          onOpenChange={setRuntimesModalOpen}
+          projectId={Number(projectId)}
+          chatSessionId={Number(chatSession.id)}
+          alreadyConnectedRuntimeId={chatSession.stage_project_runtime_id}
+        />
+      )}
     </>
   );
 }
