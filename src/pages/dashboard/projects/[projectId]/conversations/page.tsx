@@ -26,6 +26,7 @@ import { FancyButton } from "@/components/fancy-button";
 import { RuntimesModal } from "@/modules/project";
 import { ChatMessageDeliveryStatus, ChatMessageType, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import Controls from "./components/controls";
+import { Message } from "./components/message";
 import { scrollToBottom, scrollToTop } from "@/lib/dom";
 
 type Sidebar = ReturnType<typeof useSidebar>;
@@ -210,18 +211,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       </SecondarySidebar>
       <SidebarInset className="here-is-the-content">
         <Container>
-          <div className="flex flex-col-reverse overflow-y-auto min-h-0 flex-1">
+          <div className="flex flex-col-reverse gap-3 overflow-y-auto min-h-0 flex-1">
             {chatSessionMessages?.map((message) => (
-              <div key={message.id}>
-                <p>{message.payload}</p>
-                <p>{message.delivery_status}</p>
-              </div>
+              <Message key={message.id} message={message} />
             ))}
             {shouldShowTemporaryMessageBeforeRedirecting && (
-              <div key={temporaryMessageBeforeRedirectingToNewSession.id}>
-                <p>{temporaryMessageBeforeRedirectingToNewSession.payload}</p>
-                <p>{temporaryMessageBeforeRedirectingToNewSession.delivery_status}</p>
-              </div>
+              <Message
+                key={temporaryMessageBeforeRedirectingToNewSession.id}
+                message={temporaryMessageBeforeRedirectingToNewSession}
+              />
             )}
           </div>
           <Controls
