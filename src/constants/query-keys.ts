@@ -12,6 +12,7 @@ export const QueryKeys = {
   PROJECTS_LIST: ["project", "list"] as const,
   projectChatSessionList: (projectId: number) => ["chat", "sessions", "list", projectId] as const,
   projectChatSessionDetail: (projectId: number, chatSessionId: number) => ["chat", "sessions", "detail", projectId, chatSessionId] as const,
+  projectChatSessionMessages: (projectId: number, chatSessionId: number) => ["chat", "sessions", "messages", projectId, chatSessionId] as const,
   projectReleases: (projectId: number) => ["project", "releases", projectId] as const,
   projectReleaseUnits: (projectId: number, releaseVersion: string) =>
     ["project", "release", "units", projectId, releaseVersion] as const,

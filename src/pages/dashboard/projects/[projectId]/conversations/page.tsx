@@ -1,9 +1,10 @@
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { useLayoutEffect, useRef } from "react";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { SecondarySideBar } from "./secondary-side-bar";
 import { useEffect, useState } from "react";
-import { SidebarIcon } from "lucide-react";
+import { SendIcon, SidebarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useSidebar,
@@ -15,10 +16,17 @@ import {
 } from "@/components/secondary-sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
-import { useProjectChatSessionDetailQuery } from "@/modules/project-chat/queries";
+import { useProjectChatSessionDetailQuery, useProjectChatSessionMessagesQuery } from "@/modules/project-chat/queries";
+import {
+  useCreateProjectChatSessionMutation,
+  useCreateProjectChatSessionMessageMutation,
+} from "@/modules/project-chat/mutations";
 import { ConnectIcon, DisconnectIcon } from "@/modules/project/stores/runtime-store";
 import { FancyButton } from "@/components/fancy-button";
 import { RuntimesModal } from "@/modules/project";
+import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupButton } from "@/components/ui/input-group";
+import { ChatMessageDeliveryStatus, ChatMessageType, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -40,6 +48,8 @@ type ProjectConversationsContentProps = {
 }
 
 function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
+  const messageInputRef = useRef<HTMLInputElement>(null);
+  const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<ChatMessageWithDeliveryStatus | undefined>();
   const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
   const {
     setOpenSkipStorage,
@@ -65,11 +75,82 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }
   }, [noConversation, rereadSidebarOpen]);
 
-  const { data: chatSession, isLoading: isLoadingChatSession } = useProjectChatSessionDetailQuery(Number(projectId), Number(conversationId));
-  
-  if (isLoadingChatSession) {
-    return <div>Loading chat session...</div>;
-  }
+  const navigate = useNavigate();
+  const projectIdNum = Number(projectId);
+  const chatSessionIdNum = conversationId != null ? Number(conversationId) : undefined;
+
+  useEffect(() => {
+    setTemporaryMessageBeforeRedirectingToNewSession(undefined);
+  }, [chatSessionIdNum]);
+
+  useLayoutEffect(() => {
+    if (messageInputRef.current) {
+      messageInputRef.current.focus();
+    }
+  }, [chatSessionIdNum]);
+
+  const { data: chatSession, isLoading: isLoadingChatSession } = useProjectChatSessionDetailQuery(projectIdNum, chatSessionIdNum);
+  const { data: chatSessionMessages, isLoading: isLoadingChatSessionMessages } = useProjectChatSessionMessagesQuery(projectIdNum, chatSessionIdNum);
+  const createSessionMutation = useCreateProjectChatSessionMutation(projectIdNum);
+  const createMessageMutation = useCreateProjectChatSessionMessageMutation();
+
+  const [messageInput, setMessageInput] = useState("");
+
+  const isCreatingSession = createSessionMutation.isPending;
+  const isSendingMessage = createMessageMutation.isPending;
+  const canSendNewConversation =
+    noConversation && messageInput.trim() !== "" && !isCreatingSession;
+  const canSendExistingConversation =
+    !!chatSession &&
+    !!chatSessionIdNum &&
+    messageInput.trim() !== "" &&
+    !isSendingMessage;
+  const canSend = canSendNewConversation || canSendExistingConversation;
+
+  const handleSend = () => {
+    if (!canSend) return;
+
+    const payload = messageInput.trim();
+    setMessageInput("");
+
+    const optimisticMessage: ChatMessageWithDeliveryStatus = {
+      id: Date.now(),
+      chat_session_id: chatSessionIdNum ?? 0,
+      role: ChatSessionRoleType.User,
+      type: ChatMessageType.Text,
+      payload,
+      created_at: new Date().toISOString(),
+      delivery_status: ChatMessageDeliveryStatus.Pending,
+    };
+
+    setTemporaryMessageBeforeRedirectingToNewSession(optimisticMessage);
+
+    if (noConversation) {
+      createSessionMutation.mutate(undefined, {
+        onSuccess: (session) => {
+          if (!session) return;
+
+          createMessageMutation.mutate({
+            projectId: projectIdNum,
+            chatSessionId: session.id,
+            optimisticMessage,
+          });
+
+          navigate(`/dashboard/projects/${projectId}/conversations/${session.id}`);
+        },
+      });
+    } else {
+      createMessageMutation.mutate({
+        projectId: projectIdNum,
+        chatSessionId: chatSessionIdNum ?? 0,
+        optimisticMessage,
+      });
+    }
+  };
+
+  // @ts-expect-error - TODO: use as an overlay
+  const isLoading = isLoadingChatSession || isLoadingChatSessionMessages;
+  const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdNum;
 
   return (
     <>
@@ -127,10 +208,40 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               New conversation for project {projectId}
             </p>
           )}
+          <div className="flex flex-col-reverse overflow-y-auto min-h-0 flex-1">
+            {chatSessionMessages?.map((message) => (
+              <div key={message.id}>
+                <p>{message.payload}</p>
+                <p>{message.delivery_status}</p>
+              </div>
+            ))}
+            {shouldShowTemporaryMessageBeforeRedirecting && (
+              <div key={temporaryMessageBeforeRedirectingToNewSession.id}>
+                <p>{temporaryMessageBeforeRedirectingToNewSession.payload}</p>
+                <p>{temporaryMessageBeforeRedirectingToNewSession.delivery_status}</p>
+              </div>
+            )}
+          </div>
+          <InputGroup>
+            <Input
+              ref={messageInputRef}
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())}
+              placeholder={
+                (noConversation && !shouldShowTemporaryMessageBeforeRedirecting)
+                  ? "Type a message to start a new conversation"
+                  : "Type a message..."
+              }
+            />
+            <InputGroupButton onClick={handleSend} disabled={!canSend} type="button">
+              <SendIcon className="size-4" />
+            </InputGroupButton>
+          </InputGroup>
         </Container>
       </SidebarInset>
       {chatSession && (
-      <RuntimesModal
+        <RuntimesModal
           open={runtimesModalOpen}
           onOpenChange={setRuntimesModalOpen}
           projectId={Number(projectId)}
