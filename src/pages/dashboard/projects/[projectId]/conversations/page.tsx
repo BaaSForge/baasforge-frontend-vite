@@ -48,7 +48,7 @@ type ProjectConversationsContentProps = {
 }
 
 function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
-  const messageInputRef = useRef<HTMLInputElement | null>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<ChatMessageWithDeliveryStatus | undefined>();
   const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
   const {

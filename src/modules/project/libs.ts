@@ -1,19 +1,31 @@
 import type { Location, Params } from "react-router";
 
-export function getSwitchProjectLink(location: Location, params: Params, newProjectId: number | string) {
-  const paramProjectId = params?.projectId;
-  if (paramProjectId) {
-    const replaced = location.pathname.replace(
-      new RegExp(`(/projects/)${paramProjectId}\\b`),
-      `$1${newProjectId}`
-    );
+export function getSwitchProjectLink(
+  location: Location,
+  params: Params,
+  newProjectId: number | string
+) {
+  if (!params.projectId) {
     return {
-      pathname: replaced,
-      search: location.search,
+      pathname: `/dashboard/projects/${newProjectId}`,
+      search: "",
     };
   }
+
+  const currentProjectId = params.projectId;
+  const hasExtraParams = Object.keys(params).length > 1;
+
+  const basePath = location.pathname.replace(
+    `/projects/${currentProjectId}`,
+    `/projects/${newProjectId}`
+  );
+
+  const pathname = hasExtraParams
+    ? `/dashboard/projects/${newProjectId}/conversations`
+    : basePath;
+
   return {
-    pathname: `/dashboard/projects/${newProjectId}`,
+    pathname,
     search: "",
   };
 }
