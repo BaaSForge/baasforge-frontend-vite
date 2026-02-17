@@ -1,6 +1,5 @@
 import { CheckCheck, CircleAlert } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import {
@@ -13,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 
 type MessageProps = {
   message: ChatMessageWithDeliveryStatus;
-  onRetry?: () => void;
+  onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
 };
 
 function formatMessageTime(dateValue: string): string {
@@ -76,34 +75,34 @@ export function Message({ message, onRetry }: MessageProps) {
       >
         <div
           className={cn(
-            "relative rounded-2xl px-4 py-2.5",
+            "rounded-2xl px-4 py-2.5",
             isUser
               ? cn("bg-primary text-primary-foreground rounded-br-md")
               : "bg-muted rounded-bl-md",
           )}
         >
           <p className="whitespace-pre-wrap break-words text-sm">{text}</p>
-          {isFailed && (
-            <Badge
-              variant="destructive"
-              className="absolute right-full bottom-full -mr-5 -mb-3 cursor-pointer"
-              onClick={onRetry}
-            >
-              Retry
-            </Badge>
-          )}
         </div>
         <div
           className={cn(
-            "flex items-center gap-1.5",
+            "flex items-center gap-1.5 h-6",
             isUser ? "flex-row-reverse" : "flex-row"
           )}
         >
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[0.625rem] text-muted-foreground">
             {formatMessageTime(message.created_at)}
           </span>
           {message.role === ChatSessionRoleType.User && (
             <DeliveryStatusIcon status={message.delivery_status} />
+          )}
+          {isFailed && (
+            <Badge
+              variant="destructive"
+              className="cursor-pointer text-[0.625rem]"
+              onClick={() => onRetry?.(message)}
+            >
+              Retry
+            </Badge>
           )}
         </div>
       </div>

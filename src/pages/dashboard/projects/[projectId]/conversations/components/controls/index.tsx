@@ -9,6 +9,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { ArrowUp } from "lucide-react";
+import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -21,8 +22,6 @@ type Props = {
   isNewSession: boolean;
   mainSidebar?: Sidebar;
 };
-
-const middleContentClassName = "max-w-screen-sm mx-auto";
 
 export default function Controls({
   messageInputRef,
@@ -74,7 +73,7 @@ export default function Controls({
           )}
           onClick={handleFocus}
         >
-          <h1 className={cn("text-3xl font-bold text-foreground", middleContentClassName)}>
+          <h1 className={cn("text-3xl font-bold text-foreground", MIDDLE_CONTENT_CLASSNAME)}>
             What would you like to create?
           </h1>
         </div>
@@ -87,7 +86,7 @@ export default function Controls({
           bottomClassName,
         )}
       >
-        <div className={cn("flex items-stretch px-4", middleContentClassName)} onClick={handleFocus}>
+        <div className={cn("flex items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)} onClick={handleFocus}>
           <InputGroup className="w-full shadow-2xl flex flex-col bg-background">
             <InputGroupTextarea
               ref={messageInputRef}
@@ -101,10 +100,10 @@ export default function Controls({
                   ? "Type a message to start a new conversation"
                   : "Type a message") + ", press Shift+Enter for new line"
               }
-              className="px-2 py-2 pb-0 min-h-8 max-h-40"
+              className="px-3 py-3 pb-0 min-h-10 max-h-40"
               rows={1}
             />
-            <InputGroupAddon align="block-end" className="!p-2">
+            <InputGroupAddon align="block-end" className="!p-3 !pt-0">
               {/* <InputGroupButton variant="ghost" size="icon-xs">
                 <Copy />
               </InputGroupButton> */}

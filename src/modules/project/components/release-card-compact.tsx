@@ -40,13 +40,13 @@ export function ReleaseCardCompact({
     <>
       <Badge
         variant="secondary"
-        className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[10px]"
+        className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[0.625rem]"
         title={`Version ${release.version}`}
       >
         {release.version}
       </Badge>
       {isLive && (
-        <Badge variant="outline" className="text-[10px]">
+        <Badge variant="outline" className="text-[0.625rem]">
           deployed to {runtime.name}
         </Badge>
       )}
@@ -55,7 +55,7 @@ export function ReleaseCardCompact({
       )}
       <Badge
         variant="outline"
-        className="text-[10px]"
+        className="text-[0.625rem]"
       >
         {formatDateTimeMedium(release.created_at)}
       </Badge>

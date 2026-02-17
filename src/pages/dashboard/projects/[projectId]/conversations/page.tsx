@@ -28,6 +28,8 @@ import { ChatMessageDeliveryStatus, ChatMessageType, ChatSessionRoleType, type C
 import Controls from "./components/controls";
 import { Message } from "./components/message";
 import { scrollToBottom, scrollToTop } from "@/lib/dom";
+import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
+import { cn } from "@/lib/utils";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -119,6 +121,40 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     !isSendingMessage;
   const canSend = canSendNewConversation || canSendExistingConversation;
 
+  const createSessionThenMessage = (optimisticMessage: ChatMessageWithDeliveryStatus) => {
+    setTemporaryMessageBeforeRedirectingToNewSession({
+      ...optimisticMessage,
+      delivery_status: ChatMessageDeliveryStatus.Pending,
+    });
+
+    createSessionMutation.mutate(undefined, {
+      onSuccess: (session) => {
+        if (!session) return;
+
+        createMessageMutation.mutate({
+          projectId: projectIdNum,
+          chatSessionId: session.id,
+          optimisticMessage: {
+            ...optimisticMessage,
+            delivery_status: ChatMessageDeliveryStatus.Pending,
+          },
+        });
+
+        navigate(`/dashboard/projects/${projectId}/conversations/${session.id}`);
+      },
+      onError: () => {
+        setTemporaryMessageBeforeRedirectingToNewSession({
+          ...optimisticMessage,
+          delivery_status: ChatMessageDeliveryStatus.Failed,
+        });
+      },
+    });
+  }
+
+  const handleRetryTemporaryMessageBeforeRedirectingToNewSession = () => {
+    createSessionThenMessage(temporaryMessageBeforeRedirectingToNewSession!);
+  }
+
   const handleSend = () => {
     if (!canSend) return;
 
@@ -135,22 +171,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       delivery_status: ChatMessageDeliveryStatus.Pending,
     };
 
-    setTemporaryMessageBeforeRedirectingToNewSession(optimisticMessage);
-
     if (noConversation) {
-      createSessionMutation.mutate(undefined, {
-        onSuccess: (session) => {
-          if (!session) return;
-
-          createMessageMutation.mutate({
-            projectId: projectIdNum,
-            chatSessionId: session.id,
-            optimisticMessage,
-          });
-
-          navigate(`/dashboard/projects/${projectId}/conversations/${session.id}`);
-        },
-      });
+      createSessionThenMessage(optimisticMessage);
     } else {
       createMessageMutation.mutate({
         projectId: projectIdNum,
@@ -159,6 +181,14 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       });
     }
   };
+
+  const handleRetryMessage = (message: ChatMessageWithDeliveryStatus) => {
+    createMessageMutation.mutate({
+      projectId: projectIdNum,
+      chatSessionId: chatSessionIdNum ?? 0,
+      optimisticMessage: message,
+    });
+  }
 
   // @ts-expect-error - TODO: use as an overlay
   const isLoading = isLoadingChatSession || isLoadingChatSessionMessages;
@@ -211,14 +241,19 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       </SecondarySidebar>
       <SidebarInset className="here-is-the-content">
         <Container>
-          <div className="flex flex-col-reverse gap-3 overflow-y-auto min-h-0 flex-1">
+          <div className={cn("flex flex-col-reverse gap-3 overflow-y-auto min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
             {chatSessionMessages?.map((message) => (
-              <Message key={message.id} message={message} />
+              <Message
+                key={message.id}
+                message={message}
+                onRetry={handleRetryMessage}
+              />
             ))}
             {shouldShowTemporaryMessageBeforeRedirecting && (
               <Message
                 key={temporaryMessageBeforeRedirectingToNewSession.id}
                 message={temporaryMessageBeforeRedirectingToNewSession}
+                onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
               />
             )}
           </div>

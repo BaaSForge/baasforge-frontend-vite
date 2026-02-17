@@ -19,7 +19,7 @@ export function LiveBadge({
   className,
   size = 0.4,
 }: LiveBadgeProps) {
-  const baseClass = cn("inline-flex items-center gap-1 text-[10px] text-muted-foreground/50", className);
+  const baseClass = cn("inline-flex items-center gap-1 text-[0.625rem] text-muted-foreground/50", className);
 
   const circleStyle = { width: `${size}rem`, height: `${size}rem` };
   const doubleCircleStyle = { width: `${size * 2}rem`, height: `${size * 2}rem` };

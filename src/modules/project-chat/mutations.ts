@@ -21,10 +21,23 @@ export function useCreateProjectChatSessionMessageMutation() {
   return useMutation({
     mutationFn: async ({ projectId, chatSessionId, optimisticMessage }: CreateProjectChatSessionMessageMutationParams) => {
       const cacheKey = QueryKeys.projectChatSessionMessages(projectId, chatSessionId);
-      queryClient.setQueryData<ChatMessageWithDeliveryStatus[]>(cacheKey, (old = []) => [
-        optimisticMessage,
-        ...old,
-      ]);
+
+      queryClient.setQueryData<ChatMessageWithDeliveryStatus[]>(cacheKey, (old = []) => {
+        const currentOptimisticMessage = old.find((msg) => msg.id === optimisticMessage.id);
+
+        if (currentOptimisticMessage) {
+          return old.map((msg) =>
+            msg.id === optimisticMessage.id
+              ? { ...msg, delivery_status: ChatMessageDeliveryStatus.Pending }
+              : msg
+          );
+        }
+
+        return [
+          optimisticMessage,
+          ...old,
+        ];
+      });
 
       function setFailed() {
         queryClient.setQueryData<ChatMessageWithDeliveryStatus[]>(cacheKey, (old = []) => {
@@ -35,6 +48,7 @@ export function useCreateProjectChatSessionMessageMutation() {
           );
         });
       }
+
       function setDelivered(saved: ChatMessageWithDeliveryStatus) {
         queryClient.setQueryData<ChatMessageWithDeliveryStatus[]>(cacheKey, (old = []) => {
           return [

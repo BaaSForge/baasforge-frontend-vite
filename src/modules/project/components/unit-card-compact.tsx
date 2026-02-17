@@ -37,7 +37,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
     <>
       <Badge
         variant="secondary"
-        className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[10px]"
+        className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[0.625rem]"
         title={`Version ${unit.version}`}
       >
         {unit.version}
@@ -45,7 +45,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
       <Badge
         variant="outline"
         className={cn(
-          "text-[10px]",
+          "text-[0.625rem]",
           getTypeBadgeClass(unit.unit_type)
         )}
       >
