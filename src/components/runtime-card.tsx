@@ -55,7 +55,7 @@ export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps)
       onLabel={`${runtime.live_release_version} is live`}
       offLabel="Not live"
       className="text-sm"
-      size={2}
+      size={0.5}
     />
   );
 

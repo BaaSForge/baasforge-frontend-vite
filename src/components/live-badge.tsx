@@ -17,14 +17,21 @@ export function LiveBadge({
   onLabel,
   onTitle,
   className,
-  size = 1.5,
+  size = 0.4,
 }: LiveBadgeProps) {
-  const baseClass = cn("inline-flex items-center gap-1 text-sm text-muted-foreground/50", className);
-  const circleClass = `size-${size} shrink-0 rounded-full bg-muted-foreground/20`;
+  const baseClass = cn("inline-flex items-center gap-1 text-[10px] text-muted-foreground/50", className);
+
+  const circleStyle = { width: `${size}rem`, height: `${size}rem` };
+  const doubleCircleStyle = { width: `${size * 2}rem`, height: `${size * 2}rem` };
+
+  const circleClass = cn(
+    "shrink-0 rounded-full bg-muted-foreground/20"
+  );
 
   const offCircle = (
     <span
       className={circleClass}
+      style={circleStyle}
       aria-hidden
     />
   );
@@ -43,12 +50,22 @@ export function LiveBadge({
   }
 
   const onCircle = (
-    <span className={`relative flex size-${size * 2} shrink-0 items-center justify-center bg-secondary border border-blue-500 rounded-full`} aria-hidden>
+    <span
+      className={cn(
+        "relative flex shrink-0 items-center justify-center bg-secondary border border-blue-500 rounded-full"
+      )}
+      style={doubleCircleStyle}
+      aria-hidden
+    >
       <span
         className="absolute inset-0 origin-center rounded-full bg-blue-500 animate-[status-pulse-ring_1.2s_ease-out_infinite]"
         aria-hidden
       />
-      <span className={cn(circleClass, "bg-blue-500")} aria-hidden />
+      <span
+        className={cn(circleClass, "bg-blue-500")}
+        style={circleStyle}
+        aria-hidden
+      />
     </span>
   );
 

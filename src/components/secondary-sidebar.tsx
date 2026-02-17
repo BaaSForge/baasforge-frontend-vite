@@ -73,6 +73,7 @@ export function SecondarySidebarProvider({
         className={cn(
           "flex-col",
           "transition-width duration-200",
+          "min-h-none",
           sidebarClassName
         )}
       >

@@ -38,7 +38,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <Toaster />
         <RuntimeChatSessionDialogs />
         {children}
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

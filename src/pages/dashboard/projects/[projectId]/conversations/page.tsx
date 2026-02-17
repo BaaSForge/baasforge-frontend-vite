@@ -4,7 +4,7 @@ import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { SecondarySideBar } from "./secondary-side-bar";
 import { useEffect, useState } from "react";
-import { SendIcon, SidebarIcon } from "lucide-react";
+import { SidebarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useSidebar,
@@ -24,9 +24,9 @@ import {
 import { ConnectIcon, DisconnectIcon } from "@/modules/project/stores/runtime-store";
 import { FancyButton } from "@/components/fancy-button";
 import { RuntimesModal } from "@/modules/project";
-import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupButton } from "@/components/ui/input-group";
 import { ChatMessageDeliveryStatus, ChatMessageType, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import Controls from "./components/controls";
+import { scrollToBottom, scrollToTop } from "@/lib/dom";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -48,7 +48,7 @@ type ProjectConversationsContentProps = {
 }
 
 function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
-  const messageInputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLInputElement | null>(null);
   const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<ChatMessageWithDeliveryStatus | undefined>();
   const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
   const {
@@ -90,11 +90,22 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   }, [chatSessionIdNum]);
 
   const { data: chatSession, isLoading: isLoadingChatSession } = useProjectChatSessionDetailQuery(projectIdNum, chatSessionIdNum);
-  const { data: chatSessionMessages, isLoading: isLoadingChatSessionMessages } = useProjectChatSessionMessagesQuery(projectIdNum, chatSessionIdNum);
+  const {
+    data: chatSessionMessages,
+    isLoading: isLoadingChatSessionMessages,
+  } = useProjectChatSessionMessagesQuery(projectIdNum, chatSessionIdNum);
   const createSessionMutation = useCreateProjectChatSessionMutation(projectIdNum);
   const createMessageMutation = useCreateProjectChatSessionMessageMutation();
 
   const [messageInput, setMessageInput] = useState("");
+
+  useLayoutEffect(() => {
+    if (isLoadingChatSessionMessages || !chatSessionIdNum) {
+      scrollToTop();
+    } else {
+      scrollToBottom();
+    }
+  }, [isLoadingChatSessionMessages, chatSessionIdNum]);
 
   const isCreatingSession = createSessionMutation.isPending;
   const isSendingMessage = createMessageMutation.isPending;
@@ -222,22 +233,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               </div>
             )}
           </div>
-          <InputGroup>
-            <Input
-              ref={messageInputRef}
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())}
-              placeholder={
-                (noConversation && !shouldShowTemporaryMessageBeforeRedirecting)
-                  ? "Type a message to start a new conversation"
-                  : "Type a message..."
-              }
-            />
-            <InputGroupButton onClick={handleSend} disabled={!canSend} type="button">
-              <SendIcon className="size-4" />
-            </InputGroupButton>
-          </InputGroup>
+          <Controls
+            messageInputRef={messageInputRef}
+            messageInputValue={messageInput}
+            setMessageInputValue={setMessageInput}
+            handleSend={handleSend}
+            canSend={canSend}
+            isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
+            mainSidebar={mainSidebar}
+          />
         </Container>
       </SidebarInset>
       {chatSession && (
