@@ -210,15 +210,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       </SecondarySidebar>
       <SidebarInset className="here-is-the-content">
         <Container>
-          {chatSession ? (
-            <p className="text-muted-foreground">
-              Conversation {chatSession.title} (project {projectId})
-            </p>
-          ) : (
-            <p className="text-muted-foreground">
-              New conversation for project {projectId}
-            </p>
-          )}
           <div className="flex flex-col-reverse overflow-y-auto min-h-0 flex-1">
             {chatSessionMessages?.map((message) => (
               <div key={message.id}>
