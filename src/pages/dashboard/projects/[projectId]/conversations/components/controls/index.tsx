@@ -49,7 +49,12 @@ export default function Controls({
       ? "!right-[var(--sidebar-width)]"
       : "right-0";
 
-  const bottomClassName = (!isNewSession || isMobile) ? "bottom-4 translate-y-0" : "bottom-1/2 translate-y-4/5";
+  // Use only `bottom` for vertical position so the transition doesn't jump (changing
+  // both bottom and transform caused transform to snap to 0 first, then bottom to animate).
+  const bottomClassName =
+    !isNewSession || isMobile
+      ? "bottom-4"
+      : "bottom-[calc(50%-3rem)]";
 
   const handleFocus = () => {
     if (messageInputRef.current) {
@@ -76,7 +81,7 @@ export default function Controls({
       )}
       <div
         className={cn(
-          "fixed min-h-14 z-20 transform transition-[left,right,bottom,transform] duration-200 ease-out",
+          "fixed min-h-14 z-20 transition-[left,right,bottom] duration-200 ease-out",
           leftClassName,
           rightClassName,
           bottomClassName,
