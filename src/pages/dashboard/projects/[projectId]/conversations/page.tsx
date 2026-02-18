@@ -27,9 +27,10 @@ import { RuntimesModal } from "@/modules/project";
 import { ChatMessageDeliveryStatus, ChatMessageType, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import Controls from "./components/controls";
 import { Message } from "./components/message";
-import { scrollToBottom, scrollToTop } from "@/lib/dom";
+import { ScrollBehavior, scrollToBottom, scrollToTop } from "@/lib/dom";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -53,6 +54,7 @@ type ProjectConversationsContentProps = {
 function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<ChatMessageWithDeliveryStatus | undefined>();
+  const [shouldShowResponsePlaceholder, setShouldShowResponsePlaceholder] = useState(false);
   const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
   const {
     setOpenSkipStorage,
@@ -84,6 +86,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   useEffect(() => {
     setTemporaryMessageBeforeRedirectingToNewSession(undefined);
+    setShouldShowResponsePlaceholder(false);
   }, [chatSessionIdNum]);
 
   useLayoutEffect(() => {
@@ -200,6 +203,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     if (noConversation) {
       createSessionThenMessage(optimisticMessage);
     } else {
+      setShouldShowResponsePlaceholder(true);
+
       createMessageMutation.mutate({
         projectId: projectIdNum,
         chatSessionId: chatSessionIdNum ?? 0,
@@ -208,6 +213,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }
   };
 
+  useEffect(() => {
+    if (!shouldShowResponsePlaceholder) return;
+
+    scrollToBottom(undefined, ScrollBehavior.Smooth);
+  }, [shouldShowResponsePlaceholder]);
+
   const handleRetryMessage = (message: ChatMessageWithDeliveryStatus) => {
     createMessageMutation.mutate({
       projectId: projectIdNum,
@@ -215,6 +226,9 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       optimisticMessage: message,
     });
   }
+
+  const lastMessage = chatSessionMessages?.[chatSessionMessages.length - 1];
+  const isLastMessageFromAI = lastMessage?.role === ChatSessionRoleType.Ai;
 
   // @ts-expect-error - TODO: use as an overlay
   const isLoading = isLoadingChatSession || isLoadingChatSessionMessages;
@@ -284,10 +298,16 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             ))}
             {shouldShowTemporaryMessageBeforeRedirecting && (
               <Message
-                key={temporaryMessageBeforeRedirectingToNewSession.id}
                 message={temporaryMessageBeforeRedirectingToNewSession}
                 onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
               />
+            )}
+            {shouldShowResponsePlaceholder && (
+              <div className="h-[60vh] w-full shrink-0 relative">
+                {!isLastMessageFromAI && (
+                  <Spinner className="size-5 absolute top-0 left-0 text-blue-500" />
+                )}
+              </div>
             )}
           </div>
           <Controls

@@ -69,7 +69,7 @@ export function Message({ message, onRetry }: MessageProps) {
     >
       <div
         className={cn(
-          "flex flex-col gap-1",
+          "flex flex-col gap-1 max-w-[80%]",
           isUser ? "items-end" : "items-start"
         )}
       >

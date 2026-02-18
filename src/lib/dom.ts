@@ -27,7 +27,10 @@ export function scrollToBottom(
 ) {
   scroll(
     containerId,
-    (el) => (el?.scrollHeight ?? 0) || document.documentElement.scrollHeight,
+    (el) => {
+      const target = el ?? document.documentElement;
+      return target.scrollHeight - target.clientHeight;
+    },
     behavior,
   );
 }
