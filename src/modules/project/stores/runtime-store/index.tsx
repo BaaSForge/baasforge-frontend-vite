@@ -247,3 +247,4 @@ export function RuntimeChatSessionDialogs() {
 }
 
 export { Link2 as ConnectIcon, Unplug as DisconnectIcon };
+export { useRuntimeChatSessionActions } from "./hooks";
