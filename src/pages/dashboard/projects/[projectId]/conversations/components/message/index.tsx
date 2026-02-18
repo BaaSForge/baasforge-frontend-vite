@@ -46,8 +46,6 @@ function DeliveryStatusIcon({
           aria-label="Failed to send message"
         />
       );
-    case ChatMessageDeliveryStatus.Failed:
-      return null;
   }
 }
 

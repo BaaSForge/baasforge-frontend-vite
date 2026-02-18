@@ -2,7 +2,6 @@
 
 import { Container } from "@/components/page-container";
 import { PackageDescription } from "@/components/package-description";
-import { PageTitleBox } from "@/components/page-title-box";
 import {
   Card,
   CardContent,

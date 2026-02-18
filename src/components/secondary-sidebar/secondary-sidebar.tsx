@@ -1,11 +1,9 @@
-import React, { useState, createContext, useContext, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   SidebarProvider,
   useSidebar,
-  SidebarContent,
   Sidebar,
-  SidebarInset,
-} from "./ui/sidebar";
+} from "../ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
   useStickyBreadcrumbBarHeight,
@@ -13,18 +11,13 @@ import {
   useStickyBreadcrumbBarVisible,
 } from "@/stores/breadcrumb";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
+import { InternalSecondarySidebarContext } from "./context";
 
 type Props = {
   children: React.ReactNode;
   storageKey?: STORAGE_KEYS;
   defaultOpen?: boolean;
 };
-
-type InternalSecondarySidebarContextValue = {
-  handleOpenChangeSkipStorage: (open: boolean) => void;
-  rereadSidebarOpen: () => void;
-};
-const InternalSecondarySidebarContext = createContext<InternalSecondarySidebarContextValue | undefined>(undefined);
 
 export function SecondarySidebarProvider({
   children,
@@ -98,7 +91,7 @@ export function SecondarySidebar({ children }: Props) {
         stickyBarTransition
       )}
       style={{
-        ["--sticky-bar-height" as any]: `${stickyBarHeight}px`,
+        ["--sticky-bar-height" as keyof React.CSSProperties]: `${stickyBarHeight}px`,
         ...stickyBarTransitionStyles,
       }}
     >
@@ -106,16 +99,3 @@ export function SecondarySidebar({ children }: Props) {
     </Sidebar>
   );
 }
-
-export function useSecondarySidebar() {
-  const { toggleSidebar } = useSidebar();
-  const ctx = useContext(InternalSecondarySidebarContext);
-
-  return {
-    toggleSidebar,
-    setOpenSkipStorage: ctx?.handleOpenChangeSkipStorage!,
-    rereadSidebarOpen: ctx?.rereadSidebarOpen!,
-  };
-}
-
-export { SidebarContent, SidebarInset, useSidebar };

@@ -26,14 +26,14 @@ export interface ChatMessageResponse {
   chat_session_id: number;
   role: ChatSessionRoleType;
   type: ChatMessageType;
-  payload?: any | null;
+  payload?: unknown | null;
   created_at: string;
   is_first: boolean;
 }
 
 export interface ChatMessageDTO {
   type: ChatMessageType;
-  payload?: any | null;
+  payload?: unknown | null;
 }
 
 export enum ChatMessageDeliveryStatus {

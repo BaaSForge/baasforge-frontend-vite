@@ -76,7 +76,7 @@ export function PageTitleBox({ title, tools, className, mainSidebar: passedSideb
           className
         )}
         style={{
-          ['--top' as any]: `${top}px`,
+          ['--top' as keyof React.CSSProperties]: `${top}px`,
           ...stickyBarTransitionStyles
         }}
       >

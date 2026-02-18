@@ -10,13 +10,10 @@ import {
 } from "@/components/ui/field"
 import { getGoogleInitiateFormAction } from "../lib/google-auth"
 
-export interface LoginFormProps extends React.ComponentProps<"div"> {
-}
-
 export function LoginForm({
   className,
   ...props
-}: LoginFormProps) {
+}: React.ComponentProps<"div">) {
   const [searchParams] = useSearchParams();
   const callbackUrlParam = searchParams.get("callback-url");
   

@@ -7,5 +7,5 @@ export function usePrevious<T>(value: T): T | undefined {
     ref.current = value;
   }, [value]);
 
-  return ref.current;
+  return ref.current; // eslint-disable-line react-hooks/refs
 }

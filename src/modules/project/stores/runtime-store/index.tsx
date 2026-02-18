@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { createStore, useStore } from "zustand";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -16,139 +15,12 @@ import {
 import {
   useDetachChatSessionStageRuntimeMutation,
   useAttachChatSessionStageRuntimeMutation,
-} from "../mutations";
+} from "../../mutations";
 import { Unplug, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRuntimeChatSessionDialogState } from "./hooks";
 
 const toastPosition = "top-center";
-
-type PendingState =
-  | null
-  | {
-      type: "detach";
-      projectId: number;
-      chatSessionId: number;
-      projectRuntimeId: number;
-      resolve: (value: boolean) => void;
-    }
-  | {
-      type: "attach";
-      projectId: number;
-      chatSessionId: number;
-      projectRuntimeId: number;
-      resolve: (value: boolean) => void;
-    }
-  | {
-      type: "detach-then-attach";
-      projectId: number;
-      chatSessionId: number;
-      alreadyConnectedRuntimeId?: number | null | undefined;
-      projectRuntimeId: number;
-      alreadyConnectedChatSessionId?: number | null | undefined;
-      resolve: (value: boolean) => void;
-    };
-
-interface RuntimeChatSessionState {
-  pending: PendingState;
-  isMutating: boolean;
-  openDetach: ({
-    projectId,
-    chatSessionId,
-    projectRuntimeId
-  }: {
-    projectId: number;
-    chatSessionId: number;
-    projectRuntimeId: number;
-  }) => Promise<boolean>;
-  openAttach: ({
-    projectId,
-    chatSessionId,
-    alreadyConnectedRuntimeId,
-    projectRuntimeId,
-    alreadyConnectedChatSessionId,
-  }: {
-    projectId: number;
-    chatSessionId: number;
-    alreadyConnectedRuntimeId?: number | null | undefined;
-    projectRuntimeId: number;
-    alreadyConnectedChatSessionId?: number | null | undefined;
-  }) => Promise<boolean>;
-  closePending: (result: boolean) => void;
-  setIsMutating: (value: boolean) => void;
-}
-
-const runtimeChatSessionStore = createStore<RuntimeChatSessionState>(
-  (set, get) => ({
-    pending: null,
-    isMutating: false,
-
-    openDetach: ({ projectId, chatSessionId, projectRuntimeId }) =>
-      new Promise<boolean>((resolve) => {
-        set({
-          pending: { type: "detach", projectId, chatSessionId, projectRuntimeId, resolve },
-        });
-      }),
-
-    openAttach: ({
-      projectId,
-      chatSessionId,
-      projectRuntimeId,
-      alreadyConnectedChatSessionId,
-      alreadyConnectedRuntimeId,
-    }) =>
-      new Promise<boolean>((resolve) => {
-        const needToDetachFirst = alreadyConnectedChatSessionId != null || alreadyConnectedRuntimeId != null;
-
-        if (needToDetachFirst) {
-          set({
-            pending: {
-              type: "detach-then-attach",
-              projectId,
-              chatSessionId,
-              alreadyConnectedRuntimeId,
-              projectRuntimeId,
-              alreadyConnectedChatSessionId,
-              resolve,
-            },
-          });
-        } else {
-          set({
-            pending: { type: "attach", projectId, chatSessionId, projectRuntimeId, resolve },
-          });
-        }
-      }),
-
-    closePending: (result) => {
-      const { pending } = get();
-      if (pending) pending.resolve(result);
-      set({ pending: null, isMutating: false });
-    },
-
-    setIsMutating: (value) => set({ isMutating: value }),
-  })
-);
-
-export function useRuntimeChatSessionActions() {
-  const openDetach = useStore(runtimeChatSessionStore, (s) => s.openDetach);
-  const openAttach = useStore(runtimeChatSessionStore, (s) => s.openAttach);
-  return {
-    detachRuntime: openDetach,
-    attachRuntime: openAttach,
-  };
-}
-
-function useRuntimeChatSessionDialogState() {
-  const pending = useStore(runtimeChatSessionStore, (s) => s.pending);
-  const isMutating = useStore(runtimeChatSessionStore, (s) => s.isMutating);
-  const closePending = useStore(runtimeChatSessionStore, (s) => s.closePending);
-  const setIsMutating = useStore(runtimeChatSessionStore, (s) => s.setIsMutating);
-  return {
-    pending,
-    isMutating,
-    closePending,
-    setIsMutating,
-  };
-}
 
 function DialogMedia({
   variant,

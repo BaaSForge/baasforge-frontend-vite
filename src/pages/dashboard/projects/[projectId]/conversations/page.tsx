@@ -76,17 +76,18 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   useEffect(() => {
     if (noConversation) {
-      setOpenSkipStorage(false);
+      setOpenSkipStorage?.(false);
     } else {
-      rereadSidebarOpen();
+      rereadSidebarOpen?.();
     }
-  }, [noConversation, rereadSidebarOpen]);
+  }, [noConversation, rereadSidebarOpen, setOpenSkipStorage]);
 
   const navigate = useNavigate();
   const projectIdNum = Number(projectId);
   const chatSessionIdNum = conversationId != null ? Number(conversationId) : undefined;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTemporaryMessageBeforeRedirectingToNewSession(undefined);
 
     if (justRedirectedToNewSessionRef.current) {
@@ -102,7 +103,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }
   }, [chatSessionIdNum]);
 
-  const { data: chatSession, isLoading: isLoadingChatSession } = useProjectChatSessionDetailQuery(projectIdNum, chatSessionIdNum);
+  const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdNum, chatSessionIdNum);
   const {
     data: chatSessionMessagesData,
     isLoading: isLoadingChatSessionMessages,
@@ -239,8 +240,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   const lastMessage = chatSessionMessages?.[chatSessionMessages.length - 1];
   const isLastMessageFromAI = lastMessage?.role === ChatSessionRoleType.Ai;
 
-  // @ts-expect-error - TODO: use as an overlay
-  const isLoading = isLoadingChatSession || isLoadingChatSessionMessages;
   const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdNum;
 
   return (

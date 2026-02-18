@@ -110,7 +110,7 @@ export function RuntimesModal({
   const handleDetach = (runtime: ProjectRuntimeWithConnectedChatResponse) => {
     detachRuntime({
       projectId,
-      chatSessionId: runtime.connected_chat_session?.id!,
+      chatSessionId: runtime.connected_chat_session?.id ?? 0,
       projectRuntimeId: runtime.id,
     });
   };

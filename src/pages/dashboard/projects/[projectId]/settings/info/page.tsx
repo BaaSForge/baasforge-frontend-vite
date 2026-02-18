@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams } from "react-router";
 import {
   Field,
@@ -22,18 +22,16 @@ export default function ProjectSettingsInfoPage() {
   const id = projectId ? parseInt(projectId, 10) : undefined;
   const { data: project, isLoading } = useProjectQuery(id);
   const patchMutation = usePatchProjectMutation(id ?? 0);
-  const [name, setName] = useState("");
-
-  useEffect(() => {
-    if (project?.name != null) {
-      setName(project.name);
-    }
-  }, [project?.name]);
+  const [editedName, setEditedName] = useState<string | null>(null);
+  const name = editedName ?? project?.name ?? "";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (id == null || name.trim() === "") return;
-    patchMutation.mutate({ name: name.trim() });
+    patchMutation.mutate(
+      { name: name.trim() },
+      { onSuccess: () => setEditedName(null) }
+    );
   };
 
   if (isLoading) {
@@ -58,7 +56,7 @@ export default function ProjectSettingsInfoPage() {
             <FieldContent>
               <Input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setEditedName(e.target.value)}
                 placeholder="Project name"
                 disabled={patchMutation.isPending}
                 aria-invalid={patchMutation.isError ? true : undefined}

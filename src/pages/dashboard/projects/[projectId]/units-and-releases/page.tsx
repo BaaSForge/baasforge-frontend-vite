@@ -48,6 +48,7 @@ function getStoredGroupMode(): GroupMode {
     const stored = localStorage.getItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE);
     if (stored === "ungrouped" || stored === "grouped") return stored;
   } catch {
+    // do nothing
   }
   return "ungrouped";
 }

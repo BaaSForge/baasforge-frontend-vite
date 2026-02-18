@@ -14,7 +14,7 @@ export function TimeLeftLabel({ expiresAt }: TimeLeftLabelProps) {
 
   useEffect(() => {
     const info = getTimeLeft(expiresAt);
-    setLabel(formatTimeLeftLabel(info));
+    setLabel(formatTimeLeftLabel(info)); // eslint-disable-line react-hooks/set-state-in-effect
 
     if (info.type !== "active" || info.days >= 1) {
       return;

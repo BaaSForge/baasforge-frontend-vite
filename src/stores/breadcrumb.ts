@@ -27,7 +27,8 @@ const breadcrumbStore = createStore<BreadcrumbState>((set) => ({
     })),
   clearSegmentLabel: (paramName) =>
     set((state) => {
-      const { [paramName]: _, ...rest } = state.segmentLabels;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [paramName]: _removed, ...rest } = state.segmentLabels;
       return { segmentLabels: rest };
     }),
   clearAllSegmentLabels: () => set({ segmentLabels: {} }),

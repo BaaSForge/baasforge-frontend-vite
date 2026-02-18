@@ -2,7 +2,7 @@ import { envConfig } from "./env";
 
 const AUTH_REFRESH_ENDPOINT = "/v1/auth/refresh";
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   isSuccess: boolean;
   data?: T;
   error?: {
@@ -18,7 +18,7 @@ export interface ApiError {
     message: string;
   };
   status?: number;
-  data?: any;
+  data?: unknown;
 }
 
 function isNeedsRefreshBody(body: unknown): body is { data: { needs_refresh_token: true } } {
@@ -91,7 +91,7 @@ class ApiClient {
     }
   }
 
-  private async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async request<T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = this.buildUrl(endpoint);
 
     const controller = new AbortController();
@@ -139,11 +139,11 @@ class ApiClient {
     return responseData;
   }
 
-  async get<T = any>(endpoint: string, options?: RequestInit): Promise<T> {
+  async get<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" });
   }
 
-  async post<T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
+  async post<T = unknown>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "POST",
@@ -151,7 +151,7 @@ class ApiClient {
     });
   }
 
-  async put<T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
+  async put<T = unknown>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "PUT",
@@ -159,11 +159,11 @@ class ApiClient {
     });
   }
 
-  async delete<T = any>(endpoint: string, options?: RequestInit): Promise<T> {
+  async delete<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
   }
 
-  async patch<T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<T> {
+  async patch<T = unknown>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, {
       ...options,
       method: "PATCH",
@@ -171,7 +171,7 @@ class ApiClient {
     });
   }
 
-  async uploadFile<T = any>(endpoint: string, file: File, options?: RequestInit): Promise<T> {
+  async uploadFile<T = unknown>(endpoint: string, file: File, options?: RequestInit): Promise<T> {
     const formData = new FormData();
     formData.append("file", file);
 
