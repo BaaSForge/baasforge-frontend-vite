@@ -28,6 +28,7 @@ export interface ChatMessageResponse {
   type: ChatMessageType;
   payload?: any | null;
   created_at: string;
+  is_first: boolean;
 }
 
 export interface ChatMessageDTO {
@@ -43,6 +44,7 @@ export enum ChatMessageDeliveryStatus {
 
 export interface ChatMessageWithDeliveryStatus extends ChatMessageResponse {
   delivery_status: ChatMessageDeliveryStatus;
+  is_optimistic?: boolean;
 }
 
 export type CreateProjectChatSessionMessageMutationParams = {

@@ -1,8 +1,20 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "@/constants/query-keys";
 import { createProjectChatSession, createProjectChatSessionMessage } from "./api";
 import type { ChatMessageDTO, ChatMessageWithDeliveryStatus, CreateProjectChatSessionMessageMutationParams } from "./types";
 import { ChatMessageDeliveryStatus } from "./types";
+
+function modifyInfiniteCacheData<T>(
+  old: InfiniteData<T[]> | undefined,
+  updater: (pages: T[][]) => T[][],
+): InfiniteData<T[]> {
+  const pages = old?.pages ?? [];
+
+  return {
+    pages: updater(pages),
+    pageParams: old?.pageParams ?? [],
+  };
+}
 
 export function useCreateProjectChatSessionMutation(projectId: number) {
   const queryClient = useQueryClient();
@@ -22,39 +34,58 @@ export function useCreateProjectChatSessionMessageMutation() {
     mutationFn: async ({ projectId, chatSessionId, optimisticMessage }: CreateProjectChatSessionMessageMutationParams) => {
       const cacheKey = QueryKeys.projectChatSessionMessages(projectId, chatSessionId);
 
-      queryClient.setQueryData<ChatMessageWithDeliveryStatus[]>(cacheKey, (old = []) => {
-        const currentOptimisticMessage = old.find((msg) => msg.id === optimisticMessage.id);
-
-        if (currentOptimisticMessage) {
-          return old.map((msg) =>
-            msg.id === optimisticMessage.id
-              ? { ...msg, delivery_status: ChatMessageDeliveryStatus.Pending }
-              : msg
-          );
-        }
-
-        return [
-          optimisticMessage,
-          ...old,
-        ];
+      queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) => {
+        return modifyInfiniteCacheData(old, (pages) => {
+          if (pages.length === 0) {
+            return [[optimisticMessage]];
+          }
+          const lastPage = pages[pages.length - 1];
+          const existing = lastPage.find((msg) => msg.id === optimisticMessage.id);
+          if (existing) {
+            return [
+              ...pages.slice(0, -1),
+              lastPage.map((msg) =>
+                msg.id === optimisticMessage.id
+                  ? { ...msg, delivery_status: ChatMessageDeliveryStatus.Pending }
+                  : msg
+              ),
+            ];
+          }
+          return [
+            ...pages.slice(0, -1),
+            [...lastPage, optimisticMessage],
+          ];
+        });
       });
 
       function setFailed() {
-        queryClient.setQueryData<ChatMessageWithDeliveryStatus[]>(cacheKey, (old = []) => {
-          return old.map((msg) =>
-            msg.id === optimisticMessage.id
-              ? { ...msg, delivery_status: ChatMessageDeliveryStatus.Failed }
-              : msg
-          );
+        queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) => {
+          return modifyInfiniteCacheData(old, (pages) => {
+            const lastPage = pages[pages.length - 1];
+            return [
+              ...pages.slice(0, -1),
+              lastPage.map((msg) =>
+                msg.id === optimisticMessage.id
+                  ? { ...msg, delivery_status: ChatMessageDeliveryStatus.Failed }
+                  : msg
+              ),
+            ];
+          });
         });
       }
 
       function setDelivered(saved: ChatMessageWithDeliveryStatus) {
-        queryClient.setQueryData<ChatMessageWithDeliveryStatus[]>(cacheKey, (old = []) => {
-          return [
-            { ...saved, delivery_status: ChatMessageDeliveryStatus.Delivered },
-            ...old.filter((msg) => msg.id !== optimisticMessage.id),
-          ];
+        queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) => {
+          return modifyInfiniteCacheData(old, (pages) => {
+            const lastPage = pages[pages.length - 1];
+            return [
+              ...pages.slice(0, -1),
+              [
+                ...lastPage.filter((msg) => msg.id !== optimisticMessage.id),
+                { ...saved, delivery_status: ChatMessageDeliveryStatus.Delivered },
+              ],
+            ];
+          });
         });
       }
 

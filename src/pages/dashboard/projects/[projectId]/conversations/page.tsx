@@ -1,9 +1,9 @@
 import { useNavigate, useParams } from "react-router";
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useEffect } from "react";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { SecondarySideBar } from "./secondary-side-bar";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SidebarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,9 +94,33 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   const { data: chatSession, isLoading: isLoadingChatSession } = useProjectChatSessionDetailQuery(projectIdNum, chatSessionIdNum);
   const {
-    data: chatSessionMessages,
+    data: chatSessionMessagesData,
     isLoading: isLoadingChatSessionMessages,
+    hasPreviousPage,
+    isFetchingPreviousPage,
+    fetchPreviousPage,
   } = useProjectChatSessionMessagesQuery(projectIdNum, chatSessionIdNum);
+
+  const chatSessionMessages = (chatSessionMessagesData?.pages ?? [])
+    .flatMap((page) => [...page]);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || !hasPreviousPage || isFetchingPreviousPage || !chatSessionIdNum) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          fetchPreviousPage();
+        }
+      },
+      { rootMargin: "80px", threshold: 0.01 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasPreviousPage, isFetchingPreviousPage, fetchPreviousPage, chatSessionIdNum]);
+
   const createSessionMutation = useCreateProjectChatSessionMutation(projectIdNum);
   const createMessageMutation = useCreateProjectChatSessionMessageMutation();
 
@@ -169,6 +193,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       payload,
       created_at: new Date().toISOString(),
       delivery_status: ChatMessageDeliveryStatus.Pending,
+      is_optimistic: true,
+      is_first: false,
     };
 
     if (noConversation) {
@@ -241,7 +267,14 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       </SecondarySidebar>
       <SidebarInset className="here-is-the-content">
         <Container>
-          <div className={cn("flex flex-col-reverse gap-3 overflow-y-auto min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
+          {hasPreviousPage && (
+            <div
+              ref={loadMoreRef}
+              className="h-px w-full shrink-0"
+              aria-hidden
+            />
+          )}
+          <div className={cn("flex flex-col gap-3 overflow-y-auto min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
             {chatSessionMessages?.map((message) => (
               <Message
                 key={message.id}
