@@ -54,6 +54,7 @@ type ProjectConversationsContentProps = {
 
 function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const justRedirectedToNewSessionRef = useRef(false);
   const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<ChatMessageWithDeliveryStatus | undefined>();
   const [shouldShowResponsePlaceholder, setShouldShowResponsePlaceholder] = useState(false);
   const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
@@ -87,7 +88,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   useEffect(() => {
     setTemporaryMessageBeforeRedirectingToNewSession(undefined);
-    setShouldShowResponsePlaceholder(false);
+
+    if (justRedirectedToNewSessionRef.current) {
+      justRedirectedToNewSessionRef.current = false;
+    } else {
+      setShouldShowResponsePlaceholder(false);
+    }
   }, [chatSessionIdNum]);
 
   useLayoutEffect(() => {
@@ -170,6 +176,9 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         });
 
         navigate(`/dashboard/projects/${projectId}/conversations/${session.id}`);
+
+        setShouldShowResponsePlaceholder(true);
+        justRedirectedToNewSessionRef.current = true;
       },
       onError: () => {
         setTemporaryMessageBeforeRedirectingToNewSession({
