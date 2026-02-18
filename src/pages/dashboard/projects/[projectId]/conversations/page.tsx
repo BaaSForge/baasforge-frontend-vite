@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router";
 import { useLayoutEffect, useRef, useEffect } from "react";
+import { flushSync } from "react-dom";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { SecondarySideBar } from "./secondary-side-bar";
@@ -129,7 +130,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   const [messageInput, setMessageInput] = useState("");
 
-  useLayoutEffect(() => {
+  // Note: we may need to use useLayoutEffect here to ensure the scroll is smooth
+  useEffect(() => {
     if (isLoadingChatSessionMessages || !chatSessionIdNum) {
       scrollToTop();
     } else {
@@ -203,21 +205,19 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     if (noConversation) {
       createSessionThenMessage(optimisticMessage);
     } else {
-      setShouldShowResponsePlaceholder(true);
-
       createMessageMutation.mutate({
         projectId: projectIdNum,
         chatSessionId: chatSessionIdNum ?? 0,
         optimisticMessage,
       });
+
+      flushSync(() => {
+        setShouldShowResponsePlaceholder(true);
+      });
+
+      scrollToBottom(undefined, ScrollBehavior.Smooth);
     }
   };
-
-  useEffect(() => {
-    if (!shouldShowResponsePlaceholder) return;
-
-    scrollToBottom(undefined, ScrollBehavior.Smooth);
-  }, [shouldShowResponsePlaceholder]);
 
   const handleRetryMessage = (message: ChatMessageWithDeliveryStatus) => {
     createMessageMutation.mutate({
