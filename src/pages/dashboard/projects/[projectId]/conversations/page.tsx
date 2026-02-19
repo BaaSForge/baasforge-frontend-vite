@@ -113,8 +113,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     fetchPreviousPage,
   } = useProjectChatSessionMessagesQuery(projectIdNum, chatSessionIdNum);
 
-  const firstPageParam = chatSessionMessagesData?.pageParams[0];
-  const captureDocumentScroll = useCaptureDocumentScroll(firstPageParam);
+  const firstMessage = chatSessionMessagesData?.pages[0][0];
+  const captureDocumentScroll = useCaptureDocumentScroll(firstMessage?.id);
 
   const chatSessionMessages = (chatSessionMessagesData?.pages ?? [])
     .flatMap((page) => [...page]);
@@ -134,7 +134,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasPreviousPage, isFetchingPreviousPage, fetchPreviousPage, chatSessionIdNum]);
+  }, [hasPreviousPage, isFetchingPreviousPage, fetchPreviousPage, chatSessionIdNum, captureDocumentScroll]);
 
   const createSessionMutation = useCreateProjectChatSessionMutation(projectIdNum);
   const createMessageMutation = useCreateProjectChatSessionMessageMutation();
@@ -291,7 +291,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
           <SecondarySideBar />
         </SidebarContent>
       </SecondarySidebar>
-      <SidebarInset className="here-is-the-content">
+      <SidebarInset>
         <Container>
           {hasPreviousPage && (
             <div
@@ -300,7 +300,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               aria-hidden
             />
           )}
-          <div className={cn("flex flex-col gap-3 overflow-y-auto min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
+          <div className={cn("flex flex-col gap-3 min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
             {chatSessionMessages?.map((message) => (
               <Message
                 key={message.id}

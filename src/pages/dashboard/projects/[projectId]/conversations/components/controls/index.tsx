@@ -63,7 +63,7 @@ export default function Controls({
 
   return (
     <>
-      <div className="h-20 flex-shrink-0" aria-hidden="true" />
+      <div className="h-24 lg:h-20 flex-shrink-0" aria-hidden="true" />
       {isNewSession && (
         <div
           className={cn(
