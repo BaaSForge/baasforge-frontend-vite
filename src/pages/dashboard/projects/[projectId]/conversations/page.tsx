@@ -32,6 +32,7 @@ import { ScrollBehavior, scrollToBottom, scrollToTop } from "@/lib/dom";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
+import { useCaptureDocumentScroll } from "./hooks";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -112,6 +113,9 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     fetchPreviousPage,
   } = useProjectChatSessionMessagesQuery(projectIdNum, chatSessionIdNum);
 
+  const firstPageParam = chatSessionMessagesData?.pageParams[0];
+  const captureDocumentScroll = useCaptureDocumentScroll(firstPageParam);
+
   const chatSessionMessages = (chatSessionMessagesData?.pages ?? [])
     .flatMap((page) => [...page]);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -123,7 +127,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          fetchPreviousPage();
+          fetchPreviousPage().then(captureDocumentScroll);
         }
       },
       { rootMargin: "80px", threshold: 0.01 }
