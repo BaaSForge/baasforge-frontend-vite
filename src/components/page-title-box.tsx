@@ -31,9 +31,10 @@ export interface PageTitleBoxProps {
   tools?: React.ReactNode;
   className?: string;
   mainSidebar?: Sidebar;
+  children?: React.ReactNode;
 }
 
-export function PageTitleBox({ title, tools, className, mainSidebar: passedSidebar }: PageTitleBoxProps) {
+export function PageTitleBox({ title, tools, className, mainSidebar: passedSidebar, children }: PageTitleBoxProps) {
   const barRef = React.useRef<HTMLDivElement>(null);
   const stickyBarVisible = useStickyBreadcrumbBarVisible();
   const stickyBarHeight = useStickyBreadcrumbBarHeight();
@@ -84,6 +85,7 @@ export function PageTitleBox({ title, tools, className, mainSidebar: passedSideb
         {tools != null && (
           <div className="flex shrink-0 items-center">{tools}</div>
         )}
+        {children}
       </div>
     </>
   );

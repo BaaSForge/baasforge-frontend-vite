@@ -285,7 +285,11 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             </Tooltip>
           </>
         }
-      />
+      >
+        {isFetchingPreviousPage && (
+          <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />
+        )}
+      </PageTitleBox>
       <SecondarySidebar>
         <SidebarContent>
           <SecondarySideBar />
