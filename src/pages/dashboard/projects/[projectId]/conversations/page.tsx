@@ -304,7 +304,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               aria-hidden
             />
           )}
-          <div className={cn("flex flex-col gap-3 min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
+          <div className={cn("flex flex-col gap-0 min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
             {chatSessionMessages?.map((message) => (
               <Message
                 key={message.id}
