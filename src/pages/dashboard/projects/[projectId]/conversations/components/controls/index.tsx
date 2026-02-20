@@ -87,7 +87,7 @@ export default function Controls({
         )}
       >
         <div className={cn("flex items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)} onClick={handleFocus}>
-          <InputGroup className="w-full shadow-2xl flex flex-col bg-background">
+          <InputGroup className="w-full shadow-2xl flex flex-col !bg-background">
             <InputGroupTextarea
               ref={messageInputRef}
               value={messageInputValue}
