@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import type { Components } from "react-markdown";
 import { CheckCheck, CircleAlert } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -7,7 +7,6 @@ import oneLight from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
 import remarkGfm from "remark-gfm";
 
 import { Spinner } from "@/components/ui/spinner";
-import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import {
   ChatMessageDeliveryStatus,
@@ -21,6 +20,71 @@ import { useResolvedTheme } from "@/components/theme-provider/hooks";
 type MessageProps = {
   message: ChatMessageWithDeliveryStatus;
   onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+};
+
+// shadcn typography classes (https://ui.shadcn.com/docs/components/typography)
+const typography: Partial<Components> = {
+  p: ({ children, ...props }) => (
+    <p className="leading-7 [&:not(:first-child)]:mt-2 break-words" {...props}>
+      {children}
+    </p>
+  ),
+  ul: ({ children, ...props }) => (
+    <ul className="my-2 ml-6 list-disc [&>li]:mt-1 break-words" {...props}>
+      {children}
+    </ul>
+  ),
+  ol: ({ children, ...props }) => (
+    <ol className="my-2 ml-6 list-decimal [&>li]:mt-1 break-words" {...props}>
+      {children}
+    </ol>
+  ),
+  blockquote: ({ children, ...props }) => (
+    <blockquote className="mt-2 border-l-2 pl-6 italic" {...props}>
+      {children}
+    </blockquote>
+  ),
+  h1: ({ children, ...props }) => (
+    <h1
+      className="scroll-m-20 text-lg font-extrabold tracking-tight [&:not(:first-child)]:mt-2"
+      {...props}
+    >
+      {children}
+    </h1>
+  ),
+  h2: ({ children, ...props }) => (
+    <h2
+      className="scroll-m-20 pb-1 text-base font-semibold tracking-tight first:mt-0 [&:not(:first-child)]:mt-2"
+      {...props}
+    >
+      {children}
+    </h2>
+  ),
+  h3: ({ children, ...props }) => (
+    <h3
+      className="scroll-m-20 text-base font-semibold tracking-tight [&:not(:first-child)]:mt-2"
+      {...props}
+    >
+      {children}
+    </h3>
+  ),
+  h4: ({ children, ...props }) => (
+    <h4
+      className="scroll-m-20 text-sm font-semibold tracking-tight [&:not(:first-child)]:mt-2"
+      {...props}
+    >
+      {children}
+    </h4>
+  ),
+  a: ({ children, ...props }) => (
+      <a
+        className="font-medium underline underline-offset-4"
+        {...props}
+      >
+        {children}
+      </a>
+    ),
+  hr: (props) => <hr className="my-3 border-t border-border" {...props} />,
 };
 
 function formatMessageTime(dateValue: string): string {
@@ -78,22 +142,23 @@ export function Message({ message, onRetry }: MessageProps) {
     >
       <div
         className={cn(
-          "flex min-w-0 flex-col gap-1 max-w-[80%]",
-          isUser ? "items-end" : "items-start"
+          "flex min-w-0 flex-col gap-1",
+          isUser ? "items-end max-w-[80%]" : "items-start max-w-full"
         )}
       >
         <div
           className={cn(
-            "min-w-0 rounded-2xl px-4 py-2.5 max-w-full",
+            "min-w-0 max-w-full",
             isUser
-              ? cn("bg-primary text-primary-foreground rounded-br-md")
-              : "bg-muted rounded-bl-md",
+              ? "rounded-2xl px-4 py-2.5 bg-primary text-primary-foreground rounded-br-md"
+              : "",
           )}
         >
-          <div className="markdown-message min-w-0 whitespace-pre-wrap break-words text-sm [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre [&_pre]:rounded [&_code]:break-words [&_ul]:break-words [&_li]:break-words [&_p]:break-words">
+          <div className="min-w-0 text-sm">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
+                ...typography,
                 code({ className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className ?? "");
                   const language = match ? match[1] : "text";
@@ -114,7 +179,10 @@ export function Message({ message, onRetry }: MessageProps) {
                       {String(children).replace(/\n$/, "")}
                     </SyntaxHighlighter>
                   ) : (
-                    <code className={className} {...props}>
+                    <code
+                      className="bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono font-semibold break-words"
+                      {...props}
+                    >
                       {children}
                     </code>
                   );
