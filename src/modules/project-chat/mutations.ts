@@ -3,18 +3,7 @@ import { QueryKeys } from "@/constants/query-keys";
 import { createProjectChatSession, createProjectChatSessionMessage } from "./api";
 import type { ChatMessageDTO, ChatMessageWithDeliveryStatus, CreateProjectChatSessionMessageMutationParams } from "./types";
 import { ChatMessageDeliveryStatus } from "./types";
-
-function modifyInfiniteCacheData<T>(
-  old: InfiniteData<T[]> | undefined,
-  updater: (pages: T[][]) => T[][],
-): InfiniteData<T[]> {
-  const pages = old?.pages ?? [];
-
-  return {
-    pages: updater(pages),
-    pageParams: old?.pageParams ?? [],
-  };
-}
+import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 
 export function useCreateProjectChatSessionMutation(projectId: number) {
   const queryClient = useQueryClient();

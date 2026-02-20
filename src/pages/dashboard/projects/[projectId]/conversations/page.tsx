@@ -32,7 +32,7 @@ import { ScrollBehavior, scrollToBottom, scrollToTop } from "@/lib/dom";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
-import { useCaptureDocumentScroll } from "./hooks";
+import { useCaptureDocumentScroll, useSubscribeSession } from "./hooks";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -105,6 +105,9 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   }, [chatSessionIdNum]);
 
   const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdNum, chatSessionIdNum);
+
+  useSubscribeSession(projectIdNum, chatSessionIdNum ?? undefined);
+
   const {
     data: chatSessionMessagesData,
     isLoading: isLoadingChatSessionMessages,
