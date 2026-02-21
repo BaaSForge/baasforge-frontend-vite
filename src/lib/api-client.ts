@@ -121,7 +121,13 @@ class ApiClient {
       throw error;
     }
 
-    const responseData = await response.json();
+    let responseData = null;
+
+    try {
+      responseData = await response.json();
+    } catch (error) {
+      console.error("Failed to parse response data", error);
+    }
 
     if (!response.ok || responseData.isSuccess === false) {
       if (response.status === 401) {
