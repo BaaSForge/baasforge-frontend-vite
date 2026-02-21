@@ -21,6 +21,11 @@ export interface ApiError {
   data?: unknown;
 }
 
+const PARSE_ERROR_PAYLOAD: ApiError = {
+  isSuccess: false,
+  error: { code: "PARSE_ERROR", message: "Failed to parse response body" },
+};
+
 function isNeedsRefreshBody(body: unknown): body is { data: { needs_refresh_token: true } } {
   return (
     typeof body === "object" &&
@@ -121,12 +126,13 @@ class ApiClient {
       throw error;
     }
 
-    let responseData = null;
+    let responseData: ApiResponse | ApiError;
 
     try {
       responseData = await response.json();
     } catch (error) {
       console.error("Failed to parse response data", error);
+      responseData = PARSE_ERROR_PAYLOAD;
     }
 
     if (!response.ok || responseData?.isSuccess === false) {
@@ -142,7 +148,7 @@ class ApiClient {
       throw responseData;
     }
 
-    return responseData;
+    return responseData as T;
   }
 
   async get<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
