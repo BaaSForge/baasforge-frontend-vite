@@ -12,22 +12,9 @@ import {
 } from "@/modules/project-chat/types";
 import { useAuth } from "@/modules/auth";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
+import { isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
 
 const NO_STREAM = -1;
-
-function isChatSessionNewMessageChunk(
-  data: unknown
-): data is { type: "chat_session_new_message_chunk"; topic: string; chunk_index: number; content: string; done: boolean } {
-  return (
-    typeof data === "object" &&
-    data !== null &&
-    "type" in data &&
-    (data as { type: string }).type === "chat_session_new_message_chunk" &&
-    "chunk_index" in data &&
-    "content" in data &&
-    "done" in data
-  );
-}
 
 const STREAMING_MESSAGE_ID = -1;
 
@@ -49,7 +36,7 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
   useSubscribe(wsUrl, topic, {
     enabled: !!projectId && !!sessionId && !!user && !!wsUrl,
     onMessage(data) {
-      if (!isChatSessionNewMessageChunk(data) || projectId == null || sessionId == null) return;
+      if (!isChatSessionNewMessageChunkEvent(data) || projectId == null || sessionId == null) return;
 
       // Only apply chunks for this conversation; ignore messages for other sessions
       // (e.g. when backend broadcasts to a wider channel or multiple tabs share state).

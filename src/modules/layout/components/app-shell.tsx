@@ -6,6 +6,7 @@ import {
   StickyBreadcrumbBarPlaceholder,
 } from "./sticky-breadcrumb-bar";
 import { AppSidebar } from "./app-sidebar";
+import { useSubscribeUserNotifications } from "@/hooks/use-subscribe-user-notifications";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
 
@@ -17,6 +18,8 @@ function getStoredSidebarState(): boolean {
 
 export function AppShell() {
   const [open, setOpen] = React.useState(getStoredSidebarState);
+
+  useSubscribeUserNotifications();
 
   const handleOpenChange = React.useCallback((value: boolean) => {
     setOpen(value);
