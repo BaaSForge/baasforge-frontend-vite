@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useCurrentUserQuery } from "./queries";
 import { useLogoutMutation } from "./mutations";
 import type { User } from "./types";
@@ -13,13 +13,17 @@ export interface UseAuthReturn {
 
 export function useAuth(): UseAuthReturn {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: user, isLoading, refetch } = useCurrentUserQuery();
   const { mutateAsync: logoutMutation } = useLogoutMutation();
 
   const logout = useCallback(async () => {
     await logoutMutation();
-    navigate("/login", { replace: true });
-  }, [logoutMutation, navigate]);
+    const returnUrl = `${window.location.origin}${location.pathname}${location.search}`;
+    navigate(`/login?callback-url=${encodeURIComponent(returnUrl)}`, {
+      replace: true,
+    });
+  }, [logoutMutation, navigate, location.pathname, location.search]);
 
   return {
     user: user ?? null,

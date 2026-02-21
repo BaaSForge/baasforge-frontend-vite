@@ -129,7 +129,7 @@ class ApiClient {
       console.error("Failed to parse response data", error);
     }
 
-    if (!response.ok || responseData.isSuccess === false) {
+    if (!response.ok || responseData?.isSuccess === false) {
       if (response.status === 401) {
         if (isNeedsRefreshBody(responseData)) {
           await this.refreshToken();

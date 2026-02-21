@@ -18,7 +18,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     apiClient.setOnSessionExpired(() => {
       queryClient.setQueryData(QueryKeys.AUTH_ME, null);
-      const callbackUrl = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+      const { pathname, search } = window.location;
+      let callbackUrl: string;
+      if (pathname === "/login") {
+        const existing = new URLSearchParams(search).get("callback-url");
+        if (existing) {
+          try {
+            const decoded = decodeURIComponent(existing);
+            if (decoded.startsWith(window.location.origin)) callbackUrl = decoded;
+            else callbackUrl = `${window.location.origin}/dashboard`;
+          } catch {
+            callbackUrl = `${window.location.origin}/dashboard`;
+          }
+        } else {
+          callbackUrl = `${window.location.origin}/dashboard`;
+        }
+      } else {
+        callbackUrl = `${window.location.origin}${pathname}${search}`;
+      }
       navigate(`/login?callback-url=${encodeURIComponent(callbackUrl)}`, {
         replace: true,
       });
