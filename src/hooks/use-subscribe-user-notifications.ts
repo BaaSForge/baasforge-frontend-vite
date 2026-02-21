@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router";
+import { useParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSubscribe } from "@/hooks/use-subscribe";
@@ -11,7 +11,6 @@ const TOAST_POSITION = "top-center" as const;
 
 export function useSubscribeUserNotifications(): void {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { projectId: routeProjectId } = useParams<{ projectId?: string }>();
   const queryClient = useQueryClient();
 
@@ -30,14 +29,10 @@ export function useSubscribeUserNotifications(): void {
 
         const deletedId = data.projectId;
 
-        if (routeProjectId != null && String(routeProjectId) === deletedId) {
-          navigate("/dashboard/projects", { replace: true });
-        }
-
-        setTimeout(() => {
+        if (String(routeProjectId) !== deletedId) {
           queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(Number(deletedId)) });
           queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
-        }, 1000);
+        }
 
         return;
       }

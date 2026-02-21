@@ -45,9 +45,12 @@ export function useDeleteProjectMutation(projectId: number) {
   return useMutation({
     mutationFn: () => deleteProject(projectId),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(projectId) });
-      queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
-      navigate("/dashboard", { replace: true });
+      navigate("/dashboard/projects", { replace: true });
+
+      setTimeout(() => {
+        queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(projectId) });
+        queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
+      }, 2000);
     },
   });
 }

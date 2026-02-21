@@ -44,6 +44,7 @@ export function useSubscribe(
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const topicRef = useRef(topic);
+  const intentionalCloseRef = useRef(false);
   topicRef.current = topic;
 
   const connect = useCallback(() => {
@@ -83,6 +84,10 @@ export function useSubscribe(
       wsRef.current = null;
       onCloseRef.current?.(event.code, event.reason ?? "", event.wasClean);
 
+      if (intentionalCloseRef.current) {
+        intentionalCloseRef.current = false;
+        return;
+      }
       if (!enabledRef.current) return;
 
       const delay = reconnectIntervalRef.current;
@@ -109,6 +114,7 @@ export function useSubscribe(
     connect();
 
     return () => {
+      intentionalCloseRef.current = true;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
