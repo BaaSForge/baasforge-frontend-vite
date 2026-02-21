@@ -46,6 +46,6 @@ export function isChatSessionNewMessageChunkEvent(data: unknown): data is ChatSe
   return isWsServerEvent(data) && data.type === "chat_session_new_message_chunk";
 }
 
-export function notificationsUserTopic(userId: number): string {
-  return `notifications:user:${userId}`;
+export function userTopic(userId: number): string {
+  return `user:${userId}`;
 }

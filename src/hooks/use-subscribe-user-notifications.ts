@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
-import { notificationsUserTopic, isProjectDeletedEvent, isRuntimeCreatedEvent } from "@/lib/ws-events";
+import { userTopic, isProjectDeletedEvent, isRuntimeCreatedEvent } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
 import { QueryKeys } from "@/constants/query-keys";
 
@@ -16,25 +16,29 @@ export function useSubscribeUserNotifications(): void {
   const queryClient = useQueryClient();
 
   const wsUrl = envConfig.wsUrl;
-  const topic = user != null ? notificationsUserTopic(user.id) : "";
+  const topic = user != null ? userTopic(user.id) : "";
 
   useSubscribe(wsUrl, topic, {
     enabled: !!user && !!wsUrl,
     onMessage(data) {
       if (isProjectDeletedEvent(data)) {
-        const deletedId = data.projectId;
-        queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(Number(deletedId)) });
-        queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
-
-        toast.error("Project deleted", {
+        toast.error("Project has been deleted", {
           position: TOAST_POSITION,
           closeButton: true,
           description: "A project you had access to has been deleted.",
         });
 
+        const deletedId = data.projectId;
+
         if (routeProjectId != null && String(routeProjectId) === deletedId) {
           navigate("/dashboard/projects", { replace: true });
         }
+
+        setTimeout(() => {
+          queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(Number(deletedId)) });
+          queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
+        }, 1000);
+
         return;
       }
 
