@@ -131,6 +131,10 @@ class ApiClient {
     try {
       responseData = await response.json();
     } catch (error) {
+      if (response.ok) {
+        // 2xx with empty/non-JSON body (e.g. 204 No Content or logout) → treat as success
+        return undefined as T;
+      }
       console.error("Failed to parse response data", error);
       responseData = PARSE_ERROR_PAYLOAD;
     }
