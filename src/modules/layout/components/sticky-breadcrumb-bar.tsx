@@ -10,6 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/mode-toggle";
 import {
@@ -126,6 +127,7 @@ export function StickyBreadcrumbBar() {
       style={{ ...stickyBarTransitionStyles }}
     >
       <StickyBreadcrumbBarInner
+        pathname={pathname}
         segments={segments}
         getBreadcrumbLabel={getBreadcrumbLabel}
       />
@@ -134,9 +136,11 @@ export function StickyBreadcrumbBar() {
 }
 
 function StickyBreadcrumbBarInner({
+  pathname,
   segments,
   getBreadcrumbLabel,
 }: {
+  pathname: string;
   segments: string[];
   getBreadcrumbLabel: (segment: string) => string;
 }) {
@@ -150,30 +154,39 @@ function StickyBreadcrumbBarInner({
           Toggle sidebar
         </TooltipContent>
       </Tooltip>
-      <Breadcrumb>
-        <BreadcrumbList>
-          {segments.map((segment, i) => {
-            const path = "/" + segments.slice(0, i + 1).join("/");
-            const label = getBreadcrumbLabel(segment);
-            const isLast = i === segments.length - 1;
-            return (
-              <React.Fragment key={path}>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  {isLast ? (
-                    <BreadcrumbPage>{label}</BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink asChild>
-                      <Link to={path}>{label}</Link>
-                    </BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </React.Fragment>
-            );
-          })}
-        </BreadcrumbList>
-      </Breadcrumb>
-      <div className="grow" />
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <FadedScrollArea
+          key={pathname}
+          orientation="horizontal"
+          scrollToEndByDefault
+          hideScrollbar
+          className="h-full w-full"
+        >
+          <Breadcrumb className="flex items-center">
+            <BreadcrumbList className="flex-nowrap w-max">
+              {segments.map((segment, i) => {
+              const path = "/" + segments.slice(0, i + 1).join("/");
+              const label = getBreadcrumbLabel(segment);
+              const isLast = i === segments.length - 1;
+                return (
+                  <React.Fragment key={path}>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      {isLast ? (
+                        <BreadcrumbPage>{label}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink asChild>
+                          <Link to={path}>{label}</Link>
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </React.Fragment>
+                );
+              })}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </FadedScrollArea>
+      </div>
       <ModeToggle />
     </>
   );
