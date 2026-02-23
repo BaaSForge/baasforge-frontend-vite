@@ -2,6 +2,7 @@
 
 import * as React from "react";
 
+import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { NavMain } from "./nav-main";
 import { NavProjects } from "./nav-projects";
 import { NavUser } from "./nav-user";
@@ -23,8 +24,15 @@ export function AppSidebar({
         <ProjectSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects />
-        <NavMain />
+        <FadedScrollArea
+          className="flex-1 min-h-0 max-h-full"
+          faderFromClassName="from-sidebar"
+        >
+          <div className="flex flex-col gap-2">
+            <NavProjects />
+            <NavMain />
+          </div>
+        </FadedScrollArea>
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

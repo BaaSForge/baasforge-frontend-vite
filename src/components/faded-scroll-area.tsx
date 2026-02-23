@@ -14,6 +14,7 @@ interface FadedScrollAreaProps {
   orientation?: Orientation;
   scrollToEndByDefault?: boolean;
   hideScrollbar?: boolean;
+  faderFromClassName?: string;
 }
 
 function getScrollFlagsVertical(el: HTMLDivElement) {
@@ -38,6 +39,8 @@ function getScrollFlagsHorizontal(el: HTMLDivElement) {
   };
 }
 
+const DEFAULT_FADER_FROM = "from-background";
+
 export function FadedScrollArea({
   children,
   className,
@@ -45,7 +48,9 @@ export function FadedScrollArea({
   orientation = "vertical",
   scrollToEndByDefault = false,
   hideScrollbar = false,
+  faderFromClassName = DEFAULT_FADER_FROM,
 }: FadedScrollAreaProps) {
+  const fromClass = faderFromClassName || DEFAULT_FADER_FROM;
   const viewportRef = React.useRef<HTMLDivElement>(null);
   const startFadeRef = React.useRef<HTMLDivElement>(null);
   const endFadeRef = React.useRef<HTMLDivElement>(null);
@@ -159,13 +164,19 @@ export function FadedScrollArea({
         <>
           <div
             ref={startFadeRef}
-            className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-r from-background to-transparent transition-opacity duration-150"
+            className={cn(
+              "pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-r to-transparent transition-opacity duration-150",
+              fromClass
+            )}
             style={{ opacity: 0 }}
             aria-hidden
           />
           <div
             ref={endFadeRef}
-            className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-l from-background to-transparent transition-opacity duration-150"
+            className={cn(
+              "pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-l to-transparent transition-opacity duration-150",
+              fromClass
+            )}
             style={{ opacity: 1 }}
             aria-hidden
           />
@@ -174,13 +185,19 @@ export function FadedScrollArea({
         <>
           <div
             ref={startFadeRef}
-            className="pointer-events-none absolute top-0 left-0 right-4 z-10 h-8 bg-gradient-to-b from-background to-transparent transition-opacity duration-150"
+            className={cn(
+              "pointer-events-none absolute top-0 left-0 right-4 z-10 h-8 bg-gradient-to-b to-transparent transition-opacity duration-150",
+              fromClass
+            )}
             style={{ opacity: 0 }}
             aria-hidden
           />
           <div
             ref={endFadeRef}
-            className="pointer-events-none absolute bottom-0 left-0 right-4 z-10 h-8 bg-gradient-to-t from-background to-transparent transition-opacity duration-150"
+            className={cn(
+              "pointer-events-none absolute bottom-0 left-0 right-4 z-10 h-8 bg-gradient-to-t to-transparent transition-opacity duration-150",
+              fromClass
+            )}
             style={{ opacity: 1 }}
             aria-hidden
           />
