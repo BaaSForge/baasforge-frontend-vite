@@ -1,5 +1,6 @@
 import {
   ChevronsUpDown,
+  Clock,
   CreditCard,
   Github,
   LogOut,
@@ -94,9 +95,9 @@ function getInitials(user: User): string {
 const EXPIRY_WARNING_DAYS = 30;
 
 function getExpiryIndicatorClass(daysLeft: number): string {
-  if (daysLeft <= 7) return "bg-destructive";
-  if (daysLeft <= 14) return "bg-chart-4";
-  return "bg-primary";
+  if (daysLeft <= 7) return "bg-red-500";
+  if (daysLeft <= 14) return "bg-orange-500";
+  return "bg-emerald-500";
 }
 
 function getNearestExpiringPayment(
@@ -257,21 +258,62 @@ export function NavUser() {
               </HoverCardContent>
             )}
           </HoverCard>
-        ) : nearestExpiring ? (
-          <div className="px-3 py-2.5">
-            <p className="text-muted-foreground mb-1 truncate text-xs">
-              {nearestExpiring.payment.package_title ?? "Payment"} expiring soon
-            </p>
-            <Progress
-              value={((EXPIRY_WARNING_DAYS - nearestExpiring.daysLeft) / EXPIRY_WARNING_DAYS) * 100}
-              className="h-1.5 bg-muted"
-              indicatorClassName={getExpiryIndicatorClass(nearestExpiring.daysLeft)}
-            />
-            <p className="text-muted-foreground mt-1 text-xs">
-              <TimeLeftLabel expiresAt={nearestExpiring.payment.expires_at} />
-            </p>
-          </div>
-        ) : null}
+        ) : nearestExpiring ? (() => {
+          const expiryProgressValue =
+            ((EXPIRY_WARNING_DAYS - nearestExpiring.daysLeft) / EXPIRY_WARNING_DAYS) * 100;
+          const expiryIndicatorClass = getExpiryIndicatorClass(nearestExpiring.daysLeft);
+          const expiryTitle = nearestExpiring.payment.package_title ?? "Payment";
+          const { expires_at: expiresAt } = nearestExpiring.payment;
+
+          const expiryContent = (
+            <>
+              <p className="text-muted-foreground truncate text-xs">
+                {expiryTitle} expiring soon
+              </p>
+              <Progress
+                value={expiryProgressValue}
+                className="h-1.5 bg-muted"
+                indicatorClassName={expiryIndicatorClass}
+              />
+              <p className="text-muted-foreground text-xs">
+                <TimeLeftLabel expiresAt={expiresAt} />
+              </p>
+            </>
+          );
+
+          return promotionBoxExpanded ? (
+            <div className="space-y-1.5 px-3 py-2.5">
+              {expiryContent}
+            </div>
+          ) : (
+            <HoverCard openDelay={0} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <button
+                  type="button"
+                  className="flex w-full flex-col items-center justify-center gap-1.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar rounded-md"
+                  aria-label={`${expiryTitle} expiring soon`}
+                >
+                  <div
+                    className="flex h-9 w-1.5 flex-col justify-end overflow-hidden rounded-full bg-muted"
+                    role="progressbar"
+                    aria-valuenow={Math.round(expiryProgressValue)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <div
+                      className={cn("w-full min-h-[2px] shrink-0 rounded-full transition-all", expiryIndicatorClass)}
+                      style={{ height: `${expiryProgressValue}%` }}
+                    />
+                  </div>
+                  <Clock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent side="right" sideOffset={8} className="max-w-[200px] p-3">
+                <div className="space-y-1.5">{expiryContent}</div>
+              </HoverCardContent>
+            </HoverCard>
+          );
+        })() : null}
       </SidebarMenuItem>
       <SidebarMenuItem>
         <DropdownMenu>
