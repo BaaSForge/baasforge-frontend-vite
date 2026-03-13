@@ -39,7 +39,7 @@ import {
 } from "@/modules/project-chat/types";
 import Controls from "./components/controls";
 import { Message } from "./components/message";
-import { ScrollBehavior, scrollToBottom, scrollToTop } from "@/lib/dom";
+import { scrollToBottom, smoothScrollToElementTop, scrollToTop } from "@/lib/dom";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { findLastUserMessageIndex } from "./utils";
 import { cn } from "@/lib/utils";
@@ -157,7 +157,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   const [messageInput, setMessageInput] = useState("");
 
-  // Note: we may need to use useLayoutEffect here to ensure the scroll is smooth
+  const responsePlaceholderRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (isLoadingChatSessionMessages || !chatSessionIdNum) {
       scrollToTop();
@@ -246,7 +247,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         setShouldShowResponsePlaceholder(true);
       });
 
-      scrollToBottom(undefined, ScrollBehavior.Smooth);
+      // Defer scroll so the mutation's optimistic re-render can run and layout settle; then scroll instantly so nothing interrupts.
+      const el = responsePlaceholderRef.current;
+      if (el) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            smoothScrollToElementTop(el);
+          });
+        });
+      }
     }
   };
 
@@ -373,7 +382,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               />
             )}
             {shouldShowResponsePlaceholder && (
-              <div className="h-[60vh] w-full shrink-0 relative">
+              <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative">
                 {!isLastMessageFromAI && (
                   <Spinner className="size-5 absolute top-0 left-0 text-blue-500" />
                 )}

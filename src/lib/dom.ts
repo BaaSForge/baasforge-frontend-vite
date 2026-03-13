@@ -34,3 +34,33 @@ export function scrollToBottom(
     behavior,
   );
 }
+
+/**
+ * Smooth-scroll so the top of `element` aligns with the top of the viewport.
+ * Recomputes the target each frame so DOM re-renders don't interrupt the scroll.
+ * Stops after maxDurationMs so we don't keep forcing scroll when content is streaming (placeholder keeps moving).
+ */
+export function smoothScrollToElementTop(
+  element: HTMLElement,
+  maxDurationMs: number = 500,
+): void {
+  const root = document.scrollingElement ?? document.documentElement;
+  const tolerancePx = 2;
+  const lerpFactor = 0.12;
+  const startTime = performance.now();
+
+  const tick = () => {
+    if (performance.now() - startTime >= maxDurationMs) return;
+
+    const rect = element.getBoundingClientRect();
+    const targetScrollTop = root.scrollTop + rect.top;
+
+    if (Math.abs(rect.top) <= tolerancePx) return;
+
+    const next = root.scrollTop + (targetScrollTop - root.scrollTop) * lerpFactor;
+    root.scrollTop = next;
+    requestAnimationFrame(tick);
+  };
+
+  requestAnimationFrame(tick);
+}

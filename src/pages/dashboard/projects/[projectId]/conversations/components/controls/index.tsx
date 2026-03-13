@@ -121,8 +121,8 @@ export default function Controls({
               </InputGroupButton> */}
               <InputGroupButton
                 size="sm"
-                className="ml-auto"
-                variant={isGenerating ? "destructive" : "default"}
+                className={cn("ml-auto", !isGenerating && canSend && "!bg-blue-500 hover:!bg-blue-600 !text-white")}
+                variant={isGenerating ? "destructive" : canSend ? "default" : "ghost"}
                 disabled={!isGenerating && !canSend}
                 onClick={() => (isGenerating ? handleStop?.() : canSend ? handleSend() : undefined)}
                 type="button"
