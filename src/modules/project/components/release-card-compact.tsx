@@ -12,7 +12,7 @@ import {
 import { Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProjectRuntimeResponse, ReleaseResponse } from "../types";
-import ReactMarkdown from "react-markdown";
+import { Markdown } from "@/components/markdown";
 import { Expandable } from "@/components/expandable";
 import { formatDateTimeMedium } from "@/utils/time";
 import { LiveBadge } from "@/components/live-badge";
@@ -102,9 +102,9 @@ export function ReleaseCardCompact({
             )
           }
         >
-          <ReactMarkdown components={{ pre: () => null }}>
+          <Markdown components={{ pre: () => null }}>
             {release.notes}
-          </ReactMarkdown>
+          </Markdown>
         </Expandable>
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogContent
@@ -115,7 +115,7 @@ export function ReleaseCardCompact({
               {badges}
             </DialogHeader>
             <div className="prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2">
-              <ReactMarkdown>{release.notes}</ReactMarkdown>
+              <Markdown>{release.notes}</Markdown>
             </div>
           </DialogContent>
         </Dialog>

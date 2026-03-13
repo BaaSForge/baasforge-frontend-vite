@@ -1,6 +1,6 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
+import { Markdown } from "@/components/markdown";
 import { cn } from "@/lib/utils";
 
 interface PackageDescriptionProps {
@@ -22,7 +22,7 @@ export function PackageDescription({ content, className }: PackageDescriptionPro
         className
       )}
     >
-      <ReactMarkdown>{content}</ReactMarkdown>
+      <Markdown>{content}</Markdown>
     </div>
   );
 }

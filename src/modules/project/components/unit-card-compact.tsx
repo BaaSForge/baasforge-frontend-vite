@@ -12,7 +12,7 @@ import {
 import { Maximize2 } from "lucide-react";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import type { ProjectUnitResponse, ProjectUnitType } from "../types";
-import ReactMarkdown from "react-markdown";
+import { Markdown } from "@/components/markdown";
 import { Expandable } from "@/components/expandable";
 import { LiveBadge } from "@/components/live-badge";
 
@@ -89,7 +89,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
             )
           }
         >
-          <ReactMarkdown>{explanation}</ReactMarkdown>
+          <Markdown>{explanation}</Markdown>
         </Expandable>
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
           <DialogContent
@@ -100,7 +100,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
               {badges}
             </DialogHeader>
             <div className="prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2">
-              <ReactMarkdown>{explanation}</ReactMarkdown>
+              <Markdown>{explanation}</Markdown>
             </div>
           </DialogContent>
         </Dialog>
