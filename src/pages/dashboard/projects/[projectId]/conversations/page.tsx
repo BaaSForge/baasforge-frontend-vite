@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router";
-import { useLayoutEffect, useRef, useEffect } from "react";
+import { useLayoutEffect, useRef, useEffect, useMemo } from "react";
 import { flushSync } from "react-dom";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
@@ -36,6 +36,7 @@ import Controls from "./components/controls";
 import { Message } from "./components/message";
 import { ScrollBehavior, scrollToBottom, scrollToTop } from "@/lib/dom";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
+import { findLastUserMessageIndex } from "./utils";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 import { useCaptureDocumentScroll, useSubscribeSession } from "./hooks";
@@ -256,6 +257,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   const lastMessage = chatSessionMessages?.[chatSessionMessages.length - 1];
   const isLastMessageFromAI = lastMessage?.role === ChatSessionRoleType.Ai;
 
+  const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(chatSessionMessages), [chatSessionMessages]);
+  const lastAiMessages: ChatMessageWithDeliveryStatus[] =
+    lastUserMessageIndex >= 0 && chatSessionMessages
+      ? chatSessionMessages.slice(lastUserMessageIndex + 1)
+      : [];
+  const isGenerating = lastAiMessages.some(
+    (m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating
+  );
+
   return (
     <>
       <PageTitleBox
@@ -342,6 +352,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             setMessageInputValue={setMessageInput}
             handleSend={handleSend}
             canSend={canSend}
+            isGenerating={isGenerating}
             isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
             mainSidebar={mainSidebar}
           />

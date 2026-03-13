@@ -8,7 +8,7 @@ import {
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Square } from "lucide-react";
 import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 
 type Sidebar = ReturnType<typeof useSidebar>;
@@ -19,6 +19,7 @@ type Props = {
   setMessageInputValue: (value: string) => void;
   handleSend: () => void;
   canSend: boolean;
+  isGenerating?: boolean;
   isNewSession: boolean;
   mainSidebar?: Sidebar;
 };
@@ -29,6 +30,7 @@ export default function Controls({
   setMessageInputValue,
   handleSend,
   canSend,
+  isGenerating = false,
   isNewSession,
   mainSidebar: passedMainSidebar,
 }: Props) {
@@ -110,12 +112,15 @@ export default function Controls({
               <InputGroupButton
                 size="sm"
                 className="ml-auto"
-                variant="default"
+                variant={isGenerating ? "destructive" : "default"}
                 onClick={handleSend}
-                disabled={!canSend}
                 type="button"
               >
-                Send <ArrowUp className="size-3.5" />
+                {isGenerating ? (
+                  <>Stop <Square className="size-3.5" /></>
+                ) : (
+                  <>Send <ArrowUp className="size-3.5" /></>
+                )}
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
