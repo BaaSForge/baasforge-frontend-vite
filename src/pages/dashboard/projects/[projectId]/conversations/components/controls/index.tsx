@@ -18,6 +18,7 @@ type Props = {
   messageInputValue: string;
   setMessageInputValue: (value: string) => void;
   handleSend: () => void;
+  handleStop?: () => void;
   canSend: boolean;
   isGenerating?: boolean;
   isNewSession: boolean;
@@ -29,6 +30,7 @@ export default function Controls({
   messageInputValue,
   setMessageInputValue,
   handleSend,
+  handleStop,
   canSend,
   isGenerating = false,
   isNewSession,
@@ -94,9 +96,17 @@ export default function Controls({
               ref={messageInputRef}
               value={messageInputValue}
               onChange={(e) => setMessageInputValue(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())
-              }
+              onKeyDown={(e) => {
+                if (isGenerating) {
+                  e.preventDefault();
+                  return;
+                }
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (canSend) handleSend();
+                }
+              }}
+              disabled={isGenerating}
               placeholder={
                 (isNewSession
                   ? "Type a message to start a new conversation"
@@ -113,7 +123,8 @@ export default function Controls({
                 size="sm"
                 className="ml-auto"
                 variant={isGenerating ? "destructive" : "default"}
-                onClick={handleSend}
+                disabled={!isGenerating && !canSend}
+                onClick={() => (isGenerating ? handleStop?.() : canSend ? handleSend() : undefined)}
                 type="button"
               >
                 {isGenerating ? (

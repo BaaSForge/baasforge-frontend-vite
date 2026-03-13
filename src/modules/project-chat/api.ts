@@ -7,6 +7,7 @@ const GET_MESSAGES_QUERY_LIMIT = 20;
 const chatSessionsEndpoint = (projectId: number) => `/v1/platform/projects/${projectId}/chat-sessions`
 const chatSessionDetailEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}`
 const chatSessionMessagesEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages`
+const chatSessionStopEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/stop-generating`
 // const chatSessionMessagesWebsocketEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/channel`
 
 export function getProjectChatSessions(projectId: number): Promise<ChatSessionResponse[]> {
@@ -79,4 +80,17 @@ export function createProjectChatSessionMessage(
       };
       return { saved, placeholderMessage };
     });
+}
+
+export type StopProjectChatSessionResponse = {
+  stopped_message_ids: number[];
+};
+
+export function stopProjectChatSession(
+  projectId: number,
+  chatSessionId: number,
+): Promise<StopProjectChatSessionResponse | undefined> {
+  return apiClient
+    .post<ApiResponse<StopProjectChatSessionResponse>>(chatSessionStopEndpoint(projectId, chatSessionId))
+    .then((res) => res.data);
 }

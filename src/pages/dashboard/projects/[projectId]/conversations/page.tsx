@@ -1,5 +1,7 @@
 import { useNavigate, useParams } from "react-router";
 import { useLayoutEffect, useRef, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import type { InfiniteData } from "@tanstack/react-query";
 import { flushSync } from "react-dom";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
@@ -16,8 +18,11 @@ import {
   useSecondarySidebar,
 } from "@/components/secondary-sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { QueryKeys } from "@/constants/query-keys";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
+import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { useProjectChatSessionDetailQuery, useProjectChatSessionMessagesQuery } from "@/modules/project-chat/queries";
+import { stopProjectChatSession } from "@/modules/project-chat/api";
 import {
   useCreateProjectChatSessionMutation,
   useCreateProjectChatSessionMessageMutation,
@@ -39,7 +44,7 @@ import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { findLastUserMessageIndex } from "./utils";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
-import { useCaptureDocumentScroll, useSubscribeSession } from "./hooks";
+import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll, useSubscribeSession } from "./hooks";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -61,6 +66,7 @@ type ProjectConversationsContentProps = {
 }
 
 function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
+  const queryClient = useQueryClient();
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const justRedirectedToNewSessionRef = useRef(false);
   const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<ChatMessageWithDeliveryStatus | undefined>();
@@ -266,6 +272,21 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     (m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating
   );
 
+  const handleStop = () => {
+    if (projectIdNum == null || chatSessionIdNum == null) return;
+    stopProjectChatSession(projectIdNum, chatSessionIdNum)
+      .then((res) => {
+        if (res?.stopped_message_ids?.length) {
+          const cacheKey = QueryKeys.projectChatSessionMessages(projectIdNum, chatSessionIdNum);
+          queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
+            modifyInfiniteCacheData(old, (pages) =>
+              applyStatusToMessageIdsInPages(pages, res.stopped_message_ids, ChatMessageStatus.Stopped)
+            )
+          );
+        }
+      });
+  };
+
   return (
     <>
       <PageTitleBox
@@ -351,6 +372,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             messageInputValue={messageInput}
             setMessageInputValue={setMessageInput}
             handleSend={handleSend}
+            handleStop={handleStop}
             canSend={canSend}
             isGenerating={isGenerating}
             isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}

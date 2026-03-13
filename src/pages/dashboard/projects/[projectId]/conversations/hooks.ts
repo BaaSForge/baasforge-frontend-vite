@@ -56,6 +56,18 @@ function applyStatusToMessageInPages(
   return pages;
 }
 
+export function applyStatusToMessageIdsInPages(
+  pages: ChatMessageWithDeliveryStatus[][],
+  messageIds: number[],
+  status: ChatMessageStatus,
+): ChatMessageWithDeliveryStatus[][] {
+  if (messageIds.length === 0) return pages;
+  const idSet = new Set(messageIds);
+  return pages.map((page) =>
+    page.map((msg) => (idSet.has(msg.id) ? { ...msg, status } : msg))
+  );
+}
+
 export function useSubscribeSession(projectId: number | undefined, sessionId: number | undefined): void {
   const queryClient = useQueryClient();
   const { user } = useAuth();
