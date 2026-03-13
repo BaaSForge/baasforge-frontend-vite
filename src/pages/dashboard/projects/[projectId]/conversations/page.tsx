@@ -272,6 +272,19 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     (m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating
   );
 
+  const prevIsGeneratingRef = useRef(isGenerating);
+
+  useLayoutEffect(() => {
+    const wasGenerating = prevIsGeneratingRef.current;
+    prevIsGeneratingRef.current = isGenerating;
+    if (wasGenerating && !isGenerating) {
+      const el = messageInputRef.current;
+      if (el) {
+        requestAnimationFrame(() => el.focus());
+      }
+    }
+  }, [isGenerating]);
+
   const handleStop = () => {
     if (projectIdNum == null || chatSessionIdNum == null) return;
     stopProjectChatSession(projectIdNum, chatSessionIdNum)
