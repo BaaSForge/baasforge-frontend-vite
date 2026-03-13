@@ -3,6 +3,7 @@ export const UNIFIED_KEYBOARD_SCOPES = {
   SECONDARY_SIDEBAR: "secondary-sidebar",
   FOCUS_CHAT: "focus-chat",
   NEW_CONVERSATION: "new-conversation",
+  OPEN_PREVIOUS_CONVERSATIONS: "open-previous-conversations",
   FALLBACK_KEY: "fallback-key",
   STOP_GENERATION: "stop-generation",
   OPEN_SHORTCUTS_MODAL: "open-shortcuts-modal",
@@ -30,6 +31,7 @@ export const SHORTCUT_LABELS = {
   SECONDARY_SIDEBAR: `${mod}+Shift+\\`,
   FOCUS_CHAT: "/",
   NEW_CONVERSATION: `${mod}+K`,
+  OPEN_PREVIOUS_CONVERSATIONS: `${mod}+Shift+O`,
   STOP_GENERATION: "Esc",
   OPEN_SHORTCUTS_MODAL: "?",
 } as const;
@@ -40,6 +42,7 @@ export const SHORTCUTS_FOR_MODAL: { label: string; keys: string }[] = [
   { label: "Toggle secondary sidebar", keys: SHORTCUT_LABELS.SECONDARY_SIDEBAR },
   { label: "Focus chat input", keys: SHORTCUT_LABELS.FOCUS_CHAT },
   { label: "New conversation", keys: SHORTCUT_LABELS.NEW_CONVERSATION },
+  { label: "Previous conversations", keys: SHORTCUT_LABELS.OPEN_PREVIOUS_CONVERSATIONS },
   { label: "Stop message generation", keys: SHORTCUT_LABELS.STOP_GENERATION },
 ];
 
@@ -111,6 +114,12 @@ const SHORTCUT_RULES: ShortcutRule[] = [
     match: (e) => (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "k",
     allowInInput: false,
     allowInModal: true,
+  },
+  {
+    scope: UNIFIED_KEYBOARD_SCOPES.OPEN_PREVIOUS_CONVERSATIONS,
+    match: (e) => (e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "o",
+    allowInInput: false,
+    allowInModal: false,
   },
 ];
 

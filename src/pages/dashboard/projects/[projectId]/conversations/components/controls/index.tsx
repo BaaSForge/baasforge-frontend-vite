@@ -129,7 +129,7 @@ export default function Controls({
               {/* <InputGroupButton variant="ghost" size="icon-xs">
                 <Copy />
               </InputGroupButton> */}
-              <span className="text-muted-foreground text-xs">
+              <span className="text-xs text-muted-foreground opacity-50">
                 press {isInputFocused ? 'Esc to release' : `${SHORTCUT_LABELS.FOCUS_CHAT} to focus`}
               </span>
               <Tooltip>
