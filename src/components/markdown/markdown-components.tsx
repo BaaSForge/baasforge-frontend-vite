@@ -1,6 +1,13 @@
+import { ExternalLink } from "lucide-react";
 import type { Components } from "react-markdown";
+import { Link } from "react-router";
 
 const SAFE_LINK_REL = "noopener noreferrer nofollow noindex";
+const EXTERNAL_LINK_RE = /^https?:\/\//i;
+
+function isExternalHref(href: string | undefined): boolean {
+  return Boolean(href && EXTERNAL_LINK_RE.test(href));
+}
 
 export const markdownComponents: Partial<Components> = {
   p: ({ children, ...props }) => (
@@ -55,16 +62,29 @@ export const markdownComponents: Partial<Components> = {
       {children}
     </h4>
   ),
-  a: ({ children, href, ...props }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel={SAFE_LINK_REL}
-      className="font-medium underline underline-offset-4"
-      {...props}
-    >
-      {children}
-    </a>
-  ),
+  a: ({ children, href, ...props }) => {
+    const external = isExternalHref(href);
+    const linkClass =
+      "font-medium underline underline-offset-4 inline-flex items-center gap-1";
+    if (external) {
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel={SAFE_LINK_REL}
+          className={linkClass}
+          {...props}
+        >
+          {children}
+          <ExternalLink className="size-3 shrink-0 opacity-70" aria-hidden />
+        </a>
+      );
+    }
+    return (
+      <Link to={href ?? "#"} className={linkClass} {...props}>
+        {children}
+      </Link>
+    );
+  },
   hr: (props) => <hr className="my-3 border-t border-border" {...props} />,
 };
