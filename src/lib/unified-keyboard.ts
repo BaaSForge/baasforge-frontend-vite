@@ -29,7 +29,7 @@ export const SHORTCUT_LABELS = {
   MAIN_SIDEBAR: `${mod}+\\`,
   SECONDARY_SIDEBAR: `${mod}+Shift+\\`,
   FOCUS_CHAT: "/",
-  NEW_CONVERSATION: `${mod}+Alt+N`,
+  NEW_CONVERSATION: `${mod}+K`,
   STOP_GENERATION: "Esc",
   OPEN_SHORTCUTS_MODAL: "?",
 } as const;
@@ -108,7 +108,7 @@ const SHORTCUT_RULES: ShortcutRule[] = [
   },
   {
     scope: UNIFIED_KEYBOARD_SCOPES.NEW_CONVERSATION,
-    match: (e) => (e.metaKey || e.ctrlKey) && e.altKey && e.key.toLowerCase() === "n",
+    match: (e) => (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "k",
     allowInInput: false,
     allowInModal: true,
   },
