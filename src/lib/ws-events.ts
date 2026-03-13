@@ -7,6 +7,13 @@ export type ChatSessionNewMessageChunkEvent = {
   done: boolean;
 };
 
+/** Payload when a message's status changes (e.g. to `failed` or `stopped`). */
+export type ChatSessionMessageStatusChangeEvent = {
+  type: "chat_session_message_status_change";
+  messageId: number;
+  status: "generating" | "failed" | "stopped" | "completed";
+};
+
 export type ProjectDeletedEvent = {
   type: "project_deleted";
   projectId: string;
@@ -20,6 +27,7 @@ export type RuntimeCreatedEvent = {
 
 export type WsServerEvent =
   | ChatSessionNewMessageChunkEvent
+  | ChatSessionMessageStatusChangeEvent
   | ProjectDeletedEvent
   | RuntimeCreatedEvent
   | { type: "subscribed"; topic: string }
@@ -45,6 +53,10 @@ export function isRuntimeCreatedEvent(data: unknown): data is RuntimeCreatedEven
 
 export function isChatSessionNewMessageChunkEvent(data: unknown): data is ChatSessionNewMessageChunkEvent {
   return isWsServerEvent(data) && data.type === "chat_session_new_message_chunk";
+}
+
+export function isChatSessionMessageStatusChangeEvent(data: unknown): data is ChatSessionMessageStatusChangeEvent {
+  return isWsServerEvent(data) && data.type === "chat_session_message_status_change";
 }
 
 export function userTopic(userId: number): string {

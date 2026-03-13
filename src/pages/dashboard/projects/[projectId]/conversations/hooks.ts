@@ -7,7 +7,10 @@ import { QueryKeys } from "@/constants/query-keys";
 import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { useAuth } from "@/modules/auth";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
-import { isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
+import {
+  isChatSessionMessageStatusChangeEvent,
+  isChatSessionNewMessageChunkEvent,
+} from "@/lib/ws-events";
 
 const NO_STREAM = -1;
 
@@ -35,6 +38,24 @@ function applyChunkToMessageInPages(
   return pages;
 }
 
+function applyStatusToMessageInPages(
+  pages: ChatMessageWithDeliveryStatus[][],
+  messageId: number,
+  status: ChatMessageStatus,
+): ChatMessageWithDeliveryStatus[][] {
+  for (let i = pages.length - 1; i >= 0; i--) {
+    const page = pages[i];
+    const idx = page.findIndex((msg) => msg.id === messageId);
+    if (idx === -1) continue;
+    const msg = page[idx];
+    const updated: ChatMessageWithDeliveryStatus = { ...msg, status };
+    const newPage = [...page];
+    newPage[idx] = updated;
+    return [...pages.slice(0, i), newPage, ...pages.slice(i + 1)];
+  }
+  return pages;
+}
+
 export function useSubscribeSession(projectId: number | undefined, sessionId: number | undefined): void {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -54,7 +75,21 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
   useSubscribe(wsUrl, topic, {
     enabled: !!projectId && !!sessionId && !!user && !!wsUrl,
     onMessage(data) {
-      if (!isChatSessionNewMessageChunkEvent(data) || projectId == null || sessionId == null) return;
+      if (projectId == null || sessionId == null) return;
+
+      if (isChatSessionMessageStatusChangeEvent(data)) {
+        const status = data.status as ChatMessageStatus;
+        if (status !== ChatMessageStatus.Failed && status !== ChatMessageStatus.Stopped) return;
+        const cacheKey = QueryKeys.projectChatSessionMessages(projectId, sessionId);
+        queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
+          modifyInfiniteCacheData(old, (pages) =>
+            applyStatusToMessageInPages(pages, data.messageId, status)
+          )
+        );
+        return;
+      }
+
+      if (!isChatSessionNewMessageChunkEvent(data)) return;
 
       // Only apply chunks for this conversation; ignore messages for other sessions
       // (e.g. when backend broadcasts to a wider channel or multiple tabs share state).
