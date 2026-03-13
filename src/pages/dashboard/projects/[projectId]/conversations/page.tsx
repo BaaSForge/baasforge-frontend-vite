@@ -25,7 +25,13 @@ import {
 import { ConnectIcon, DisconnectIcon } from "@/modules/project/stores/runtime-store";
 import { FancyButton } from "@/components/fancy-button";
 import { RuntimesModal } from "@/modules/project";
-import { ChatMessageDeliveryStatus, ChatMessageType, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import {
+  ChatMessageDeliveryStatus,
+  ChatMessageType,
+  ChatSessionRoleType,
+  type ChatMessageWithDeliveryStatus,
+  ChatMessageStatus,
+} from "@/modules/project-chat/types";
 import Controls from "./components/controls";
 import { Message } from "./components/message";
 import { ScrollBehavior, scrollToBottom, scrollToTop } from "@/lib/dom";
@@ -215,6 +221,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       payload,
       created_at: new Date().toISOString(),
       delivery_status: ChatMessageDeliveryStatus.Pending,
+      status: ChatMessageStatus.Completed,
       is_optimistic: true,
       is_first: false,
     };
@@ -245,6 +252,9 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   }
 
   const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdNum;
+
+  const lastMessage = chatSessionMessages?.[chatSessionMessages.length - 1];
+  const isLastMessageFromAI = lastMessage?.role === ChatSessionRoleType.Ai;
 
   return (
     <>
@@ -319,7 +329,11 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               />
             )}
             {shouldShowResponsePlaceholder && (
-              <div className="h-[60vh] w-full shrink-0 relative" />
+              <div className="h-[60vh] w-full shrink-0 relative">
+                {!isLastMessageFromAI && (
+                  <Spinner className="size-5 absolute top-0 left-0 text-blue-500" />
+                )}
+              </div>
             )}
           </div>
           <Controls

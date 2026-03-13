@@ -6,6 +6,7 @@ import { envConfig } from "@/lib/env";
 import { QueryKeys } from "@/constants/query-keys";
 import {
   ChatMessageDeliveryStatus,
+  ChatMessageStatus,
   ChatMessageType,
   ChatSessionRoleType,
   type ChatMessageWithDeliveryStatus,
@@ -60,6 +61,7 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
           created_at: new Date().toISOString(),
           is_first: false,
           delivery_status: ChatMessageDeliveryStatus.Delivered,
+          status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
         };
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
           modifyInfiniteCacheData(old, (pages) => {
@@ -70,6 +72,7 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
               const finalized: ChatMessageWithDeliveryStatus = {
                 ...last,
                 id: new Date().getTime() + Math.random(),
+                status: ChatMessageStatus.Completed,
               };
               base = [...lastPage.slice(0, -1), finalized];
             }
@@ -96,6 +99,7 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
           const updated: ChatMessageWithDeliveryStatus = {
             ...last,
             payload: currentPayload + content,
+            status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
           };
 
           if (done) {

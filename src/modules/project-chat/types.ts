@@ -21,6 +21,13 @@ export enum ChatMessageType {
   GeneratingSucceed = "generating_succeed",
 }
 
+export enum ChatMessageStatus {
+  Generating = "generating",
+  Failed = "failed",
+  Stopped = "stopped",
+  Completed = "completed",
+}
+
 export interface ChatMessageResponse {
   id: number;
   chat_session_id: number;
@@ -29,6 +36,7 @@ export interface ChatMessageResponse {
   payload?: unknown | null;
   created_at: string;
   is_first: boolean;
+  status: ChatMessageStatus;
 }
 
 export interface ChatMessageDTO {

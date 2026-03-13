@@ -1,5 +1,5 @@
 import type { Components } from "react-markdown";
-import { CheckCheck, CircleAlert } from "lucide-react";
+import { CheckCheck, CheckCircle, CircleAlert, StopCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import oneDark from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import {
   ChatMessageDeliveryStatus,
+  ChatMessageStatus,
   ChatMessageType,
   ChatSessionRoleType,
   type ChatMessageWithDeliveryStatus,
@@ -94,6 +95,8 @@ function formatMessageTime(dateValue: string): string {
   });
 }
 
+const MESSAGE_ICON_SIZE = "size-3.5 shrink-0";
+
 function DeliveryStatusIcon({
   status,
   className,
@@ -103,19 +106,58 @@ function DeliveryStatusIcon({
 }) {
   switch (status) {
     case ChatMessageDeliveryStatus.Delivered:
-      return <CheckCheck className={cn("size-3.5 shrink-0", className)} />;
+      return <CheckCheck className={cn(MESSAGE_ICON_SIZE, className)} />;
     case ChatMessageDeliveryStatus.Pending:
       return (
         <Spinner
-          className={cn("size-3.5 shrink-0 text-blue-500", className)}
+          className={cn(MESSAGE_ICON_SIZE, "text-blue-500", className)}
           aria-label="Sending message"
         />
       );
     case ChatMessageDeliveryStatus.Failed:
       return (
         <CircleAlert
-          className={cn("size-3.5 shrink-0 text-destructive", className)}
+          className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)}
           aria-label="Failed to send message"
+        />
+      );
+  }
+}
+
+function AiMessageStatusIcon({
+  status,
+  className,
+}: {
+  status: ChatMessageStatus;
+  className?: string;
+}) {
+  switch (status) {
+    case ChatMessageStatus.Generating:
+      return (
+        <Spinner
+          className={cn(MESSAGE_ICON_SIZE, "text-blue-500", className)}
+          aria-label="Generating"
+        />
+      );
+    case ChatMessageStatus.Failed:
+      return (
+        <CircleAlert
+          className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)}
+          aria-label="Generation failed"
+        />
+      );
+    case ChatMessageStatus.Stopped:
+      return (
+        <StopCircle
+          className={cn(MESSAGE_ICON_SIZE, "text-muted-foreground", className)}
+          aria-label="Stopped"
+        />
+      );
+    case ChatMessageStatus.Completed:
+      return (
+        <CheckCircle
+          className={cn(MESSAGE_ICON_SIZE, "text-muted-foreground", className)}
+          aria-label="Completed"
         />
       );
   }
@@ -199,6 +241,10 @@ export function Message({ message, onRetry }: MessageProps) {
             isUser ? "flex-row-reverse" : "flex-row"
           )}
         >
+          {message.role === ChatSessionRoleType.Ai &&
+            message.status != null && (
+              <AiMessageStatusIcon status={message.status} />
+            )}
           <span className="text-[0.625rem] text-muted-foreground">
             {formatMessageTime(message.created_at)}
           </span>
