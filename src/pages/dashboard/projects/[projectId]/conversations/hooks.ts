@@ -4,20 +4,36 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
 import { QueryKeys } from "@/constants/query-keys";
-import {
-  ChatMessageDeliveryStatus,
-  ChatMessageStatus,
-  ChatMessageType,
-  ChatSessionRoleType,
-  type ChatMessageWithDeliveryStatus,
-} from "@/modules/project-chat/types";
+import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { useAuth } from "@/modules/auth";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
 
 const NO_STREAM = -1;
 
-const STREAMING_MESSAGE_ID = -1;
+function applyChunkToMessageInPages(
+  pages: ChatMessageWithDeliveryStatus[][],
+  messageId: number,
+  content: string,
+  done: boolean,
+): ChatMessageWithDeliveryStatus[][] {
+  for (let i = pages.length - 1; i >= 0; i--) {
+    const page = pages[i];
+    const idx = page.findIndex((msg) => msg.id === messageId);
+    if (idx === -1) continue;
+    const msg = page[idx];
+    const currentPayload = typeof msg.payload === "string" ? msg.payload : "";
+    const updated: ChatMessageWithDeliveryStatus = {
+      ...msg,
+      payload: currentPayload + content,
+      status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
+    };
+    const newPage = [...page];
+    newPage[idx] = updated;
+    return [...pages.slice(0, i), newPage, ...pages.slice(i + 1)];
+  }
+  return pages;
+}
 
 export function useSubscribeSession(projectId: number | undefined, sessionId: number | undefined): void {
   const queryClient = useQueryClient();
@@ -28,10 +44,11 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
       ? `chat_session:${user.id}:${projectId}:${sessionId}`
       : "";
 
-  const lastAppliedChunkIndexRef = useRef<number>(NO_STREAM);
+  /** Tracks last applied chunk index per message_id for ordering. */
+  const lastAppliedChunkByMessageRef = useRef(new Map<number, number>());
 
   useEffect(() => {
-    lastAppliedChunkIndexRef.current = NO_STREAM;
+    lastAppliedChunkByMessageRef.current.clear();
   }, [sessionId]);
 
   useSubscribe(wsUrl, topic, {
@@ -43,79 +60,29 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
       // (e.g. when backend broadcasts to a wider channel or multiple tabs share state).
       if (data.topic != null && data.topic !== topic) return;
 
-      const { chunk_index, content, done } = data;
+      const { message_id, chunk_index, content, done } = data;
       const cacheKey = QueryKeys.projectChatSessionMessages(projectId, sessionId);
+      const lastApplied = lastAppliedChunkByMessageRef.current.get(message_id) ?? NO_STREAM;
 
       if (chunk_index === 0) {
-        if (lastAppliedChunkIndexRef.current >= 0) {
-          return;
-        }
-        lastAppliedChunkIndexRef.current = 0;
+        if (lastApplied >= 0) return;
+        lastAppliedChunkByMessageRef.current.set(message_id, 0);
 
-        const newMessage: ChatMessageWithDeliveryStatus = {
-          id: STREAMING_MESSAGE_ID,
-          chat_session_id: sessionId,
-          role: ChatSessionRoleType.Ai,
-          type: ChatMessageType.Text,
-          payload: content,
-          created_at: new Date().toISOString(),
-          is_first: false,
-          delivery_status: ChatMessageDeliveryStatus.Delivered,
-          status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
-        };
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
-          modifyInfiniteCacheData(old, (pages) => {
-            const lastPage = pages[pages.length - 1] ?? [];
-            const last = lastPage[lastPage.length - 1];
-            let base = lastPage;
-            if (last?.id === STREAMING_MESSAGE_ID) {
-              const finalized: ChatMessageWithDeliveryStatus = {
-                ...last,
-                id: new Date().getTime() + Math.random(),
-                status: ChatMessageStatus.Completed,
-              };
-              base = [...lastPage.slice(0, -1), finalized];
-            }
-            return [...pages.slice(0, -1), [...base, newMessage]];
-          })
+          modifyInfiniteCacheData(old, (pages) => applyChunkToMessageInPages(pages, message_id, content, done))
         );
-        if (done) {
-          lastAppliedChunkIndexRef.current = NO_STREAM;
-        }
+        if (done) lastAppliedChunkByMessageRef.current.delete(message_id);
         return;
       }
 
-      if (chunk_index !== lastAppliedChunkIndexRef.current + 1) {
-        return;
-      }
-      lastAppliedChunkIndexRef.current = chunk_index;
+      if (chunk_index !== lastApplied + 1) return;
+      lastAppliedChunkByMessageRef.current.set(message_id, chunk_index);
 
       queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
-        modifyInfiniteCacheData(old, (pages) => {
-          const lastPage = pages[pages.length - 1];
-          const last = lastPage[lastPage.length - 1];
-          if (last?.id !== STREAMING_MESSAGE_ID) return pages;
-          const currentPayload = typeof last.payload === "string" ? last.payload : "";
-          const updated: ChatMessageWithDeliveryStatus = {
-            ...last,
-            payload: currentPayload + content,
-            status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
-          };
-
-          if (done) {
-            updated.id = new Date().getTime() + Math.random();
-          }
-
-          return [
-            ...pages.slice(0, -1),
-            [...lastPage.slice(0, -1), updated],
-          ];
-        })
+        modifyInfiniteCacheData(old, (pages) => applyChunkToMessageInPages(pages, message_id, content, done))
       );
 
-      if (done) {
-        lastAppliedChunkIndexRef.current = NO_STREAM;
-      }
+      if (done) lastAppliedChunkByMessageRef.current.delete(message_id);
     },
   });
 }

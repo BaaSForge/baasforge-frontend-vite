@@ -63,17 +63,19 @@ export function useCreateProjectChatSessionMessageMutation() {
         });
       }
 
-      function setDelivered(saved: ChatMessageWithDeliveryStatus) {
+      function setDelivered(
+        saved: ChatMessageWithDeliveryStatus,
+        placeholderMessage: ChatMessageWithDeliveryStatus,
+      ) {
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) => {
           return modifyInfiniteCacheData(old, (pages) => {
             const lastPage = pages[pages.length - 1];
-            return [
-              ...pages.slice(0, -1),
-              [
-                ...lastPage.filter((msg) => msg.id !== optimisticMessage.id),
-                { ...saved, delivery_status: ChatMessageDeliveryStatus.Delivered },
-              ],
+            const newLastPage = [
+              ...lastPage.filter((msg) => msg.id !== optimisticMessage.id),
+              { ...saved, delivery_status: ChatMessageDeliveryStatus.Delivered },
+              placeholderMessage,
             ];
+            return [...pages.slice(0, -1), newLastPage];
           });
         });
       }
@@ -83,11 +85,11 @@ export function useCreateProjectChatSessionMessageMutation() {
           type: optimisticMessage.type,
           payload: optimisticMessage.payload,
         };
-        const saved = await createProjectChatSessionMessage(projectId, chatSessionId, message);
+        const result = await createProjectChatSessionMessage(projectId, chatSessionId, message);
 
-        if (saved) {
-          setDelivered(saved);
-          return saved;
+        if (result) {
+          setDelivered(result.saved, result.placeholderMessage);
+          return result.saved;
         } else {
           setFailed();
           return undefined;

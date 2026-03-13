@@ -39,6 +39,10 @@ export interface ChatMessageResponse {
   status: ChatMessageStatus;
 }
 
+export interface CreateChatMessageApiResponse extends ChatMessageResponse {
+  placeholder_message: ChatMessageResponse;
+}
+
 export interface ChatMessageDTO {
   type: ChatMessageType;
   payload?: unknown | null;

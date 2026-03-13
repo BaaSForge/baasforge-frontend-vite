@@ -1,6 +1,7 @@
 export type ChatSessionNewMessageChunkEvent = {
   type: "chat_session_new_message_chunk";
   topic: string;
+  message_id: number;
   chunk_index: number;
   content: string;
   done: boolean;

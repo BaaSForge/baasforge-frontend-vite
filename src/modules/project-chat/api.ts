@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { ApiResponse } from "@/lib/api-client";
-import { ChatMessageDeliveryStatus, type ChatMessageDTO, type ChatMessageResponse, type ChatMessageWithDeliveryStatus, type ChatSessionResponse } from "./types";
+import { ChatMessageDeliveryStatus, type ChatMessageDTO, type ChatMessageResponse, type ChatMessageWithDeliveryStatus, type ChatSessionResponse, type CreateChatMessageApiResponse } from "./types";
 
 const GET_MESSAGES_QUERY_LIMIT = 20;
 
@@ -51,17 +51,32 @@ export function getProjectChatSessionMessages(
     })).reverse());
 }
 
+export type CreateProjectChatSessionMessageResult = {
+  saved: ChatMessageWithDeliveryStatus;
+  placeholderMessage: ChatMessageWithDeliveryStatus;
+};
+
 export function createProjectChatSessionMessage(
   projectId: number,
   chatSessionId: number,
   message: ChatMessageDTO,
-): Promise<ChatMessageWithDeliveryStatus | undefined> {
+): Promise<CreateProjectChatSessionMessageResult | undefined> {
   const endpoint = chatSessionMessagesEndpoint(projectId, chatSessionId);
 
   return apiClient
-    .post<ApiResponse<ChatMessageResponse>>(endpoint, message)
-    .then((res) => res.data ? ({
-      ...res.data,
-      delivery_status: ChatMessageDeliveryStatus.Delivered,
-    }) : undefined);
+    .post<ApiResponse<CreateChatMessageApiResponse>>(endpoint, message)
+    .then((res) => {
+      if (!res.data) return undefined;
+      const { placeholder_message: placeholder, ...userMessage } = res.data;
+      const saved: ChatMessageWithDeliveryStatus = {
+        ...userMessage,
+        delivery_status: ChatMessageDeliveryStatus.Delivered,
+      };
+      const placeholderMessage: ChatMessageWithDeliveryStatus = {
+        ...placeholder,
+        is_first: false,
+        delivery_status: ChatMessageDeliveryStatus.Delivered,
+      };
+      return { saved, placeholderMessage };
+    });
 }
