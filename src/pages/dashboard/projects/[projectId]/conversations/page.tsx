@@ -244,9 +244,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     });
   }
 
-  const lastMessage = chatSessionMessages?.[chatSessionMessages.length - 1];
-  const isLastMessageFromAI = lastMessage?.role === ChatSessionRoleType.Ai;
-
   const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdNum;
 
   return (
@@ -322,11 +319,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
               />
             )}
             {shouldShowResponsePlaceholder && (
-              <div className="h-[60vh] w-full shrink-0 relative">
-                {!isLastMessageFromAI && (
-                  <Spinner className="size-5 absolute top-0 left-0 text-blue-500" />
-                )}
-              </div>
+              <div className="h-[60vh] w-full shrink-0 relative" />
             )}
           </div>
           <Controls
