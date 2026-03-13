@@ -6,9 +6,12 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { useSidebar } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import { ArrowUp, Square } from "lucide-react";
+import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 
 type Sidebar = ReturnType<typeof useSidebar>;
@@ -40,6 +43,7 @@ export default function Controls({
   const mainSidebar = passedMainSidebar ?? useSidebarRes;
   const secondarySidebar = passedMainSidebar ? useSidebarRes : null;
   const isMobile = useIsMobile();
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const leftClassName =
     mainSidebar.open && !mainSidebar.isMobile
@@ -96,7 +100,13 @@ export default function Controls({
               ref={messageInputRef}
               value={messageInputValue}
               onChange={(e) => setMessageInputValue(e.target.value)}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
               onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  e.currentTarget.blur();
+                  return;
+                }
                 if (isGenerating) {
                   e.preventDefault();
                   return;
@@ -110,7 +120,7 @@ export default function Controls({
               placeholder={
                 (isNewSession
                   ? "Type a message to start a new conversation"
-                  : "Type a message") + ", press Shift+Enter for new line"
+                  : "Type a message") + `, Shift+Enter for new line`
               }
               className="px-3 py-3 pb-0 min-h-10 max-h-40"
               rows={1}
@@ -119,20 +129,32 @@ export default function Controls({
               {/* <InputGroupButton variant="ghost" size="icon-xs">
                 <Copy />
               </InputGroupButton> */}
-              <InputGroupButton
-                size="sm"
-                className={cn("ml-auto", !isGenerating && canSend && "!bg-blue-500 hover:!bg-blue-600 !text-white")}
-                variant={isGenerating ? "destructive" : canSend ? "default" : "ghost"}
-                disabled={!isGenerating && !canSend}
-                onClick={() => (isGenerating ? handleStop?.() : canSend ? handleSend() : undefined)}
-                type="button"
-              >
-                {isGenerating ? (
-                  <>Stop <Square className="size-3.5" /></>
-                ) : (
-                  <>Send <ArrowUp className="size-3.5" /></>
-                )}
-              </InputGroupButton>
+              <span className="text-muted-foreground text-xs">
+                press {isInputFocused ? 'Esc to release' : `${SHORTCUT_LABELS.FOCUS_CHAT} to focus`}
+              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <InputGroupButton
+                    size="sm"
+                    className={cn("ml-auto", !isGenerating && canSend && "!bg-blue-500 hover:!bg-blue-600 !text-white")}
+                    variant={isGenerating ? "destructive" : canSend ? "default" : "ghost"}
+                    disabled={!isGenerating && !canSend}
+                    onClick={() => (isGenerating ? handleStop?.() : canSend ? handleSend() : undefined)}
+                    type="button"
+                  >
+                    {isGenerating ? (
+                      <>Stop ({SHORTCUT_LABELS.STOP_GENERATION}) <Square className="size-3.5" /></>
+                    ) : (
+                      <>Send <ArrowUp className="size-3.5" /></>
+                    )}
+                  </InputGroupButton>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {isGenerating
+                    ? `Stop generating (${SHORTCUT_LABELS.STOP_GENERATION})`
+                    : "Send message"}
+                </TooltipContent>
+              </Tooltip>
             </InputGroupAddon>
           </InputGroup>
         </div>

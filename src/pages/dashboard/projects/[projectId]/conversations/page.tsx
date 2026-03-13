@@ -16,6 +16,7 @@ import {
   SidebarContent,
   SidebarInset,
   useSecondarySidebar,
+  useRegisterSecondarySidebarShortcut,
 } from "@/components/secondary-sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryKeys } from "@/constants/query-keys";
@@ -45,6 +46,12 @@ import { findLastUserMessageIndex } from "./utils";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll, useSubscribeSession } from "./hooks";
+import {
+  register,
+  unregister,
+  UNIFIED_KEYBOARD_SCOPES,
+  SHORTCUT_LABELS,
+} from "@/lib/unified-keyboard";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -77,6 +84,26 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     toggleSidebar,
     rereadSidebarOpen,
   } = useSecondarySidebar();
+  useRegisterSecondarySidebarShortcut();
+  const handleStopRef = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    const onFocusChat = () => messageInputRef.current?.focus();
+    const onFallbackKey = (key: string) => {
+      messageInputRef.current?.focus();
+      setMessageInput((prev) => prev + key);
+    };
+    register(UNIFIED_KEYBOARD_SCOPES.FOCUS_CHAT, onFocusChat);
+    register(UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY, onFallbackKey);
+    return () => {
+      unregister(UNIFIED_KEYBOARD_SCOPES.FOCUS_CHAT);
+      unregister(UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY);
+    };
+  }, []);
+  useEffect(() => {
+    const onStopGeneration = () => handleStopRef.current?.();
+    register(UNIFIED_KEYBOARD_SCOPES.STOP_GENERATION, onStopGeneration);
+    return () => unregister(UNIFIED_KEYBOARD_SCOPES.STOP_GENERATION);
+  }, []);
   const { conversationId, projectId } = useParams<{
     conversationId?: string;
     projectId: string;
@@ -309,6 +336,13 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       });
   };
 
+  useLayoutEffect(() => {
+    handleStopRef.current = handleStop;
+    return () => {
+      handleStopRef.current = null;
+    };
+  }, [handleStop]);
+
   return (
     <>
       <PageTitleBox
@@ -343,7 +377,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                Toggle draft units
+                Toggle draft units ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})
               </TooltipContent>
             </Tooltip>
           </>

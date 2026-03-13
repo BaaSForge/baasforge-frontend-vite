@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Link, useLocation, useParams } from "react-router";
+import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -151,7 +152,7 @@ function StickyBreadcrumbBarInner({
           <SidebarTrigger />
         </TooltipTrigger>
         <TooltipContent side="right">
-          Toggle sidebar
+          Toggle sidebar ({SHORTCUT_LABELS.MAIN_SIDEBAR})
         </TooltipContent>
       </Tooltip>
       <div className="min-w-0 flex-1 overflow-hidden">

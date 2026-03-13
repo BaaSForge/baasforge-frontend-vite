@@ -27,6 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { FancyButton } from "@/components/fancy-button";
+import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { useProjectQuery } from "@/modules/project/queries";
 import {
   useProjectChatSessionsQuery,
@@ -71,11 +72,19 @@ export function NavProjects() {
       <SidebarGroupLabel>{project.name} Area</SidebarGroupLabel>
       <SidebarMenu>
         <SidebarMenuItem className="my-2">
-          <SidebarMenuButton asChild tooltip="Develop by AI">
+          <SidebarMenuButton
+            asChild
+            tooltip={`Develop by AI (${SHORTCUT_LABELS.NEW_CONVERSATION})`}
+          >
             <FancyButton size="xs" asChild className="rounded-full">
               <Link to={conversationsUrl}>
                 <Bot className="size-4 shrink-0" />
-                <span className="group-data-[collapsible=icon]:hidden">Develope by AI</span>
+                <span className="group-data-[collapsible=icon]:hidden">
+                  Develop by AI
+                  <span className="text-xs ml-2">
+                    ({SHORTCUT_LABELS.NEW_CONVERSATION})
+                  </span>
+                </span>
               </Link>
             </FancyButton>
           </SidebarMenuButton>

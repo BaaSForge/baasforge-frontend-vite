@@ -15,12 +15,14 @@ import {
   SidebarContent,
   SidebarInset,
   useSecondarySidebar,
+  useRegisterSecondarySidebarShortcut,
 } from "@/components/secondary-sidebar";
 import { useProjectReleasesQuery, useProjectReleaseUnitsQuery } from "@/modules/project/queries";
 import { useEffect, useState, useMemo } from "react";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
+import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -88,6 +90,7 @@ function groupUnitsByType(units: ProjectUnitResponse[]): Map<ProjectUnitType, Pr
 
 function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleasesContentProps) {
   const { toggleSidebar } = useSecondarySidebar();
+  useRegisterSecondarySidebarShortcut();
   const navigate = useNavigate();
   const [groupMode, setGroupMode] = useState<GroupMode>(getStoredGroupMode);
 
@@ -163,7 +166,7 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                Toggle releases
+                Toggle releases ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})
               </TooltipContent>
             </Tooltip>
           </div>

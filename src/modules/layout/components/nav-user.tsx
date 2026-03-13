@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import {
   ChevronsUpDown,
   Clock,
   CreditCard,
   Github,
+  Keyboard,
   LogOut,
   Package,
   Sparkles,
@@ -10,12 +12,25 @@ import {
 import { Link, useLocation } from "react-router";
 
 import { cn } from "@/lib/utils";
+import {
+  register,
+  unregister,
+  UNIFIED_KEYBOARD_SCOPES,
+  SHORTCUT_LABELS,
+  SHORTCUTS_FOR_MODAL,
+} from "@/lib/unified-keyboard";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -148,6 +163,12 @@ function hasAnyActivePayment(payments: PaymentResponse[]): boolean {
 }
 
 export function NavUser() {
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  useEffect(() => {
+    const onOpenShortcuts = () => setShortcutsOpen(true);
+    register(UNIFIED_KEYBOARD_SCOPES.OPEN_SHORTCUTS_MODAL, onOpenShortcuts);
+    return () => unregister(UNIFIED_KEYBOARD_SCOPES.OPEN_SHORTCUTS_MODAL);
+  }, []);
   const { isMobile, open, openMobile, setOpenMobile } = useSidebar();
   const previousOpenMobile = usePrevious(openMobile);
   const { user, isLoading, logout } = useAuth();
@@ -401,6 +422,14 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setShortcutsOpen(true)}>
+              <Keyboard />
+              Shortkeys
+              <span className="text-muted-foreground ml-auto font-mono text-xs">
+                {SHORTCUT_LABELS.OPEN_SHORTCUTS_MODAL}
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => void logout()}>
               <LogOut />
               Log out
@@ -408,6 +437,32 @@ export function NavUser() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+        <DialogContent className="max-w-md p-0 gap-0" showCloseButton>
+          <DialogHeader className="px-4 pt-4 pb-4">
+            <DialogTitle>Shortkeys</DialogTitle>
+          </DialogHeader>
+          <div className="px-2 pb-4">
+            <div className="rounded-md overflow-hidden">
+              {SHORTCUTS_FOR_MODAL.map(({ label, keys }, i) => (
+                <div
+                  key={label}
+                  className={cn(
+                    "flex cursor-default items-center px-2 py-3 text-sm outline-hidden select-none",
+                    "text-foreground [&_svg]:shrink-0 [&_svg]:size-4",
+                    i < SHORTCUTS_FOR_MODAL.length - 1 && ""
+                  )}
+                >
+                  <span className="flex-1 truncate text-left">{label}</span>
+                  <kbd className="text-muted-foreground ml-auto font-mono text-xs tracking-widest rounded border border-border bg-muted/50 px-1.5 py-0.5">
+                    {keys}
+                  </kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </SidebarMenu>
   );
 }
