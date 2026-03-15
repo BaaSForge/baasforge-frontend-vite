@@ -1,4 +1,4 @@
-import { CheckCheck, CheckCircle, CircleAlert, StopCircle } from "lucide-react";
+import { CheckCheck, CheckCircle, Alert, Pause } from "lucide-react";
 
 import { Markdown, type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
@@ -34,7 +34,7 @@ function DeliveryStatusIcon({ status, className }: { status: ChatMessageDelivery
         case ChatMessageDeliveryStatus.Pending:
             return <Spinner className={cn(MESSAGE_ICON_SIZE, "text-blue-500", className)} aria-label="Sending message" />;
         case ChatMessageDeliveryStatus.Failed:
-            return <CircleAlert className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)} aria-label="Failed to send message" />;
+            return <Alert className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)} aria-label="Failed to send message" />;
     }
 }
 
@@ -43,9 +43,9 @@ function AiMessageStatusIcon({ status, className }: { status: ChatMessageStatus;
         case ChatMessageStatus.Generating:
             return <Spinner className={cn(MESSAGE_ICON_SIZE, "text-blue-500", className)} aria-label="Generating" />;
         case ChatMessageStatus.Failed:
-            return <CircleAlert className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)} aria-label="Generation failed" />;
+            return <Alert className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)} aria-label="Generation failed" />;
         case ChatMessageStatus.Stopped:
-            return <StopCircle className={cn(MESSAGE_ICON_SIZE, "text-muted-foreground", className)} aria-label="Stopped" />;
+            return <Pause className={cn(MESSAGE_ICON_SIZE, "text-muted-foreground", className)} aria-label="Stopped" />;
         case ChatMessageStatus.Completed:
             return <CheckCircle className={cn(MESSAGE_ICON_SIZE, "text-muted-foreground", className)} aria-label="Completed" />;
     }
