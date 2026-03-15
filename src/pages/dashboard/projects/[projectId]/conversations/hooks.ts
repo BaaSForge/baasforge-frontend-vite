@@ -2,9 +2,13 @@ import { QueryKeys } from "@/constants/query-keys";
 import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
-import { isChatSessionMessageStatusChangeEvent, isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
+import {
+    isChatSessionMessageCreatedEvent,
+    isChatSessionMessageStatusChangeEvent,
+    isChatSessionNewMessageChunkEvent,
+} from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
-import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import { ChatMessageDeliveryStatus, ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
@@ -81,8 +85,26 @@ export function useSubscribeSession(projectId: string | undefined, sessionId: st
         onMessage(data) {
             if (projectId == null || sessionId == null) return;
 
+            if (isChatSessionMessageCreatedEvent(data)) {
+                const cacheKey = QueryKeys.projectChatSessionMessages(projectId, sessionId);
+                const newMessage: ChatMessageWithDeliveryStatus = {
+                    ...data.message,
+                    is_first: data.message.is_first ?? false,
+                    delivery_status: ChatMessageDeliveryStatus.Delivered,
+                };
+                queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
+                    modifyInfiniteCacheData(old, (pages) => {
+                        if (pages.length === 0) return [[newMessage]];
+                        const lastPage = pages[pages.length - 1];
+                        if (lastPage.some((msg) => msg.id === data.message.id)) return pages;
+                        return [...pages.slice(0, -1), [...lastPage, newMessage]];
+                    }),
+                );
+                return;
+            }
+
             if (isChatSessionMessageStatusChangeEvent(data)) {
-                const status = data.status as ChatMessageStatus;
+                const status = data.status;
                 if (status !== ChatMessageStatus.Failed && status !== ChatMessageStatus.Stopped) return;
                 const cacheKey = QueryKeys.projectChatSessionMessages(projectId, sessionId);
                 queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>

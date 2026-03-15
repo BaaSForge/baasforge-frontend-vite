@@ -52,14 +52,13 @@ export function useCreateProjectChatSessionMessageMutation() {
                 });
             }
 
-            function setDelivered(saved: ChatMessageWithDeliveryStatus, placeholderMessage: ChatMessageWithDeliveryStatus) {
+            function setDelivered(saved: ChatMessageWithDeliveryStatus) {
                 queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) => {
                     return modifyInfiniteCacheData(old, (pages) => {
                         const lastPage = pages[pages.length - 1];
                         const newLastPage = [
                             ...lastPage.filter((msg) => msg.id !== optimisticMessage.id),
                             { ...saved, delivery_status: ChatMessageDeliveryStatus.Delivered },
-                            placeholderMessage,
                         ];
                         return [...pages.slice(0, -1), newLastPage];
                     });
@@ -74,7 +73,7 @@ export function useCreateProjectChatSessionMessageMutation() {
                 const result = await createProjectChatSessionMessage(projectId, chatSessionId, message);
 
                 if (result) {
-                    setDelivered(result.saved, result.placeholderMessage);
+                    setDelivered(result.saved);
                     return result.saved;
                 } else {
                     setFailed();

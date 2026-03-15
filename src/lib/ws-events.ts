@@ -1,3 +1,6 @@
+import type { ChatMessageResponse } from "@/modules/project-chat/types";
+import { ChatMessageStatus } from "@/modules/project-chat/types";
+
 export type ChatSessionNewMessageChunkEvent = {
     type: "chat_session_new_message_chunk";
     topic: string;
@@ -7,11 +10,16 @@ export type ChatSessionNewMessageChunkEvent = {
     done: boolean;
 };
 
+export type ChatSessionMessageCreatedEvent = {
+    type: "chat_session_message_created";
+    message: ChatMessageResponse;
+};
+
 /** Payload when a message's status changes (e.g. to `failed` or `stopped`). */
 export type ChatSessionMessageStatusChangeEvent = {
     type: "chat_session_message_status_change";
     messageId: string;
-    status: "generating" | "failed" | "stopped" | "completed";
+    status: ChatMessageStatus;
 };
 
 export type ProjectDeletedEvent = {
@@ -27,6 +35,7 @@ export type RuntimeCreatedEvent = {
 
 export type WsServerEvent =
     | ChatSessionNewMessageChunkEvent
+    | ChatSessionMessageCreatedEvent
     | ChatSessionMessageStatusChangeEvent
     | ProjectDeletedEvent
     | RuntimeCreatedEvent
@@ -48,6 +57,10 @@ export function isRuntimeCreatedEvent(data: unknown): data is RuntimeCreatedEven
 
 export function isChatSessionNewMessageChunkEvent(data: unknown): data is ChatSessionNewMessageChunkEvent {
     return isWsServerEvent(data) && data.type === "chat_session_new_message_chunk";
+}
+
+export function isChatSessionMessageCreatedEvent(data: unknown): data is ChatSessionMessageCreatedEvent {
+    return isWsServerEvent(data) && data.type === "chat_session_message_created";
 }
 
 export function isChatSessionMessageStatusChangeEvent(data: unknown): data is ChatSessionMessageStatusChangeEvent {

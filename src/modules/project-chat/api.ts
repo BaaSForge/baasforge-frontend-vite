@@ -6,7 +6,6 @@ import {
     type ChatMessageResponse,
     type ChatMessageWithDeliveryStatus,
     type ChatSessionResponse,
-    type CreateChatMessageApiResponse,
 } from "./types";
 
 const GET_MESSAGES_QUERY_LIMIT = 20;
@@ -58,7 +57,6 @@ export function getProjectChatSessionMessages(
 
 export type CreateProjectChatSessionMessageResult = {
     saved: ChatMessageWithDeliveryStatus;
-    placeholderMessage: ChatMessageWithDeliveryStatus;
 };
 
 export function createProjectChatSessionMessage(
@@ -68,19 +66,14 @@ export function createProjectChatSessionMessage(
 ): Promise<CreateProjectChatSessionMessageResult | undefined> {
     const endpoint = chatSessionMessagesEndpoint(projectId, chatSessionId);
 
-    return apiClient.post<ApiResponse<CreateChatMessageApiResponse>>(endpoint, message).then((res) => {
+    return apiClient.post<ApiResponse<ChatMessageResponse>>(endpoint, message).then((res) => {
         if (!res.data) return undefined;
-        const { placeholder_message: placeholder, ...userMessage } = res.data;
+        const userMessage = res.data;
         const saved: ChatMessageWithDeliveryStatus = {
             ...userMessage,
             delivery_status: ChatMessageDeliveryStatus.Delivered,
         };
-        const placeholderMessage: ChatMessageWithDeliveryStatus = {
-            ...placeholder,
-            is_first: false,
-            delivery_status: ChatMessageDeliveryStatus.Delivered,
-        };
-        return { saved, placeholderMessage };
+        return { saved };
     });
 }
 
