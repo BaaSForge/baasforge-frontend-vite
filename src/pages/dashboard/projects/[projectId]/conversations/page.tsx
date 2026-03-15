@@ -358,7 +358,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             <SidebarInset>
                 <Container>
                     {hasPreviousPage && <div ref={loadMoreRef} className="h-px w-full shrink-0" aria-hidden />}
-                    <div className={cn("flex flex-col gap-0 min-h-0 flex-1 pb-4", MIDDLE_CONTENT_CLASSNAME)}>
+                    <div className={cn("flex flex-col gap-0 min-h-0 min-w-0 flex-1 pb-4 overflow-x-hidden", MIDDLE_CONTENT_CLASSNAME)}>
                         {chatSessionMessages?.map((message) => (
                             <Message key={message.id} message={message} onRetry={handleRetryMessage} />
                         ))}

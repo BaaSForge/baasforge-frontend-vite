@@ -25,9 +25,9 @@ export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessag
     const hasUnits = unitCount > 0;
 
     return (
-        <div className="flex w-full justify-start mb-2">
-            <Collapsible defaultOpen={hasUnits} className="group mb-1 w-full max-w-full overflow-hidden">
-                <CollapsibleTrigger className="flex w-full items-center gap-2 p-3 text-left outline-none hover:bg-muted/50 max-w-[300px] rounded-md">
+        <div className="flex w-0 min-w-full max-w-full justify-start mb-2 overflow-hidden">
+            <Collapsible defaultOpen={false} className="group mb-1 w-full min-w-0 max-w-full overflow-hidden">
+                <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
                     <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
                     <span className="font-medium text-sm">Reading relevant units</span>
                     {hasUnits && (
@@ -35,7 +35,7 @@ export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessag
                             {unitCount} {unitCount === 1 ? "unit" : "units"}
                         </span>
                     )}
-                    <span className="ml-auto shrink-0">
+                    <span className="ml-2 shrink-0">
                         <AiMessageStatusIcon status={status} />
                     </span>
                 </CollapsibleTrigger>
@@ -43,12 +43,12 @@ export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessag
                     className={cn(
                         "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",
                         "data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:slide-in-from-top-2",
-                        "outline-none",
+                        "outline-none min-w-0 max-w-full overflow-hidden",
                     )}
                 >
                     {hasUnits && (
-                        <div className="border-t px-3 py-2">
-                            <FadedScrollArea orientation="horizontal" className="h-14 w-full" hideScrollbar>
+                        <div className="min-w-0 w-full max-w-full overflow-hidden py-2">
+                            <FadedScrollArea orientation="horizontal" className="h-14 min-h-0 min-w-0 w-full max-w-full" hideScrollbar>
                                 <div className="flex w-max items-stretch gap-2">
                                     {units.map((unit) => (
                                         <UnitCardChip key={unit.id} unit={unit} />
