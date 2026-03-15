@@ -3,13 +3,9 @@ import { ChevronDownIcon } from "lucide-react";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { UnitCardChip } from "@/modules/project";
 import type { ProjectUnitResponse } from "@/modules/project";
-import {
-    ChatMessageStatus,
-    type ChatMessageWithDeliveryStatus,
-    type ToolFetchRelevantUnitsPayload,
-} from "@/modules/project-chat/types";
+import { UnitCardChip } from "@/modules/project";
+import { ChatMessageStatus, type ChatMessageWithDeliveryStatus, type ToolFetchRelevantUnitsPayload } from "@/modules/project-chat/types";
 
 import { AiMessageStatusIcon } from "./message-icons";
 
@@ -27,10 +23,7 @@ export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessag
 
     return (
         <div className="flex w-full justify-start">
-            <Collapsible
-                defaultOpen={hasUnits}
-                className="group mb-1 w-full max-w-full overflow-hidden rounded-md border"
-            >
+            <Collapsible defaultOpen={hasUnits} className="group mb-1 w-full max-w-full overflow-hidden rounded-md border">
                 <CollapsibleTrigger className="flex w-full items-center gap-2 p-3 text-left outline-none hover:bg-muted/50">
                     <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
                     <span className="font-medium text-sm">Reading relevant units</span>

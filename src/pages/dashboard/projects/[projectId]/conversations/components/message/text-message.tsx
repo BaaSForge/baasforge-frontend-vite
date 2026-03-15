@@ -2,11 +2,7 @@ import { Markdown, type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import {
-    ChatMessageDeliveryStatus,
-    ChatSessionRoleType,
-    type ChatMessageWithDeliveryStatus,
-} from "@/modules/project-chat/types";
+import { ChatMessageDeliveryStatus, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 
@@ -32,20 +28,13 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
     return (
         <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
             <div className={cn("flex min-w-0 flex-col gap-1", isUser ? "items-end max-w-[80%]" : "items-start max-w-full")}>
-                <div
-                    className={cn(
-                        "min-w-0 max-w-full",
-                        isUser ? "rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground" : "",
-                    )}
-                >
+                <div className={cn("min-w-0 max-w-full", isUser ? "rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground" : "")}>
                     <div className="min-w-0 text-sm">
                         <Markdown theme={markdownTheme}>{text}</Markdown>
                     </div>
                 </div>
                 <div className={cn("flex h-6 items-center gap-1.5", isUser ? "flex-row-reverse" : "flex-row")}>
-                    {message.role === ChatSessionRoleType.Ai && message.status != null && (
-                        <AiMessageStatusIcon status={message.status} />
-                    )}
+                    {message.role === ChatSessionRoleType.Ai && message.status != null && <AiMessageStatusIcon status={message.status} />}
                     <span className="text-muted-foreground text-[0.625rem]">{formatMessageTime(message.created_at)}</span>
                     {message.role === ChatSessionRoleType.User && <DeliveryStatusIcon status={message.delivery_status} />}
                     {isFailed && (

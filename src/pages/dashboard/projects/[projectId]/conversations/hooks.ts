@@ -2,11 +2,7 @@ import { QueryKeys } from "@/constants/query-keys";
 import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
-import {
-    isChatSessionMessageCreatedEvent,
-    isChatSessionMessageStatusChangeEvent,
-    isChatSessionNewMessageChunkEvent,
-} from "@/lib/ws-events";
+import { isChatSessionMessageCreatedEvent, isChatSessionMessageStatusChangeEvent, isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
 import { ChatMessageDeliveryStatus, ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import type { InfiniteData } from "@tanstack/react-query";
