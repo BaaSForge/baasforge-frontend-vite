@@ -15,6 +15,11 @@ export type ChatSessionMessageCreatedEvent = {
     message: ChatMessageResponse;
 };
 
+export type ChatSessionMessageUpdatedEvent = {
+    type: "chat_session_message_updated";
+    message: ChatMessageResponse;
+};
+
 /** Payload when a message's status changes (e.g. to `failed` or `stopped`). */
 export type ChatSessionMessageStatusChangeEvent = {
     type: "chat_session_message_status_change";
@@ -36,6 +41,7 @@ export type RuntimeCreatedEvent = {
 export type WsServerEvent =
     | ChatSessionNewMessageChunkEvent
     | ChatSessionMessageCreatedEvent
+    | ChatSessionMessageUpdatedEvent
     | ChatSessionMessageStatusChangeEvent
     | ProjectDeletedEvent
     | RuntimeCreatedEvent
@@ -61,6 +67,10 @@ export function isChatSessionNewMessageChunkEvent(data: unknown): data is ChatSe
 
 export function isChatSessionMessageCreatedEvent(data: unknown): data is ChatSessionMessageCreatedEvent {
     return isWsServerEvent(data) && data.type === "chat_session_message_created";
+}
+
+export function isChatSessionMessageUpdatedEvent(data: unknown): data is ChatSessionMessageUpdatedEvent {
+    return isWsServerEvent(data) && data.type === "chat_session_message_updated";
 }
 
 export function isChatSessionMessageStatusChangeEvent(data: unknown): data is ChatSessionMessageStatusChangeEvent {

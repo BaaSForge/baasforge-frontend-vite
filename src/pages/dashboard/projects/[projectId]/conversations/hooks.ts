@@ -2,9 +2,9 @@ import { QueryKeys } from "@/constants/query-keys";
 import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
-import { isChatSessionMessageCreatedEvent, isChatSessionMessageStatusChangeEvent, isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
+import { isChatSessionMessageCreatedEvent, isChatSessionMessageStatusChangeEvent, isChatSessionMessageUpdatedEvent, isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
-import { ChatMessageDeliveryStatus, ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import { ChatMessageDeliveryStatus, ChatMessageStatus, type ChatMessageResponse, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
@@ -53,6 +53,28 @@ function applyStatusToMessageInPages(
     return pages;
 }
 
+function replaceMessageInPages(
+    pages: ChatMessageWithDeliveryStatus[][],
+    messageId: string,
+    updatedMessage: ChatMessageResponse,
+): ChatMessageWithDeliveryStatus[][] {
+    for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        const idx = page.findIndex((msg) => msg.id === messageId);
+        if (idx === -1) continue;
+        const existing = page[idx];
+        const merged: ChatMessageWithDeliveryStatus = {
+            ...updatedMessage,
+            is_first: existing.is_first ?? updatedMessage.is_first ?? false,
+            delivery_status: existing.delivery_status ?? ChatMessageDeliveryStatus.Delivered,
+        };
+        const newPage = [...page];
+        newPage[idx] = merged;
+        return [...pages.slice(0, i), newPage, ...pages.slice(i + 1)];
+    }
+    return pages;
+}
+
 export function applyStatusToMessageIdsInPages(
     pages: ChatMessageWithDeliveryStatus[][],
     messageIds: string[],
@@ -95,6 +117,16 @@ export function useSubscribeSession(projectId: string | undefined, sessionId: st
                         if (lastPage.some((msg) => msg.id === data.message.id)) return pages;
                         return [...pages.slice(0, -1), [...lastPage, newMessage]];
                     }),
+                );
+                return;
+            }
+
+            if (isChatSessionMessageUpdatedEvent(data)) {
+                const cacheKey = QueryKeys.projectChatSessionMessages(projectId, sessionId);
+                queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
+                    modifyInfiniteCacheData(old, (pages) =>
+                        replaceMessageInPages(pages, data.message.id, data.message),
+                    ),
                 );
                 return;
             }

@@ -22,7 +22,7 @@ export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessag
     const hasUnits = unitCount > 0;
 
     return (
-        <div className="flex w-full justify-start">
+        <div className="flex w-full justify-start mb-2 max-w-[300px]">
             <Collapsible defaultOpen={hasUnits} className="group mb-1 w-full max-w-full overflow-hidden rounded-md border">
                 <CollapsibleTrigger className="flex w-full items-center gap-2 p-3 text-left outline-none hover:bg-muted/50">
                     <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
