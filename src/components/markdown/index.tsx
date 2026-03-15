@@ -19,11 +19,12 @@ export interface MarkdownProps {
     children: string | null | undefined;
     className?: string;
     theme?: MarkdownTheme;
+    components?: Partial<Components>;
 }
 
 const remarkPlugins = [remarkGfm];
 
-export function Markdown({ children, className, theme: themeProp }: MarkdownProps) {
+export function Markdown({ children, className, theme: themeProp, components: componentsOverride }: MarkdownProps) {
     const resolvedTheme = useResolvedTheme();
     const effectiveTheme = themeProp ?? resolvedTheme;
     const codeBlockStyle = effectiveTheme === "dark" ? oneDark : oneLight;
@@ -61,9 +62,14 @@ export function Markdown({ children, className, theme: themeProp }: MarkdownProp
         };
     }, [codeBlockStyle, effectiveTheme, themeProp]);
 
+    const mergedComponents = useMemo(
+        () => (componentsOverride ? { ...fullComponents, ...componentsOverride } : fullComponents),
+        [fullComponents, componentsOverride],
+    );
+
     const source = children ?? "";
     const content = (
-        <ReactMarkdown remarkPlugins={remarkPlugins} components={fullComponents}>
+        <ReactMarkdown remarkPlugins={remarkPlugins} components={mergedComponents}>
             {source}
         </ReactMarkdown>
     );
