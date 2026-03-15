@@ -14,6 +14,7 @@ export enum ChatSessionRoleType {
 
 export enum ChatMessageType {
     Text = "text",
+    ToolFetchRelevantUnits = "tool_fetch_relevant_units",
     Units = "units",
     Unit = "unit",
     Generating = "generating",
@@ -27,6 +28,8 @@ export enum ChatMessageStatus {
     Stopped = "stopped",
     Completed = "completed",
 }
+
+export type { ToolFetchRelevantUnitsArgs, ToolFetchRelevantUnitsPayload } from "./payloads";
 
 export interface ChatMessageResponse {
     id: string;
