@@ -1,8 +1,13 @@
-export interface ToolFetchRelevantUnitsArgs {
-    query?: string | null;
+export interface ToolFetchRelevantUnitsPayload {
+    args: {
+        query?: string | null;
+    };
+    units?: unknown[];
 }
 
-export interface ToolFetchRelevantUnitsPayload {
-    query?: string | null;
-    units?: unknown[];
+export interface ToolFetchLatestReleasesPayload {
+    args: {
+        limit?: number | null;
+    };
+    releases?: unknown[];
 }

@@ -1,6 +1,7 @@
 export { createProject, deleteProject, getDraftUnits, getProject, getProjectNonDraftUnits, getProjects, patchProject } from "./api";
 export { CreateProjectForm } from "./components/create-project-form";
 export { RuntimesModal } from "./components/runtimes-modal";
+export { ReleaseCardChip } from "./components/release-card-chip";
 export { UnitCardChip } from "./components/unit-card-chip";
 export { UnitCardCompact } from "./components/unit-card-compact";
 export { useCreateProjectMutation, useDeleteProjectMutation, usePatchProjectMutation } from "./mutations";
@@ -22,4 +23,5 @@ export type {
     ProjectRuntimeWithConnectedChatResponse,
     ProjectUnitResponse,
     ProjectUnitType,
+    ReleaseResponse,
 } from "./types";

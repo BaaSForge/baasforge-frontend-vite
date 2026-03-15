@@ -30,7 +30,7 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                     {unit.unit_type}
                 </Badge>
                 <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">
-                    v{unit.version}
+                    {unit.version}
                 </Badge>
             </div>
             <p className="truncate text-[0.6875rem] text-muted-foreground">{summary}</p>
