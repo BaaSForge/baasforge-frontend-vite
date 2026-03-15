@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { apiClient } from "@/lib/api-client";
 import { handleError, showApiError } from "@/lib/errors";
 import { RuntimeChatSessionDialogs } from "@/modules/project";
@@ -35,10 +36,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <Toaster />
-            <RuntimeChatSessionDialogs />
-            {children}
-            {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />}
+            <TooltipProvider delayDuration={0}>
+                <Toaster />
+                <RuntimeChatSessionDialogs />
+                {children}
+                {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />}
+            </TooltipProvider>
         </QueryClientProvider>
     );
 }

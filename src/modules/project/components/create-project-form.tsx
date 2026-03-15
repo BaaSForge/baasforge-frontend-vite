@@ -5,7 +5,7 @@ import { Field, FieldContent, FieldGroup, FieldLabel } from "@/components/ui/fie
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getApiErrorMessage } from "@/lib/errors";
 import { nameToSlug } from "@/utils";
 import { Lock, LockOpen } from "lucide-react";
@@ -107,24 +107,22 @@ export function CreateProjectForm({ className, redirectOnSuccess = true, onSucce
                                 className="font-mono text-sm"
                             />
                             <InputGroupAddon align="inline-end">
-                                <TooltipProvider delayDuration={0}>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <InputGroupButton
-                                                type="button"
-                                                size="icon-xs"
-                                                variant="secondary"
-                                                className="bg-muted hover:bg-muted/80"
-                                                onClick={handleLockToggle}
-                                                disabled={mutation.isPending}
-                                                aria-label={slugLockTooltip}
-                                            >
-                                                {slugLocked ? <Lock className="size-4" /> : <LockOpen className="size-4" />}
-                                            </InputGroupButton>
-                                        </TooltipTrigger>
-                                        <TooltipContent>{slugLockTooltip}</TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <InputGroupButton
+                                            type="button"
+                                            size="icon-xs"
+                                            variant="secondary"
+                                            className="bg-muted hover:bg-muted/80"
+                                            onClick={handleLockToggle}
+                                            disabled={mutation.isPending}
+                                            aria-label={slugLockTooltip}
+                                        >
+                                            {slugLocked ? <Lock className="size-4" /> : <LockOpen className="size-4" />}
+                                        </InputGroupButton>
+                                    </TooltipTrigger>
+                                    <TooltipContent>{slugLockTooltip}</TooltipContent>
+                                </Tooltip>
                             </InputGroupAddon>
                         </InputGroup>
                     </FieldContent>
