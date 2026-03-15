@@ -5,35 +5,25 @@ import { SectionTitle } from "@/components/section-title";
 import { FolderIcon, FolderPlusIcon, KeyRoundIcon } from "lucide-react";
 
 export default function DashboardPage() {
-  return (
-    <>
-      <PageTitleBox title="Dashboard" />
-      <Container>
-        <SectionTitle>Projects</SectionTitle>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <SectionLinkCard
-            to="/dashboard/projects"
-            title="List Projects"
-            description="View and manage your projects."
-            icon={FolderIcon}
-          />
-          <SectionLinkCard
-            to="/dashboard/projects/new"
-            title="Create Project"
-            description="Create a new project."
-            icon={FolderPlusIcon}
-          />
-        </div>
-        <SectionTitle className="mt-4">Account</SectionTitle>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <SectionLinkCard
-            to="/dashboard/tokens"
-            title="Sessions"
-            description="View and manage your active sessions and tokens."
-            icon={KeyRoundIcon}
-          />
-        </div>
-      </Container>
-    </>
-  );
+    return (
+        <>
+            <PageTitleBox title="Dashboard" />
+            <Container>
+                <SectionTitle>Projects</SectionTitle>
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <SectionLinkCard to="/dashboard/projects" title="List Projects" description="View and manage your projects." icon={FolderIcon} />
+                    <SectionLinkCard to="/dashboard/projects/new" title="Create Project" description="Create a new project." icon={FolderPlusIcon} />
+                </div>
+                <SectionTitle className="mt-4">Account</SectionTitle>
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <SectionLinkCard
+                        to="/dashboard/tokens"
+                        title="Sessions"
+                        description="View and manage your active sessions and tokens."
+                        icon={KeyRoundIcon}
+                    />
+                </div>
+            </Container>
+        </>
+    );
 }

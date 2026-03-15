@@ -1,24 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
 import { QueryKeys } from "@/constants/query-keys";
-import { getPayments, getPackages, getPaidPackages } from "./api";
+import { useQuery } from "@tanstack/react-query";
+import { getPackages, getPaidPackages, getPayments } from "./api";
 
 export function usePaymentsQuery() {
-  return useQuery({
-    queryKey: QueryKeys.PAYMENT_PAYMENTS,
-    queryFn: getPayments,
-  });
+    return useQuery({
+        queryKey: QueryKeys.PAYMENT_PAYMENTS,
+        queryFn: getPayments,
+    });
 }
 
 export function usePackagesQuery() {
-  return useQuery({
-    queryKey: QueryKeys.PAYMENT_PACKAGES,
-    queryFn: getPackages,
-  });
+    return useQuery({
+        queryKey: QueryKeys.PAYMENT_PACKAGES,
+        queryFn: getPackages,
+    });
 }
 
 export function usePaidPackagesQuery() {
-  return useQuery({
-    queryKey: QueryKeys.PAYMENT_PAID_PACKAGES,
-    queryFn: getPaidPackages,
-  });
+    return useQuery({
+        queryKey: QueryKeys.PAYMENT_PAID_PACKAGES,
+        queryFn: getPaidPackages,
+    });
 }

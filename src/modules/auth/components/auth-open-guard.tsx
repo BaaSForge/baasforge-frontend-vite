@@ -3,15 +3,15 @@ import { Navigate, Outlet } from "react-router";
 import { useAuth } from "../hooks";
 
 export function AuthOpenGuard() {
-  const { user, isLoading } = useAuth();
+    const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <LoadingFallback aria-label="Checking authentication" />;
-  }
+    if (isLoading) {
+        return <LoadingFallback aria-label="Checking authentication" />;
+    }
 
-  if (user != null) {
-    return <Navigate to="/dashboard" replace />;
-  }
+    if (user != null) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
-  return <Outlet />;
+    return <Outlet />;
 }
