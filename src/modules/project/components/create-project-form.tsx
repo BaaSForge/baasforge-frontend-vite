@@ -39,7 +39,7 @@ const LANGUAGE_OPTIONS: { value: LanguageType; label: string }[] = [
 export interface CreateProjectFormProps {
   className?: string;
   redirectOnSuccess?: boolean;
-  onSuccess?: (projectId: number) => void;
+  onSuccess?: (projectId: string) => void;
 }
 
 export function CreateProjectForm({

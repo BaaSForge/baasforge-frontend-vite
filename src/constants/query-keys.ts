@@ -5,16 +5,16 @@ export const QueryKeys = {
   PAYMENT_PAYMENTS: ["payment", "payments"] as const,
   PAYMENT_PACKAGES: ["payment", "packages"] as const,
   PAYMENT_PAID_PACKAGES: ["payment", "paid-packages"] as const,
-  projectDetail: (id: number) => ["project", "detail", id] as const,
-  projectNonDraftUnits: (projectId: number) => ["project", "non-draft-units", projectId] as const,
-  projectDraftUnits: (projectId: number, chatSessionId: number) =>
+  projectDetail: (id: string) => ["project", "detail", id] as const,
+  projectNonDraftUnits: (projectId: string) => ["project", "non-draft-units", projectId] as const,
+  projectDraftUnits: (projectId: string, chatSessionId: string) =>
     ["project", "draft-units", projectId, chatSessionId] as const,
   PROJECTS_LIST: ["project", "list"] as const,
-  projectChatSessionList: (projectId: number) => ["chat", "sessions", "list", projectId] as const,
-  projectChatSessionDetail: (projectId: number, chatSessionId: number) => ["chat", "sessions", "detail", projectId, chatSessionId] as const,
-  projectChatSessionMessages: (projectId: number, chatSessionId: number) => ["chat", "sessions", "messages", projectId, chatSessionId] as const,
-  projectReleases: (projectId: number) => ["project", "releases", projectId] as const,
-  projectReleaseUnits: (projectId: number, releaseVersion: string) =>
+  projectChatSessionList: (projectId: string) => ["chat", "sessions", "list", projectId] as const,
+  projectChatSessionDetail: (projectId: string, chatSessionId: string) => ["chat", "sessions", "detail", projectId, chatSessionId] as const,
+  projectChatSessionMessages: (projectId: string, chatSessionId: string) => ["chat", "sessions", "messages", projectId, chatSessionId] as const,
+  projectReleases: (projectId: string) => ["project", "releases", projectId] as const,
+  projectReleaseUnits: (projectId: string, releaseVersion: string) =>
     ["project", "release", "units", projectId, releaseVersion] as const,
-  projectRuntimesWithConnectedChat: (projectId: number) => ["project", "runtimes", "with-connected-chat", projectId] as const,
+  projectRuntimesWithConnectedChat: (projectId: string) => ["project", "runtimes", "with-connected-chat", projectId] as const,
 };

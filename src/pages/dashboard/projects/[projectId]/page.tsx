@@ -12,8 +12,8 @@ export default function ProjectShellPage() {
   const { projectId: projectIdParam } = useParams();
   const navigate = useNavigate();
   const { setSegmentLabel, clearSegmentLabel } = useBreadcrumbActions();
-  const projectId = projectIdParam != null ? Number(projectIdParam) : undefined;
-  const { data: project } = useProjectQuery(projectId);
+  const projectIdOrUndefined = projectIdParam ?? undefined;
+  const { data: project } = useProjectQuery(projectIdOrUndefined);
 
   useEffect(() => {
     if (project?.name == null) return;

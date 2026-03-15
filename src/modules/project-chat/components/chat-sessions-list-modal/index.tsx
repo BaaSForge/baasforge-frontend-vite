@@ -28,7 +28,7 @@ function SessionItem({
   session,
   onNavigate,
 }: {
-  projectId: number;
+  projectId: string;
   session: ChatSessionResponse;
   onNavigate: () => void;
 }) {
@@ -54,7 +54,7 @@ export function ChatSessionsListModal() {
   const { isOpen, projectId } = useChatSessionsModalState();
   const [, close] = useChatSessionsModal();
   const { data: sessions = [], isLoading } = useProjectChatSessionsQuery(
-    projectId ?? 0,
+    projectId ?? "",
   );
 
   const handleOpenChange = (open: boolean) => {

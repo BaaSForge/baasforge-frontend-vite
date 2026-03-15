@@ -1,7 +1,7 @@
 export type ChatSessionNewMessageChunkEvent = {
   type: "chat_session_new_message_chunk";
   topic: string;
-  message_id: number;
+  message_id: string;
   chunk_index: number;
   content: string;
   done: boolean;
@@ -10,7 +10,7 @@ export type ChatSessionNewMessageChunkEvent = {
 /** Payload when a message's status changes (e.g. to `failed` or `stopped`). */
 export type ChatSessionMessageStatusChangeEvent = {
   type: "chat_session_message_status_change";
-  messageId: number;
+  messageId: string;
   status: "generating" | "failed" | "stopped" | "completed";
 };
 
@@ -59,6 +59,6 @@ export function isChatSessionMessageStatusChangeEvent(data: unknown): data is Ch
   return isWsServerEvent(data) && data.type === "chat_session_message_status_change";
 }
 
-export function userTopic(userId: number): string {
+export function userTopic(userId: string): string {
   return `user:${userId}`;
 }

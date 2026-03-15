@@ -26,9 +26,9 @@ const CONFIRM_PLACEHOLDER = "Type the project name to confirm";
 
 export default function ProjectSettingsDeletePage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const id = projectId ? parseInt(projectId, 10) : undefined;
+  const id = projectId ?? undefined;
   const { data: project, isLoading } = useProjectQuery(id);
-  const deleteMutation = useDeleteProjectMutation(id ?? 0);
+  const deleteMutation = useDeleteProjectMutation(id ?? "");
   const [confirmValue, setConfirmValue] = useState("");
   const [open, setOpen] = useState(false);
 

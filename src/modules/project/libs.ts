@@ -3,7 +3,7 @@ import type { Location, Params } from "react-router";
 export function getSwitchProjectLink(
   location: Location,
   params: Params,
-  newProjectId: number | string
+  newProjectId: string
 ) {
   if (!params.projectId) {
     return {

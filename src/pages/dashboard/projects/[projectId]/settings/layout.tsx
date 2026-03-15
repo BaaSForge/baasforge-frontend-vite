@@ -14,7 +14,7 @@ function useSettingsTab() {
 
 export default function ProjectSettingsLayout() {
   const { projectId } = useParams<{ projectId: string }>();
-  const id = projectId ? parseInt(projectId, 10) : undefined;
+  const id = projectId ?? undefined;
   const tab = useSettingsTab();
   const { data: project } = useProjectQuery(id);
 

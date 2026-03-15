@@ -30,7 +30,7 @@ export function useSubscribeUserNotifications(): void {
         const deletedId = data.projectId;
 
         if (String(routeProjectId) !== deletedId) {
-          queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(Number(deletedId)) });
+          queryClient.removeQueries({ queryKey: QueryKeys.projectDetail(deletedId) });
           queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
         }
 

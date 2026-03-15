@@ -23,7 +23,7 @@ const linkCards = [
 
 export default function ProjectOverviewPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const id = projectId ? parseInt(projectId, 10) : undefined;
+  const id = projectId ?? undefined;
   const { data: project } = useProjectQuery(id);
 
   const basePath = `/dashboard/projects/${projectId}`;

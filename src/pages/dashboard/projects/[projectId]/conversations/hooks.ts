@@ -12,11 +12,11 @@ import {
   isChatSessionNewMessageChunkEvent,
 } from "@/lib/ws-events";
 
-const NO_STREAM = -1;
+const NO_STREAM = -1 as const;
 
 function applyChunkToMessageInPages(
   pages: ChatMessageWithDeliveryStatus[][],
-  messageId: number,
+  messageId: string,
   content: string,
   done: boolean,
 ): ChatMessageWithDeliveryStatus[][] {
@@ -40,7 +40,7 @@ function applyChunkToMessageInPages(
 
 function applyStatusToMessageInPages(
   pages: ChatMessageWithDeliveryStatus[][],
-  messageId: number,
+  messageId: string,
   status: ChatMessageStatus,
 ): ChatMessageWithDeliveryStatus[][] {
   for (let i = pages.length - 1; i >= 0; i--) {
@@ -58,7 +58,7 @@ function applyStatusToMessageInPages(
 
 export function applyStatusToMessageIdsInPages(
   pages: ChatMessageWithDeliveryStatus[][],
-  messageIds: number[],
+  messageIds: string[],
   status: ChatMessageStatus,
 ): ChatMessageWithDeliveryStatus[][] {
   if (messageIds.length === 0) return pages;
@@ -68,7 +68,7 @@ export function applyStatusToMessageIdsInPages(
   );
 }
 
-export function useSubscribeSession(projectId: number | undefined, sessionId: number | undefined): void {
+export function useSubscribeSession(projectId: string | undefined, sessionId: string | undefined): void {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const wsUrl = envConfig.wsUrl;
@@ -78,7 +78,7 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
       : "";
 
   /** Tracks last applied chunk index per message_id for ordering. */
-  const lastAppliedChunkByMessageRef = useRef(new Map<number, number>());
+  const lastAppliedChunkByMessageRef = useRef(new Map<string, number>());
 
   useEffect(() => {
     lastAppliedChunkByMessageRef.current.clear();
@@ -112,7 +112,7 @@ export function useSubscribeSession(projectId: number | undefined, sessionId: nu
       const lastApplied = lastAppliedChunkByMessageRef.current.get(message_id) ?? NO_STREAM;
 
       if (chunk_index === 0) {
-        if (lastApplied >= 0) return;
+        if (lastApplied !== NO_STREAM) return;
         lastAppliedChunkByMessageRef.current.set(message_id, 0);
 
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>

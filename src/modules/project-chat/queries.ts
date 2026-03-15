@@ -3,31 +3,31 @@ import { QueryKeys } from "@/constants/query-keys";
 import { getProjectChatSessionDetail, getProjectChatSessionMessages, getProjectChatSessions } from "./api";
 import type { ChatMessageWithDeliveryStatus } from "./types";
 
-export function useProjectChatSessionsQuery(projectId?: number) {
+export function useProjectChatSessionsQuery(projectId?: string) {
   return useQuery({
     enabled: !!projectId,
-    queryKey: QueryKeys.projectChatSessionList(projectId ?? 0),
-    queryFn: () => getProjectChatSessions(projectId ?? 0),
+    queryKey: QueryKeys.projectChatSessionList(projectId ?? ""),
+    queryFn: () => getProjectChatSessions(projectId ?? ""),
   });
 }
 
-export function useProjectChatSessionDetailQuery(projectId?: number, chatSessionId?: number) {
+export function useProjectChatSessionDetailQuery(projectId?: string, chatSessionId?: string) {
   return useQuery({
     enabled: !!projectId && !!chatSessionId,
-    queryKey: QueryKeys.projectChatSessionDetail(projectId ?? 0, chatSessionId ?? 0),
-    queryFn: () => getProjectChatSessionDetail(projectId ?? 0, chatSessionId ?? 0),
+    queryKey: QueryKeys.projectChatSessionDetail(projectId ?? "", chatSessionId ?? ""),
+    queryFn: () => getProjectChatSessionDetail(projectId ?? "", chatSessionId ?? ""),
   });
 }
 
-export function useProjectChatSessionMessagesQuery(projectId?: number, chatSessionId?: number) {
+export function useProjectChatSessionMessagesQuery(projectId?: string, chatSessionId?: string) {
   return useInfiniteQuery({
     enabled: !!projectId && !!chatSessionId,
-    queryKey: QueryKeys.projectChatSessionMessages(projectId ?? 0, chatSessionId ?? 0),
-    queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
-      getProjectChatSessionMessages(projectId ?? 0, chatSessionId ?? 0, {
+    queryKey: QueryKeys.projectChatSessionMessages(projectId ?? "", chatSessionId ?? ""),
+    queryFn: ({ pageParam }: { pageParam: string | undefined }) =>
+      getProjectChatSessionMessages(projectId ?? "", chatSessionId ?? "", {
         before_id: pageParam,
       }),
-    initialPageParam: undefined as number | undefined,
+    initialPageParam: undefined as string | undefined,
     getNextPageParam: () => undefined,
     getPreviousPageParam: (firstPage: ChatMessageWithDeliveryStatus[]) => {
       if (firstPage.length === 0) {

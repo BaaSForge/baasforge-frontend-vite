@@ -2,8 +2,8 @@ import { createStore, useStore } from "zustand";
 
 export interface ChatSessionsModalState {
   isOpen: boolean;
-  projectId: number | undefined;
-  open: (projectId: number) => void;
+  projectId: string | undefined;
+  open: (projectId: string) => void;
   close: () => void;
 }
 

@@ -30,7 +30,7 @@ export default function DashboardPackagesPage() {
     ? packages
     : packages.filter((pkg) => !pkg.is_trial);
 
-  const handlePurchase = (packageId: number) => {
+  const handlePurchase = (packageId: string) => {
     purchaseMutation.mutate(packageId);
   };
 

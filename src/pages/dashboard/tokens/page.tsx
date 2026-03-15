@@ -20,13 +20,13 @@ import { formatDateTimeMedium } from "@/utils/time";
 export default function DashboardTokensPage() {
   const { data: tokens = [], isLoading } = useGetTokensQuery();
   const deleteMutation = useDeleteTokensMutation();
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const selectedList = useMemo(() => Array.from(selected), [selected]);
   const allSelected = tokens.length > 0 && selected.size === tokens.length;
   const someSelected = selected.size > 0;
 
-  const toggleOne = (id: number) => {
+  const toggleOne = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);

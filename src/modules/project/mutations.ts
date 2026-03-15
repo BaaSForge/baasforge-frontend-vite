@@ -6,7 +6,7 @@ import type { ProjectRequest, ProjectPatchRequest } from "./types";
 import { toast } from "sonner";
 
 export function useCreateProjectMutation(options?: {
-  onSuccess?: (projectId: number) => void;
+  onSuccess?: (projectId: string) => void;
   redirect?: boolean;
 }) {
   const queryClient = useQueryClient();
@@ -26,7 +26,7 @@ export function useCreateProjectMutation(options?: {
   });
 }
 
-export function usePatchProjectMutation(projectId: number) {
+export function usePatchProjectMutation(projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -38,7 +38,7 @@ export function usePatchProjectMutation(projectId: number) {
   });
 }
 
-export function useDeleteProjectMutation(projectId: number) {
+export function useDeleteProjectMutation(projectId: string) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -60,9 +60,9 @@ export function useAttachChatSessionStageRuntimeMutation({
   chatSessionId,
   projectRuntimeId,
 }: {
-  projectId: number;
-  chatSessionId: number;
-  projectRuntimeId: number;
+  projectId: string;
+  chatSessionId: string;
+  projectRuntimeId: string;
 }) {
   const queryClient = useQueryClient();
 
@@ -86,9 +86,9 @@ export function useDetachChatSessionStageRuntimeMutation() {
       projectRuntimeId,
     }:
     {
-      projectId: number;
-      chatSessionId: number;
-      projectRuntimeId: number;
+      projectId: string;
+      chatSessionId: string;
+      projectRuntimeId: string;
     }) => detachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
     onSuccess: (_, {
       chatSessionId,

@@ -5,7 +5,7 @@ import type { ChatMessageDTO, ChatMessageWithDeliveryStatus, CreateProjectChatSe
 import { ChatMessageDeliveryStatus } from "./types";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 
-export function useCreateProjectChatSessionMutation(projectId: number) {
+export function useCreateProjectChatSessionMutation(projectId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({

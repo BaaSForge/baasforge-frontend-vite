@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: string;
   platform: PlatformType;
   id_in_platform: string;
   full_name: string | null;
@@ -22,7 +22,7 @@ export interface GetTokensFilter {
 }
 
 export interface Token {
-  id: number;
+  id: string;
   token_type: TokenType;
   expires_at: string;
   created_at: string;

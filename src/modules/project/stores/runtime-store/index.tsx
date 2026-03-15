@@ -58,9 +58,9 @@ export function RuntimeChatSessionDialogs() {
     setIsMutating,
   } = useRuntimeChatSessionDialogState();
 
-  const projectId = pending?.projectId ?? 0;
-  const chatSessionId = pending?.chatSessionId ?? 0;
-  const projectRuntimeId = pending?.projectRuntimeId ?? 0;
+  const projectId = pending?.projectId ?? "";
+  const chatSessionId = pending?.chatSessionId ?? "";
+  const projectRuntimeId = pending?.projectRuntimeId ?? "";
   const detachMutation = useDetachChatSessionStageRuntimeMutation();
   const attachMutation = useAttachChatSessionStageRuntimeMutation({
     projectId,

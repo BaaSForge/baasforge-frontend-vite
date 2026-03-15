@@ -6,25 +6,25 @@ type PendingState =
   | null
   | {
       type: "detach";
-      projectId: number;
-      chatSessionId: number;
-      projectRuntimeId: number;
+      projectId: string;
+      chatSessionId: string;
+      projectRuntimeId: string;
       resolve: (value: boolean) => void;
     }
   | {
       type: "attach";
-      projectId: number;
-      chatSessionId: number;
-      projectRuntimeId: number;
+      projectId: string;
+      chatSessionId: string;
+      projectRuntimeId: string;
       resolve: (value: boolean) => void;
     }
   | {
       type: "detach-then-attach";
-      projectId: number;
-      chatSessionId: number;
-      alreadyConnectedRuntimeId?: number | null | undefined;
-      projectRuntimeId: number;
-      alreadyConnectedChatSessionId?: number | null | undefined;
+      projectId: string;
+      chatSessionId: string;
+      alreadyConnectedRuntimeId?: string | null | undefined;
+      projectRuntimeId: string;
+      alreadyConnectedChatSessionId?: string | null | undefined;
       resolve: (value: boolean) => void;
     };
 
@@ -36,9 +36,9 @@ interface RuntimeChatSessionState {
     chatSessionId,
     projectRuntimeId
   }: {
-    projectId: number;
-    chatSessionId: number;
-    projectRuntimeId: number;
+    projectId: string;
+    chatSessionId: string;
+    projectRuntimeId: string;
   }) => Promise<boolean>;
   openAttach: ({
     projectId,
@@ -47,11 +47,11 @@ interface RuntimeChatSessionState {
     projectRuntimeId,
     alreadyConnectedChatSessionId,
   }: {
-    projectId: number;
-    chatSessionId: number;
-    alreadyConnectedRuntimeId?: number | null | undefined;
-    projectRuntimeId: number;
-    alreadyConnectedChatSessionId?: number | null | undefined;
+    projectId: string;
+    chatSessionId: string;
+    alreadyConnectedRuntimeId?: string | null | undefined;
+    projectRuntimeId: string;
+    alreadyConnectedChatSessionId?: string | null | undefined;
   }) => Promise<boolean>;
   closePending: (result: boolean) => void;
   setIsMutating: (value: boolean) => void;

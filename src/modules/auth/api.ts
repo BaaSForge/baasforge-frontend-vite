@@ -26,7 +26,7 @@ export function getTokens(filter: GetTokensFilter): Promise<Token[]> {
   return apiClient.get<ApiResponse<Token[]>>(url).then((res) => res.data ?? []);
 }
 
-export function deleteTokens(tokenIds: number[]): Promise<void> {
+export function deleteTokens(tokenIds: string[]): Promise<void> {
   return apiClient
     .delete<ApiResponse<void>>(AUTH_TOKENS_ENDPOINT, {
       body: JSON.stringify({ token_ids: tokenIds }),

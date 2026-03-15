@@ -37,21 +37,21 @@ import {
 const VISIBLE_CHAT_SESSIONS_COUNT = 5;
 
 export function NavProjects() {
-  const { projectId: projectIdParam } = useParams();
+  const { projectId } = useParams();
   const { pathname } = useLocation();
   const { open } = useSidebar();
   const isCollapsed = !open;
-  const projectId = projectIdParam != null ? Number(projectIdParam) : undefined;
-  const { data: project } = useProjectQuery(projectId);
-  const { data: chatSessions } = useProjectChatSessionsQuery(projectId ?? 0);
+  const projectIdOrUndefined = projectId ?? undefined;
+  const { data: project } = useProjectQuery(projectIdOrUndefined);
+  const { data: chatSessions } = useProjectChatSessionsQuery(projectIdOrUndefined);
   const [openChatSessionsModal] = useChatSessionsModal();
 
   useEffect(() => {
-    if (projectId == null) return;
-    const openModal = () => openChatSessionsModal(projectId);
+    if (projectIdOrUndefined == null) return;
+    const openModal = () => openChatSessionsModal(projectIdOrUndefined);
     register(UNIFIED_KEYBOARD_SCOPES.OPEN_PREVIOUS_CONVERSATIONS, openModal);
     return () => unregister(UNIFIED_KEYBOARD_SCOPES.OPEN_PREVIOUS_CONVERSATIONS);
-  }, [projectId, openChatSessionsModal]);
+  }, [projectIdOrUndefined, openChatSessionsModal]);
 
   const visibleSessions = (chatSessions ?? []).slice(0, VISIBLE_CHAT_SESSIONS_COUNT);
 
@@ -59,15 +59,15 @@ export function NavProjects() {
     return null;
   }
 
-  const settingsUrl = `/dashboard/projects/${projectId}/settings`;
+  const settingsUrl = `/dashboard/projects/${projectId ?? ""}/settings`;
   const isSettingsActive = pathname.startsWith(settingsUrl);
 
-  const conversationsUrl = `/dashboard/projects/${projectId}/conversations`;
+  const conversationsUrl = `/dashboard/projects/${projectId ?? ""}/conversations`;
 
-  const unitsReleasesUrl = `/dashboard/projects/${projectId}/units-releases`;
+  const unitsReleasesUrl = `/dashboard/projects/${projectId ?? ""}/units-releases`;
   const isUnitsReleasesActive = pathname.startsWith(unitsReleasesUrl);
 
-  const runtimesUrl = `/dashboard/projects/${projectId}/runtimes`;
+  const runtimesUrl = `/dashboard/projects/${projectId ?? ""}/runtimes`;
   const isRuntimesActive = pathname.startsWith(runtimesUrl);
 
   return (
@@ -101,7 +101,7 @@ export function NavProjects() {
                 <TooltipTrigger asChild>
                   <SidebarMenuButton
                     onClick={() =>
-                      projectId != null && openChatSessionsModal(projectId)
+                      projectIdOrUndefined != null && openChatSessionsModal(projectIdOrUndefined)
                     }
                   >
                     <MessageSquareText />

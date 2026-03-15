@@ -26,9 +26,9 @@ import { Link2, Unplug } from "lucide-react";
 export interface RuntimesModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId: number;
-  chatSessionId: number;
-  alreadyConnectedRuntimeId?: number | null;
+  projectId: string;
+  chatSessionId: string;
+  alreadyConnectedRuntimeId?: string | null;
 }
 
 function RuntimeRow({
@@ -110,7 +110,7 @@ export function RuntimesModal({
   const handleDetach = (runtime: ProjectRuntimeWithConnectedChatResponse) => {
     detachRuntime({
       projectId,
-      chatSessionId: runtime.connected_chat_session?.id ?? 0,
+      chatSessionId: runtime.connected_chat_session?.id ?? "",
       projectRuntimeId: runtime.id,
     });
   };

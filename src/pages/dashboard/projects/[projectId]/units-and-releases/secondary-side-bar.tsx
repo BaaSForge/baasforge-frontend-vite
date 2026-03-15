@@ -13,12 +13,12 @@ export function SecondarySideBar() {
     releaseVersion: string;
   }>();
 
-  const projectIdNum = projectId != null ? Number(projectId) : undefined;
+  const projectIdOrUndefined = projectId ?? undefined;
 
-  const { data: releases, isLoading, error } = useProjectReleasesQuery(projectIdNum);
-  const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesWithConnectedChatQuery(projectIdNum);
+  const { data: releases, isLoading, error } = useProjectReleasesQuery(projectIdOrUndefined);
+  const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesWithConnectedChatQuery(projectIdOrUndefined);
 
-  if (projectIdNum == null) {
+  if (projectIdOrUndefined == null) {
     return (
       <div className="p-2 text-sm text-muted-foreground">
         No project selected.

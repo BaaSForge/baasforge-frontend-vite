@@ -34,8 +34,8 @@ export function ProjectSwitcher() {
   const location = useLocation();
 
   const projectIdParam = params.projectId;
-  const projectId = projectIdParam != null ? Number(projectIdParam) : undefined;
-  const { data: activeProject } = useProjectQuery(projectId);
+  const projectIdOrUndefined = projectIdParam ?? undefined;
+  const { data: activeProject } = useProjectQuery(projectIdOrUndefined);
   const { data: projects } = useProjectsQuery();
 
   const hasActiveProject = !!activeProject?.id;

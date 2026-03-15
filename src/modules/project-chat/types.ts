@@ -1,10 +1,10 @@
 export interface ChatSessionResponse {
-  id: number;
-  project_id: number;
-  user_id: number;
+  id: string;
+  project_id: string;
+  user_id: string;
   title: string;
   created_at: string;
-  stage_project_runtime_id?: number | null;
+  stage_project_runtime_id?: string | null;
 }
 
 export enum ChatSessionRoleType {
@@ -29,8 +29,8 @@ export enum ChatMessageStatus {
 }
 
 export interface ChatMessageResponse {
-  id: number;
-  chat_session_id: number;
+  id: string;
+  chat_session_id: string;
   role: ChatSessionRoleType;
   type: ChatMessageType;
   payload?: unknown | null;
@@ -60,7 +60,7 @@ export interface ChatMessageWithDeliveryStatus extends ChatMessageResponse {
 }
 
 export type CreateProjectChatSessionMessageMutationParams = {
-  projectId: number;
-  chatSessionId: number;
+  projectId: string;
+  chatSessionId: string;
   optimisticMessage: ChatMessageWithDeliveryStatus;
 }

@@ -124,8 +124,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   }, [noConversation, rereadSidebarOpen, setOpenSkipStorage]);
 
   const navigate = useNavigate();
-  const projectIdNum = Number(projectId);
-  const chatSessionIdNum = conversationId != null ? Number(conversationId) : undefined;
+  const projectIdOrUndefined = projectId ?? undefined;
+  const chatSessionIdOrUndefined = conversationId ?? undefined;
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -136,17 +136,17 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     } else {
       setShouldShowResponsePlaceholder(false);
     }
-  }, [chatSessionIdNum]);
+  }, [chatSessionIdOrUndefined]);
 
   useLayoutEffect(() => {
     if (messageInputRef.current) {
       messageInputRef.current.focus();
     }
-  }, [chatSessionIdNum]);
+  }, [chatSessionIdOrUndefined]);
 
-  const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdNum, chatSessionIdNum);
+  const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdOrUndefined, chatSessionIdOrUndefined);
 
-  useSubscribeSession(projectIdNum, chatSessionIdNum ?? undefined);
+  useSubscribeSession(projectIdOrUndefined, chatSessionIdOrUndefined);
 
   const {
     data: chatSessionMessagesData,
@@ -154,7 +154,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     hasPreviousPage,
     isFetchingPreviousPage,
     fetchPreviousPage,
-  } = useProjectChatSessionMessagesQuery(projectIdNum, chatSessionIdNum);
+  } = useProjectChatSessionMessagesQuery(projectIdOrUndefined, chatSessionIdOrUndefined);
 
   const firstMessage = chatSessionMessagesData?.pages[0][0];
   const captureDocumentScroll = useCaptureDocumentScroll(firstMessage?.id);
@@ -165,7 +165,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   useEffect(() => {
     const el = loadMoreRef.current;
-    if (!el || !hasPreviousPage || isFetchingPreviousPage || !chatSessionIdNum) return;
+    if (!el || !hasPreviousPage || isFetchingPreviousPage || !chatSessionIdOrUndefined) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -177,9 +177,9 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasPreviousPage, isFetchingPreviousPage, fetchPreviousPage, chatSessionIdNum, captureDocumentScroll]);
+  }, [hasPreviousPage, isFetchingPreviousPage, fetchPreviousPage, chatSessionIdOrUndefined, captureDocumentScroll]);
 
-  const createSessionMutation = useCreateProjectChatSessionMutation(projectIdNum);
+  const createSessionMutation = useCreateProjectChatSessionMutation(projectId ?? "");
   const createMessageMutation = useCreateProjectChatSessionMessageMutation();
 
   const [messageInput, setMessageInput] = useState("");
@@ -187,12 +187,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   const responsePlaceholderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isLoadingChatSessionMessages || !chatSessionIdNum) {
+    if (isLoadingChatSessionMessages || !chatSessionIdOrUndefined) {
       scrollToTop();
     } else {
       scrollToBottom();
     }
-  }, [isLoadingChatSessionMessages, chatSessionIdNum]);
+  }, [isLoadingChatSessionMessages, chatSessionIdOrUndefined]);
 
   const isCreatingSession = createSessionMutation.isPending;
   const isSendingMessage = createMessageMutation.isPending;
@@ -200,7 +200,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     noConversation && messageInput.trim() !== "" && !isCreatingSession;
   const canSendExistingConversation =
     !!chatSession &&
-    !!chatSessionIdNum &&
+    !!chatSessionIdOrUndefined &&
     messageInput.trim() !== "" &&
     !isSendingMessage;
   const canSend = canSendNewConversation || canSendExistingConversation;
@@ -216,7 +216,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         if (!session) return;
 
         createMessageMutation.mutate({
-          projectId: projectIdNum,
+          projectId: projectId ?? "",
           chatSessionId: session.id,
           optimisticMessage: {
             ...optimisticMessage,
@@ -249,8 +249,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     setMessageInput("");
 
     const optimisticMessage: ChatMessageWithDeliveryStatus = {
-      id: Date.now(),
-      chat_session_id: chatSessionIdNum ?? 0,
+      id: `temp-${Date.now()}`,
+      chat_session_id: chatSessionIdOrUndefined ?? "",
       role: ChatSessionRoleType.User,
       type: ChatMessageType.Text,
       payload,
@@ -265,8 +265,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
       createSessionThenMessage(optimisticMessage);
     } else {
       createMessageMutation.mutate({
-        projectId: projectIdNum,
-        chatSessionId: chatSessionIdNum ?? 0,
+        projectId: projectId ?? "",
+        chatSessionId: chatSessionIdOrUndefined ?? "",
         optimisticMessage,
       });
 
@@ -288,13 +288,13 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   const handleRetryMessage = (message: ChatMessageWithDeliveryStatus) => {
     createMessageMutation.mutate({
-      projectId: projectIdNum,
-      chatSessionId: chatSessionIdNum ?? 0,
+      projectId: projectId ?? "",
+      chatSessionId: chatSessionIdOrUndefined ?? "",
       optimisticMessage: message,
     });
   }
 
-  const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdNum;
+  const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdOrUndefined;
 
   const lastMessage = chatSessionMessages?.[chatSessionMessages.length - 1];
   const isLastMessageFromAI = lastMessage?.role === ChatSessionRoleType.Ai;
@@ -322,11 +322,11 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   }, [isGenerating]);
 
   const handleStop = () => {
-    if (projectIdNum == null || chatSessionIdNum == null) return;
-    stopProjectChatSession(projectIdNum, chatSessionIdNum)
+    if (projectIdOrUndefined == null || chatSessionIdOrUndefined == null) return;
+    stopProjectChatSession(projectId ?? "", chatSessionIdOrUndefined)
       .then((res) => {
         if (res?.stopped_message_ids?.length) {
-          const cacheKey = QueryKeys.projectChatSessionMessages(projectIdNum, chatSessionIdNum);
+          const cacheKey = QueryKeys.projectChatSessionMessages(projectId ?? "", chatSessionIdOrUndefined);
           queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
             modifyInfiniteCacheData(old, (pages) =>
               applyStatusToMessageIdsInPages(pages, res.stopped_message_ids, ChatMessageStatus.Stopped)
@@ -440,8 +440,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         <RuntimesModal
           open={runtimesModalOpen}
           onOpenChange={setRuntimesModalOpen}
-          projectId={Number(projectId)}
-          chatSessionId={Number(chatSession.id)}
+          projectId={projectId ?? ""}
+          chatSessionId={chatSession.id}
           alreadyConnectedRuntimeId={chatSession.stage_project_runtime_id}
         />
       )}

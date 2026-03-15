@@ -10,12 +10,10 @@ export function SecondarySideBar() {
     conversationId?: string;
   }>();
 
-  const projectIdNum = projectId != null ? Number(projectId) : undefined;
-  const chatSessionId =
-    conversationId != null ? Number(conversationId) : undefined;
+  const chatSessionId = conversationId ?? undefined;
 
   const { data: draftUnits, isLoading, error } = useProjectDraftUnitsQuery(
-    projectIdNum,
+    projectId ?? undefined,
     chatSessionId
   );
 
@@ -31,7 +29,7 @@ export function SecondarySideBar() {
         </Button>
       </div>
 
-      {projectIdNum == null || chatSessionId == null && (
+      {(projectId == null || chatSessionId == null) && (
         <div className="p-2 text-sm text-muted-foreground">
           Start the conversation to generate draft units by using AI.
         </div>

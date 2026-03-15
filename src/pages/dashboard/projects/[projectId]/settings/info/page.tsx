@@ -19,9 +19,9 @@ function formatValue(value: string): string {
 
 export default function ProjectSettingsInfoPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const id = projectId ? parseInt(projectId, 10) : undefined;
+  const id = projectId ?? undefined;
   const { data: project, isLoading } = useProjectQuery(id);
-  const patchMutation = usePatchProjectMutation(id ?? 0);
+  const patchMutation = usePatchProjectMutation(id ?? "");
   const [editedName, setEditedName] = useState<string | null>(null);
   const name = editedName ?? project?.name ?? "";
 

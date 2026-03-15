@@ -4,42 +4,42 @@ import { ChatMessageDeliveryStatus, type ChatMessageDTO, type ChatMessageRespons
 
 const GET_MESSAGES_QUERY_LIMIT = 20;
 
-const chatSessionsEndpoint = (projectId: number) => `/v1/platform/projects/${projectId}/chat-sessions`
-const chatSessionDetailEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}`
-const chatSessionMessagesEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages`
-const chatSessionStopEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/stop-generating`
+const chatSessionsEndpoint = (projectId: string) => `/v1/platform/projects/${projectId}/chat-sessions`
+const chatSessionDetailEndpoint = (projectId: string, chatSessionId: string) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}`
+const chatSessionMessagesEndpoint = (projectId: string, chatSessionId: string) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages`
+const chatSessionStopEndpoint = (projectId: string, chatSessionId: string) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/stop-generating`
 // const chatSessionMessagesWebsocketEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/channel`
 
-export function getProjectChatSessions(projectId: number): Promise<ChatSessionResponse[]> {
+export function getProjectChatSessions(projectId: string): Promise<ChatSessionResponse[]> {
   return apiClient
     .get<ApiResponse<ChatSessionResponse[]>>(chatSessionsEndpoint(projectId))
     .then((res) => res.data ?? []);
 }
 
-export function createProjectChatSession(projectId: number): Promise<ChatSessionResponse | undefined> {
+export function createProjectChatSession(projectId: string): Promise<ChatSessionResponse | undefined> {
   return apiClient
     .post<ApiResponse<ChatSessionResponse>>(chatSessionsEndpoint(projectId))
     .then((res) => res.data);
 }
 
-export function getProjectChatSessionDetail(projectId: number, chatSessionId: number): Promise<ChatSessionResponse | undefined> {
+export function getProjectChatSessionDetail(projectId: string, chatSessionId: string): Promise<ChatSessionResponse | undefined> {
   return apiClient
     .get<ApiResponse<ChatSessionResponse>>(chatSessionDetailEndpoint(projectId, chatSessionId))
     .then((res) => res.data);
 }
 
 export type ListChatMessagesParams = {
-  before_id?: number;
+  before_id?: string;
 };
 
 export function getProjectChatSessionMessages(
-  projectId: number,
-  chatSessionId: number,
+  projectId: string,
+  chatSessionId: string,
   params?: ListChatMessagesParams,
 ): Promise<ChatMessageWithDeliveryStatus[]> {
   const searchParams = new URLSearchParams();
   if (params?.before_id != null) {
-    searchParams.set("before_id", String(params.before_id));
+    searchParams.set("before_id", params.before_id);
   }
   searchParams.set("limit", String(GET_MESSAGES_QUERY_LIMIT));
   const url = `${chatSessionMessagesEndpoint(projectId, chatSessionId)}?${searchParams.toString()}`;
@@ -58,8 +58,8 @@ export type CreateProjectChatSessionMessageResult = {
 };
 
 export function createProjectChatSessionMessage(
-  projectId: number,
-  chatSessionId: number,
+  projectId: string,
+  chatSessionId: string,
   message: ChatMessageDTO,
 ): Promise<CreateProjectChatSessionMessageResult | undefined> {
   const endpoint = chatSessionMessagesEndpoint(projectId, chatSessionId);
@@ -83,12 +83,12 @@ export function createProjectChatSessionMessage(
 }
 
 export type StopProjectChatSessionResponse = {
-  stopped_message_ids: number[];
+  stopped_message_ids: string[];
 };
 
 export function stopProjectChatSession(
-  projectId: number,
-  chatSessionId: number,
+  projectId: string,
+  chatSessionId: string,
 ): Promise<StopProjectChatSessionResponse | undefined> {
   return apiClient
     .post<ApiResponse<StopProjectChatSessionResponse>>(chatSessionStopEndpoint(projectId, chatSessionId))

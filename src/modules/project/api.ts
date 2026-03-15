@@ -10,12 +10,12 @@ import type {
 } from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
-const projectNonDraftUnitsEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/non-draft-units`;
-const projectDraftUnitsEndpoint = (projectId: number, chatSessionId: number) =>
+const projectNonDraftUnitsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/non-draft-units`;
+const projectDraftUnitsEndpoint = (projectId: string, chatSessionId: string) =>
   `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units`;
-const projectReleasesEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
-const projectReleaseUnitsEndpoint = (projectId: number, releaseVersion: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseVersion}/units`;
-const projectRuntimesWithConnectedChatEndpoint = (projectId: number) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes-with-connected-chat-sessions`;
+const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
+const projectReleaseUnitsEndpoint = (projectId: string, releaseVersion: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseVersion}/units`;
+const projectRuntimesWithConnectedChatEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes-with-connected-chat-sessions`;
 
 export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
   return apiClient
@@ -34,7 +34,7 @@ export function getProjects(): Promise<ProjectResponse[]> {
     .then((res) => res.data ?? []);
 }
 
-export function getProject(id: number): Promise<ProjectResponse> {
+export function getProject(id: string): Promise<ProjectResponse> {
   return apiClient
     .get<ApiResponse<ProjectResponse>>(`${PROJECTS_ENDPOINT}/${id}`)
     .then((res) => {
@@ -46,7 +46,7 @@ export function getProject(id: number): Promise<ProjectResponse> {
 }
 
 export function patchProject(
-  id: number,
+  id: string,
   body: ProjectPatchRequest
 ): Promise<ProjectResponse> {
   return apiClient
@@ -59,7 +59,7 @@ export function patchProject(
     });
 }
 
-export function deleteProject(id: number): Promise<void> {
+export function deleteProject(id: string): Promise<void> {
   return apiClient
     .delete<ApiResponse<unknown>>(`${PROJECTS_ENDPOINT}/${id}`)
     .then(() => undefined);
@@ -70,9 +70,9 @@ export function detachChatSessionStageRuntime({
   chatSessionId,
   projectRuntimeId,
 }: {
-  projectId: number;
-  chatSessionId: number;
-  projectRuntimeId: number;
+  projectId: string;
+  chatSessionId: string;
+  projectRuntimeId: string;
 }): Promise<void> {
   return apiClient
     .post<ApiResponse<unknown>>(`${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/detach-stage-runtime`, {
@@ -86,9 +86,9 @@ export function attachChatSessionStageRuntime({
   chatSessionId,
   projectRuntimeId,
 }: {
-  projectId: number;
-  chatSessionId: number;
-  projectRuntimeId: number;
+  projectId: string;
+  chatSessionId: string;
+  projectRuntimeId: string;
 }): Promise<void> {
   return apiClient
     .post<ApiResponse<unknown>>(`${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/attach-stage-runtime`, {
@@ -97,15 +97,15 @@ export function attachChatSessionStageRuntime({
     .then(() => undefined);
 }
 
-export function getProjectNonDraftUnits(projectId: number): Promise<ProjectUnitResponse[]> {
+export function getProjectNonDraftUnits(projectId: string): Promise<ProjectUnitResponse[]> {
   return apiClient
     .get<ApiResponse<ProjectUnitResponse[]>>(projectNonDraftUnitsEndpoint(projectId))
     .then((res) => res.data ?? []);
 }
 
 export function getDraftUnits(
-  projectId: number,
-  chatSessionId: number
+  projectId: string,
+  chatSessionId: string
 ): Promise<ProjectUnitResponse[]> {
   return apiClient
     .get<ApiResponse<ProjectUnitResponse[]>>(
@@ -115,7 +115,7 @@ export function getDraftUnits(
 }
 
 export function getReleases(
-  projectId: number,
+  projectId: string,
 ): Promise<ReleaseResponse[]> {
   return apiClient
     .get<ApiResponse<ReleaseResponse[]>>(
@@ -125,7 +125,7 @@ export function getReleases(
 }
 
 export function getReleaseUnits(
-  projectId: number,
+  projectId: string,
   releaseVersion: string,
 ): Promise<ProjectUnitResponse[]> {
   return apiClient
@@ -136,7 +136,7 @@ export function getReleaseUnits(
 }
 
 export function getRuntimesWithConnectedChat(
-  projectId: number,
+  projectId: string,
 ): Promise<ProjectRuntimeWithConnectedChatResponse[]> {
   return apiClient
     .get<ApiResponse<ProjectRuntimeWithConnectedChatResponse[]>>(

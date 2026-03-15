@@ -103,14 +103,14 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
     releaseVersion: string;
   }>();
 
-  const projectIdNum = projectId != null ? Number(projectId) : undefined;
+  const projectIdOrUndefined = projectId ?? undefined;
 
   const { data: releases } = useProjectReleasesQuery(
-    projectIdNum,
+    projectIdOrUndefined,
   );
 
   const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(
-    projectIdNum,
+    projectIdOrUndefined,
     releaseVersion,
   );
 

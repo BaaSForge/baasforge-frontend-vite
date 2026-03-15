@@ -10,8 +10,8 @@ export default function ProjectRuntimesPage() {
     projectId: string;
   }>();
 
-  const projectIdNum = projectId != null ? Number(projectId) : undefined;
-  const { data: runtimes, isLoading, error } = useProjectRuntimesWithConnectedChatQuery(projectIdNum);
+  const projectIdOrUndefined = projectId ?? undefined;
+  const { data: runtimes, isLoading, error } = useProjectRuntimesWithConnectedChatQuery(projectIdOrUndefined);
 
   const busyRuntimes = runtimes?.filter(r => r.connected_chat_session != null) ?? [];
   const idleRuntimes = runtimes?.filter(r => r.connected_chat_session == null) ?? [];

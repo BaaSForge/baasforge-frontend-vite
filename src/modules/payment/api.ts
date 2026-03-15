@@ -25,7 +25,7 @@ export function getPaidPackages(): Promise<PaidPackageResponse> {
     .then((res) => res.data ?? { payments: [], largest_tier: 0, can_purchase_trial: false });
 }
 
-export function purchasePackage(packageId: number): Promise<PurchaseResponse> {
+export function purchasePackage(packageId: string): Promise<PurchaseResponse> {
   return apiClient
     .post<ApiResponse<PurchaseResponse>>(PURCHASE_ENDPOINT, { package_id: packageId })
     .then((res) => {

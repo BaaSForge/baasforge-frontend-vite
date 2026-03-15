@@ -1,5 +1,5 @@
 export interface PaymentResponse {
-  id: number;
+  id: string;
   amount: number;
   package_title: string | null;
   package_slug: string | null;
@@ -11,7 +11,7 @@ export interface PaymentResponse {
 }
 
 export interface Package {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   tier: number;
@@ -33,6 +33,6 @@ export interface PaidPackageResponse {
 }
 
 export interface PurchaseResponse {
-  package_id: number;
+  package_id: string;
   expires_at: string;
 }

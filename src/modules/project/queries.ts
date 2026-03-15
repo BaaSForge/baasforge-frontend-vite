@@ -9,57 +9,53 @@ export function useProjectsQuery() {
   });
 }
 
-export function useProjectQuery(projectId: number | undefined) {
+export function useProjectQuery(projectId: string | undefined) {
   return useQuery({
-    queryKey: QueryKeys.projectDetail(projectId ?? 0),
+    queryKey: QueryKeys.projectDetail(projectId ?? ""),
     queryFn: () => getProject(projectId!),
-    enabled: projectId != null && projectId > 0,
+    enabled: !!projectId,
   });
 }
 
-export function useProjectNonDraftUnitsQuery(projectId: number | undefined) {
+export function useProjectNonDraftUnitsQuery(projectId: string | undefined) {
   return useQuery({
-    queryKey: QueryKeys.projectNonDraftUnits(projectId ?? 0),
+    queryKey: QueryKeys.projectNonDraftUnits(projectId ?? ""),
     queryFn: () => getProjectNonDraftUnits(projectId!),
-    enabled: projectId != null && projectId > 0,
+    enabled: !!projectId,
   });
 }
 
 export function useProjectDraftUnitsQuery(
-  projectId: number | undefined,
-  chatSessionId: number | undefined
+  projectId: string | undefined,
+  chatSessionId: string | undefined
 ) {
   return useQuery({
-    queryKey: QueryKeys.projectDraftUnits(projectId ?? 0, chatSessionId ?? 0),
+    queryKey: QueryKeys.projectDraftUnits(projectId ?? "", chatSessionId ?? ""),
     queryFn: () => getDraftUnits(projectId!, chatSessionId!),
-    enabled:
-      projectId != null &&
-      projectId > 0 &&
-      chatSessionId != null &&
-      chatSessionId > 0,
+    enabled: !!projectId && !!chatSessionId,
   });
 }
 
-export function useProjectReleasesQuery(projectId: number | undefined) {
+export function useProjectReleasesQuery(projectId: string | undefined) {
   return useQuery({
-    queryKey: QueryKeys.projectReleases(projectId ?? 0),
+    queryKey: QueryKeys.projectReleases(projectId ?? ""),
     queryFn: () => getReleases(projectId!),
-    enabled: projectId != null && projectId > 0,
+    enabled: !!projectId,
   });
 }
 
-export function useProjectReleaseUnitsQuery(projectId: number | undefined, releaseVersion: string | undefined) {
+export function useProjectReleaseUnitsQuery(projectId: string | undefined, releaseVersion: string | undefined) {
   return useQuery({
     queryKey: QueryKeys.projectReleaseUnits(projectId!, releaseVersion!),
     queryFn: () => getReleaseUnits(projectId!, releaseVersion!),
-    enabled: projectId != null && projectId > 0 && releaseVersion != null,
+    enabled: !!projectId && !!releaseVersion,
   });
 }
 
-export function useProjectRuntimesWithConnectedChatQuery(projectId: number | undefined) {
+export function useProjectRuntimesWithConnectedChatQuery(projectId: string | undefined) {
   return useQuery({
-    queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId ?? 0),
+    queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId ?? ""),
     queryFn: () => getRuntimesWithConnectedChat(projectId!),
-    enabled: projectId != null && projectId > 0,
+    enabled: !!projectId,
   });
 }
