@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router";
-import { useLayoutEffect, useRef, useEffect, useMemo } from "react";
+import { useLayoutEffect, useRef, useEffect, useMemo, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { InfiniteData } from "@tanstack/react-query";
 import { flushSync } from "react-dom";
@@ -28,7 +28,7 @@ import {
   useCreateProjectChatSessionMutation,
   useCreateProjectChatSessionMessageMutation,
 } from "@/modules/project-chat/mutations";
-import { ConnectIcon, DisconnectIcon } from "@/modules/project/stores/runtime-store";
+import { ConnectIcon, DisconnectIcon } from "@/modules/project/stores/runtime-store/exports";
 import { FancyButton } from "@/components/fancy-button";
 import { RuntimesModal } from "@/modules/project";
 import {
@@ -79,6 +79,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<ChatMessageWithDeliveryStatus | undefined>();
   const [shouldShowResponsePlaceholder, setShouldShowResponsePlaceholder] = useState(false);
   const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
+  const [messageInput, setMessageInput] = useState("");
   const {
     setOpenSkipStorage,
     toggleSidebar,
@@ -128,13 +129,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
   const chatSessionIdOrUndefined = conversationId ?? undefined;
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTemporaryMessageBeforeRedirectingToNewSession(undefined);
+    queueMicrotask(() => setTemporaryMessageBeforeRedirectingToNewSession(undefined));
 
     if (justRedirectedToNewSessionRef.current) {
       justRedirectedToNewSessionRef.current = false;
     } else {
-      setShouldShowResponsePlaceholder(false);
+      queueMicrotask(() => setShouldShowResponsePlaceholder(false));
     }
   }, [chatSessionIdOrUndefined]);
 
@@ -181,8 +181,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
   const createSessionMutation = useCreateProjectChatSessionMutation(projectId ?? "");
   const createMessageMutation = useCreateProjectChatSessionMessageMutation();
-
-  const [messageInput, setMessageInput] = useState("");
 
   const responsePlaceholderRef = useRef<HTMLDivElement>(null);
 
@@ -321,7 +319,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }
   }, [isGenerating]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     if (projectIdOrUndefined == null || chatSessionIdOrUndefined == null) return;
     stopProjectChatSession(projectId ?? "", chatSessionIdOrUndefined)
       .then((res) => {
@@ -334,7 +332,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
           );
         }
       });
-  };
+  }, [projectIdOrUndefined, chatSessionIdOrUndefined, projectId, queryClient]);
 
   useLayoutEffect(() => {
     handleStopRef.current = handleStop;

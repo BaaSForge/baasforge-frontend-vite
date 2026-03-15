@@ -10,7 +10,7 @@ import { Link } from "react-router";
 import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useRuntimeChatSessionActions } from "@/modules/project";
-import { DisconnectIcon } from "@/modules/project/stores/runtime-store";
+import { DisconnectIcon } from "@/modules/project/stores/runtime-store/exports";
 
 export interface RuntimeCardProps {
   runtime: ProjectRuntimeResponse;

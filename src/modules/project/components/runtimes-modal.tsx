@@ -18,7 +18,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SectionTitle } from "@/components/section-title";
 import { useProjectRuntimesWithConnectedChatQuery } from "../queries";
-import { useRuntimeChatSessionActions } from "../stores/runtime-store";
+import { useRuntimeChatSessionActions } from "../stores/runtime-store/exports";
 import { PlatformEnvironmentType, type ProjectRuntimeWithConnectedChatResponse } from "../types";
 import type { LucideIcon } from "lucide-react";
 import { Link2, Unplug } from "lucide-react";

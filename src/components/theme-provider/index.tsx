@@ -50,5 +50,3 @@ export function ThemeProvider({
     </ThemeProviderContext.Provider>
   )
 }
-
-export { useTheme } from "./hooks";

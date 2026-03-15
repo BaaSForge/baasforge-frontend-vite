@@ -34,18 +34,21 @@ export function useSubscribe(
   const onCloseRef = useRef(onClose);
   const onErrorRef = useRef(onError);
   const enabledRef = useRef(enabled);
-  onMessageRef.current = onMessage;
-  onOpenRef.current = onOpen;
-  onCloseRef.current = onClose;
-  onErrorRef.current = onError;
-  enabledRef.current = enabled;
-
   const reconnectIntervalRef = useRef(reconnectIntervalMs);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const topicRef = useRef(topic);
   const intentionalCloseRef = useRef(false);
-  topicRef.current = topic;
+  const connectRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onOpenRef.current = onOpen;
+    onCloseRef.current = onClose;
+    onErrorRef.current = onError;
+    enabledRef.current = enabled;
+    topicRef.current = topic;
+  }, [onMessage, onOpen, onClose, onError, enabled, topic]);
 
   const connect = useCallback(() => {
     if (!url || !topic.trim() || !enabled) return;
@@ -97,7 +100,7 @@ export function useSubscribe(
           Math.floor(reconnectIntervalRef.current * BACKOFF_MULTIPLIER),
           maxReconnectIntervalMs
         );
-        connect();
+        connectRef.current();
       }, delay);
     };
   }, [
@@ -111,6 +114,7 @@ export function useSubscribe(
   useEffect(() => {
     if (!enabled || !url || !topic.trim()) return;
 
+    connectRef.current = connect;
     connect();
 
     return () => {

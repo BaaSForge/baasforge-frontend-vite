@@ -30,12 +30,12 @@ export function useResolvedTheme() {
   useEffect(() => {
     if (theme === "system") {
       const media = window.matchMedia("(prefers-color-scheme: dark)");
-      setResolved(media.matches ? "dark" : "light");
       const handler = () => setResolved(media.matches ? "dark" : "light");
+      queueMicrotask(() => setResolved(media.matches ? "dark" : "light"));
       media.addEventListener("change", handler);
       return () => media.removeEventListener("change", handler);
     }
-    setResolved(theme);
+    queueMicrotask(() => setResolved(theme));
   }, [theme]);
 
   return resolved;

@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "@/components/theme-provider/hooks"
 import type { Theme } from "@/components/theme-provider/hooks"
 
 const THEME_ORDER: Theme[] = ["light", "dark", "system"]
