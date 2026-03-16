@@ -15,6 +15,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryKeys } from "@/constants/query-keys";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
+import { useBreadcrumbActions } from "@/stores/breadcrumb";
 import { scrollToBottom, scrollToTop, smoothScrollToElementTop } from "@/lib/dom";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { register, SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
@@ -129,6 +130,18 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }, [chatSessionIdOrUndefined]);
 
     const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdOrUndefined, chatSessionIdOrUndefined);
+    const { setSegmentLabel, clearSegmentLabel } = useBreadcrumbActions();
+
+    useEffect(() => {
+        if (conversationId == null) {
+            clearSegmentLabel("conversationId");
+            return;
+        }
+        if (chatSession?.title != null) {
+            setSegmentLabel("conversationId", chatSession.title || "Conversation");
+        }
+        return () => clearSegmentLabel("conversationId");
+    }, [conversationId, chatSession?.title, setSegmentLabel, clearSegmentLabel]);
 
     useSubscribeSession(projectIdOrUndefined, chatSessionIdOrUndefined);
 
