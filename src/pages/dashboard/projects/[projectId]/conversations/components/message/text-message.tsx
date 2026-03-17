@@ -18,17 +18,20 @@ function formatMessageTime(dateValue: string): string {
     });
 }
 
-function getTextFromPayload(payload: unknown): string {
+function getDisplayText(payload: unknown): string {
     if (typeof payload === "string") return payload;
-    if (payload != null && typeof payload === "object" && "text" in payload && typeof (payload as TextMessagePayload).text === "string") {
-        return (payload as TextMessagePayload).text;
-    }
+    if (payload == null || typeof payload !== "object") return "";
+    const p = payload as TextMessagePayload;
+    const text = typeof p.text === "string" ? p.text.trim() : "";
+    const toolCalls = Array.isArray(p.requested_tool_calls) ? p.requested_tool_calls : [];
+    if (text) return text;
+    if (toolCalls.length > 0) return `Exploring (${toolCalls.length} tool call${toolCalls.length === 1 ? "" : "s"})`;
     return "";
 }
 
 export function TextMessage({ message, onRetry }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
-    const text = getTextFromPayload(message.payload);
+    const text = getDisplayText(message.payload);
     const isUser = message.role === ChatSessionRoleType.User;
     const isFailed = message.delivery_status === ChatMessageDeliveryStatus.Failed;
     const markdownTheme: MarkdownTheme | undefined = isUser ? (resolvedTheme === "dark" ? "light" : "dark") : undefined;
