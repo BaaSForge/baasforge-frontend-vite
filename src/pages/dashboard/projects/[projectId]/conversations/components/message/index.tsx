@@ -42,12 +42,13 @@ export function Message({ message, onRetry }: MessageProps) {
         >
             {isInvokedByAnother &&
                 (isToolMessage ? (
-                    <div
-                        className="absolute top-0 -left-8 flex h-12 w-8 items-center"
-                        aria-hidden
-                    >
-                        <span className="w-6 h-px bg-border" />
-                    </div>
+                    null
+                    // <div
+                    //     className="absolute top-0 -left-8 flex h-12 w-8 items-center"
+                    //     aria-hidden
+                    // >
+                    //     <span className="w-6 h-px bg-border" />
+                    // </div>
                 ) : (
                     <span
                         className="absolute top-1/2 -left-8 w-6 -translate-y-1/2 h-px bg-border"
