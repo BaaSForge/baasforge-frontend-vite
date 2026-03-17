@@ -23,22 +23,37 @@ function MessageContent({ message, onRetry }: MessageProps) {
     return null;
 }
 
+const toolMessageTypes = [
+    ChatMessageType.ToolFetchRelevantUnits,
+    ChatMessageType.ToolFetchLatestReleases,
+];
+
 export function Message({ message, onRetry }: MessageProps) {
     const isInvokedByAnother = Boolean(message.invoking_message_id);
+    const isToolMessage = toolMessageTypes.includes(message.type);
 
     return (
         <div
             className={cn(
                 "relative min-w-0",
-                isInvokedByAnother && "ml-12",
+                isInvokedByAnother && "ml-8",
+                isToolMessage && "mt-2",
             )}
         >
-            {isInvokedByAnother && (
-                <span
-                    className="absolute top-0 -left-12 w-12 h-px bg-border"
-                    aria-hidden
-                />
-            )}
+            {isInvokedByAnother &&
+                (isToolMessage ? (
+                    <div
+                        className="absolute top-0 -left-8 flex h-12 w-8 items-center"
+                        aria-hidden
+                    >
+                        <span className="w-6 h-px bg-border" />
+                    </div>
+                ) : (
+                    <span
+                        className="absolute top-1/2 -left-8 w-6 -translate-y-1/2 h-px bg-border"
+                        aria-hidden
+                    />
+                ))}
             <MessageContent message={message} onRetry={onRetry} />
         </div>
     );
