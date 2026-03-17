@@ -56,10 +56,13 @@ export function useCreateProjectChatSessionMessageMutation() {
                 queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) => {
                     return modifyInfiniteCacheData(old, (pages) => {
                         const lastPage = pages[pages.length - 1];
-                        const newLastPage = [
-                            ...lastPage.filter((msg) => msg.id !== optimisticMessage.id),
-                            { ...saved, delivery_status: ChatMessageDeliveryStatus.Delivered },
-                        ];
+                        const delivered = { ...saved, delivery_status: ChatMessageDeliveryStatus.Delivered };
+                        // Replace optimistic message in place so it stays before any WebSocket messages that arrived in the meantime
+                        const idx = lastPage.findIndex((msg) => msg.id === optimisticMessage.id);
+                        const newLastPage =
+                            idx >= 0
+                                ? lastPage.map((msg) => (msg.id === optimisticMessage.id ? delivered : msg))
+                                : [...lastPage, delivered];
                         return [...pages.slice(0, -1), newLastPage];
                     });
                 });
