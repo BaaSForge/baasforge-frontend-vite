@@ -80,13 +80,13 @@ const SHORTCUT_RULES: ShortcutRule[] = [
     {
         scope: UNIFIED_KEYBOARD_SCOPES.MAIN_SIDEBAR,
         match: (e) => (e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "\\",
-        allowInInput: false,
+        allowInInput: true,
         allowInModal: true,
     },
     {
         scope: UNIFIED_KEYBOARD_SCOPES.SECONDARY_SIDEBAR,
         match: (e) => (e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "\\",
-        allowInInput: false,
+        allowInInput: true,
         allowInModal: true,
     },
     {
@@ -98,13 +98,13 @@ const SHORTCUT_RULES: ShortcutRule[] = [
     {
         scope: UNIFIED_KEYBOARD_SCOPES.NEW_CONVERSATION,
         match: (e) => (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "k",
-        allowInInput: false,
+        allowInInput: true,
         allowInModal: true,
     },
     {
         scope: UNIFIED_KEYBOARD_SCOPES.OPEN_PREVIOUS_CONVERSATIONS,
         match: (e) => (e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "o",
-        allowInInput: false,
+        allowInInput: true,
         allowInModal: false,
     },
 ];
