@@ -4,7 +4,7 @@ import { envConfig } from "@/lib/env";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { isChatSessionMessageCreatedEvent, isChatSessionMessageStatusChangeEvent, isChatSessionMessageUpdatedEvent, isChatSessionNewMessageChunkEvent } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
-import { ChatMessageDeliveryStatus, ChatMessageStatus, type ChatMessageResponse, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import { ChatMessageDeliveryStatus, ChatMessageStatus, type ChatMessageResponse, type ChatMessageWithDeliveryStatus, type TextMessagePayload } from "@/modules/project-chat/types";
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
@@ -22,10 +22,19 @@ function applyChunkToMessageInPages(
         const idx = page.findIndex((msg) => msg.id === messageId);
         if (idx === -1) continue;
         const msg = page[idx];
-        const currentPayload = typeof msg.payload === "string" ? msg.payload : "";
+        const currentText =
+            typeof msg.payload === "string"
+                ? msg.payload
+                : msg.payload != null && typeof msg.payload === "object" && "text" in msg.payload
+                  ? (msg.payload as TextMessagePayload).text ?? ""
+                  : "";
+        const newPayload: TextMessagePayload =
+            msg.payload != null && typeof msg.payload === "object" && !Array.isArray(msg.payload) && "text" in msg.payload
+                ? { ...(msg.payload as TextMessagePayload), text: currentText + content }
+                : { text: currentText + content };
         const updated: ChatMessageWithDeliveryStatus = {
             ...msg,
-            payload: currentPayload + content,
+            payload: newPayload,
             status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
         };
         const newPage = [...page];

@@ -234,7 +234,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const handleSend = () => {
         if (!canSend) return;
 
-        const payload = messageInput.trim();
+        const text = messageInput.trim();
         setMessageInput("");
 
         const optimisticMessage: ChatMessageWithDeliveryStatus = {
@@ -242,7 +242,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             chat_session_id: chatSessionIdOrUndefined ?? "",
             role: ChatSessionRoleType.User,
             type: ChatMessageType.Text,
-            payload,
+            payload: { text },
             created_at: new Date().toISOString(),
             delivery_status: ChatMessageDeliveryStatus.Pending,
             status: ChatMessageStatus.Completed,

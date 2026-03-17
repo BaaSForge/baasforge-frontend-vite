@@ -2,7 +2,7 @@ import { Markdown, type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ChatMessageDeliveryStatus, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import { ChatMessageDeliveryStatus, ChatSessionRoleType, type ChatMessageWithDeliveryStatus, type TextMessagePayload } from "@/modules/project-chat/types";
 
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 
@@ -18,9 +18,17 @@ function formatMessageTime(dateValue: string): string {
     });
 }
 
+function getTextFromPayload(payload: unknown): string {
+    if (typeof payload === "string") return payload;
+    if (payload != null && typeof payload === "object" && "text" in payload && typeof (payload as TextMessagePayload).text === "string") {
+        return (payload as TextMessagePayload).text;
+    }
+    return "";
+}
+
 export function TextMessage({ message, onRetry }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
-    const text = typeof message.payload === "string" ? message.payload : "";
+    const text = getTextFromPayload(message.payload);
     const isUser = message.role === ChatSessionRoleType.User;
     const isFailed = message.delivery_status === ChatMessageDeliveryStatus.Failed;
     const markdownTheme: MarkdownTheme | undefined = isUser ? (resolvedTheme === "dark" ? "light" : "dark") : undefined;

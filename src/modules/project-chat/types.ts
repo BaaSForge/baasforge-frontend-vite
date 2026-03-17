@@ -30,7 +30,7 @@ export enum ChatMessageStatus {
     Completed = "completed",
 }
 
-export type { ToolFetchLatestReleasesPayload, ToolFetchRelevantUnitsPayload } from "./payloads";
+export type { TextMessagePayload, TextMessageRequestedToolCall, ToolFetchLatestReleasesPayload, ToolFetchRelevantUnitsPayload } from "./payloads";
 
 export interface ChatMessageResponse {
     id: string;
