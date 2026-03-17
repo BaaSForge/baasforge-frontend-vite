@@ -33,7 +33,7 @@ export function ToolFetchLatestReleasesMessage({ message }: { message: ChatMessa
             <Collapsible defaultOpen={false} className="group mb-1 w-full min-w-0 max-w-full overflow-hidden">
                 <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
                     <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-                    <span className="font-medium text-sm">Fetching latest releases</span>
+                    <span className="font-medium text-sm">Reading latest releases</span>
                     {hasReleases && (
                         <span className="text-muted-foreground text-xs">
                             {releaseCount} {releaseCount === 1 ? "release" : "releases"}
