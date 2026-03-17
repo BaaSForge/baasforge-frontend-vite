@@ -41,6 +41,8 @@ export interface ChatMessageResponse {
     created_at: string;
     is_first: boolean;
     status: ChatMessageStatus;
+    /** When set, this message is invoked by another message. */
+    invoking_message_id?: string | null;
 }
 
 export interface CreateChatMessageApiResponse extends ChatMessageResponse {

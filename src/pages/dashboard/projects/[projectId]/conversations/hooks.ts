@@ -141,11 +141,9 @@ export function useSubscribeSession(projectId: string | undefined, sessionId: st
             }
 
             if (isChatSessionMessageStatusChangeEvent(data)) {
-                const status = data.status;
-                if (status !== ChatMessageStatus.Failed && status !== ChatMessageStatus.Stopped) return;
                 const cacheKey = QueryKeys.projectChatSessionMessages(projectId, sessionId);
                 queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
-                    modifyInfiniteCacheData(old, (pages) => applyStatusToMessageInPages(pages, data.messageId, status)),
+                    modifyInfiniteCacheData(old, (pages) => applyStatusToMessageInPages(pages, data.messageId, data.status)),
                 );
                 return;
             }
