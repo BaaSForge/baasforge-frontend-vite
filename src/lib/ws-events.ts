@@ -3,7 +3,8 @@ import { ChatMessageStatus } from "@/modules/project-chat/types";
 
 export type ChatSessionNewMessageChunkEvent = {
     type: "chat_session_new_message_chunk";
-    topic: string;
+    project_id: string;
+    session_id: string;
     message_id: string;
     chunk_index: number;
     content: string;
@@ -12,30 +13,36 @@ export type ChatSessionNewMessageChunkEvent = {
 
 export type ChatSessionMessageCreatedEvent = {
     type: "chat_session_message_created";
+    project_id: string;
+    session_id: string;
     message: ChatMessageResponse;
 };
 
 export type ChatSessionMessageUpdatedEvent = {
     type: "chat_session_message_updated";
+    project_id: string;
+    session_id: string;
     message: ChatMessageResponse;
 };
 
 /** Payload when a message's status changes (e.g. to `failed` or `stopped`). */
 export type ChatSessionMessageStatusChangeEvent = {
     type: "chat_session_message_status_change";
-    messageId: string;
+    project_id: string;
+    session_id: string;
+    message_id: string;
     status: ChatMessageStatus;
 };
 
 export type ProjectDeletedEvent = {
     type: "project_deleted";
-    projectId: string;
+    project_id: string;
 };
 
 export type RuntimeCreatedEvent = {
     type: "runtime_created";
-    projectId: string;
-    runtimeId: string;
+    project_id: string;
+    runtime_id: string;
 };
 
 export type WsServerEvent =

@@ -41,7 +41,7 @@ import { useNavigate, useParams } from "react-router";
 import Controls from "./components/controls";
 import { Message } from "./components/message";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
-import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll, useSubscribeSession } from "./hooks";
+import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll } from "./hooks";
 import { SecondarySideBar } from "./secondary-side-bar";
 import { findLastUserMessageIndex } from "./utils";
 
@@ -142,8 +142,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         }
         return () => clearSegmentLabel("conversationId");
     }, [conversationId, chatSession?.title, setSegmentLabel, clearSegmentLabel]);
-
-    useSubscribeSession(projectIdOrUndefined, chatSessionIdOrUndefined);
 
     const {
         data: chatSessionMessagesData,
