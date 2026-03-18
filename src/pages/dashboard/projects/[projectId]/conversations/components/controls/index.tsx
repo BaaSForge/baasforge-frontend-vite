@@ -76,7 +76,12 @@ export default function Controls({
             )}
             <div className={cn("fixed min-h-14 z-20 transition-[left,right,bottom] duration-200 ease-out", leftClassName, rightClassName, bottomClassName)}>
                 <div className={cn("flex items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)} onClick={handleFocus}>
-                    <InputGroup className="w-full shadow-2xl flex flex-col !bg-background">
+                    <InputGroup
+                        className={cn(
+                            "w-full shadow-2xl flex flex-col !bg-background transition-shadow duration-300",
+                            isGenerating && "controller-generating-glow",
+                        )}
+                    >
                         <InputGroupTextarea
                             ref={messageInputRef}
                             value={messageInputValue}

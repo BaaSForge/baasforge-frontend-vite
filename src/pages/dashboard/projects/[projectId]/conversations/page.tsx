@@ -407,11 +407,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                             </div>
                         )}
                         {(isGenerating || placeholderVisible) && (
-                            <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative">
-                                {isGenerating && (
-                                    <Spinner className="size-5 absolute top-3 left-1/2 -translate-x-1/2 text-blue-500" />
-                                )}
-                            </div>
+                            <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />
                         )}
                     </div>
                     <Controls

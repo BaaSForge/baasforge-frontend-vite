@@ -189,6 +189,65 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 }
 
+/* Circular path: shadow moves smoothly around the box (radius 5px, 16 steps) */
+@keyframes controller-generating-glow {
+    0% {
+        box-shadow: 5px 0 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    6.25% {
+        box-shadow: 5px 2px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    12.5% {
+        box-shadow: 4px 4px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    18.75% {
+        box-shadow: 2px 5px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    25% {
+        box-shadow: 0 5px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    31.25% {
+        box-shadow: -2px 5px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    37.5% {
+        box-shadow: -4px 4px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    43.75% {
+        box-shadow: -5px 2px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    50% {
+        box-shadow: -5px 0 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    56.25% {
+        box-shadow: -5px -2px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    62.5% {
+        box-shadow: -4px -4px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    68.75% {
+        box-shadow: -2px -5px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    75% {
+        box-shadow: 0 -5px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    81.25% {
+        box-shadow: 2px -5px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    87.5% {
+        box-shadow: 4px -4px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    93.75% {
+        box-shadow: 5px -2px 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+    100% {
+        box-shadow: 5px 0 12px 1px color-mix(in oklch, var(--color-blue-500) 40%, transparent);
+    }
+}
+
+.controller-generating-glow {
+    animation: controller-generating-glow 3s linear infinite;
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;
