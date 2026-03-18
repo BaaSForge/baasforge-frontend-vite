@@ -34,6 +34,18 @@ export type ChatSessionMessageStatusChangeEvent = {
     status: ChatMessageStatus;
 };
 
+export type ChatSessionGenerationStartedEvent = {
+    type: "chat_session_generation_started";
+    project_id: string;
+    session_id: string;
+};
+
+export type ChatSessionGenerationEndedEvent = {
+    type: "chat_session_generation_ended";
+    project_id: string;
+    session_id: string;
+};
+
 export type ProjectDeletedEvent = {
     type: "project_deleted";
     project_id: string;
@@ -50,6 +62,8 @@ export type WsServerEvent =
     | ChatSessionMessageCreatedEvent
     | ChatSessionMessageUpdatedEvent
     | ChatSessionMessageStatusChangeEvent
+    | ChatSessionGenerationStartedEvent
+    | ChatSessionGenerationEndedEvent
     | ProjectDeletedEvent
     | RuntimeCreatedEvent
     | { type: "subscribed"; topic: string }
@@ -82,6 +96,14 @@ export function isChatSessionMessageUpdatedEvent(data: unknown): data is ChatSes
 
 export function isChatSessionMessageStatusChangeEvent(data: unknown): data is ChatSessionMessageStatusChangeEvent {
     return isWsServerEvent(data) && data.type === "chat_session_message_status_change";
+}
+
+export function isChatSessionGenerationStartedEvent(data: unknown): data is ChatSessionGenerationStartedEvent {
+    return isWsServerEvent(data) && data.type === "chat_session_generation_started";
+}
+
+export function isChatSessionGenerationEndedEvent(data: unknown): data is ChatSessionGenerationEndedEvent {
+    return isWsServerEvent(data) && data.type === "chat_session_generation_ended";
 }
 
 export function userTopic(userId: string): string {

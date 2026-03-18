@@ -3,6 +3,20 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getProjectChatSessionDetail, getProjectChatSessionMessages, getProjectChatSessions } from "./api";
 import type { ChatMessageWithDeliveryStatus } from "./types";
 
+const EMPTY_GENERATING_SET = new Set<string>();
+
+/** Whether the given project/session is currently generating a response (from WS generation_started/ended). */
+export function useIsSessionGenerating(projectId: string | undefined, sessionId: string | undefined): boolean {
+    const generating = useQuery({
+        queryKey: QueryKeys.chatSessionGeneratingSet(),
+        queryFn: () => EMPTY_GENERATING_SET,
+        initialData: EMPTY_GENERATING_SET,
+        staleTime: Number.POSITIVE_INFINITY,
+        select: (set) => (projectId != null && sessionId != null ? set.has(`${projectId}:${sessionId}`) : false),
+    });
+    return generating.data ?? false;
+}
+
 export function useProjectChatSessionsQuery(projectId?: string) {
     return useQuery({
         enabled: !!projectId,

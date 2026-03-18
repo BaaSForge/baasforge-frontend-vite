@@ -2,6 +2,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "@/constants/query-keys";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import {
+    isChatSessionGenerationEndedEvent,
+    isChatSessionGenerationStartedEvent,
     isChatSessionMessageCreatedEvent,
     isChatSessionMessageStatusChangeEvent,
     isChatSessionMessageUpdatedEvent,
@@ -91,6 +93,24 @@ function replaceMessageInPages(
     return pages;
 }
 
+function sessionGeneratingKey(projectId: string, sessionId: string): string {
+    return `${projectId}:${sessionId}`;
+}
+
+/** Call when the create-message POST succeeds so the UI shows generating/STOP/placeholder immediately. */
+export function addSessionToGeneratingSet(
+    queryClient: QueryClient,
+    projectId: string,
+    sessionId: string,
+): void {
+    const key = QueryKeys.chatSessionGeneratingSet();
+    queryClient.setQueryData<Set<string>>(key, (prev) => {
+        const next = new Set(prev ?? []);
+        next.add(sessionGeneratingKey(projectId, sessionId));
+        return next;
+    });
+}
+
 /**
  * Handles chat session WS events from the user topic and updates the relevant
  * project/chat-session message cache. Uses project_id and session_id from
@@ -101,6 +121,28 @@ export function handleChatSessionWsEvent(
     queryClient: QueryClient,
     lastAppliedChunkByMessageRef: { current: Map<string, number> },
 ): boolean {
+    if (isChatSessionGenerationStartedEvent(data)) {
+        const { project_id, session_id } = data;
+        const key = QueryKeys.chatSessionGeneratingSet();
+        queryClient.setQueryData<Set<string>>(key, (prev) => {
+            const next = new Set(prev ?? []);
+            next.add(sessionGeneratingKey(project_id, session_id));
+            return next;
+        });
+        return true;
+    }
+
+    if (isChatSessionGenerationEndedEvent(data)) {
+        const { project_id, session_id } = data;
+        const key = QueryKeys.chatSessionGeneratingSet();
+        queryClient.setQueryData<Set<string>>(key, (prev) => {
+            const next = new Set(prev ?? []);
+            next.delete(sessionGeneratingKey(project_id, session_id));
+            return next;
+        });
+        return true;
+    }
+
     if (isChatSessionMessageCreatedEvent(data)) {
         const { project_id, session_id, message } = data;
         const cacheKey = QueryKeys.projectChatSessionMessages(project_id, session_id);

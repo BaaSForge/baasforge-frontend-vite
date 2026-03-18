@@ -22,8 +22,9 @@ import { register, SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, unregister } from "
 import { cn } from "@/lib/utils";
 import { RuntimesModal } from "@/modules/project";
 import { stopProjectChatSession } from "@/modules/project-chat/api";
+import { addSessionToGeneratingSet } from "@/modules/project-chat/ws-cache-handler";
 import { useCreateProjectChatSessionMessageMutation, useCreateProjectChatSessionMutation } from "@/modules/project-chat/mutations";
-import { useProjectChatSessionDetailQuery, useProjectChatSessionMessagesQuery } from "@/modules/project-chat/queries";
+import { useIsSessionGenerating, useProjectChatSessionDetailQuery, useProjectChatSessionMessagesQuery } from "@/modules/project-chat/queries";
 import {
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
@@ -36,7 +37,6 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
 import { useNavigate, useParams } from "react-router";
 import Controls from "./components/controls";
 import { Message } from "./components/message";
@@ -68,7 +68,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<
         ChatMessageWithDeliveryStatus | undefined
     >();
-    const [shouldShowResponsePlaceholder, setShouldShowResponsePlaceholder] = useState(false);
     const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
     const [messageInput, setMessageInput] = useState("");
     const { setOpenSkipStorage, toggleSidebar, rereadSidebarOpen } = useSecondarySidebar();
@@ -118,8 +117,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
         if (justRedirectedToNewSessionRef.current) {
             justRedirectedToNewSessionRef.current = false;
-        } else {
-            queueMicrotask(() => setShouldShowResponsePlaceholder(false));
         }
     }, [chatSessionIdOrUndefined]);
 
@@ -202,18 +199,23 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             onSuccess: (session) => {
                 if (!session) return;
 
-                createMessageMutation.mutate({
-                    projectId: projectId ?? "",
-                    chatSessionId: session.id,
-                    optimisticMessage: {
-                        ...optimisticMessage,
-                        delivery_status: ChatMessageDeliveryStatus.Pending,
+                createMessageMutation.mutate(
+                    {
+                        projectId: projectId ?? "",
+                        chatSessionId: session.id,
+                        optimisticMessage: {
+                            ...optimisticMessage,
+                            delivery_status: ChatMessageDeliveryStatus.Pending,
+                        },
                     },
-                });
+                    {
+                        onSuccess: () => {
+                            addSessionToGeneratingSet(queryClient, projectId ?? "", session.id);
+                        },
+                    },
+                );
 
                 navigate(`/dashboard/projects/${projectId}/conversations/${session.id}`);
-
-                setShouldShowResponsePlaceholder(true);
                 justRedirectedToNewSessionRef.current = true;
             },
             onError: () => {
@@ -251,25 +253,24 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         if (noConversation) {
             createSessionThenMessage(optimisticMessage);
         } else {
-            createMessageMutation.mutate({
-                projectId: projectId ?? "",
-                chatSessionId: chatSessionIdOrUndefined ?? "",
-                optimisticMessage,
-            });
-
-            flushSync(() => {
-                setShouldShowResponsePlaceholder(true);
-            });
-
-            // Defer scroll so the mutation's optimistic re-render can run and layout settle; then scroll instantly so nothing interrupts.
-            const el = responsePlaceholderRef.current;
-            if (el) {
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        smoothScrollToElementTop(el);
-                    });
-                });
-            }
+            createMessageMutation.mutate(
+                {
+                    projectId: projectId ?? "",
+                    chatSessionId: chatSessionIdOrUndefined ?? "",
+                    optimisticMessage,
+                },
+                {
+                    onSuccess: () => {
+                        addSessionToGeneratingSet(queryClient, projectId ?? "", chatSessionIdOrUndefined ?? "");
+                        const el = responsePlaceholderRef.current;
+                        if (el) {
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => smoothScrollToElementTop(el));
+                            });
+                        }
+                    },
+                },
+            );
         }
     };
 
@@ -289,7 +290,17 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(chatSessionMessages), [chatSessionMessages]);
     const lastAiMessages: ChatMessageWithDeliveryStatus[] =
         lastUserMessageIndex >= 0 && chatSessionMessages ? chatSessionMessages.slice(lastUserMessageIndex + 1) : [];
-    const isGenerating = lastAiMessages.some((m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating);
+    const isGeneratingFromWs = useIsSessionGenerating(projectIdOrUndefined, chatSessionIdOrUndefined);
+    const isGeneratingFromMessages = lastAiMessages.some((m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating);
+    const isGenerating = isGeneratingFromWs || isGeneratingFromMessages;
+
+    const [placeholderVisible, setPlaceholderVisible] = useState(false);
+    useEffect(() => {
+        setPlaceholderVisible(false);
+    }, [chatSessionIdOrUndefined]);
+    useEffect(() => {
+        if (isGenerating && chatSessionIdOrUndefined) setPlaceholderVisible(true);
+    }, [isGenerating, chatSessionIdOrUndefined]);
 
     const prevIsGeneratingRef = useRef(isGenerating);
 
@@ -379,9 +390,11 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                 onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
                             />
                         )}
-                        {shouldShowResponsePlaceholder && (
+                        {(isGenerating || placeholderVisible) && (
                             <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative">
-                                {!isLastMessageFromAI && <Spinner className="size-5 absolute top-0 left-0 text-blue-500" />}
+                                {isGenerating && (
+                                    <Spinner className="size-5 absolute top-3 left-1/2 -translate-x-1/2 text-blue-500" />
+                                )}
                             </div>
                         )}
                     </div>
