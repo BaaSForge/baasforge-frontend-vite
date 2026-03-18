@@ -28,16 +28,16 @@ export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessag
         <div className="flex w-0 min-w-full max-w-full justify-start overflow-hidden">
             <Collapsible defaultOpen={false} className="group w-full min-w-0 max-w-full overflow-hidden">
                 <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
-                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                    <span className="shrink-0">
+                        <AiMessageStatusIcon status={status} />
+                    </span>
                     <span className="font-medium text-sm">Reading relevant units</span>
                     {hasUnits && (
                         <span className="text-muted-foreground text-xs">
                             {unitCount} {unitCount === 1 ? "unit" : "units"}
                         </span>
                     )}
-                    <span className="ml-2 shrink-0">
-                        <AiMessageStatusIcon status={status} />
-                    </span>
+                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
                 </CollapsibleTrigger>
                 <CollapsibleContent
                     className={cn(
