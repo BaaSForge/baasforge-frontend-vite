@@ -291,6 +291,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const isGeneratingFromMessages = lastAiMessages.some((m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating);
     const isGenerating = isGeneratingFromWs || isGeneratingFromMessages;
 
+    const lastAiEndStatus = useMemo((): "failed" | "stopped" | null => {
+        if (!lastAiMessages.length) return null;
+        const hasFailed = lastAiMessages.some((m) => m.status === ChatMessageStatus.Failed);
+        if (hasFailed) return "failed";
+        const hasStopped = lastAiMessages.some((m) => m.status === ChatMessageStatus.Stopped);
+        if (hasStopped) return "stopped";
+        return null;
+    }, [lastAiMessages]);
+
     const [placeholderVisible, setPlaceholderVisible] = useState(false);
     useEffect(() => {
         setPlaceholderVisible(false);
@@ -386,6 +395,16 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                 message={temporaryMessageBeforeRedirectingToNewSession}
                                 onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
                             />
+                        )}
+                        {lastAiEndStatus != null && !isGenerating && (
+                            <div
+                                className={cn(
+                                    "py-1 text-sm",
+                                    lastAiEndStatus === "failed" ? "text-destructive" : "text-muted-foreground",
+                                )}
+                            >
+                                {lastAiEndStatus === "failed" ? "Generation failed." : "Generation stopped."}
+                            </div>
                         )}
                         {(isGenerating || placeholderVisible) && (
                             <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative">
