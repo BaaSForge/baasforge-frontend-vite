@@ -284,9 +284,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
     const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdOrUndefined;
 
-    const lastMessage = chatSessionMessages?.[chatSessionMessages.length - 1];
-    const isLastMessageFromAI = lastMessage?.role === ChatSessionRoleType.Ai;
-
     const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(chatSessionMessages), [chatSessionMessages]);
     const lastAiMessages: ChatMessageWithDeliveryStatus[] =
         lastUserMessageIndex >= 0 && chatSessionMessages ? chatSessionMessages.slice(lastUserMessageIndex + 1) : [];

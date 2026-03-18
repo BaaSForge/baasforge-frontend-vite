@@ -12,89 +12,160 @@ import {
 import {
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
+    ChatMessageType,
+    ChatSessionRoleType,
     type ChatMessageResponse,
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
 import type { InfiniteData } from "@tanstack/react-query";
 
+/**
+ * Updates project chat-session caches from WebSocket events.
+ *
+ * Flow:
+ * 1. handleChatSessionWsEvent receives raw WS data and dispatches by event type.
+ * 2. Each branch updates either the "generating" set (which sessions are streaming)
+ *    or the infinite-query messages cache for that project/session.
+ * 3. Message cache is updated via pure helpers that take (pages, ...) and return
+ *    new pages (or the same reference if nothing changed).
+ *
+ * Note: status_change can arrive before message_created; we then add a minimal
+ * message and message_created later replaces it (we keep failed/stopped when merging).
+ */
+
 const NO_STREAM = -1 as const;
 
+type Pages = ChatMessageWithDeliveryStatus[][];
+
+function sessionKey(projectId: string, sessionId: string): string {
+    return `${projectId}:${sessionId}`;
+}
+
+/** Single place to add/remove a session from the "currently generating" set. */
+function setSessionGenerating(
+    queryClient: QueryClient,
+    projectId: string,
+    sessionId: string,
+    generating: boolean,
+): void {
+    const key = QueryKeys.chatSessionGeneratingSet();
+    queryClient.setQueryData<Set<string>>(key, (prev) => {
+        const next = new Set(prev ?? []);
+        if (generating) next.add(sessionKey(projectId, sessionId));
+        else next.delete(sessionKey(projectId, sessionId));
+        return next;
+    });
+}
+
+/** Get plain text from a message (handles string payload or TextMessagePayload). */
+function getMessageText(msg: ChatMessageWithDeliveryStatus): string {
+    if (typeof msg.payload === "string") return msg.payload;
+    if (msg.payload != null && typeof msg.payload === "object" && "text" in msg.payload) {
+        return (msg.payload as TextMessagePayload).text ?? "";
+    }
+    return "";
+}
+
+/** Return same message with payload text appended and status set (for streaming). */
+function messageWithChunkApplied(
+    msg: ChatMessageWithDeliveryStatus,
+    content: string,
+    done: boolean,
+): ChatMessageWithDeliveryStatus {
+    const currentText = getMessageText(msg);
+    const payload: TextMessagePayload =
+        msg.payload != null && typeof msg.payload === "object" && !Array.isArray(msg.payload) && "text" in msg.payload
+            ? { ...(msg.payload as TextMessagePayload), text: currentText + content }
+            : { text: currentText + content };
+    return {
+        ...msg,
+        payload,
+        status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
+    };
+}
+
+/** Find a message by id in pages. fromEnd = true searches last page first (for stream updates). */
+function findInPages(
+    pages: Pages,
+    messageId: string,
+    fromEnd: boolean,
+): { pageIndex: number; messageIndex: number; message: ChatMessageWithDeliveryStatus } | null {
+    const order = fromEnd ? [...Array(pages.length).keys()].reverse() : [...Array(pages.length).keys()];
+    for (const i of order) {
+        const idx = pages[i].findIndex((m) => m.id === messageId);
+        if (idx !== -1) return { pageIndex: i, messageIndex: idx, message: pages[i][idx]! };
+    }
+    return null;
+}
+
+/** Return new pages with the message at (pageIndex, messageIndex) replaced. */
+function replaceAt(
+    pages: Pages,
+    pageIndex: number,
+    messageIndex: number,
+    newMessage: ChatMessageWithDeliveryStatus,
+): Pages {
+    const page = pages[pageIndex]!;
+    const newPage = [...page];
+    newPage[messageIndex] = newMessage;
+    return [...pages.slice(0, pageIndex), newPage, ...pages.slice(pageIndex + 1)];
+}
+
 function applyChunkToMessageInPages(
-    pages: ChatMessageWithDeliveryStatus[][],
+    pages: Pages,
     messageId: string,
     content: string,
     done: boolean,
-): ChatMessageWithDeliveryStatus[][] {
-    for (let i = pages.length - 1; i >= 0; i--) {
-        const page = pages[i];
-        const idx = page.findIndex((msg) => msg.id === messageId);
-        if (idx === -1) continue;
-        const msg = page[idx];
-        const currentText =
-            typeof msg.payload === "string"
-                ? msg.payload
-                : msg.payload != null && typeof msg.payload === "object" && "text" in msg.payload
-                  ? (msg.payload as TextMessagePayload).text ?? ""
-                  : "";
-        const newPayload: TextMessagePayload =
-            msg.payload != null && typeof msg.payload === "object" && !Array.isArray(msg.payload) && "text" in msg.payload
-                ? { ...(msg.payload as TextMessagePayload), text: currentText + content }
-                : { text: currentText + content };
-        const updated: ChatMessageWithDeliveryStatus = {
-            ...msg,
-            payload: newPayload,
-            status: done ? ChatMessageStatus.Completed : ChatMessageStatus.Generating,
-        };
-        const newPage = [...page];
-        newPage[idx] = updated;
-        return [...pages.slice(0, i), newPage, ...pages.slice(i + 1)];
-    }
-    return pages;
+): Pages {
+    const found = findInPages(pages, messageId, true);
+    if (!found) return pages;
+    return replaceAt(pages, found.pageIndex, found.messageIndex, messageWithChunkApplied(found.message, content, done));
 }
 
-function applyStatusToMessageInPages(
-    pages: ChatMessageWithDeliveryStatus[][],
-    messageId: string,
-    status: ChatMessageStatus,
-): ChatMessageWithDeliveryStatus[][] {
-    for (let i = pages.length - 1; i >= 0; i--) {
-        const page = pages[i];
-        const idx = page.findIndex((msg) => msg.id === messageId);
-        if (idx === -1) continue;
-        const msg = page[idx];
-        const updated: ChatMessageWithDeliveryStatus = { ...msg, status };
-        const newPage = [...page];
-        newPage[idx] = updated;
-        return [...pages.slice(0, i), newPage, ...pages.slice(i + 1)];
-    }
-    return pages;
+function applyStatusToMessageInPages(pages: Pages, messageId: string, status: ChatMessageStatus): Pages {
+    const found = findInPages(pages, messageId, true);
+    if (!found) return pages;
+    return replaceAt(pages, found.pageIndex, found.messageIndex, { ...found.message, status });
 }
 
 function replaceMessageInPages(
-    pages: ChatMessageWithDeliveryStatus[][],
+    pages: Pages,
     messageId: string,
     updatedMessage: ChatMessageResponse,
-): ChatMessageWithDeliveryStatus[][] {
-    for (let i = 0; i < pages.length; i++) {
-        const page = pages[i];
-        const idx = page.findIndex((msg) => msg.id === messageId);
-        if (idx === -1) continue;
-        const existing = page[idx];
-        const merged: ChatMessageWithDeliveryStatus = {
-            ...updatedMessage,
-            is_first: existing.is_first ?? updatedMessage.is_first ?? false,
-            delivery_status: existing.delivery_status ?? ChatMessageDeliveryStatus.Delivered,
-        };
-        const newPage = [...page];
-        newPage[idx] = merged;
-        return [...pages.slice(0, i), newPage, ...pages.slice(i + 1)];
-    }
-    return pages;
+): Pages {
+    const found = findInPages(pages, messageId, false);
+    if (!found) return pages;
+    const existing = found.message;
+    const preserveStatus = existing.status === ChatMessageStatus.Failed || existing.status === ChatMessageStatus.Stopped;
+    const merged: ChatMessageWithDeliveryStatus = {
+        ...updatedMessage,
+        status: preserveStatus ? existing.status : updatedMessage.status,
+        is_first: existing.is_first ?? updatedMessage.is_first ?? false,
+        delivery_status: existing.delivery_status ?? ChatMessageDeliveryStatus.Delivered,
+    };
+    return replaceAt(pages, found.pageIndex, found.messageIndex, merged);
 }
 
-function sessionGeneratingKey(projectId: string, sessionId: string): string {
-    return `${projectId}:${sessionId}`;
+function appendMessageToPages(pages: Pages, message: ChatMessageWithDeliveryStatus): Pages {
+    if (pages.length === 0) return [[message]];
+    const lastPage = pages[pages.length - 1]!;
+    if (lastPage.some((m) => m.id === message.id)) return pages;
+    return [...pages.slice(0, -1), [...lastPage, message]];
+}
+
+function placeholderMessage(sessionId: string, messageId: string, status: ChatMessageStatus): ChatMessageWithDeliveryStatus {
+    return {
+        id: messageId,
+        chat_session_id: sessionId,
+        role: ChatSessionRoleType.Ai,
+        type: ChatMessageType.Text,
+        payload: { text: "" },
+        created_at: new Date().toISOString(),
+        is_first: false,
+        status,
+        delivery_status: ChatMessageDeliveryStatus.Delivered,
+    };
 }
 
 /** Call when the create-message POST succeeds so the UI shows generating/STOP/placeholder immediately. */
@@ -103,12 +174,7 @@ export function addSessionToGeneratingSet(
     projectId: string,
     sessionId: string,
 ): void {
-    const key = QueryKeys.chatSessionGeneratingSet();
-    queryClient.setQueryData<Set<string>>(key, (prev) => {
-        const next = new Set(prev ?? []);
-        next.add(sessionGeneratingKey(projectId, sessionId));
-        return next;
-    });
+    setSessionGenerating(queryClient, projectId, sessionId, true);
 }
 
 /**
@@ -122,24 +188,11 @@ export function handleChatSessionWsEvent(
     lastAppliedChunkByMessageRef: { current: Map<string, number> },
 ): boolean {
     if (isChatSessionGenerationStartedEvent(data)) {
-        const { project_id, session_id } = data;
-        const key = QueryKeys.chatSessionGeneratingSet();
-        queryClient.setQueryData<Set<string>>(key, (prev) => {
-            const next = new Set(prev ?? []);
-            next.add(sessionGeneratingKey(project_id, session_id));
-            return next;
-        });
+        setSessionGenerating(queryClient, data.project_id, data.session_id, true);
         return true;
     }
-
     if (isChatSessionGenerationEndedEvent(data)) {
-        const { project_id, session_id } = data;
-        const key = QueryKeys.chatSessionGeneratingSet();
-        queryClient.setQueryData<Set<string>>(key, (prev) => {
-            const next = new Set(prev ?? []);
-            next.delete(sessionGeneratingKey(project_id, session_id));
-            return next;
-        });
+        setSessionGenerating(queryClient, data.project_id, data.session_id, false);
         return true;
     }
 
@@ -153,10 +206,9 @@ export function handleChatSessionWsEvent(
         };
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
             modifyInfiniteCacheData(old, (pages) => {
-                if (pages.length === 0) return [[newMessage]];
-                const lastPage = pages[pages.length - 1];
-                if (lastPage.some((msg) => msg.id === message.id)) return pages;
-                return [...pages.slice(0, -1), [...lastPage, newMessage]];
+                const replaced = replaceMessageInPages(pages, message.id, message);
+                if (replaced !== pages) return replaced;
+                return appendMessageToPages(pages, newMessage);
             }),
         );
         return true;
@@ -177,38 +229,31 @@ export function handleChatSessionWsEvent(
         const { project_id, session_id, message_id, status } = data;
         const cacheKey = QueryKeys.projectChatSessionMessages(project_id, session_id);
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
-            modifyInfiniteCacheData(old, (pages) =>
-                applyStatusToMessageInPages(pages, message_id, status),
-            ),
+            modifyInfiniteCacheData(old, (pages) => {
+                const updated = applyStatusToMessageInPages(pages, message_id, status);
+                if (updated !== pages) return updated;
+                return appendMessageToPages(pages, placeholderMessage(session_id, message_id, status));
+            }),
         );
         return true;
     }
 
     if (isChatSessionNewMessageChunkEvent(data)) {
         const { project_id, session_id, message_id, chunk_index, content, done } = data;
-        const cacheKey = QueryKeys.projectChatSessionMessages(project_id, session_id);
         const lastApplied = lastAppliedChunkByMessageRef.current.get(message_id) ?? NO_STREAM;
+        const acceptChunk =
+            chunk_index === 0 ? lastApplied === NO_STREAM : chunk_index === lastApplied + 1;
+        if (!acceptChunk) return true;
 
-        if (chunk_index === 0) {
-            if (lastApplied !== NO_STREAM) return true;
-            lastAppliedChunkByMessageRef.current.set(message_id, 0);
-            queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
-                modifyInfiniteCacheData(old, (pages) =>
-                    applyChunkToMessageInPages(pages, message_id, content, done),
-                ),
-            );
-            if (done) lastAppliedChunkByMessageRef.current.delete(message_id);
-            return true;
-        }
-
-        if (chunk_index !== lastApplied + 1) return true;
         lastAppliedChunkByMessageRef.current.set(message_id, chunk_index);
+        if (done) lastAppliedChunkByMessageRef.current.delete(message_id);
+
+        const cacheKey = QueryKeys.projectChatSessionMessages(project_id, session_id);
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
             modifyInfiniteCacheData(old, (pages) =>
                 applyChunkToMessageInPages(pages, message_id, content, done),
             ),
         );
-        if (done) lastAppliedChunkByMessageRef.current.delete(message_id);
         return true;
     }
 
