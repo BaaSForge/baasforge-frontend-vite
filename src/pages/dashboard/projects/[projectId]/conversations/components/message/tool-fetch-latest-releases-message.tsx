@@ -2,6 +2,7 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ReleaseResponse } from "@/modules/project";
 import { ReleaseCardChip } from "@/modules/project";
@@ -22,8 +23,21 @@ function getToolFetchLatestReleasesPayload(message: ChatMessageWithDeliveryStatu
     return Array.isArray(releases) ? (releases as ReleaseResponse[]) : [];
 }
 
+function getToolFetchLatestReleasesArgs(message: ChatMessageWithDeliveryStatus): ToolFetchLatestReleasesPayload["args"] | null {
+    const p = message.payload as ToolFetchLatestReleasesPayload | undefined | null;
+    if (!p || Array.isArray(p)) return null;
+    return p.args ?? null;
+}
+
+function formatLatestReleasesArgs(args: ToolFetchLatestReleasesPayload["args"]): string {
+    const parts: string[] = [];
+    if (args.limit != null) parts.push(`limit: ${args.limit}`);
+    return parts.length ? parts.join(", ") : "—";
+}
+
 export function ToolFetchLatestReleasesMessage({ message }: { message: ChatMessageWithDeliveryStatus }) {
     const releases = getToolFetchLatestReleasesPayload(message);
+    const args = getToolFetchLatestReleasesArgs(message);
     const releaseCount = releases.length;
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasReleases = releaseCount > 0;
@@ -31,18 +45,26 @@ export function ToolFetchLatestReleasesMessage({ message }: { message: ChatMessa
     return (
         <div className="flex w-0 min-w-full max-w-full justify-start overflow-hidden">
             <Collapsible defaultOpen={false} className="group w-full min-w-0 max-w-full overflow-hidden">
-                <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
-                    <span className="shrink-0">
-                        <AiMessageStatusIcon status={status} />
-                    </span>
-                    <span className="font-medium text-sm">Reading latest releases</span>
-                    {hasReleases && (
-                        <span className="text-muted-foreground text-xs">
-                            {releaseCount} {releaseCount === 1 ? "release" : "releases"}
-                        </span>
-                    )}
-                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-                </CollapsibleTrigger>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
+                            <span className="shrink-0">
+                                <AiMessageStatusIcon status={status} />
+                            </span>
+                            <span className="font-medium text-sm">Reading latest releases</span>
+                            {hasReleases && (
+                                <span className="text-muted-foreground text-xs">
+                                    {releaseCount} {releaseCount === 1 ? "release" : "releases"}
+                                </span>
+                            )}
+                            <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                        </CollapsibleTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                        <span className="font-medium">Arguments</span>
+                        <span className="block mt-0.5 text-muted-foreground">{args ? formatLatestReleasesArgs(args) : "—"}</span>
+                    </TooltipContent>
+                </Tooltip>
                 <CollapsibleContent
                     className={cn(
                         "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",

@@ -2,6 +2,7 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardChip } from "@/modules/project";
@@ -18,8 +19,21 @@ function getToolFetchRelevantUnitsPayload(message: ChatMessageWithDeliveryStatus
     return Array.isArray(units) ? (units as ProjectUnitResponse[]) : [];
 }
 
+function getToolFetchRelevantUnitsArgs(message: ChatMessageWithDeliveryStatus): ToolFetchRelevantUnitsPayload["args"] | null {
+    const p = message.payload as ToolFetchRelevantUnitsPayload | undefined | null;
+    if (!p || Array.isArray(p)) return null;
+    return p.args ?? null;
+}
+
+function formatRelevantUnitsArgs(args: ToolFetchRelevantUnitsPayload["args"]): string {
+    const parts: string[] = [];
+    if (args.query != null && args.query !== "") parts.push(`query: ${String(args.query)}`);
+    return parts.length ? parts.join(", ") : "—";
+}
+
 export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessageWithDeliveryStatus }) {
     const units = getToolFetchRelevantUnitsPayload(message);
+    const args = getToolFetchRelevantUnitsArgs(message);
     const unitCount = units.length;
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasUnits = unitCount > 0;
@@ -27,18 +41,26 @@ export function ToolFetchRelevantUnitsMessage({ message }: { message: ChatMessag
     return (
         <div className="flex w-0 min-w-full max-w-full justify-start overflow-hidden">
             <Collapsible defaultOpen={false} className="group w-full min-w-0 max-w-full overflow-hidden">
-                <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
-                    <span className="shrink-0">
-                        <AiMessageStatusIcon status={status} />
-                    </span>
-                    <span className="font-medium text-sm">Reading relevant units</span>
-                    {hasUnits && (
-                        <span className="text-muted-foreground text-xs">
-                            {unitCount} {unitCount === 1 ? "unit" : "units"}
-                        </span>
-                    )}
-                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-                </CollapsibleTrigger>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
+                            <span className="shrink-0">
+                                <AiMessageStatusIcon status={status} />
+                            </span>
+                            <span className="font-medium text-sm">Reading relevant units</span>
+                            {hasUnits && (
+                                <span className="text-muted-foreground text-xs">
+                                    {unitCount} {unitCount === 1 ? "unit" : "units"}
+                                </span>
+                            )}
+                            <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                        </CollapsibleTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                        <span className="font-medium">Arguments</span>
+                        <span className="block mt-0.5 text-muted-foreground">{args ? formatRelevantUnitsArgs(args) : "—"}</span>
+                    </TooltipContent>
+                </Tooltip>
                 <CollapsibleContent
                     className={cn(
                         "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",
