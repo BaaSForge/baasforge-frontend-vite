@@ -15,7 +15,10 @@ export function useSubscribeUserNotifications(): void {
     const { user } = useAuth();
     const { projectId: routeProjectId } = useParams<{ projectId?: string }>();
     const queryClient = useQueryClient();
-    const lastAppliedChunkByMessageRef = useRef(new Map<string, number>());
+    const chunkTracking = useRef({
+        messageChunks: new Map<string, number>(),
+        thinkingChunks: new Map<string, number>(),
+    });
 
     const wsUrl = envConfig.wsUrl;
     const topic = user != null ? userTopic(user.id) : "";
@@ -23,7 +26,7 @@ export function useSubscribeUserNotifications(): void {
     useSubscribe(wsUrl, topic, {
         enabled: !!user && !!wsUrl,
         onMessage(data) {
-            if (handleChatSessionWsEvent(data, queryClient, lastAppliedChunkByMessageRef)) {
+            if (handleChatSessionWsEvent(data, queryClient, chunkTracking.current)) {
                 return;
             }
             if (isProjectDeletedEvent(data)) {

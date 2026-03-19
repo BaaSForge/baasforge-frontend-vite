@@ -1,6 +1,12 @@
 import { cn } from "@/lib/utils";
-import { ChatMessageType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import {
+    ChatMessageType,
+    ChatSessionRoleType,
+    getTextPayloadThinkingDisplay,
+    type ChatMessageWithDeliveryStatus,
+} from "@/modules/project-chat/types";
 
+import { MessageThinking } from "./message-thinking";
 import { TextMessage } from "./text-message";
 import { ToolFetchLatestReleasesMessage } from "./tool-fetch-latest-releases-message";
 import { ToolFetchRelevantUnitsMessage } from "./tool-fetch-relevant-units-message";
@@ -31,11 +37,17 @@ const toolMessageTypes = [
 export function Message({ message, onRetry }: MessageProps) {
     const isInvokedByAnother = Boolean(message.invoking_message_id);
     const isToolMessage = toolMessageTypes.includes(message.type);
+    const isUser = message.role === ChatSessionRoleType.User;
+    const thinkingText =
+        !isUser && message.type === ChatMessageType.Text
+            ? getTextPayloadThinkingDisplay(message.payload)
+            : null;
 
     return (
         <div
             className={cn(
-                "relative min-w-0",
+                "relative flex min-w-0 flex-col",
+                isUser ? "items-end" : "items-start",
                 isInvokedByAnother && "ml-8",
                 isToolMessage && "mt-2",
             )}
@@ -55,6 +67,13 @@ export function Message({ message, onRetry }: MessageProps) {
                         aria-hidden
                     />
                 ))}
+            {thinkingText != null && (
+                <MessageThinking
+                    thinking={thinkingText}
+                    status={message.status}
+                    align="start"
+                />
+            )}
             <MessageContent message={message} onRetry={onRetry} />
         </div>
     );

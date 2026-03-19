@@ -4,7 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { cn } from "@/lib/utils";
-import { ChatMessageDeliveryStatus, ChatSessionRoleType, type ChatMessageWithDeliveryStatus, type TextMessagePayload } from "@/modules/project-chat/types";
+import {
+    ChatMessageDeliveryStatus,
+    ChatMessageStatus,
+    ChatSessionRoleType,
+    type ChatMessageWithDeliveryStatus,
+    type TextMessagePayload,
+} from "@/modules/project-chat/types";
 import { toast } from "sonner";
 import { Copy } from "lucide-react";
 
@@ -41,6 +47,16 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
     const isFailed = message.delivery_status === ChatMessageDeliveryStatus.Failed;
     const markdownTheme: MarkdownTheme | undefined = isUser ? (resolvedTheme === "dark" ? "light" : "dark") : undefined;
 
+    const isAiGeneratingOrFailed =
+        message.role === ChatSessionRoleType.Ai &&
+        message.status != null &&
+        (message.status === ChatMessageStatus.Generating || message.status === ChatMessageStatus.Failed);
+    const isUserPendingOrFailed =
+        message.role === ChatSessionRoleType.User &&
+        (message.delivery_status === ChatMessageDeliveryStatus.Pending ||
+            message.delivery_status === ChatMessageDeliveryStatus.Failed);
+    const showCopyAction = !isAiGeneratingOrFailed && !isUserPendingOrFailed;
+
     const handleCopy = async () => {
         const { success } = await copy(text);
         if (success) toast.success("Copied to clipboard", { position: "top-center" });
@@ -59,17 +75,19 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
                     {message.role === ChatSessionRoleType.Ai && message.status != null && <AiMessageStatusIcon status={message.status} />}
                     <div className="flex items-center gap-1.5">
                         <span className="text-muted-foreground text-[0.625rem]">{formatMessageTime(message.created_at)}</span>
-                        <div className="ml-2 flex items-center gap-0.5">
-                            <Button
-                                variant="ghost"
-                                size="icon-xs"
-                                className="text-muted-foreground hover:text-foreground"
-                                onClick={handleCopy}
-                                aria-label="Copy message"
-                            >
-                                <Copy className="size-3.5" />
-                            </Button>
-                        </div>
+                        {showCopyAction && (
+                            <div className="ml-2 flex items-center gap-0.5">
+                                <Button
+                                    variant="ghost"
+                                    size="icon-xs"
+                                    className="text-muted-foreground hover:text-foreground"
+                                    onClick={handleCopy}
+                                    aria-label="Copy message"
+                                >
+                                    <Copy className="size-3.5" />
+                                </Button>
+                            </div>
+                        )}
                     </div>
                     {message.role === ChatSessionRoleType.User && <DeliveryStatusIcon status={message.delivery_status} />}
                     {isFailed && (

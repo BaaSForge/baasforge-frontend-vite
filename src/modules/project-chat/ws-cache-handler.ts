@@ -8,6 +8,7 @@ import {
     isChatSessionMessageStatusChangeEvent,
     isChatSessionMessageUpdatedEvent,
     isChatSessionNewMessageChunkEvent,
+    isChatSessionNewThinkingChunkEvent,
 } from "@/lib/ws-events";
 import {
     ChatMessageDeliveryStatus,
@@ -17,6 +18,7 @@ import {
     type ChatMessageResponse,
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
+    type ThinkingBlock,
 } from "@/modules/project-chat/types";
 import type { InfiniteData } from "@tanstack/react-query";
 
@@ -123,6 +125,44 @@ function applyChunkToMessageInPages(
     return replaceAt(pages, found.pageIndex, found.messageIndex, messageWithChunkApplied(found.message, content, done));
 }
 
+/** Append streamed thinking into the first `ThinkingBlock` (matches typical single-block streaming). */
+function messageWithThinkingChunkApplied(
+    msg: ChatMessageWithDeliveryStatus,
+    thinkingChunk: string,
+): ChatMessageWithDeliveryStatus {
+    const payload = msg.payload;
+    const base: TextMessagePayload =
+        payload != null && typeof payload === "object" && !Array.isArray(payload) && "text" in payload
+            ? { ...(payload as TextMessagePayload) }
+            : { text: getMessageText(msg) };
+    const existingBlocks = base.thinking_blocks;
+    const firstBlock = existingBlocks?.[0];
+    const rest = existingBlocks?.slice(1) ?? [];
+    const prevThinking = firstBlock?.thinking ?? "";
+    const mergedFirst: ThinkingBlock = {
+        thinking: prevThinking + thinkingChunk,
+        ...(firstBlock?.signature != null && firstBlock.signature !== ""
+            ? { signature: firstBlock.signature }
+            : {}),
+    };
+    const newBlocks: ThinkingBlock[] = [mergedFirst, ...rest];
+    return {
+        ...msg,
+        payload: { ...base, thinking_blocks: newBlocks },
+    };
+}
+
+function applyThinkingChunkToMessageInPages(pages: Pages, messageId: string, thinkingChunk: string): Pages {
+    const found = findInPages(pages, messageId, true);
+    if (!found) return pages;
+    return replaceAt(
+        pages,
+        found.pageIndex,
+        found.messageIndex,
+        messageWithThinkingChunkApplied(found.message, thinkingChunk),
+    );
+}
+
 function applyStatusToMessageInPages(pages: Pages, messageId: string, status: ChatMessageStatus): Pages {
     const found = findInPages(pages, messageId, true);
     if (!found) return pages;
@@ -177,6 +217,13 @@ export function addSessionToGeneratingSet(
     setSessionGenerating(queryClient, projectId, sessionId, true);
 }
 
+export type ChatSessionWsChunkTracking = {
+    /** Last applied `chat_session_new_message_chunk` index per message id. */
+    messageChunks: Map<string, number>;
+    /** Last applied `chat_session_new_thinking_chunk` index per message id. */
+    thinkingChunks: Map<string, number>;
+};
+
 /**
  * Handles chat session WS events from the user topic and updates the relevant
  * project/chat-session message cache. Uses project_id and session_id from
@@ -185,7 +232,7 @@ export function addSessionToGeneratingSet(
 export function handleChatSessionWsEvent(
     data: unknown,
     queryClient: QueryClient,
-    lastAppliedChunkByMessageRef: { current: Map<string, number> },
+    chunkTracking: ChatSessionWsChunkTracking,
 ): boolean {
     if (isChatSessionGenerationStartedEvent(data)) {
         setSessionGenerating(queryClient, data.project_id, data.session_id, true);
@@ -240,18 +287,37 @@ export function handleChatSessionWsEvent(
 
     if (isChatSessionNewMessageChunkEvent(data)) {
         const { project_id, session_id, message_id, chunk_index, content, done } = data;
-        const lastApplied = lastAppliedChunkByMessageRef.current.get(message_id) ?? NO_STREAM;
+        const lastApplied = chunkTracking.messageChunks.get(message_id) ?? NO_STREAM;
         const acceptChunk =
             chunk_index === 0 ? lastApplied === NO_STREAM : chunk_index === lastApplied + 1;
         if (!acceptChunk) return true;
 
-        lastAppliedChunkByMessageRef.current.set(message_id, chunk_index);
-        if (done) lastAppliedChunkByMessageRef.current.delete(message_id);
+        chunkTracking.messageChunks.set(message_id, chunk_index);
+        if (done) chunkTracking.messageChunks.delete(message_id);
 
         const cacheKey = QueryKeys.projectChatSessionMessages(project_id, session_id);
         queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
             modifyInfiniteCacheData(old, (pages) =>
                 applyChunkToMessageInPages(pages, message_id, content, done),
+            ),
+        );
+        return true;
+    }
+
+    if (isChatSessionNewThinkingChunkEvent(data)) {
+        const { project_id, session_id, message_id, chunk_index, thinking, done } = data;
+        const lastApplied = chunkTracking.thinkingChunks.get(message_id) ?? NO_STREAM;
+        const acceptChunk =
+            chunk_index === 0 ? lastApplied === NO_STREAM : chunk_index === lastApplied + 1;
+        if (!acceptChunk) return true;
+
+        chunkTracking.thinkingChunks.set(message_id, chunk_index);
+        if (done) chunkTracking.thinkingChunks.delete(message_id);
+
+        const cacheKey = QueryKeys.projectChatSessionMessages(project_id, session_id);
+        queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) =>
+            modifyInfiniteCacheData(old, (pages) =>
+                applyThinkingChunkToMessageInPages(pages, message_id, thinking),
             ),
         );
         return true;

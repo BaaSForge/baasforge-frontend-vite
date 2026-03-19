@@ -11,6 +11,16 @@ export type ChatSessionNewMessageChunkEvent = {
     done: boolean;
 };
 
+export type ChatSessionNewThinkingChunkEvent = {
+    type: "chat_session_new_thinking_chunk";
+    project_id: string;
+    session_id: string;
+    message_id: string;
+    chunk_index: number;
+    thinking: string;
+    done: boolean;
+};
+
 export type ChatSessionMessageCreatedEvent = {
     type: "chat_session_message_created";
     project_id: string;
@@ -59,6 +69,7 @@ export type RuntimeCreatedEvent = {
 
 export type WsServerEvent =
     | ChatSessionNewMessageChunkEvent
+    | ChatSessionNewThinkingChunkEvent
     | ChatSessionMessageCreatedEvent
     | ChatSessionMessageUpdatedEvent
     | ChatSessionMessageStatusChangeEvent
@@ -84,6 +95,10 @@ export function isRuntimeCreatedEvent(data: unknown): data is RuntimeCreatedEven
 
 export function isChatSessionNewMessageChunkEvent(data: unknown): data is ChatSessionNewMessageChunkEvent {
     return isWsServerEvent(data) && data.type === "chat_session_new_message_chunk";
+}
+
+export function isChatSessionNewThinkingChunkEvent(data: unknown): data is ChatSessionNewThinkingChunkEvent {
+    return isWsServerEvent(data) && data.type === "chat_session_new_thinking_chunk";
 }
 
 export function isChatSessionMessageCreatedEvent(data: unknown): data is ChatSessionMessageCreatedEvent {
