@@ -2,6 +2,9 @@ import { ExternalLink } from "lucide-react";
 import type { Components } from "react-markdown";
 import { Link } from "react-router";
 
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+
 const SAFE_LINK_REL = "noopener noreferrer nofollow noindex";
 const EXTERNAL_LINK_RE = /^https?:\/\//i;
 
@@ -68,4 +71,41 @@ export const markdownComponents: Partial<Components> = {
         );
     },
     hr: (props) => <hr className="my-3 border-t border-border" {...props} />,
+    table: ({ children, className, ...props }) => (
+        <div className="my-4 w-full min-w-0">
+            <Table className={cn(className)} {...props}>
+                {children}
+            </Table>
+        </div>
+    ),
+    thead: ({ children, className, ...props }) => (
+        <TableHeader className={cn(className)} {...props}>
+            {children}
+        </TableHeader>
+    ),
+    tbody: ({ children, className, ...props }) => (
+        <TableBody className={cn(className)} {...props}>
+            {children}
+        </TableBody>
+    ),
+    tfoot: ({ children, className, ...props }) => (
+        <TableFooter className={cn(className)} {...props}>
+            {children}
+        </TableFooter>
+    ),
+    tr: ({ children, className, ...props }) => (
+        <TableRow className={cn(className)} {...props}>
+            {children}
+        </TableRow>
+    ),
+    th: ({ children, className, ...props }) => (
+        <TableHead className={cn("whitespace-normal break-words", className)} {...props}>
+            {children}
+        </TableHead>
+    ),
+    td: ({ children, className, ...props }) => (
+        <TableCell className={cn("whitespace-normal break-words", className)} {...props}>
+            {children}
+        </TableCell>
+    ),
 };
