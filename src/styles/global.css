@@ -244,9 +244,19 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 }
 
+@keyframes controller-generating-opacity {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
 .controller-generating-glow {
     border: 2px solid color-mix(in oklch, var(--color-blue-500) 40%, transparent);
-    animation: controller-generating-glow 3s linear infinite;
+    animation: controller-generating-glow 3s linear infinite, controller-generating-opacity 2s ease-in-out infinite;
 }
 
 @layer base {
