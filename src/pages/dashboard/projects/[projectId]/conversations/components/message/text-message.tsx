@@ -55,7 +55,8 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
         message.role === ChatSessionRoleType.User &&
         (message.delivery_status === ChatMessageDeliveryStatus.Pending ||
             message.delivery_status === ChatMessageDeliveryStatus.Failed);
-    const showCopyAction = !isAiGeneratingOrFailed && !isUserPendingOrFailed;
+    const hasText = text.trim().length > 0;
+    const showCopyAction = hasText && !isAiGeneratingOrFailed && !isUserPendingOrFailed;
 
     const handleCopy = async () => {
         const { success } = await copy(text);
