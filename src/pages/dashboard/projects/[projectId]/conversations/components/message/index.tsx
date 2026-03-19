@@ -48,7 +48,6 @@ export function Message({ message, onRetry }: MessageProps) {
             className={cn(
                 "relative flex min-w-0 flex-col",
                 isUser ? "items-end" : "items-start",
-                isInvokedByAnother && "ml-8",
                 isToolMessage && "mt-2",
             )}
         >
