@@ -20,11 +20,17 @@ export interface UnitCardCompactProps {
 
 export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
     const hasParent = unit.parent_unit_id != null;
+    const isDeleted = unit.is_deleted === true;
     const explanation = unit.explanation?.trim() ?? "No description";
     const [modalOpen, setModalOpen] = useState(false);
 
     const badges = (
         <>
+            {isDeleted && (
+                <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
+                    Deleted
+                </Badge>
+            )}
             <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[0.625rem]" title={`Version ${unit.version}`}>
                 {unit.version}
             </Badge>
@@ -43,7 +49,12 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                     aria-hidden
                 />
             )}
-            <Card className="relative z-10 gap-0 overflow-hidden rounded-xl border p-0 shadow-none">
+            <Card
+                className={cn(
+                    "relative z-10 gap-0 overflow-hidden rounded-xl border p-0 shadow-none",
+                    isDeleted && "border-destructive",
+                )}
+            >
                 <Expandable
                     className="p-2 text-xs relative"
                     maxLines={7}
@@ -63,12 +74,19 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                         )
                     }
                 >
-                    <Markdown>{explanation}</Markdown>
+                    <div className={cn(isDeleted && "line-through")}>
+                        <Markdown>{explanation}</Markdown>
+                    </div>
                 </Expandable>
                 <Dialog open={modalOpen} onOpenChange={setModalOpen}>
                     <DialogContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
                         <DialogHeader className="flex flex-row">{badges}</DialogHeader>
-                        <div className="prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2">
+                        <div
+                            className={cn(
+                                "prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2",
+                                isDeleted && "line-through",
+                            )}
+                        >
                             <Markdown>{explanation}</Markdown>
                         </div>
                     </DialogContent>

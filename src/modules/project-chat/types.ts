@@ -24,6 +24,7 @@ export enum ChatMessageType {
     FinishImplementation = "tool_finish_implementation",
     ToolCreateUnit = "tool_create_unit",
     ToolModifyUnit = "tool_modify_unit",
+    ToolRemoveUnit = "tool_remove_unit",
     Units = "units",
     Unit = "unit",
     Generating = "generating",
@@ -52,6 +53,7 @@ export type {
     FinishImplementationPayload,
     ToolCreateUnitPayload,
     ToolModifyUnitPayload,
+    ToolRemoveUnitPayload,
 } from "./payloads";
 export { getTextPayloadThinkingDisplay } from "./payloads";
 

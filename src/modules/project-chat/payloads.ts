@@ -115,3 +115,15 @@ export interface ToolModifyUnitPayload {
     revised_unit?: ProjectUnitResponse;
     tool_name?: string;
 }
+
+export interface ToolRemoveUnitArgs {
+    unit_id?: ProjectUnitResponse["id"] | null;
+}
+
+export interface ToolRemoveUnitPayload {
+    args?: ToolRemoveUnitArgs;
+    removed_unit?: ProjectUnitResponse;
+    error?: string;
+    tool_call_id?: string;
+    tool_name?: string;
+}

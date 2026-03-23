@@ -45,6 +45,7 @@ export interface ProjectUnitResponse {
     parent_unit_id: string | null;
     unit_type: ProjectUnitType;
     is_draft: boolean;
+    is_deleted?: boolean;
     chat_session_id: string | null;
 }
 
