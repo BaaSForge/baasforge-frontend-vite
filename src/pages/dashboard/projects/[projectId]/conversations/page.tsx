@@ -39,7 +39,7 @@ import { SidebarIcon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Controls from "./components/controls";
-import { Message } from "./components/message";
+import { Message, MessageBranch, partitionMessagesByInvokingParent } from "./components/message";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll } from "./hooks";
 import { SecondarySideBar } from "./secondary-side-bar";
@@ -152,6 +152,43 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const captureDocumentScroll = useCaptureDocumentScroll(firstMessage?.id);
 
     const chatSessionMessages = (chatSessionMessagesData?.pages ?? []).flatMap((page) => [...page]);
+    const { rootMessages, childrenByParentId } = useMemo(
+        () => partitionMessagesByInvokingParent(chatSessionMessages),
+        [chatSessionMessages],
+    );
+
+    /** If every message has a resolvable parent (e.g. cyclic / bad invoking_message_id), partition yields no roots — fall back to a flat list. */
+    const displayRootMessages =
+        rootMessages.length > 0 || chatSessionMessages.length === 0 ? rootMessages : chatSessionMessages;
+    const displayChildrenByParentId =
+        rootMessages.length > 0 || chatSessionMessages.length === 0 ? childrenByParentId : new Map();
+
+    useEffect(() => {
+        if (!import.meta.env.DEV) return;
+        const pages = chatSessionMessagesData?.pages;
+        const pageLengths = (pages ?? []).map((p) => p.length);
+        // eslint-disable-next-line no-console -- intentional dev diagnostics for empty chat list
+        console.log("[project-chat:page]", {
+            conversationId: chatSessionIdOrUndefined,
+            projectId: projectIdOrUndefined,
+            isLoadingChatSessionMessages,
+            pagesCount: pages?.length ?? 0,
+            pageLengths,
+            flatMessageCount: chatSessionMessages.length,
+            rootMessageCount: rootMessages.length,
+            displayRootCount: displayRootMessages.length,
+            hasPreviousPage,
+        });
+    }, [
+        chatSessionMessagesData,
+        chatSessionMessages.length,
+        chatSessionIdOrUndefined,
+        projectIdOrUndefined,
+        isLoadingChatSessionMessages,
+        rootMessages.length,
+        displayRootMessages.length,
+        hasPreviousPage,
+    ]);
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -387,8 +424,13 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 <Container>
                     {hasPreviousPage && <div ref={loadMoreRef} className="h-px w-full shrink-0" aria-hidden />}
                     <div className={cn("flex flex-col gap-0 min-h-0 min-w-0 flex-1 pb-4 overflow-x-hidden", MIDDLE_CONTENT_CLASSNAME)}>
-                        {chatSessionMessages?.map((message) => (
-                            <Message key={message.id} message={message} onRetry={handleRetryMessage} />
+                        {displayRootMessages.map((message) => (
+                            <MessageBranch
+                                key={message.id}
+                                message={message}
+                                childrenByParentId={displayChildrenByParentId}
+                                onRetry={handleRetryMessage}
+                            />
                         ))}
                         {shouldShowTemporaryMessageBeforeRedirecting && (
                             <Message

@@ -45,3 +45,20 @@ export interface ToolFetchLatestReleasesPayload {
     };
     releases?: unknown[];
 }
+
+export interface ToolAnalyzeArchitecturePayload {
+    args?: {
+        intent?: string | null;
+    };
+    related_units?: unknown[];
+    summary?: string;
+    messages?: unknown[];
+}
+
+export interface FinishArchitectureAnalysisPayload {
+    args?: {
+        summary?: string | null;
+        relevant_units_ids?: unknown[];
+    };
+    tool_name?: string;
+}

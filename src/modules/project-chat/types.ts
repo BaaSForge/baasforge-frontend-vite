@@ -16,6 +16,8 @@ export enum ChatMessageType {
     Text = "text",
     ToolFetchRelevantUnits = "tool_fetch_relevant_units",
     ToolFetchLatestReleases = "tool_fetch_latest_releases",
+    ToolAnalyzeArchitecture = "tool_analyze_architecture",
+    FinishArchitectureAnalysis = "tool_finish_architecture_analysis",
     Units = "units",
     Unit = "unit",
     Generating = "generating",
@@ -36,6 +38,8 @@ export type {
     ThinkingBlock,
     ToolFetchLatestReleasesPayload,
     ToolFetchRelevantUnitsPayload,
+    ToolAnalyzeArchitecturePayload,
+    FinishArchitectureAnalysisPayload,
 } from "./payloads";
 export { getTextPayloadThinkingDisplay } from "./payloads";
 
