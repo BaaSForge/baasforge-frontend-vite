@@ -51,7 +51,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
             )}
             <Card
                 className={cn(
-                    "relative z-10 gap-0 overflow-hidden rounded-xl border p-0 shadow-none",
+                    "relative z-[1] gap-0 overflow-hidden rounded-xl border p-0 shadow-none",
                     isDeleted && "border-destructive",
                 )}
             >
