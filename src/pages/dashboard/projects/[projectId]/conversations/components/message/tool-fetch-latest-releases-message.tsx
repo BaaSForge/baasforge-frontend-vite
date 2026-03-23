@@ -53,9 +53,9 @@ export function ToolFetchLatestReleasesMessage({
 
     return (
         <>
-            <div className="relative flex w-0 min-w-full max-w-full justify-start overflow-hidden">
+            <div className="relative flex w-full min-w-0 max-w-full justify-start overflow-hidden">
                 {showInvokedConnector && <InvokedMessageConnector />}
-                <Collapsible defaultOpen={false} className="group w-full min-w-0 max-w-full overflow-hidden">
+                <Collapsible defaultOpen={false} className="group/tool-releases w-full min-w-0 max-w-full overflow-hidden">
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
@@ -68,7 +68,7 @@ export function ToolFetchLatestReleasesMessage({
                                         {releaseCount} {releaseCount === 1 ? "release" : "releases"}
                                     </span>
                                 )}
-                                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-releases:rotate-180" />
                             </CollapsibleTrigger>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">

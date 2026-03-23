@@ -66,6 +66,7 @@ export function Message({ message, onRetry, nestedMessages, isNested }: MessageP
             className={cn(
                 "relative flex min-w-0 flex-col",
                 isUser ? "items-end" : "items-start",
+                isToolMessage && !isUser && "w-full",
                 isToolMessage && !isNested && "mt-2",
             )}
         >
