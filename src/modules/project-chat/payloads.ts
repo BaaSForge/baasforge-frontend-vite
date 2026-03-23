@@ -77,3 +77,18 @@ export interface FinishSolutionAnalysisPayload {
     };
     tool_name?: string;
 }
+
+export interface ToolImplementSolutionPayload {
+    args?: {
+        directive?: string | null;
+    };
+    implementation_summary?: string;
+    messages?: unknown[];
+}
+
+export interface FinishImplementationPayload {
+    args?: {
+        implementation_summary?: string | null;
+    };
+    tool_name?: string;
+}
