@@ -11,7 +11,9 @@ import {
 import { MessageThinking } from "./message-thinking";
 import { TextMessage } from "./text-message";
 import { FinishArchitectureAnalysisMessage } from "./finish-architecture-analysis-message";
+import { FinishSolutionAnalysisMessage } from "./finish-solution-analysis-message";
 import { ToolAnalyzeArchitectureMessage } from "./tool-analyze-architecture-message";
+import { ToolAnalyzeSolutionMessage } from "./tool-analyze-solution-message";
 import { ToolFetchLatestReleasesMessage } from "./tool-fetch-latest-releases-message";
 import { ToolFetchRelevantUnitsMessage } from "./tool-fetch-relevant-units-message";
 
@@ -43,6 +45,12 @@ function MessageContent({ message, onRetry, nestedMessages }: Omit<MessageProps,
     if (message.type === ChatMessageType.FinishArchitectureAnalysis) {
         return <FinishArchitectureAnalysisMessage message={message} nestedMessages={nestedMessages} />;
     }
+    if (message.type === ChatMessageType.ToolAnalyzeSolution) {
+        return <ToolAnalyzeSolutionMessage message={message} nestedMessages={nestedMessages} />;
+    }
+    if (message.type === ChatMessageType.FinishSolutionAnalysis) {
+        return <FinishSolutionAnalysisMessage message={message} nestedMessages={nestedMessages} />;
+    }
     return nestedMessages != null ? <>{nestedMessages}</> : null;
 }
 
@@ -51,6 +59,8 @@ const toolMessageTypes = [
     ChatMessageType.ToolFetchLatestReleases,
     ChatMessageType.ToolAnalyzeArchitecture,
     ChatMessageType.FinishArchitectureAnalysis,
+    ChatMessageType.ToolAnalyzeSolution,
+    ChatMessageType.FinishSolutionAnalysis,
 ];
 
 export function Message({ message, onRetry, nestedMessages, isNested }: MessageProps) {

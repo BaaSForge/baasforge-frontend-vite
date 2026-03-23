@@ -62,3 +62,18 @@ export interface FinishArchitectureAnalysisPayload {
     };
     tool_name?: string;
 }
+
+export interface ToolAnalyzeSolutionPayload {
+    args?: {
+        intent?: string | null;
+    };
+    solution_summary?: string;
+    messages?: unknown[];
+}
+
+export interface FinishSolutionAnalysisPayload {
+    args?: {
+        solution_summary?: string | null;
+    };
+    tool_name?: string;
+}
