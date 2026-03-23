@@ -10,18 +10,12 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { Maximize2 } from "lucide-react";
 import { useState } from "react";
-import type { ProjectUnitResponse, ProjectUnitType } from "../types";
+import type { ProjectUnitResponse } from "../types";
+import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
 
 export interface UnitCardCompactProps {
     unit: ProjectUnitResponse;
     className?: string;
-}
-
-function getTypeBadgeClass(type: ProjectUnitType): string {
-    if (type === "controller") {
-        return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30";
-    }
-    return "bg-muted text-muted-foreground border-border";
 }
 
 export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
@@ -34,7 +28,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
             <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[0.625rem]" title={`Version ${unit.version}`}>
                 {unit.version}
             </Badge>
-            <Badge variant="outline" className={cn("text-[0.625rem]", getTypeBadgeClass(unit.unit_type))}>
+            <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {capitalizeFirstLetter(unit.unit_type)}
             </Badge>
             <LiveBadge isOn={!unit.is_draft} offLabel="Draft" offTitle="Draft, not ready" onLabel="Published" onTitle="Published, ready" />
@@ -43,8 +37,13 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
 
     return (
         <div className={cn("relative inline-block w-full min-w-0", className)}>
-            {hasParent && <Card className="absolute left-1.5 w-full h-full top-1.5 z-0 rounded-xl border shadow-none" aria-hidden />}
-            <Card className="p-0 z-10 rounded-xl border shadow-none overflow-hidden gap-0">
+            {hasParent && (
+                <Card
+                    className="pointer-events-none absolute left-1.5 top-1.5 z-0 h-full w-full rounded-xl border bg-card p-0 shadow-none"
+                    aria-hidden
+                />
+            )}
+            <Card className="relative z-10 gap-0 overflow-hidden rounded-xl border p-0 shadow-none">
                 <Expandable
                     className="p-2 text-xs relative"
                     maxLines={7}

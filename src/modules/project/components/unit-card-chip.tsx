@@ -2,18 +2,12 @@
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { ProjectUnitResponse, ProjectUnitType } from "../types";
+import type { ProjectUnitResponse } from "../types";
+import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
 
 export interface UnitCardChipProps {
     unit: ProjectUnitResponse;
     className?: string;
-}
-
-function getTypeBadgeClass(type: ProjectUnitType): string {
-    if (type === "controller") {
-        return "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30";
-    }
-    return "bg-muted text-muted-foreground border-border";
 }
 
 export function UnitCardChip({ unit, className }: UnitCardChipProps) {
@@ -26,7 +20,7 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
             title={unit.explanation ?? undefined}
         >
             <div className="flex flex-wrap items-center gap-1">
-                <Badge variant="outline" className={cn("text-[0.625rem]", getTypeBadgeClass(unit.unit_type))}>
+                <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                     {unit.unit_type}
                 </Badge>
                 <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">

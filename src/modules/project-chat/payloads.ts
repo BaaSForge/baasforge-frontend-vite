@@ -1,3 +1,5 @@
+import type { ProjectUnitResponse } from "@/modules/project/types";
+
 export interface TextMessageRequestedToolCall {
     tool_call_id?: string;
     tool_name: string;
@@ -90,5 +92,26 @@ export interface FinishImplementationPayload {
     args?: {
         implementation_summary?: string | null;
     };
+    tool_name?: string;
+}
+
+export interface ToolCreateUnitPayload {
+    args?: {
+        code?: ProjectUnitResponse["code"];
+        explanation?: ProjectUnitResponse["explanation"];
+        unit_type?: ProjectUnitResponse["unit_type"] | null;
+    };
+    created_unit?: ProjectUnitResponse;
+    tool_name?: string;
+}
+
+export interface ToolModifyUnitPayload {
+    args?: {
+        code?: ProjectUnitResponse["code"];
+        explanation?: ProjectUnitResponse["explanation"];
+        unit_id?: ProjectUnitResponse["id"] | null;
+        version?: ProjectUnitResponse["version"] | null;
+    };
+    revised_unit?: ProjectUnitResponse;
     tool_name?: string;
 }

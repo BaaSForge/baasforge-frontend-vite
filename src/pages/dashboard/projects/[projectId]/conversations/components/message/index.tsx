@@ -18,6 +18,8 @@ import { ToolAnalyzeSolutionMessage } from "./tool-analyze-solution-message";
 import { ToolImplementSolutionMessage } from "./tool-implement-solution-message";
 import { ToolFetchLatestReleasesMessage } from "./tool-fetch-latest-releases-message";
 import { ToolFetchRelevantUnitsMessage } from "./tool-fetch-relevant-units-message";
+import { ToolCreateUnitMessage } from "./tool-create-unit-message";
+import { ToolModifyUnitMessage } from "./tool-modify-unit-message";
 
 type MessageProps = {
     message: ChatMessageWithDeliveryStatus;
@@ -59,6 +61,12 @@ function MessageContent({ message, onRetry, nestedMessages }: Omit<MessageProps,
     if (message.type === ChatMessageType.FinishImplementation) {
         return <FinishImplementationMessage message={message} nestedMessages={nestedMessages} />;
     }
+    if (message.type === ChatMessageType.ToolCreateUnit) {
+        return <ToolCreateUnitMessage message={message} nestedMessages={nestedMessages} />;
+    }
+    if (message.type === ChatMessageType.ToolModifyUnit) {
+        return <ToolModifyUnitMessage message={message} nestedMessages={nestedMessages} />;
+    }
     return nestedMessages != null ? <>{nestedMessages}</> : null;
 }
 
@@ -71,6 +79,8 @@ const toolMessageTypes = [
     ChatMessageType.FinishSolutionAnalysis,
     ChatMessageType.ToolImplementSolution,
     ChatMessageType.FinishImplementation,
+    ChatMessageType.ToolCreateUnit,
+    ChatMessageType.ToolModifyUnit,
 ];
 
 export function Message({ message, onRetry, nestedMessages, isNested }: MessageProps) {

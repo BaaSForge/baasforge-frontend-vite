@@ -23,7 +23,18 @@ export interface ProjectPatchRequest {
     name: string;
 }
 
-export type ProjectUnitType = "controller" | "model" | "view";
+export type ProjectUnitType =
+    | "action"
+    | "api"
+    | "bootstrap"
+    | "command"
+    | "flow"
+    | "gateway"
+    | "projection"
+    | "query"
+    | "runtime"
+    | "schema"
+    | "timer";
 
 export interface ProjectUnitResponse {
     id: string;
