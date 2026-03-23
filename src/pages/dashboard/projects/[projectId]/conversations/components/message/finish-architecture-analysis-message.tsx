@@ -6,14 +6,19 @@ import {
     type ChatMessageWithDeliveryStatus,
     type FinishArchitectureAnalysisPayload,
 } from "@/modules/project-chat/types";
+import { truncateToWords } from "@/utils/truncate-to-words";
 
 import { AiMessageStatusIcon } from "./message-icons";
 
+const SUMMARY_MAX_WORDS = 30;
+
 function formatArgs(args: FinishArchitectureAnalysisPayload["args"]): string {
     const parts: string[] = [];
-    if (args?.summary != null && args.summary !== "") parts.push(`summary: ${String(args.summary)}`);
+    if (args?.summary != null && args.summary !== "") {
+        parts.push(`summary: ${truncateToWords(String(args.summary), SUMMARY_MAX_WORDS)}`);
+    }
     if (args?.relevant_units_ids != null && args.relevant_units_ids.length > 0) parts.push(`relevant units count: ${args.relevant_units_ids.length}`);
-    return parts.length ? parts.join(", ") : "—";
+    return parts.length ? parts.join("\n") : "—";
 }
 
 export function FinishArchitectureAnalysisMessage({
@@ -41,7 +46,7 @@ export function FinishArchitectureAnalysisMessage({
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs">
                         <span className="font-medium">Architecture analysis finished</span>
-                        <span className="block mt-0.5 text-muted-foreground">{args ? formatArgs(args) : "—"}</span>
+                        <span className="block mt-0.5 whitespace-pre-line text-muted-foreground">{args ? formatArgs(args) : "—"}</span>
                     </TooltipContent>
                 </Tooltip>
             </div>
