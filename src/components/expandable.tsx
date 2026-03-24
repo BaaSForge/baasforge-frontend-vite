@@ -1,14 +1,17 @@
 "use client";
 
+import { SCROLL_EDGE_FADER_DEFAULT_FROM, ScrollEdgeFader } from "@/components/scroll-edge-fader";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export interface ExpandableProps {
     children: React.ReactNode;
     trigger?: (isOpen: boolean, setOpen: (open: boolean) => void, isOverflowing: boolean) => React.ReactNode;
     maxLines: number;
     className?: string;
+    bottomEdgeFade?: boolean;
+    bottomEdgeFadeFromClassName?: string;
 }
 
 // Full class names so Tailwind JIT includes them (dynamic `line-clamp-${n}` is purged)
@@ -27,19 +30,34 @@ const LINE_CLAMP_CLASSES: Record<number, string> = {
     12: "line-clamp-12",
 };
 
-export function Expandable({ children, trigger, maxLines, className }: ExpandableProps) {
+export function Expandable({
+    children,
+    trigger,
+    maxLines,
+    className,
+    bottomEdgeFade = false,
+    bottomEdgeFadeFromClassName = SCROLL_EDGE_FADER_DEFAULT_FROM,
+}: ExpandableProps) {
     const [open, setOpen] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const clampClass = LINE_CLAMP_CLASSES[maxLines] ?? LINE_CLAMP_CLASSES[5];
 
-    useEffect(() => {
+    // line-clamp makes scrollHeight === clientHeight in common engines, so overflow
+    // must be detected by comparing natural height (no clamp) to clamped client height.
+    useLayoutEffect(() => {
         if (open) return;
         const el = contentRef.current;
         if (!el) return;
 
         const checkOverflow = () => {
-            setIsOverflowing(el.scrollHeight > el.clientHeight);
+            el.classList.remove(clampClass);
+            void el.offsetHeight;
+            const fullHeight = el.scrollHeight;
+            el.classList.add(clampClass);
+            void el.offsetHeight;
+            const clampedHeight = el.clientHeight;
+            setIsOverflowing(fullHeight > clampedHeight + 1);
         };
 
         checkOverflow();
@@ -47,11 +65,14 @@ export function Expandable({ children, trigger, maxLines, className }: Expandabl
         const observer = new ResizeObserver(checkOverflow);
         observer.observe(el);
         return () => observer.disconnect();
-    }, [children, open, maxLines]);
+    }, [children, open, maxLines, clampClass]);
 
     return (
         <div ref={contentRef} className={cn(!open && clampClass, className)}>
             {children}
+            {bottomEdgeFade && !open && isOverflowing && (
+                <ScrollEdgeFader edge="bottom" fromClassName={bottomEdgeFadeFromClassName} className="z-[1]" />
+            )}
             {trigger?.(open, setOpen, isOverflowing)}
         </div>
     );

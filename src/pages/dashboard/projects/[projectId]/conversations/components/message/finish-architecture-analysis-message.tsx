@@ -14,8 +14,8 @@ const SUMMARY_MAX_WORDS = 30;
 
 function formatArgs(args: FinishArchitectureAnalysisPayload["args"]): string {
     const parts: string[] = [];
-    if (args?.summary != null && args.summary !== "") {
-        parts.push(`summary: ${truncateToWords(String(args.summary), SUMMARY_MAX_WORDS)}`);
+    if (args?.detailed_report != null && args.detailed_report !== "") {
+        parts.push(`detailed report: ${truncateToWords(String(args.detailed_report), SUMMARY_MAX_WORDS)}`);
     }
     if (args?.relevant_units_ids != null && args.relevant_units_ids.length > 0) parts.push(`relevant units count: ${args.relevant_units_ids.length}`);
     return parts.length ? parts.join("\n") : "—";

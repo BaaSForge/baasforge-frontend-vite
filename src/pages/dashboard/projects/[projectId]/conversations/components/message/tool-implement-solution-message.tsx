@@ -37,10 +37,10 @@ export function ToolImplementSolutionMessage({
 }) {
     const payload = parseToolImplementSolutionPayload(message);
     const args = payload?.args;
-    const summary = typeof payload?.implementation_summary === "string" ? payload.implementation_summary : "";
+    const detailedReport = typeof payload?.detailed_report === "string" ? payload.detailed_report : "";
 
     const status = message.status ?? ChatMessageStatus.Generating;
-    const hasSummary = summary.trim().length > 0;
+    const hasDetailedReport = detailedReport.trim().length > 0;
     const hasNestedMessages = nestedMessages != null;
 
     return (
@@ -76,14 +76,14 @@ export function ToolImplementSolutionMessage({
                             >
                                 {hasNestedMessages ? nestedMessages : <Spinner className="size-3.5 text-muted-foreground" />}
                             </div>
-                            {hasSummary && (
+                            {hasDetailedReport && (
                                 <blockquote
                                     className={cn(
                                         "min-w-0 max-w-full border-l-2 border-muted pl-3 text-sm text-muted-foreground",
                                         "[&_p]:my-1 [&_pre]:my-2 [&_pre]:text-xs [&_code]:text-xs",
                                     )}
                                 >
-                                    <Markdown className="max-w-none">{summary}</Markdown>
+                                    <Markdown className="max-w-none">{detailedReport}</Markdown>
                                 </blockquote>
                             )}
                         </div>

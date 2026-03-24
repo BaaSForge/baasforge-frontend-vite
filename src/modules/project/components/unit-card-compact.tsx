@@ -1,14 +1,13 @@
 "use client";
 
 import { Expandable } from "@/components/expandable";
+import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
 import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardAction } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
-import { Maximize2 } from "lucide-react";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
 import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
@@ -57,26 +56,20 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                 )}
             >
                 <Expandable
-                    className="p-2 text-xs relative"
-                    maxLines={7}
+                    className="group/expandable-read p-2 text-xs relative"
+                    maxLines={4}
+                    bottomEdgeFade
+                    bottomEdgeFadeFromClassName="from-card"
                     trigger={(_isOpen, _setOpen, isOverflowing) =>
                         isOverflowing && (
-                            <Button
-                                type="button"
-                                size="xs"
-                                variant="secondary"
-                                className="rounded-none absolute left-0 right-0 bottom-0 z-[2] text-muted-foreground"
-                                onClick={() => setModalOpen(true)}
-                                aria-label="Show full description"
-                            >
-                                <Maximize2 />
+                            <ExpandableFullReadTrigger ariaLabel="Show full description" onClick={() => setModalOpen(true)}>
                                 Read full explanation
-                            </Button>
+                            </ExpandableFullReadTrigger>
                         )
                     }
                 >
                     <div className={cn(isDeleted && "line-through")}>
-                        <Markdown>{explanation}</Markdown>
+                        {explanation}
                     </div>
                 </Expandable>
                 <Dialog open={modalOpen} onOpenChange={setModalOpen}>

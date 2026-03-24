@@ -20,10 +20,10 @@ function getAnalyzeSolutionArgs(message: ChatMessageWithDeliveryStatus): ToolAna
     return p.args ?? null;
 }
 
-function getSolutionSummary(message: ChatMessageWithDeliveryStatus): string {
+function getDetailedReport(message: ChatMessageWithDeliveryStatus): string {
     const p = message.payload as ToolAnalyzeSolutionPayload | undefined | null;
     if (!p || Array.isArray(p)) return "";
-    const s = (p as ToolAnalyzeSolutionPayload).solution_summary;
+    const s = (p as ToolAnalyzeSolutionPayload).detailed_report;
     return typeof s === "string" ? s : "";
 }
 
@@ -41,9 +41,9 @@ export function ToolAnalyzeSolutionMessage({
     nestedMessages?: ReactNode;
 }) {
     const args = getAnalyzeSolutionArgs(message);
-    const summary = getSolutionSummary(message);
+    const detailedReport = getDetailedReport(message);
     const status = message.status ?? ChatMessageStatus.Generating;
-    const hasSummary = summary.trim().length > 0;
+    const hasDetailedReport = detailedReport.trim().length > 0;
     const hasNestedMessages = nestedMessages != null;
 
     return (
@@ -79,14 +79,14 @@ export function ToolAnalyzeSolutionMessage({
                             >
                                 {hasNestedMessages ? nestedMessages : <Spinner className="size-3.5 text-muted-foreground" />}
                             </div>
-                            {hasSummary && (
+                            {hasDetailedReport && (
                                 <blockquote
                                     className={cn(
                                         "min-w-0 max-w-full border-l-2 border-muted pl-3 text-sm text-muted-foreground",
                                         "[&_p]:my-1 [&_pre]:my-2 [&_pre]:text-xs [&_code]:text-xs",
                                     )}
                                 >
-                                    <Markdown className="max-w-none">{summary}</Markdown>
+                                    <Markdown className="max-w-none">{detailedReport}</Markdown>
                                 </blockquote>
                             )}
                         </div>

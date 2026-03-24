@@ -53,13 +53,13 @@ export interface ToolAnalyzeArchitecturePayload {
         intent?: string | null;
     };
     related_units?: unknown[];
-    summary?: string;
+    detailed_report?: string;
     messages?: unknown[];
 }
 
 export interface FinishArchitectureAnalysisPayload {
     args?: {
-        summary?: string | null;
+        detailed_report?: string | null;
         relevant_units_ids?: unknown[];
     };
     tool_name?: string;
@@ -69,13 +69,13 @@ export interface ToolAnalyzeSolutionPayload {
     args?: {
         intent?: string | null;
     };
-    solution_summary?: string;
+    detailed_report?: string;
     messages?: unknown[];
 }
 
 export interface FinishSolutionAnalysisPayload {
     args?: {
-        solution_summary?: string | null;
+        detailed_report?: string | null;
     };
     tool_name?: string;
 }
@@ -84,13 +84,13 @@ export interface ToolImplementSolutionPayload {
     args?: {
         directive?: string | null;
     };
-    implementation_summary?: string;
+    detailed_report?: string;
     messages?: unknown[];
 }
 
 export interface FinishImplementationPayload {
     args?: {
-        implementation_summary?: string | null;
+        detailed_report?: string | null;
     };
     tool_name?: string;
 }

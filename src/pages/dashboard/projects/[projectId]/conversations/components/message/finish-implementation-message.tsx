@@ -14,9 +14,9 @@ const SUMMARY_MAX_WORDS = 30;
 
 function formatArgs(args: FinishImplementationPayload["args"]): string {
     const parts: string[] = [];
-    const text = args?.implementation_summary;
+    const text = args?.detailed_report;
     if (text != null && text !== "") {
-        parts.push(`implementation summary: ${truncateToWords(String(text), SUMMARY_MAX_WORDS)}`);
+        parts.push(`detailed report: ${truncateToWords(String(text), SUMMARY_MAX_WORDS)}`);
     }
     return parts.length ? parts.join("\n") : "—";
 }

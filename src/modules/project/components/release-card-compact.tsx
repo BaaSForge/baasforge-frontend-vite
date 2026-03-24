@@ -1,15 +1,14 @@
 "use client";
 
 import { Expandable } from "@/components/expandable";
+import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
 import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardAction } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
-import { Maximize2 } from "lucide-react";
 import { useState } from "react";
 import type { ProjectRuntimeResponse, ReleaseResponse } from "../types";
 
@@ -60,24 +59,15 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                 )}
             >
                 <Expandable
-                    className="p-2 text-xs relative"
-                    maxLines={7}
+                    className="group/expandable-read p-2 text-xs relative"
+                    maxLines={4}
+                    bottomEdgeFade
+                    bottomEdgeFadeFromClassName="from-card"
                     trigger={(_isOpen, _setOpen, isOverflowing) =>
                         isOverflowing && (
-                            <Button
-                                type="button"
-                                size="xs"
-                                variant="secondary"
-                                className="rounded-none absolute left-0 right-0 bottom-0 z-[2] text-muted-foreground"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setModalOpen(true);
-                                }}
-                                aria-label="Show full release notes"
-                            >
-                                <Maximize2 />
+                            <ExpandableFullReadTrigger ariaLabel="Show full release notes" onClick={() => setModalOpen(true)}>
                                 Read full release notes
-                            </Button>
+                            </ExpandableFullReadTrigger>
                         )
                     }
                 >

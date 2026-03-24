@@ -1,3 +1,4 @@
+import { SCROLL_EDGE_FADER_DEFAULT_FROM, ScrollEdgeFader } from "@/components/scroll-edge-fader";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
@@ -37,8 +38,6 @@ function getScrollFlagsHorizontal(el: HTMLDivElement) {
     };
 }
 
-const DEFAULT_FADER_FROM = "from-background";
-
 export function FadedScrollArea({
     children,
     className,
@@ -46,9 +45,9 @@ export function FadedScrollArea({
     orientation = "vertical",
     scrollToEndByDefault = false,
     hideScrollbar = false,
-    faderFromClassName = DEFAULT_FADER_FROM,
+    faderFromClassName = SCROLL_EDGE_FADER_DEFAULT_FROM,
 }: FadedScrollAreaProps) {
-    const fromClass = faderFromClassName || DEFAULT_FADER_FROM;
+    const fromClass = faderFromClassName || SCROLL_EDGE_FADER_DEFAULT_FROM;
     const viewportRef = React.useRef<HTMLDivElement>(null);
     const startFadeRef = React.useRef<HTMLDivElement>(null);
     const endFadeRef = React.useRef<HTMLDivElement>(null);
@@ -142,45 +141,13 @@ export function FadedScrollArea({
             )}
             {isHorizontal ? (
                 <>
-                    <div
-                        ref={startFadeRef}
-                        className={cn(
-                            "pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-r to-transparent transition-opacity duration-150",
-                            fromClass,
-                        )}
-                        style={{ opacity: 0 }}
-                        aria-hidden
-                    />
-                    <div
-                        ref={endFadeRef}
-                        className={cn(
-                            "pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-8 bg-gradient-to-l to-transparent transition-opacity duration-150",
-                            fromClass,
-                        )}
-                        style={{ opacity: 1 }}
-                        aria-hidden
-                    />
+                    <ScrollEdgeFader ref={startFadeRef} edge="left" fromClassName={fromClass} style={{ opacity: 0 }} />
+                    <ScrollEdgeFader ref={endFadeRef} edge="right" fromClassName={fromClass} style={{ opacity: 1 }} />
                 </>
             ) : (
                 <>
-                    <div
-                        ref={startFadeRef}
-                        className={cn(
-                            "pointer-events-none absolute top-0 left-0 right-4 z-10 h-8 bg-gradient-to-b to-transparent transition-opacity duration-150",
-                            fromClass,
-                        )}
-                        style={{ opacity: 0 }}
-                        aria-hidden
-                    />
-                    <div
-                        ref={endFadeRef}
-                        className={cn(
-                            "pointer-events-none absolute bottom-0 left-0 right-4 z-10 h-8 bg-gradient-to-t to-transparent transition-opacity duration-150",
-                            fromClass,
-                        )}
-                        style={{ opacity: 1 }}
-                        aria-hidden
-                    />
+                    <ScrollEdgeFader ref={startFadeRef} edge="top" fromClassName={fromClass} className="right-4" style={{ opacity: 0 }} />
+                    <ScrollEdgeFader ref={endFadeRef} edge="bottom" fromClassName={fromClass} className="right-4" style={{ opacity: 1 }} />
                 </>
             )}
         </ScrollAreaPrimitive.Root>
