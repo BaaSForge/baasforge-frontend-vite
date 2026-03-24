@@ -3,6 +3,8 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getProjectChatSessionDetail, getProjectChatSessionMessages, getProjectChatSessions } from "./api";
 import type { ChatMessageWithDeliveryStatus } from "./types";
 
+const CHAT_MESSAGES_PAGE_RETRY_DELAY_MS = 3000;
+
 const EMPTY_GENERATING_SET = new Set<string>();
 
 /** Whether the given project/session is currently generating a response (from WS generation_started/ended). */
@@ -41,6 +43,7 @@ export function useProjectChatSessionMessagesQuery(projectId?: string, chatSessi
             getProjectChatSessionMessages(projectId ?? "", chatSessionId ?? "", {
                 before_id: pageParam,
             }),
+        retryDelay: CHAT_MESSAGES_PAGE_RETRY_DELAY_MS,
         initialPageParam: undefined as string | undefined,
         getNextPageParam: () => undefined,
         getPreviousPageParam: (firstPage: ChatMessageWithDeliveryStatus[]) => {
