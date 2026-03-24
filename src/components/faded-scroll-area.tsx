@@ -13,6 +13,8 @@ interface FadedScrollAreaProps {
     className?: string;
     style?: React.CSSProperties;
     orientation?: Orientation;
+    /** Horizontal only: height follows content (e.g. fenced code) instead of filling a fixed parent. */
+    horizontalIntrinsicHeight?: boolean;
     scrollToEndByDefault?: boolean;
     hideScrollbar?: boolean;
     faderFromClassName?: string;
@@ -43,6 +45,7 @@ export function FadedScrollArea({
     className,
     style,
     orientation = "vertical",
+    horizontalIntrinsicHeight = false,
     scrollToEndByDefault = false,
     hideScrollbar = false,
     faderFromClassName = SCROLL_EDGE_FADER_DEFAULT_FROM,
@@ -59,6 +62,7 @@ export function FadedScrollArea({
     });
     const [canScroll, setCanScroll] = React.useState(false);
     const isHorizontal = orientation === "horizontal";
+    const intrinsicHorizontal = isHorizontal && horizontalIntrinsicHeight;
     const getScrollFlags = isHorizontal ? getScrollFlagsHorizontal : getScrollFlagsVertical;
 
     const flush = React.useCallback(() => {
@@ -115,7 +119,11 @@ export function FadedScrollArea({
             type="always"
             className={cn(
                 "relative",
-                isHorizontal ? "h-full w-fit max-w-full overflow-hidden" : "max-h-[50vh]",
+                intrinsicHorizontal
+                    ? "h-auto w-full max-w-full min-w-0 overflow-hidden"
+                    : isHorizontal
+                      ? "h-full w-fit max-w-full overflow-hidden"
+                      : "max-h-[50vh]",
                 canScroll && (isHorizontal ? "pb-0" : "pr-4"),
                 className,
             )}
@@ -126,7 +134,11 @@ export function FadedScrollArea({
                 onScroll={onScroll}
                 className={cn(
                     "focus-visible:ring-ring/50 rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1",
-                    isHorizontal ? "size-full flex items-center overflow-x-auto overflow-y-hidden" : "size-full",
+                    intrinsicHorizontal
+                        ? "block h-auto min-h-0 w-full max-w-full overflow-x-auto overflow-y-hidden"
+                        : isHorizontal
+                          ? "size-full flex items-center overflow-x-auto overflow-y-hidden"
+                          : "size-full",
                 )}
             >
                 {children}

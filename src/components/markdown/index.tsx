@@ -47,6 +47,8 @@ export function Markdown({ children, className, theme: themeProp, components: co
                             margin: 0,
                             borderRadius: "var(--radius, 0.375rem)",
                             fontSize: "0.875rem",
+                            minWidth: "100%",
+                            width: "max-content",
                         }}
                         codeTagProps={{ style: {} }}
                         showLineNumbers={false}

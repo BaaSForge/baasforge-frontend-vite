@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import type { Components } from "react-markdown";
 import { Link } from "react-router";
 
+import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +72,25 @@ export const markdownComponents: Partial<Components> = {
         );
     },
     hr: (props) => <hr className="my-3 border-t border-border" {...props} />,
+    pre: ({ children, className, ...props }) => (
+        <FadedScrollArea
+            orientation="horizontal"
+            horizontalIntrinsicHeight
+            className="my-2 min-w-0 max-w-full"
+            faderFromClassName="from-background"
+        >
+            <pre
+                className={cn(
+                    "m-0 min-w-full w-max max-w-none overflow-visible rounded-md font-mono text-sm leading-relaxed",
+                    "[&>div]:min-w-full [&>div]:w-max",
+                    className,
+                )}
+                {...props}
+            >
+                {children}
+            </pre>
+        </FadedScrollArea>
+    ),
     table: ({ children, className, ...props }) => (
         <div className="my-4 w-full min-w-0">
             <Table className={cn(className)} {...props}>

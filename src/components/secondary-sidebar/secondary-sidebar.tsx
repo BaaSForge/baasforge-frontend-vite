@@ -65,7 +65,12 @@ export function SecondarySidebar({ children }: Props) {
     return (
         <Sidebar
             side="right"
-            className={cn(stickyBarVisible ? `top-[var(--sticky-bar-height)]` : "top-0", "transition-all", stickyBarTransition)}
+            className={cn(
+                "z-20",
+                stickyBarVisible ? `top-[var(--sticky-bar-height)]` : "top-0",
+                "transition-all",
+                stickyBarTransition,
+            )}
             style={{
                 ["--sticky-bar-height" as keyof React.CSSProperties]: `${stickyBarHeight}px`,
                 ...stickyBarTransitionStyles,
