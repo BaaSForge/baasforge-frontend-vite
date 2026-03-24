@@ -9,7 +9,7 @@ export function useCreateProjectChatSessionMutation(projectId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: () => createProjectChatSession(projectId),
+        mutationFn: (title: string) => createProjectChatSession(projectId, title),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
         },

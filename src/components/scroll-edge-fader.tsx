@@ -29,7 +29,7 @@ export const ScrollEdgeFader = React.forwardRef<HTMLDivElement, ScrollEdgeFaderP
         <div
             ref={ref}
             className={cn(
-                "pointer-events-none absolute z-10 transition-opacity duration-150",
+                "pointer-events-none absolute z-5 transition-opacity duration-150",
                 EDGE_STYLES[edge],
                 fromClassName,
                 className,

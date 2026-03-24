@@ -31,6 +31,7 @@ import {
     ChatMessageType,
     ChatSessionRoleType,
     type ChatMessageWithDeliveryStatus,
+    type TextMessagePayload,
 } from "@/modules/project-chat/types";
 import { ConnectIcon, DisconnectIcon } from "@/modules/project/stores/runtime-store/exports";
 import type { InfiniteData } from "@tanstack/react-query";
@@ -163,32 +164,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const displayChildrenByParentId =
         rootMessages.length > 0 || chatSessionMessages.length === 0 ? childrenByParentId : new Map();
 
-    useEffect(() => {
-        if (!import.meta.env.DEV) return;
-        const pages = chatSessionMessagesData?.pages;
-        const pageLengths = (pages ?? []).map((p) => p.length);
-        // eslint-disable-next-line no-console -- intentional dev diagnostics for empty chat list
-        console.log("[project-chat:page]", {
-            conversationId: chatSessionIdOrUndefined,
-            projectId: projectIdOrUndefined,
-            isLoadingChatSessionMessages,
-            pagesCount: pages?.length ?? 0,
-            pageLengths,
-            flatMessageCount: chatSessionMessages.length,
-            rootMessageCount: rootMessages.length,
-            displayRootCount: displayRootMessages.length,
-            hasPreviousPage,
-        });
-    }, [
-        chatSessionMessagesData,
-        chatSessionMessages.length,
-        chatSessionIdOrUndefined,
-        projectIdOrUndefined,
-        isLoadingChatSessionMessages,
-        rootMessages.length,
-        displayRootMessages.length,
-        hasPreviousPage,
-    ]);
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -232,7 +207,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             delivery_status: ChatMessageDeliveryStatus.Pending,
         });
 
-        createSessionMutation.mutate(undefined, {
+        createSessionMutation.mutate((optimisticMessage.payload as TextMessagePayload)?.text as string, {
             onSuccess: (session) => {
                 if (!session) return;
 

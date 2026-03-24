@@ -2,10 +2,19 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+type TableProps = React.ComponentProps<"table"> & {
+    /** When true, render only the `<table>` (no overflow wrapper). Use when an ancestor handles horizontal scroll (e.g. FadedScrollArea). */
+    unwrapped?: boolean;
+};
+
+function Table({ className, unwrapped, ...props }: TableProps) {
+    const table = (
+        <table data-slot="table" className={cn("w-full caption-bottom text-sm", className)} {...props} />
+    );
+    if (unwrapped) return table;
     return (
         <div data-slot="table-container" className="relative w-full overflow-x-auto">
-            <table data-slot="table" className={cn("w-full caption-bottom text-sm", className)} {...props} />
+            {table}
         </div>
     );
 }

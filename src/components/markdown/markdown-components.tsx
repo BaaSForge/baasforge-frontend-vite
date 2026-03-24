@@ -92,11 +92,16 @@ export const markdownComponents: Partial<Components> = {
         </FadedScrollArea>
     ),
     table: ({ children, className, ...props }) => (
-        <div className="my-4 w-full min-w-0">
-            <Table className={cn(className)} {...props}>
+        <FadedScrollArea
+            orientation="horizontal"
+            horizontalIntrinsicHeight
+            className="my-4 min-w-0 max-w-full"
+            faderFromClassName="from-background"
+        >
+            <Table unwrapped className={cn("m-0 min-w-full w-max max-w-none", className)} {...props}>
                 {children}
             </Table>
-        </div>
+        </FadedScrollArea>
     ),
     thead: ({ children, className, ...props }) => (
         <TableHeader className={cn(className)} {...props}>

@@ -62,6 +62,7 @@ export interface ChatMessageResponse {
     chat_session_id: string;
     role: ChatSessionRoleType;
     type: ChatMessageType;
+    // TODO: make the payload strictly typed
     payload?: unknown | null;
     created_at: string;
     is_first: boolean;

@@ -21,8 +21,8 @@ export function getProjectChatSessions(projectId: string): Promise<ChatSessionRe
     return apiClient.get<ApiResponse<ChatSessionResponse[]>>(chatSessionsEndpoint(projectId)).then((res) => res.data ?? []);
 }
 
-export function createProjectChatSession(projectId: string): Promise<ChatSessionResponse | undefined> {
-    return apiClient.post<ApiResponse<ChatSessionResponse>>(chatSessionsEndpoint(projectId)).then((res) => res.data);
+export function createProjectChatSession(projectId: string, title: string): Promise<ChatSessionResponse | undefined> {
+    return apiClient.post<ApiResponse<ChatSessionResponse>>(chatSessionsEndpoint(projectId), { title }).then((res) => res.data);
 }
 
 export function getProjectChatSessionDetail(projectId: string, chatSessionId: string): Promise<ChatSessionResponse | undefined> {
