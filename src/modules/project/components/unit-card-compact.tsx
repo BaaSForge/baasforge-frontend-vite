@@ -45,13 +45,14 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
         <div className={cn("relative inline-block w-full min-w-0", className)}>
             {hasParent && (
                 <Card
-                    className="pointer-events-none absolute left-1.5 top-1.5 z-0 h-full w-full rounded-xl border bg-card p-0 shadow-none"
+                    className="pointer-events-none absolute top-1.5 left-1.5 right-0 bottom-0 z-0 rounded-xl border bg-card p-0 shadow-none"
                     aria-hidden
                 />
             )}
             <Card
                 className={cn(
                     "relative z-[1] gap-0 overflow-hidden rounded-xl border p-0 shadow-none",
+                    hasParent && "mb-1.5 mr-1.5",
                     isDeleted && "border-destructive",
                 )}
             >
