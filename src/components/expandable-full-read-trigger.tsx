@@ -29,6 +29,7 @@ export function ExpandableFullReadTrigger({ onClick, ariaLabel, children, classN
                 "bg-transparent text-transparent",
                 "pointer-events-none cursor-default",
                 "transition-[background-color,color] duration-150 ease-out",
+                "rounded-md",
                 "group-hover/expandable-read:pointer-events-auto group-hover/expandable-read:cursor-pointer group-hover/expandable-read:bg-background/90 group-hover/expandable-read:text-muted-foreground",
                 "group-focus-within/expandable-read:pointer-events-auto group-focus-within/expandable-read:cursor-pointer group-focus-within/expandable-read:bg-background/90 group-focus-within/expandable-read:text-muted-foreground",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",

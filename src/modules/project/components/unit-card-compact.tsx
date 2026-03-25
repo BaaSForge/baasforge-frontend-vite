@@ -56,7 +56,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                     isDeleted && "border-destructive",
                 )}
             >
-                <UnitCardIdRow unitId={unit.id} />
+                <UnitCardIdRow unitId={unit.id} className="z-3" />
                 <Expandable
                     className="group/expandable-read relative p-2 pt-3 text-xs"
                     maxLines={4}
