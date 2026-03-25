@@ -7,11 +7,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-    /* TODO: remove this variable as it's not safe on all browsers */
-    --scrollbar-width: 16px;
-}
-
 html,
 body {
     -webkit-font-smoothing: antialiased;
@@ -24,7 +19,7 @@ body {
 
 html {
     &::-webkit-scrollbar {
-        width: --scrollbar-width;
+        width: 10px;
     }
 
     &::-webkit-scrollbar-track {

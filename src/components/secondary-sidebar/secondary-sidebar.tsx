@@ -1,8 +1,9 @@
 import { STORAGE_KEYS } from "@/constants/storage-keys";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useStickyBreadcrumbBarHeight, useStickyBreadcrumbBarTransition, useStickyBreadcrumbBarVisible } from "@/stores/breadcrumb";
 import React, { useCallback, useMemo, useState } from "react";
-import { Sidebar, SidebarProvider, useSidebar } from "../ui/sidebar";
+import { Sidebar, SidebarProvider } from "../ui/sidebar";
 import { InternalSecondarySidebarContext } from "./context";
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
 export function SecondarySidebarProvider({ children, storageKey, defaultOpen }: Props) {
     const defaultValue = storageKey ? localStorage.getItem(storageKey) === "true" : defaultOpen;
 
-    const mainSidebar = useSidebar();
+    const isMobile = useIsMobile();
     const [sidebarOpen, setSidebarOpen] = useState(defaultValue);
 
     const handleOpenChange = (open: boolean) => {
@@ -33,24 +34,6 @@ export function SecondarySidebarProvider({ children, storageKey, defaultOpen }: 
         setSidebarOpen(value);
     }, [storageKey, defaultOpen]);
 
-    const { isMobile, open: mainSidebarOpen } = mainSidebar;
-
-    let sidebarStyle = {};
-
-    if (isMobile) {
-        sidebarStyle = {
-            width: "100%",
-        };
-    } else {
-        const mainSidebarSpace = mainSidebarOpen ? "var(--sidebar-width)" : "var(--sidebar-width-icon)";
-        const secondarySidebarSpace = sidebarOpen ? "var(--sidebar-width)" : "0px";
-        
-        sidebarStyle = {
-            // TODO: remove `100vw` and '--scrollbar-width' then use `100%`, the main issue is that `100%` doesn't strictly equal to the remaining space and goes beyond the container.
-            width: `calc(100vw - ${mainSidebarSpace} - ${secondarySidebarSpace} - var(--scrollbar-width))`
-        };
-    }
-
     const contextValue = useMemo(
         () => ({
             handleOpenChangeSkipStorage,
@@ -64,8 +47,10 @@ export function SecondarySidebarProvider({ children, storageKey, defaultOpen }: 
             <SidebarProvider
                 open={sidebarOpen}
                 onOpenChange={handleOpenChange}
-                className={cn("flex-col", "transition-width duration-200", "min-h-none")}
-                style={sidebarStyle}
+                className={cn(
+                    "flex-col min-w-0 transition-width duration-200 min-h-none",
+                    isMobile || !sidebarOpen ? "w-full" : "w-[calc(100%-var(--sidebar-width))]",
+                )}
             >
                 {children}
             </SidebarProvider>
