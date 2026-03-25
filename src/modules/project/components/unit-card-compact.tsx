@@ -11,7 +11,7 @@ import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
 import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
-import { UnitCardIdRow } from "./unit-card-id-row";
+import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
 
 export interface UnitCardCompactProps {
     unit: ProjectUnitResponse;
@@ -42,23 +42,23 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
     );
 
     return (
-        <div className={cn("relative inline-block w-full min-w-0", className)}>
+        <div className={cn("relative inline-block w-full min-w-0", UNIT_CARD_ID_BADGE_RESERVE_CLASS, className)}>
             {hasParent && (
                 <Card
-                    className="pointer-events-none absolute top-1.5 left-1.5 right-0 bottom-0 z-0 rounded-xl border bg-card p-0 shadow-none"
+                    className="pointer-events-none absolute top-[calc(0.75rem+0.375rem)] left-1.5 right-0 bottom-0 z-0 rounded-xl border bg-card p-0 shadow-none"
                     aria-hidden
                 />
             )}
             <Card
                 className={cn(
-                    "relative z-[1] gap-0 overflow-hidden rounded-xl border p-0 shadow-none",
+                    "relative z-[1] gap-0 overflow-visible rounded-xl border p-0 shadow-none",
                     hasParent && "mb-1.5 mr-1.5",
                     isDeleted && "border-destructive",
                 )}
             >
                 <UnitCardIdRow unitId={unit.id} />
                 <Expandable
-                    className="group/expandable-read p-2 text-xs relative"
+                    className="group/expandable-read relative p-2 pt-2.5 text-xs"
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
