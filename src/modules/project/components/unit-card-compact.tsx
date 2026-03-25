@@ -58,7 +58,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
             >
                 <UnitCardIdRow unitId={unit.id} />
                 <Expandable
-                    className="group/expandable-read relative p-2 pt-2.5 text-xs"
+                    className="group/expandable-read relative p-2 pt-3 text-xs"
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"

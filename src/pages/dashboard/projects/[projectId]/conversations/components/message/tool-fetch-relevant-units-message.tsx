@@ -96,7 +96,12 @@ export function ToolFetchRelevantUnitsMessage({
                             )}
                         >
                             <div className="min-w-0 w-full max-w-full overflow-hidden py-2">
-                                <FadedScrollArea orientation="horizontal" className="h-14 min-h-0 min-w-0 w-full max-w-full" hideScrollbar>
+                                <FadedScrollArea
+                                    orientation="horizontal"
+                                    horizontalIntrinsicHeight
+                                    className="min-h-0 min-w-0 w-full max-w-full"
+                                    hideScrollbar
+                                >
                                     <div className="flex w-max items-stretch gap-2">
                                         {units.map((unit) => (
                                             <UnitCardChip key={unit.id} unit={unit} />
