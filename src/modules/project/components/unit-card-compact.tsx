@@ -11,6 +11,7 @@ import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
 import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
+import { UnitCardIdRow } from "./unit-card-id-row";
 
 export interface UnitCardCompactProps {
     unit: ProjectUnitResponse;
@@ -18,7 +19,7 @@ export interface UnitCardCompactProps {
 }
 
 export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
-    const hasParent = unit.parent_unit_id != null;
+    const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
     const explanation = unit.explanation?.trim() ?? "No description";
     const [modalOpen, setModalOpen] = useState(false);
@@ -30,8 +31,8 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                     Deleted
                 </Badge>
             )}
-            <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[0.625rem]" title={`Version ${unit.version}`}>
-                {unit.version}
+            <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[0.625rem]" title={`Revision ${unit.revision}`}>
+                {unit.revision}
             </Badge>
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {capitalizeFirstLetter(unit.unit_type)}
@@ -55,6 +56,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                     isDeleted && "border-destructive",
                 )}
             >
+                <UnitCardIdRow unitId={unit.id} />
                 <Expandable
                     className="group/expandable-read p-2 text-xs relative"
                     maxLines={4}

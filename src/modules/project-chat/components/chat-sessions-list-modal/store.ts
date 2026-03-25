@@ -11,7 +11,7 @@ const chatSessionsModalStore = createStore<ChatSessionsModalState>((set) => ({
     isOpen: false,
     projectId: undefined,
     open: (projectId) => set({ isOpen: true, projectId }),
-    close: () => set({ isOpen: false, projectId: undefined }),
+    close: () => set({ isOpen: false }),
 }));
 
 export { chatSessionsModalStore };

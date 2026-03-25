@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "../types";
 import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
+import { UnitCardIdRow } from "./unit-card-id-row";
 
 export interface UnitCardChipProps {
     unit: ProjectUnitResponse;
@@ -18,12 +19,14 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
     return (
         <div
             className={cn(
-                "flex shrink-0 flex-col gap-1 rounded-md border bg-muted/30 px-2.5 py-1.5 min-w-0 max-w-[200px]",
+                "flex shrink-0 flex-col overflow-hidden rounded-md border bg-muted/30 min-w-0 max-w-[200px]",
                 isDeleted && "border-destructive",
                 className,
             )}
             title={unit.explanation ?? undefined}
         >
+            <UnitCardIdRow className="border-border/60" unitId={unit.id} />
+            <div className="flex flex-col gap-1 px-2.5 py-1.5">
             <div className="flex flex-wrap items-center gap-1">
                 {isDeleted && (
                     <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
@@ -34,10 +37,11 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                     {unit.unit_type}
                 </Badge>
                 <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">
-                    {unit.version}
+                    {unit.revision}
                 </Badge>
             </div>
             <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
+            </div>
         </div>
     );
 }

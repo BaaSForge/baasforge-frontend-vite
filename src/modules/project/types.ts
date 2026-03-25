@@ -41,8 +41,10 @@ export interface ProjectUnitResponse {
     project_id: string;
     code: string | null;
     explanation: string | null;
-    version: string;
-    parent_unit_id: string | null;
+    revision: number;
+    context_slug: string;
+    module_slug: string;
+    unit_name_slug: string;
     unit_type: ProjectUnitType;
     is_draft: boolean;
     is_deleted?: boolean;

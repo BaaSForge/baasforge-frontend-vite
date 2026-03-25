@@ -19,9 +19,10 @@ export function useIsSessionGenerating(projectId: string | undefined, sessionId:
     return generating.data ?? false;
 }
 
-export function useProjectChatSessionsQuery(projectId?: string) {
+export function useProjectChatSessionsQuery(projectId?: string, options?: { enabled?: boolean }) {
+    const userEnabled = options?.enabled ?? true;
     return useQuery({
-        enabled: !!projectId,
+        enabled: userEnabled && !!projectId,
         queryKey: QueryKeys.projectChatSessionList(projectId ?? ""),
         queryFn: () => getProjectChatSessions(projectId ?? ""),
     });

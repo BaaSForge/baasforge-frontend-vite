@@ -29,7 +29,7 @@ function SessionItem({ projectId, session, onNavigate }: { projectId: string; se
 export function ChatSessionsListModal() {
     const { isOpen, projectId } = useChatSessionsModalState();
     const [, close] = useChatSessionsModal();
-    const { data: sessions = [], isLoading } = useProjectChatSessionsQuery(projectId ?? "");
+    const { data: sessions = [], isLoading } = useProjectChatSessionsQuery(projectId, { enabled: isOpen });
 
     const handleOpenChange = (open: boolean) => {
         if (!open) close();

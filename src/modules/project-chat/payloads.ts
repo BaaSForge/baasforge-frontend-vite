@@ -110,7 +110,7 @@ export interface ToolModifyUnitPayload {
         code?: ProjectUnitResponse["code"];
         explanation?: ProjectUnitResponse["explanation"];
         unit_id?: ProjectUnitResponse["id"] | null;
-        version?: ProjectUnitResponse["version"] | null;
+        revision?: ProjectUnitResponse["revision"] | null;
     };
     revised_unit?: ProjectUnitResponse;
     tool_name?: string;
