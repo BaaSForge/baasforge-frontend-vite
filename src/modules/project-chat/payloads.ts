@@ -48,6 +48,26 @@ export interface ToolFetchLatestReleasesPayload {
     releases?: unknown[];
 }
 
+export interface ToolListUnitContextsPayload {
+    context_slugs?: string[];
+    tool_call_id?: string;
+    tool_name?: string;
+}
+
+export interface ContextModulesEntry {
+    context_slug: string;
+    module_slugs: string[];
+}
+
+export interface ToolListModulesForUnitContextsPayload {
+    args?: {
+        context_slugs?: string[];
+    };
+    by_context?: ContextModulesEntry[];
+    tool_call_id?: string;
+    tool_name?: string;
+}
+
 export interface ToolAnalyzeArchitecturePayload {
     args?: {
         intent?: string | null;

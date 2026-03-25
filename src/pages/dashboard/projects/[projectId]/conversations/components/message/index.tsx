@@ -21,6 +21,8 @@ import { ToolFetchRelevantUnitsMessage } from "./tool-fetch-relevant-units-messa
 import { ToolCreateUnitMessage } from "./tool-create-unit-message";
 import { ToolModifyUnitMessage } from "./tool-modify-unit-message";
 import { ToolRemoveUnitMessage } from "./tool-remove-unit-message";
+import { ToolListUnitContextsMessage } from "./tool-list-unit-contexts-message";
+import { ToolListModulesForUnitContextsMessage } from "./tool-list-modules-for-unit-contexts-message";
 
 type MessageProps = {
     message: ChatMessageWithDeliveryStatus;
@@ -71,6 +73,12 @@ function MessageContent({ message, onRetry, nestedMessages }: Omit<MessageProps,
     if (message.type === ChatMessageType.ToolRemoveUnit) {
         return <ToolRemoveUnitMessage message={message} nestedMessages={nestedMessages} />;
     }
+    if (message.type === ChatMessageType.ToolListUnitContexts) {
+        return <ToolListUnitContextsMessage message={message} nestedMessages={nestedMessages} />;
+    }
+    if (message.type === ChatMessageType.ToolListModulesForUnitContexts) {
+        return <ToolListModulesForUnitContextsMessage message={message} nestedMessages={nestedMessages} />;
+    }
     return nestedMessages != null ? <>{nestedMessages}</> : null;
 }
 
@@ -86,6 +94,8 @@ const toolMessageTypes = [
     ChatMessageType.ToolCreateUnit,
     ChatMessageType.ToolModifyUnit,
     ChatMessageType.ToolRemoveUnit,
+    ChatMessageType.ToolListUnitContexts,
+    ChatMessageType.ToolListModulesForUnitContexts,
 ];
 
 export function Message({ message, onRetry, nestedMessages, isNested }: MessageProps) {
