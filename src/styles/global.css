@@ -68,6 +68,14 @@ input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
 
+/* Radix ScrollArea: viewport content wrapper uses display:table; min-width:100% — breaks flex shrink. Vertical FadedScrollArea only (see component). */
+.scroll-area-vertical-content-slotted-fix [data-radix-scroll-area-viewport] > div {
+    display: block !important;
+    min-width: 0 !important;
+    width: 100%;
+    max-width: 100%;
+}
+
 @theme inline {
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
