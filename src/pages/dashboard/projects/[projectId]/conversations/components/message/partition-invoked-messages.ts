@@ -30,15 +30,5 @@ export function partitionMessagesByInvokingParent(messages: ChatMessageWithDeliv
         })
         .sort(sortByCreatedAt);
 
-    if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console -- intentional dev diagnostics for empty chat list
-        console.log("[project-chat:partition]", {
-            inputCount: messages.length,
-            rootCount: rootMessages.length,
-            parentBuckets: childrenByParentId.size,
-            rootIds: rootMessages.map((m) => m.id),
-        });
-    }
-
     return { rootMessages, childrenByParentId };
 }
