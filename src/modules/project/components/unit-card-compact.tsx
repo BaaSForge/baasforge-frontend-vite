@@ -16,9 +16,10 @@ import { UnitRevisionBadge } from "./unit-revision-badge";
 export interface UnitCardCompactProps {
     unit: ProjectUnitResponse;
     className?: string;
+    unitRefreshPending?: boolean;
 }
 
-export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
+export function UnitCardCompact({ unit, className, unitRefreshPending }: UnitCardCompactProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
     const explanation = unit.explanation?.trim() ?? "No description";
@@ -31,7 +32,7 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                     Deleted
                 </Badge>
             )}
-            <UnitRevisionBadge unit={unit} />
+            <UnitRevisionBadge unit={unit} refreshPending={unitRefreshPending} />
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {capitalizeFirstLetter(unit.unit_type)}
             </Badge>

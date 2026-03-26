@@ -1,3 +1,4 @@
+import { MarkdownPlainPreview } from "@/components/markdown";
 import type { ChatMessageResponse, TextMessagePayload } from "@/modules/project-chat/types";
 
 function getCompactTextFromPayload(payload: unknown): { text: string; isExploringPlaceholder: boolean } {
@@ -11,16 +12,6 @@ function getCompactTextFromPayload(payload: unknown): { text: string; isExplorin
     return { text: "", isExploringPlaceholder: false };
 }
 
-function plainPreview(raw: string): string {
-    return raw
-        .replace(/\*\*([^*]+)\*\*/g, "$1")
-        .replace(/\*([^*]+)\*/g, "$1")
-        .replace(/`([^`]+)`/g, "$1")
-        .replace(/\n+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
 type SessionLastMessageRowProps = {
     lastMessage: ChatMessageResponse | null | undefined;
 };
@@ -30,13 +21,24 @@ export function SessionLastMessageRow({ lastMessage }: SessionLastMessageRowProp
     if (lastMessage == null) return null;
 
     const { text, isExploringPlaceholder } = getCompactTextFromPayload(lastMessage.payload);
-    const content = isExploringPlaceholder ? "Exploring…" : plainPreview(text);
-    if (!content) return null;
+    if (isExploringPlaceholder) {
+        return (
+            <div className="flex w-full min-w-0 justify-start">
+                <div className="max-w-[80%] min-w-0">
+                    <p className="text-muted-foreground line-clamp-2 text-left text-xs leading-snug">Exploring…</p>
+                </div>
+            </div>
+        );
+    }
+    if (!text) return null;
 
     return (
         <div className="flex w-full min-w-0 justify-start">
             <div className="max-w-[80%] min-w-0">
-                <p className="text-muted-foreground line-clamp-2 text-left text-xs leading-snug">{content}</p>
+                <MarkdownPlainPreview
+                    source={text}
+                    className="text-muted-foreground line-clamp-2 text-left text-xs leading-snug"
+                />
             </div>
         </div>
     );

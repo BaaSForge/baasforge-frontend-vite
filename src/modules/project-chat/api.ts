@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
+import type { ProjectUnitResponse } from "@/modules/project/types";
 import {
     ChatMessageDeliveryStatus,
     type ChatMessageDTO,
@@ -15,7 +16,17 @@ const chatSessionDetailEndpoint = (projectId: string, chatSessionId: string) => 
 const chatSessionMessagesEndpoint = (projectId: string, chatSessionId: string) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages`;
 const chatSessionStopEndpoint = (projectId: string, chatSessionId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/stop-generating`;
+const chatSessionUnitTipsByIdsEndpoint = (projectId: string, chatSessionId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-tips-by-ids`;
 // const chatSessionMessagesWebsocketEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/channel`
+
+export type ChatSessionUnitTipsByIdsRequestBody = {
+    unit_ids: string[];
+};
+
+export type ChatSessionUnitTipsByIdsData = {
+    units: ProjectUnitResponse[];
+};
 
 export function getProjectChatSessions(projectId: string): Promise<ChatSessionResponse[]> {
     return apiClient.get<ApiResponse<ChatSessionResponse[]>>(chatSessionsEndpoint(projectId)).then((res) => res.data ?? []);
@@ -83,4 +94,18 @@ export type StopProjectChatSessionResponse = {
 
 export function stopProjectChatSession(projectId: string, chatSessionId: string): Promise<StopProjectChatSessionResponse | undefined> {
     return apiClient.post<ApiResponse<StopProjectChatSessionResponse>>(chatSessionStopEndpoint(projectId, chatSessionId)).then((res) => res.data);
+}
+
+export function getChatSessionUnitTipsByIds(
+    projectId: string,
+    chatSessionId: string,
+    unitIds: string[],
+): Promise<ProjectUnitResponse[]> {
+    if (unitIds.length === 0) {
+        return Promise.resolve([]);
+    }
+    const body: ChatSessionUnitTipsByIdsRequestBody = { unit_ids: unitIds };
+    return apiClient
+        .post<ApiResponse<ChatSessionUnitTipsByIdsData>>(chatSessionUnitTipsByIdsEndpoint(projectId, chatSessionId), body)
+        .then((res) => res.data?.units ?? []);
 }

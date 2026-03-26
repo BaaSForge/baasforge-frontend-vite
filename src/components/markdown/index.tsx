@@ -77,3 +77,5 @@ export function Markdown({ children, className, theme: themeProp, components: co
     );
     return className ? <div className={className}>{content}</div> : content;
 }
+
+export { MarkdownPlainPreview, type MarkdownPlainPreviewProps } from "./markdown-plain-preview";

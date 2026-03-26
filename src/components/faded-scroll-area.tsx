@@ -125,7 +125,7 @@ export function FadedScrollArea({
                       ? "h-full w-fit max-w-full overflow-hidden"
                       : "max-h-[50vh]",
                 !isHorizontal && "scroll-area-vertical-content-slotted-fix min-w-0",
-                canScroll && (isHorizontal ? "pb-0" : "pr-4"),
+                (canScroll && !hideScrollbar) && (isHorizontal ? "pb-4" : "pr-4"),
                 className,
             )}
             style={style}

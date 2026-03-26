@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
+import { useMemo } from "react";
+import { useParams } from "react-router";
 
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardCompact } from "@/modules/project";
+import { useChatSessionUnitTipsFresh } from "@/modules/project-chat/use-chat-session-unit-tips";
 import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
@@ -15,9 +18,20 @@ export type ToolUnitMutationLayoutProps = {
 };
 
 export function ToolUnitMutationLayout({ message, nestedMessages, statusLine, unit }: ToolUnitMutationLayoutProps) {
+    const { projectId, conversationId: chatSessionId } = useParams<{ projectId: string; conversationId?: string }>();
+    const initialUnits = useMemo(() => (unit != null ? [unit] : []), [unit]);
+    const shouldRefreshFromHistory = message.status !== ChatMessageStatus.Generating;
+    const { units: refreshedUnits, isRefreshing } = useChatSessionUnitTipsFresh(
+        projectId,
+        chatSessionId,
+        initialUnits,
+        shouldRefreshFromHistory && unit != null,
+    );
+    const displayUnit = refreshedUnits[0] ?? unit;
+
     const status = message.status ?? ChatMessageStatus.Generating;
     const showInvokedConnector = Boolean(message.invoking_message_id);
-    const hasUnit = unit != null;
+    const hasUnit = displayUnit != null;
 
     return (
         <>
@@ -30,9 +44,9 @@ export function ToolUnitMutationLayout({ message, nestedMessages, statusLine, un
                         </span>
                         <p className="min-w-0 text-sm text-muted-foreground">{statusLine}</p>
                     </div>
-                    {hasUnit && (
+                    {hasUnit && displayUnit != null && (
                         <div className="w-fit max-w-full min-w-0 self-start">
-                            <UnitCardCompact className="w-auto" unit={unit} />
+                            <UnitCardCompact className="w-auto" unit={displayUnit} unitRefreshPending={isRefreshing} />
                         </div>
                     )}
                 </div>

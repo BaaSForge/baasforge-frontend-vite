@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ChevronDownIcon } from "lucide-react";
+import { useParams } from "react-router";
 
 import { Markdown } from "@/components/markdown";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
@@ -9,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardChip } from "@/modules/project";
+import { useChatSessionUnitTipsFresh } from "@/modules/project-chat/use-chat-session-unit-tips";
 import {
     ChatMessageStatus,
     type ChatMessageWithDeliveryStatus,
@@ -52,10 +54,18 @@ export function ToolAnalyzeArchitectureMessage({
     message: ChatMessageWithDeliveryStatus;
     nestedMessages?: ReactNode;
 }) {
+    const { projectId, conversationId: chatSessionId } = useParams<{ projectId: string; conversationId?: string }>();
     const units = getRelatedUnits(message);
+    const shouldRefreshFromHistory = message.status !== ChatMessageStatus.Generating;
+    const { units: displayUnits, isRefreshing } = useChatSessionUnitTipsFresh(
+        projectId,
+        chatSessionId,
+        units,
+        shouldRefreshFromHistory,
+    );
     const args = getAnalyzeArchitectureArgs(message);
     const detailedReport = getDetailedReport(message);
-    const unitCount = units.length;
+    const unitCount = displayUnits.length;
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasUnits = unitCount > 0;
     const hasDetailedReport = detailedReport.trim().length > 0;
@@ -108,8 +118,8 @@ export function ToolAnalyzeArchitectureMessage({
                                         hideScrollbar
                                     >
                                         <div className="flex w-max items-stretch gap-2">
-                                            {units.map((unit) => (
-                                                <UnitCardChip key={unit.id} unit={unit} />
+                                            {displayUnits.map((unit) => (
+                                                <UnitCardChip key={unit.id} unit={unit} unitRefreshPending={isRefreshing} />
                                             ))}
                                         </div>
                                     </FadedScrollArea>

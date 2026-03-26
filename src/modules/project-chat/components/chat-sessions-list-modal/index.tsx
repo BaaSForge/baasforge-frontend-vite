@@ -32,15 +32,17 @@ function SessionItem({
                 onClick={onNavigate}
                 aria-current={isCurrentChat ? "page" : undefined}
                 className={cn(
-                    "flex w-full min-w-0 flex-col gap-1.5 rounded-lg border border-solid px-3 py-2.5 text-sm outline-none hover:bg-transparent",
+                    "flex w-full min-w-0 flex-col gap-1.5 rounded-lg border px-3 py-2.5 text-sm outline-none hover:bg-transparent",
                     "focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                    isCurrentChat ? "border-primary/60" : "border-border",
+                    isCurrentChat
+                        ? "border-solid border-blue-500/40 dark:border-blue-400/45"
+                        : "border-dashed border-border",
                 )}
             >
                 <div className="flex w-full min-w-0 justify-end">
                     <div
                         className={cn(
-                            "max-w-[80%] min-w-0 rounded-2xl rounded-br-md bg-muted px-3 py-1.5 text-right text-xs font-medium leading-snug text-foreground",
+                            "max-w-[80%] min-w-0 border-r border-border px-3 py-1.5 text-right text-xs font-medium leading-snug text-foreground",
                             "line-clamp-2",
                         )}
                     >
