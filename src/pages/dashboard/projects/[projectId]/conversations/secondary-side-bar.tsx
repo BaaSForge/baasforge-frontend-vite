@@ -16,7 +16,7 @@ export function SecondarySideBar() {
 
     return (
         <div className="flex flex-col gap-2 p-2 mt-1.5">
-            <div className="flex items-center justify-between mb-2">
+            <div className="sticky top-0 z-10 -mx-2 flex shrink-0 items-center justify-between gap-2 bg-sidebar px-2 py-2">
                 <SectionTitle className="mb-0">Draft units</SectionTitle>
                 <Button variant="outline" size="xs" asChild>
                     <Link to={`/dashboard/projects/${projectId}/units-releases`}>
