@@ -26,12 +26,13 @@ export function ExpandableFullReadTrigger({ onClick, ariaLabel, children, classN
             }}
             className={cn(
                 "absolute inset-0 z-[2] flex flex-col items-center justify-center gap-1 border-0 p-0 text-xs font-medium shadow-none",
-                "bg-transparent text-transparent",
-                "pointer-events-none cursor-default",
-                "transition-[background-color,color] duration-150 ease-out",
+                "pointer-events-auto cursor-pointer",
+                "bg-transparent text-muted-foreground opacity-0",
+                "transition-[opacity,background-color] duration-150 ease-out",
                 "rounded-md",
-                "group-hover/expandable-read:pointer-events-auto group-hover/expandable-read:cursor-pointer group-hover/expandable-read:bg-background/90 group-hover/expandable-read:text-muted-foreground",
-                "group-focus-within/expandable-read:pointer-events-auto group-focus-within/expandable-read:cursor-pointer group-focus-within/expandable-read:bg-background/90 group-focus-within/expandable-read:text-muted-foreground",
+                "group-hover/expandable-read:opacity-100 group-hover/expandable-read:bg-background/90",
+                "group-focus-within/expandable-read:opacity-100 group-focus-within/expandable-read:bg-background/90",
+                "focus-visible:opacity-100 focus-visible:bg-background/90",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 className,
             )}
