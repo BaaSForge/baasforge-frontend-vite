@@ -6,12 +6,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import {
     ChatMessageStatus,
+    getToolPayloadErrorString,
     type ChatMessageWithDeliveryStatus,
     type ToolListUnitContextsPayload,
 } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 /** API may return either `{ context_slugs }` or a bare `string[]`. */
 type ListUnitContextsPayload = ToolListUnitContextsPayload | string[] | undefined;
@@ -29,6 +31,7 @@ export function ToolListUnitContextsMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasContent = contextCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
+    const payloadError = getToolPayloadErrorString(message.payload);
 
     return (
         <>
@@ -80,6 +83,7 @@ export function ToolListUnitContextsMessage({
                     </Collapsible>
                 )}
             </div>
+            {payloadError != null && <ToolMessagePayloadError message={payloadError} />}
             {nestedMessages}
         </>
     );

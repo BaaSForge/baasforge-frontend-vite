@@ -9,12 +9,14 @@ import type { ReleaseResponse } from "@/modules/project";
 import { ReleaseCardChip } from "@/modules/project";
 import {
     ChatMessageStatus,
+    getToolPayloadErrorString,
     type ChatMessageWithDeliveryStatus,
     type ToolFetchLatestReleasesPayload,
 } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 function getToolFetchLatestReleasesPayload(message: ChatMessageWithDeliveryStatus): ReleaseResponse[] {
     const p = message.payload as ToolFetchLatestReleasesPayload | ReleaseResponse[] | undefined | null;
@@ -50,6 +52,7 @@ export function ToolFetchLatestReleasesMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasReleases = releaseCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
+    const payloadError = getToolPayloadErrorString(message.payload);
 
     const headerTooltip = (
         <TooltipContent side="top" className="max-w-xs">
@@ -117,6 +120,7 @@ export function ToolFetchLatestReleasesMessage({
                     </Collapsible>
                 )}
             </div>
+            {payloadError != null && <ToolMessagePayloadError message={payloadError} />}
             {nestedMessages}
         </>
     );

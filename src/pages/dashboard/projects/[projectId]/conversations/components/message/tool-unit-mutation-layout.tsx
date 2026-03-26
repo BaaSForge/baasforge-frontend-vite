@@ -10,6 +10,7 @@ import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 export type ToolUnitMutationLayoutProps = {
     message: ChatMessageWithDeliveryStatus;
@@ -17,9 +18,17 @@ export type ToolUnitMutationLayoutProps = {
     statusLine: string;
     argsTooltip: string;
     unit: ProjectUnitResponse | null;
+    payloadError?: string | null;
 };
 
-export function ToolUnitMutationLayout({ message, nestedMessages, statusLine, argsTooltip, unit }: ToolUnitMutationLayoutProps) {
+export function ToolUnitMutationLayout({
+    message,
+    nestedMessages,
+    statusLine,
+    argsTooltip,
+    unit,
+    payloadError,
+}: ToolUnitMutationLayoutProps) {
     const { projectId, conversationId: chatSessionId } = useParams<{ projectId: string; conversationId?: string }>();
     const initialUnits = useMemo(() => (unit != null ? [unit] : []), [unit]);
     const shouldRefreshFromHistory = message.status !== ChatMessageStatus.Generating;
@@ -67,6 +76,7 @@ export function ToolUnitMutationLayout({ message, nestedMessages, statusLine, ar
                     )}
                 </div>
             </div>
+            {payloadError != null && <ToolMessagePayloadError message={payloadError} />}
             {nestedMessages}
         </>
     );

@@ -39,6 +39,9 @@ export interface ToolFetchRelevantUnitsPayload {
         query?: string | null;
     };
     units?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
 }
 
 export interface ToolFetchLatestReleasesPayload {
@@ -46,12 +49,16 @@ export interface ToolFetchLatestReleasesPayload {
         limit?: number | null;
     };
     releases?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
 }
 
 export interface ToolListUnitContextsPayload {
     context_slugs?: string[];
     tool_call_id?: string;
     tool_name?: string;
+    error?: string;
 }
 
 export interface ContextModulesEntry {
@@ -66,6 +73,7 @@ export interface ToolListModulesForUnitContextsPayload {
     by_context?: ContextModulesEntry[];
     tool_call_id?: string;
     tool_name?: string;
+    error?: string;
 }
 
 export interface ToolAnalyzeArchitecturePayload {
@@ -75,6 +83,9 @@ export interface ToolAnalyzeArchitecturePayload {
     related_units?: unknown[];
     detailed_report?: string;
     messages?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
 }
 
 export interface FinishArchitectureAnalysisPayload {
@@ -82,7 +93,9 @@ export interface FinishArchitectureAnalysisPayload {
         detailed_report?: string | null;
         relevant_units_ids?: unknown[];
     };
+    tool_call_id?: string;
     tool_name?: string;
+    error?: string;
 }
 
 export interface ToolAnalyzeSolutionPayload {
@@ -91,13 +104,18 @@ export interface ToolAnalyzeSolutionPayload {
     };
     detailed_report?: string;
     messages?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
 }
 
 export interface FinishSolutionAnalysisPayload {
     args?: {
         detailed_report?: string | null;
     };
+    tool_call_id?: string;
     tool_name?: string;
+    error?: string;
 }
 
 export interface ToolImplementSolutionPayload {
@@ -106,13 +124,18 @@ export interface ToolImplementSolutionPayload {
     };
     detailed_report?: string;
     messages?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
 }
 
 export interface FinishImplementationPayload {
     args?: {
         detailed_report?: string | null;
     };
+    tool_call_id?: string;
     tool_name?: string;
+    error?: string;
 }
 
 export interface ToolCreateUnitPayload {
@@ -122,7 +145,9 @@ export interface ToolCreateUnitPayload {
         unit_type?: ProjectUnitResponse["unit_type"] | null;
     };
     created_unit?: ProjectUnitResponse;
+    tool_call_id?: string;
     tool_name?: string;
+    error?: string;
 }
 
 export interface ToolModifyUnitPayload {
@@ -133,7 +158,9 @@ export interface ToolModifyUnitPayload {
         revision?: ProjectUnitResponse["revision"] | null;
     };
     revised_unit?: ProjectUnitResponse;
+    tool_call_id?: string;
     tool_name?: string;
+    error?: string;
 }
 
 export interface ToolRemoveUnitArgs {
@@ -146,4 +173,12 @@ export interface ToolRemoveUnitPayload {
     error?: string;
     tool_call_id?: string;
     tool_name?: string;
+}
+
+/** Non-empty `error` from any tool message payload (optional on all tool payloads). */
+export function getToolPayloadErrorString(payload: unknown): string | null {
+    if (payload == null || typeof payload !== "object" || Array.isArray(payload)) return null;
+    const e = (payload as { error?: unknown }).error;
+    if (typeof e !== "string" || e.trim() === "") return null;
+    return e;
 }

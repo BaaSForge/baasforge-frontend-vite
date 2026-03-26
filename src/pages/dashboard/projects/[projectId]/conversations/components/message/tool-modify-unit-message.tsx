@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { ProjectUnitResponse } from "@/modules/project";
 import {
     ChatMessageStatus,
+    getToolPayloadErrorString,
     type ChatMessageWithDeliveryStatus,
     type ToolModifyUnitPayload,
 } from "@/modules/project-chat/types";
@@ -45,6 +46,7 @@ export function ToolModifyUnitMessage({
     const unit: ProjectUnitResponse | null = payload?.revised_unit ?? null;
     const status = message.status ?? ChatMessageStatus.Generating;
     const statusLine = modifyStatusLine(status);
+    const payloadError = getToolPayloadErrorString(message.payload);
 
     return (
         <ToolUnitMutationLayout
@@ -53,6 +55,7 @@ export function ToolModifyUnitMessage({
             statusLine={statusLine}
             argsTooltip={formatModifyUnitArgs(payload?.args)}
             unit={unit}
+            payloadError={payloadError}
         />
     );
 }

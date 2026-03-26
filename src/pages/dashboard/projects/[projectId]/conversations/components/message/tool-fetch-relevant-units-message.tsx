@@ -9,10 +9,16 @@ import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardChip } from "@/modules/project";
 import { useChatSessionEmbeddedUnitsLatestRevisions } from "@/modules/project-chat/use-chat-session-embedded-units-latest-revisions";
-import { ChatMessageStatus, type ChatMessageWithDeliveryStatus, type ToolFetchRelevantUnitsPayload } from "@/modules/project-chat/types";
+import {
+    ChatMessageStatus,
+    getToolPayloadErrorString,
+    type ChatMessageWithDeliveryStatus,
+    type ToolFetchRelevantUnitsPayload,
+} from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 function getToolFetchRelevantUnitsPayload(message: ChatMessageWithDeliveryStatus): ProjectUnitResponse[] {
     const p = message.payload as ToolFetchRelevantUnitsPayload | ProjectUnitResponse[] | undefined | null;
@@ -56,6 +62,7 @@ export function ToolFetchRelevantUnitsMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasUnits = unitCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
+    const payloadError = getToolPayloadErrorString(message.payload);
 
     const headerTooltip = (
         <TooltipContent side="top" className="max-w-xs">
@@ -129,6 +136,7 @@ export function ToolFetchRelevantUnitsMessage({
                     </Collapsible>
                 )}
             </div>
+            {payloadError != null && <ToolMessagePayloadError message={payloadError} />}
             {nestedMessages}
         </>
     );

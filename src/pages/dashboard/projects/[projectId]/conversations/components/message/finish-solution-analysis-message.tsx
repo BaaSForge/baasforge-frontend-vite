@@ -3,12 +3,14 @@ import type { ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
     ChatMessageStatus,
+    getToolPayloadErrorString,
     type ChatMessageWithDeliveryStatus,
     type FinishSolutionAnalysisPayload,
 } from "@/modules/project-chat/types";
 import { truncateToWords } from "@/utils/truncate-to-words";
 
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 const SUMMARY_MAX_WORDS = 30;
 
@@ -30,6 +32,7 @@ export function FinishSolutionAnalysisMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const payload = message?.payload as FinishSolutionAnalysisPayload | undefined | null;
     const args = payload?.args ?? null;
+    const payloadError = getToolPayloadErrorString(message.payload);
 
     return (
         <>
@@ -49,6 +52,7 @@ export function FinishSolutionAnalysisMessage({
                     </TooltipContent>
                 </Tooltip>
             </div>
+            {payloadError != null && <ToolMessagePayloadError message={payloadError} />}
             {nestedMessages}
         </>
     );

@@ -8,12 +8,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import {
     ChatMessageStatus,
+    getToolPayloadErrorString,
     type ChatMessageWithDeliveryStatus,
     type ToolListModulesForUnitContextsPayload,
 } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 type ContextModulesEntry = {
     context_slug: string;
@@ -69,6 +71,7 @@ export function ToolListModulesForUnitContextsMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasContent = rowCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
+    const payloadError = getToolPayloadErrorString(message.payload);
 
     const headerTooltip = (
         <TooltipContent side="top" className="max-w-xs">
@@ -166,6 +169,7 @@ export function ToolListModulesForUnitContextsMessage({
                     </Collapsible>
                 )}
             </div>
+            {payloadError != null && <ToolMessagePayloadError message={payloadError} />}
             {nestedMessages}
         </>
     );

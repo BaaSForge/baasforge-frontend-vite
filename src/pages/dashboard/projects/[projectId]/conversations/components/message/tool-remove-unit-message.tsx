@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { ProjectUnitResponse } from "@/modules/project";
 import {
     ChatMessageStatus,
+    getToolPayloadErrorString,
     type ChatMessageWithDeliveryStatus,
     type ToolRemoveUnitPayload,
 } from "@/modules/project-chat/types";
@@ -34,6 +35,7 @@ export function ToolRemoveUnitMessage({
     const unit: ProjectUnitResponse | null = payload?.removed_unit ?? null;
     const status = message.status ?? ChatMessageStatus.Generating;
     const statusLine = removeStatusLine(status);
+    const payloadError = getToolPayloadErrorString(message.payload);
 
     return (
         <ToolUnitMutationLayout
@@ -42,6 +44,7 @@ export function ToolRemoveUnitMessage({
             statusLine={statusLine}
             argsTooltip={formatRemoveUnitArgs(payload?.args)}
             unit={unit}
+            payloadError={payloadError}
         />
     );
 }

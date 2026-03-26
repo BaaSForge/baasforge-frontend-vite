@@ -52,7 +52,7 @@ export type {
     ToolModifyUnitPayload,
     ToolRemoveUnitPayload,
 } from "./payloads";
-export { getTextPayloadThinkingDisplay } from "./payloads";
+export { getTextPayloadThinkingDisplay, getToolPayloadErrorString } from "./payloads";
 
 export interface ChatMessageResponse {
     id: string;
