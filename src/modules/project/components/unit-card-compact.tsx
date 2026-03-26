@@ -27,12 +27,12 @@ export function UnitCardCompact({ unit, className, unitRefreshPending }: UnitCar
 
     const badges = (
         <>
+            <UnitRevisionBadge unit={unit} refreshPending={unitRefreshPending} />
             {isDeleted && (
                 <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
                     Deleted
                 </Badge>
             )}
-            <UnitRevisionBadge unit={unit} refreshPending={unitRefreshPending} />
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {capitalizeFirstLetter(unit.unit_type)}
             </Badge>
@@ -63,11 +63,11 @@ export function UnitCardCompact({ unit, className, unitRefreshPending }: UnitCar
                     bottomEdgeFadeFromClassName="from-card"
                     trigger={(_isOpen, _setOpen) => (
                         <ExpandableFullReadTrigger
-                            ariaLabel="Show full description"
+                            ariaLabel="Expand full explanation"
                             onClick={() => setModalOpen(true)}
                             className="rounded-lg"
                         >
-                            Read full explanation
+                            Expand
                         </ExpandableFullReadTrigger>
                     )}
                 >

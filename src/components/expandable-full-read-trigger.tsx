@@ -25,7 +25,7 @@ export function ExpandableFullReadTrigger({ onClick, ariaLabel, children, classN
                 onClick(e);
             }}
             className={cn(
-                "absolute inset-0 z-[2] flex flex-col items-center justify-center gap-1 border-0 p-0 text-xs font-medium shadow-none",
+                "absolute inset-0 z-[2] flex flex-row items-center justify-center gap-1.5 border-0 p-0 text-xs font-medium shadow-none",
                 "pointer-events-auto cursor-pointer",
                 "bg-transparent text-muted-foreground opacity-0",
                 "transition-[opacity,background-color] duration-150 ease-out",
@@ -37,7 +37,7 @@ export function ExpandableFullReadTrigger({ onClick, ariaLabel, children, classN
                 className,
             )}
         >
-            <Maximize2 className="size-3.5 shrink-0" aria-hidden />
+            <Maximize2 className="size-2.5 shrink-0" aria-hidden />
             {children}
         </button>
     );

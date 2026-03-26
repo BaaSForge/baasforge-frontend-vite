@@ -64,11 +64,11 @@ export function UnitCardChip({ unit, className, unitRefreshPending }: UnitCardCh
                     <div className="flex flex-wrap items-center gap-1">{badges}</div>
                     <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
                     <ExpandableFullReadTrigger
-                        ariaLabel="Show full explanation"
+                        ariaLabel="Expand full explanation"
                         onClick={() => setModalOpen(true)}
                         className="rounded-b-lg rounded-t-none"
                     >
-                        Read full explanation
+                        Expand
                     </ExpandableFullReadTrigger>
                 </div>
                 <UnitFullExplanationModal
