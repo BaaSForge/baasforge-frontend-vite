@@ -1,4 +1,5 @@
 import type { ChatMessageResponse } from "@/modules/project-chat/types";
+import type { ProjectUnitResponse } from "@/modules/project/types";
 import { ChatMessageStatus } from "@/modules/project-chat/types";
 
 export type ChatSessionNewMessageChunkEvent = {
@@ -67,6 +68,13 @@ export type RuntimeCreatedEvent = {
     runtime_id: string;
 };
 
+export type ProjectUnitWsEvent = {
+    type: "project_unit_created" | "project_unit_modified" | "project_unit_deleted";
+    project_id: string;
+    session_id: string;
+    unit: ProjectUnitResponse;
+};
+
 export type WsServerEvent =
     | ChatSessionNewMessageChunkEvent
     | ChatSessionNewThinkingChunkEvent
@@ -77,6 +85,7 @@ export type WsServerEvent =
     | ChatSessionGenerationEndedEvent
     | ProjectDeletedEvent
     | RuntimeCreatedEvent
+    | ProjectUnitWsEvent
     | { type: "subscribed"; topic: string }
     | { type: "unsubscribed"; topic: string }
     | { type: "error"; message: string };
@@ -91,6 +100,32 @@ export function isProjectDeletedEvent(data: unknown): data is ProjectDeletedEven
 
 export function isRuntimeCreatedEvent(data: unknown): data is RuntimeCreatedEvent {
     return isWsServerEvent(data) && data.type === "runtime_created";
+}
+
+function isRecord(data: unknown): data is Record<string, unknown> {
+    return typeof data === "object" && data !== null;
+}
+
+function isProjectUnitEventType(type: unknown): type is ProjectUnitWsEvent["type"] {
+    return (
+        type === "project_unit_created" ||
+        type === "project_unit_modified" ||
+        type === "project_unit_deleted"
+    );
+}
+
+export function isProjectUnitWsEvent(data: unknown): data is ProjectUnitWsEvent {
+    if (!isRecord(data)) return false;
+    if (!isProjectUnitEventType(data.type)) return false;
+    const unit = data.unit;
+    if (!isRecord(unit)) return false;
+    return (
+        typeof data.project_id === "string" &&
+        typeof data.session_id === "string" &&
+        typeof unit.context_slug === "string" &&
+        typeof unit.module_slug === "string" &&
+        typeof unit.unit_name_slug === "string"
+    );
 }
 
 export function isChatSessionNewMessageChunkEvent(data: unknown): data is ChatSessionNewMessageChunkEvent {

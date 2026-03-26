@@ -9,7 +9,9 @@ import {
     isChatSessionMessageUpdatedEvent,
     isChatSessionNewMessageChunkEvent,
     isChatSessionNewThinkingChunkEvent,
+    isProjectUnitWsEvent,
 } from "@/lib/ws-events";
+import type { ProjectUnitResponse } from "@/modules/project/types";
 import {
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
@@ -206,6 +208,31 @@ function placeholderMessage(sessionId: string, messageId: string, status: ChatMe
         status,
         delivery_status: ChatMessageDeliveryStatus.Delivered,
     };
+}
+
+function sameProjectUnitIdentity(a: ProjectUnitResponse, b: ProjectUnitResponse): boolean {
+    return (
+        a.context_slug === b.context_slug &&
+        a.module_slug === b.module_slug &&
+        a.unit_name_slug === b.unit_name_slug
+    );
+}
+
+function upsertDraftUnitInList(prev: ProjectUnitResponse[] | undefined, unit: ProjectUnitResponse): ProjectUnitResponse[] {
+    const without = (prev ?? []).filter((u) => !sameProjectUnitIdentity(u, unit));
+    return [unit, ...without];
+}
+
+export function handleProjectUnitWsEvent(data: unknown, queryClient: QueryClient): boolean {
+    if (!isProjectUnitWsEvent(data)) return false;
+
+    const { project_id, session_id, unit } = data;
+    if (unit.project_id !== project_id) return true;
+    if (unit.chat_session_id != null && unit.chat_session_id !== session_id) return true;
+
+    const cacheKey = QueryKeys.projectDraftUnits(project_id, session_id);
+    queryClient.setQueryData<ProjectUnitResponse[]>(cacheKey, (old) => upsertDraftUnitInList(old, unit));
+    return true;
 }
 
 /** Call when the create-message POST succeeds so the UI shows generating/STOP/placeholder immediately. */

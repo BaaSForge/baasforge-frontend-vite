@@ -3,7 +3,7 @@ import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
 import { isProjectDeletedEvent, isRuntimeCreatedEvent, userTopic } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
-import { handleChatSessionWsEvent } from "@/modules/project-chat/ws-cache-handler";
+import { handleChatSessionWsEvent, handleProjectUnitWsEvent } from "@/modules/project-chat/ws-cache-handler";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { useRef } from "react";
@@ -27,6 +27,9 @@ export function useSubscribeUserNotifications(): void {
         enabled: !!user && !!wsUrl,
         onMessage(data) {
             if (handleChatSessionWsEvent(data, queryClient, chunkTracking.current)) {
+                return;
+            }
+            if (handleProjectUnitWsEvent(data, queryClient)) {
                 return;
             }
             if (isProjectDeletedEvent(data)) {
