@@ -2,7 +2,7 @@ import { QueryKeys } from "@/constants/query-keys";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { getChatSessionUnitTipsByIds } from "./api";
+import { getChatSessionUnitsByIds } from "./api";
 
 export function useChatSessionUnitTipsFresh(
     projectId: string | undefined,
@@ -13,8 +13,8 @@ export function useChatSessionUnitTipsFresh(
     const unitIds = useMemo(() => initialUnits.map((u) => u.id), [initialUnits]);
 
     const query = useQuery({
-        queryKey: QueryKeys.chatSessionUnitTips(projectId ?? "", chatSessionId ?? "", unitIds),
-        queryFn: () => getChatSessionUnitTipsByIds(projectId!, chatSessionId!, unitIds),
+        queryKey: QueryKeys.chatSessionUnitsByIds(projectId ?? "", chatSessionId ?? "", unitIds),
+        queryFn: () => getChatSessionUnitsByIds(projectId!, chatSessionId!, unitIds),
         enabled: enabled && unitIds.length > 0 && projectId != null && chatSessionId != null,
         staleTime: 60_000,
     });

@@ -12,8 +12,8 @@ export const QueryKeys = {
     projectChatSessionList: (projectId: string) => ["chat", "sessions", "list", projectId] as const,
     projectChatSessionDetail: (projectId: string, chatSessionId: string) => ["chat", "sessions", "detail", projectId, chatSessionId] as const,
     projectChatSessionMessages: (projectId: string, chatSessionId: string) => ["chat", "sessions", "messages", projectId, chatSessionId] as const,
-    chatSessionUnitTips: (projectId: string, chatSessionId: string, unitIds: string[]) =>
-        ["chat", "sessions", "unit-tips", projectId, chatSessionId, [...unitIds].sort().join(",")] as const,
+    chatSessionUnitsByIds: (projectId: string, chatSessionId: string, unitIds: string[]) =>
+        ["chat", "sessions", "units-by-ids", projectId, chatSessionId, [...unitIds].sort().join(",")] as const,
     /** Set of "projectId:sessionId" for sessions currently generating a response (updated via WS). */
     chatSessionGeneratingSet: () => ["chat", "sessions", "generating"] as const,
     projectReleases: (projectId: string) => ["project", "releases", projectId] as const,
