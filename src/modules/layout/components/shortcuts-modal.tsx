@@ -20,7 +20,7 @@ export function ShortcutsModal({ open, onOpenChange }: ShortcutsModalProps) {
                         <div
                             key={label}
                             className={cn(
-                                "flex cursor-default items-center px-2 py-3 text-sm outline-hidden select-none",
+                                "flex cursor-default items-center py-3 text-sm outline-hidden select-none",
                                 "text-foreground [&_svg]:shrink-0 [&_svg]:size-4",
                                 i < SHORTCUTS_FOR_MODAL.length - 1 && "",
                             )}
