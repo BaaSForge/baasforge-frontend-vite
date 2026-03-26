@@ -35,11 +35,6 @@ export function UnitCardCompact({ unit, projectId, chatSessionId, className, uni
                 chatSessionId={chatSessionId}
                 refreshPending={unitRefreshPending}
             />
-            {isDeleted && (
-                <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
-                    Deleted
-                </Badge>
-            )}
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {capitalizeFirstLetter(unit.unit_type)}
             </Badge>

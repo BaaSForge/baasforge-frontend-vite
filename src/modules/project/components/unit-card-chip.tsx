@@ -27,11 +27,6 @@ export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRe
 
     const badges = (
         <>
-            {isDeleted && (
-                <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
-                    Deleted
-                </Badge>
-            )}
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {unit.unit_type}
             </Badge>
