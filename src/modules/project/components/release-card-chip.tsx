@@ -40,7 +40,7 @@ export function ReleaseCardChip({ release, className }: ReleaseCardChipProps) {
     return (
         <div
             className={cn(
-                "flex shrink-0 flex-col gap-1 rounded-md border bg-muted/30 px-2.5 py-1.5 min-w-0 max-w-[200px]",
+                "group/expandable-read relative flex shrink-0 flex-col gap-1 overflow-hidden rounded-md border bg-muted/30 px-2.5 py-1.5 min-w-0 max-w-[200px]",
                 className,
             )}
             title={release.notes ?? undefined}

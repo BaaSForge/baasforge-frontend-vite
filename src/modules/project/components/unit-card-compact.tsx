@@ -43,25 +43,29 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
         <div className={cn("relative inline-block w-full min-w-0", UNIT_CARD_ID_BADGE_RESERVE_CLASS, className)}>
             {hasParent && (
                 <Card
-                    className="pointer-events-none absolute top-[calc(0.75rem+0.375rem)] left-1.5 right-0 bottom-0 z-0 rounded-xl border bg-card p-0 shadow-none"
+                    className="pointer-events-none absolute top-[calc(0.75rem+0.375rem)] left-1.5 right-0 bottom-0 z-0 rounded-lg border bg-card p-0 shadow-none"
                     aria-hidden
                 />
             )}
             <Card
                 className={cn(
-                    "relative z-[1] gap-0 overflow-visible rounded-xl border p-0 shadow-none",
+                    "relative z-[1] gap-0 overflow-visible rounded-lg border p-0 shadow-none",
                     hasParent && "mb-1.5 mr-1.5",
                     isDeleted && "border-destructive",
                 )}
             >
                 <UnitCardIdRow unitId={unit.id} className="z-3" />
                 <Expandable
-                    className="group/expandable-read relative p-2 pt-3 text-xs"
+                    className="group/expandable-read relative overflow-hidden rounded-lg p-2 pt-3 text-xs"
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
                     trigger={(_isOpen, _setOpen) => (
-                        <ExpandableFullReadTrigger ariaLabel="Show full description" onClick={() => setModalOpen(true)}>
+                        <ExpandableFullReadTrigger
+                            ariaLabel="Show full description"
+                            onClick={() => setModalOpen(true)}
+                            className="rounded-lg"
+                        >
                             Read full explanation
                         </ExpandableFullReadTrigger>
                     )}

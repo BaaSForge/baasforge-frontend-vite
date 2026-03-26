@@ -59,12 +59,16 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                 )}
             >
                 <Expandable
-                    className="group/expandable-read p-2 text-xs relative"
+                    className="group/expandable-read relative overflow-hidden rounded-t-xl rounded-b-none p-2 text-xs"
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
                     trigger={(_isOpen, _setOpen) => (
-                        <ExpandableFullReadTrigger ariaLabel="Show full release notes" onClick={() => setModalOpen(true)}>
+                        <ExpandableFullReadTrigger
+                            ariaLabel="Show full release notes"
+                            onClick={() => setModalOpen(true)}
+                            className="rounded-t-xl rounded-b-none"
+                        >
                             Read full release notes
                         </ExpandableFullReadTrigger>
                     )}

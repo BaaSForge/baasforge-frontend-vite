@@ -46,23 +46,27 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
         >
             {hasParent && (
                 <div
-                    className="pointer-events-none absolute top-4 left-1 -right-1 bottom-0 z-0 rounded-md border bg-card p-0 shadow-none"
+                    className="pointer-events-none absolute top-4 left-1 -right-1 bottom-0 z-0 rounded-lg border bg-card p-0 shadow-none"
                     aria-hidden
                 />
             )}
             <div
                 className={cn(
-                    "relative z-[1] flex flex-col overflow-visible rounded-md border bg-muted/30 min-w-0 w-full bg-card",
+                    "relative z-[1] flex flex-col overflow-visible rounded-lg border bg-muted/30 min-w-0 w-full bg-card",
                     hasParent && "mb-1",
                     isDeleted && "border-destructive",
                 )}
                 title={unit.explanation ?? undefined}
             >
                 <UnitCardIdRow unitId={unit.id} className="z-3" />
-                <div className="group/expandable-read relative flex flex-col gap-1 px-2.5 pt-4 pb-1.5">
+                <div className="group/expandable-read relative flex flex-col gap-1 overflow-hidden rounded-b-lg px-2.5 pt-4 pb-1.5">
                     <div className="flex flex-wrap items-center gap-1">{badges}</div>
                     <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
-                    <ExpandableFullReadTrigger ariaLabel="Show full explanation" onClick={() => setModalOpen(true)}>
+                    <ExpandableFullReadTrigger
+                        ariaLabel="Show full explanation"
+                        onClick={() => setModalOpen(true)}
+                        className="rounded-b-lg rounded-t-none"
+                    >
                         Read full explanation
                     </ExpandableFullReadTrigger>
                 </div>
