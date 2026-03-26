@@ -6,7 +6,7 @@ import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { CentricModal, CentricModalContent, CentricModalHeader } from "@/components/ui/centric-modal";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
@@ -74,9 +74,9 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                         {explanation}
                     </div>
                 </Expandable>
-                <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-                    <DialogContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
-                        <DialogHeader className="flex flex-row">{badges}</DialogHeader>
+                <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
+                    <CentricModalContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
+                        <CentricModalHeader className="flex flex-row">{badges}</CentricModalHeader>
                         <div
                             className={cn(
                                 "prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2",
@@ -85,8 +85,8 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                         >
                             <Markdown>{explanation}</Markdown>
                         </div>
-                    </DialogContent>
-                </Dialog>
+                    </CentricModalContent>
+                </CentricModal>
                 <CardAction className="bg-muted/30 w-full flex items-center justify-start p-2 gap-2 border-t">{badges}</CardAction>
             </Card>
         </div>

@@ -1,7 +1,6 @@
 "use client";
 
-import { FadedScrollArea } from "@/components/faded-scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { Item, ItemContent, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { MessageSquare } from "lucide-react";
 import { Link } from "react-router";
@@ -36,12 +35,12 @@ export function ChatSessionsListModal() {
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Chat sessions</DialogTitle>
-                </DialogHeader>
-                <FadedScrollArea>
+        <CentricModal open={isOpen} onOpenChange={handleOpenChange}>
+            <CentricModalContent className="sm:max-w-md sm:max-h-[80dvh] sm:overflow-hidden">
+                <CentricModalHeader>
+                    <CentricModalTitle>Chat sessions</CentricModalTitle>
+                </CentricModalHeader>
+                <div className="sm:max-h-[calc(80dvh-8rem)] sm:overflow-y-auto pr-1">
                     {isLoading ? (
                         <div className="text-muted-foreground flex items-center justify-center px-4 py-8 text-center text-sm">Loading…</div>
                     ) : sessions.length === 0 ? (
@@ -53,8 +52,8 @@ export function ChatSessionsListModal() {
                             ))}
                         </ItemGroup>
                     ) : null}
-                </FadedScrollArea>
-            </DialogContent>
-        </Dialog>
+                </div>
+            </CentricModalContent>
+        </CentricModal>
     );
 }

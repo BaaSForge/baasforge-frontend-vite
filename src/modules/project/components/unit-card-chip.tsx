@@ -3,7 +3,7 @@
 import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { CentricModal, CentricModalContent, CentricModalHeader } from "@/components/ui/centric-modal";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
@@ -64,9 +64,9 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                         Read full explanation
                     </ExpandableFullReadTrigger>
                 </div>
-                <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-                    <DialogContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
-                        <DialogHeader className="flex flex-row gap-1">
+                <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
+                    <CentricModalContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
+                        <CentricModalHeader className="flex flex-row gap-1">
                             {isDeleted && (
                                 <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
                                     Deleted
@@ -78,7 +78,7 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                             <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">
                                 {unit.revision}
                             </Badge>
-                        </DialogHeader>
+                        </CentricModalHeader>
                         <div
                             className={cn(
                                 "prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2",
@@ -87,8 +87,8 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                         >
                             <Markdown>{explanation}</Markdown>
                         </div>
-                    </DialogContent>
-                </Dialog>
+                    </CentricModalContent>
+                </CentricModal>
             </div>
         </div>
     );

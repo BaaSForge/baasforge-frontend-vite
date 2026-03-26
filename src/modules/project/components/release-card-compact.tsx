@@ -6,7 +6,7 @@ import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { CentricModal, CentricModalContent, CentricModalHeader } from "@/components/ui/centric-modal";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
 import { useState } from "react";
@@ -73,14 +73,14 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                 >
                     <Markdown components={{ pre: () => null }}>{release.notes}</Markdown>
                 </Expandable>
-                <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-                    <DialogContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
-                        <DialogHeader className="flex">{badges}</DialogHeader>
+                <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
+                    <CentricModalContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
+                        <CentricModalHeader className="flex">{badges}</CentricModalHeader>
                         <div className="prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2">
                             <Markdown>{release.notes}</Markdown>
                         </div>
-                    </DialogContent>
-                </Dialog>
+                    </CentricModalContent>
+                </CentricModal>
                 <CardAction
                     className={cn(
                         "bg-muted/30 w-full flex flex-wrap items-center justify-start p-2 gap-2 border-t",

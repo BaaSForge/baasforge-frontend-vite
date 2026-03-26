@@ -4,6 +4,7 @@ import { register, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-key
 import * as React from "react";
 import { Outlet } from "react-router";
 import { AppSidebar } from "./app-sidebar";
+import { ShortcutsModal } from "./shortcuts-modal";
 import { StickyBreadcrumbBar, StickyBreadcrumbBarPlaceholder } from "./sticky-breadcrumb-bar";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
@@ -25,6 +26,7 @@ function MainSidebarShortcutListener() {
 
 export function AppShell() {
     const [open, setOpen] = React.useState(getStoredSidebarState);
+    const [shortcutsOpen, setShortcutsOpen] = React.useState(false);
 
     useSubscribeUserNotifications();
 
@@ -33,15 +35,25 @@ export function AppShell() {
         localStorage.setItem(SIDEBAR_STORAGE_KEY, String(value));
     }, []);
 
+    const handleOpenShortcuts = React.useCallback(() => {
+        setShortcutsOpen(true);
+    }, []);
+
+    React.useEffect(() => {
+        register(UNIFIED_KEYBOARD_SCOPES.OPEN_SHORTCUTS_MODAL, handleOpenShortcuts);
+        return () => unregister(UNIFIED_KEYBOARD_SCOPES.OPEN_SHORTCUTS_MODAL);
+    }, [handleOpenShortcuts]);
+
     return (
         <SidebarProvider open={open} onOpenChange={handleOpenChange}>
             <MainSidebarShortcutListener />
-            <AppSidebar />
+            <AppSidebar onOpenShortcuts={handleOpenShortcuts} />
             <SidebarInset>
                 <StickyBreadcrumbBarPlaceholder />
                 <StickyBreadcrumbBar />
                 <Outlet />
             </SidebarInset>
+            <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
         </SidebarProvider>
     );
 }

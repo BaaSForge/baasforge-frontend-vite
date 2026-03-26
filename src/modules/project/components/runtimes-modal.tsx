@@ -2,7 +2,7 @@
 
 import { SectionTitle } from "@/components/section-title";
 import { Button, type ButtonProps } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { Item, ItemActions, ItemContent, ItemGroup, ItemHeader, ItemTitle } from "@/components/ui/item";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { LucideIcon } from "lucide-react";
@@ -90,11 +90,11 @@ export function RuntimesModal({ open, onOpenChange, projectId, chatSessionId, al
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Runtimes</DialogTitle>
-                </DialogHeader>
+        <CentricModal open={open} onOpenChange={onOpenChange}>
+            <CentricModalContent className="sm:max-w-md">
+                <CentricModalHeader>
+                    <CentricModalTitle>Runtimes</CentricModalTitle>
+                </CentricModalHeader>
                 {isLoading ? (
                     <div className="py-6 text-muted-foreground text-center text-sm">Loading runtimes…</div>
                 ) : error ? (
@@ -194,7 +194,7 @@ export function RuntimesModal({ open, onOpenChange, projectId, chatSessionId, al
                         )}
                     </div>
                 )}
-            </DialogContent>
-        </Dialog>
+            </CentricModalContent>
+        </CentricModal>
     );
 }

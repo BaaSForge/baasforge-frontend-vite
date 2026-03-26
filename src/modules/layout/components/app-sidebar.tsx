@@ -9,7 +9,11 @@ import { NavProjects } from "./nav-projects";
 import { NavUser } from "./nav-user";
 import { ProjectSwitcher } from "./project-switcher";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+    onOpenShortcuts: () => void;
+};
+
+export function AppSidebar({ onOpenShortcuts, ...props }: AppSidebarProps) {
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
@@ -24,7 +28,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </FadedScrollArea>
             </SidebarContent>
             <SidebarFooter>
-                <NavUser />
+                <NavUser onOpenShortcuts={onOpenShortcuts} />
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
