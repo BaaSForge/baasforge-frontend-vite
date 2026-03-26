@@ -12,27 +12,25 @@ export function ShortcutsModal({ open, onOpenChange }: ShortcutsModalProps) {
     return (
         <CentricModal open={open} onOpenChange={onOpenChange}>
             <CentricModalContent className="max-w-md p-0 gap-0" showCloseButton>
-                <CentricModalHeader className="px-4 pt-4 pb-4">
-                    <CentricModalTitle>Shortkeys</CentricModalTitle>
+                <CentricModalHeader>
+                    <CentricModalTitle>Shortcuts</CentricModalTitle>
                 </CentricModalHeader>
-                <div className="px-2 pb-4">
-                    <div className="rounded-md overflow-hidden">
-                        {SHORTCUTS_FOR_MODAL.map(({ label, keys }, i) => (
-                            <div
-                                key={label}
-                                className={cn(
-                                    "flex cursor-default items-center px-2 py-3 text-sm outline-hidden select-none",
-                                    "text-foreground [&_svg]:shrink-0 [&_svg]:size-4",
-                                    i < SHORTCUTS_FOR_MODAL.length - 1 && "",
-                                )}
-                            >
-                                <span className="flex-1 truncate text-left">{label}</span>
-                                <kbd className="text-muted-foreground ml-auto font-mono text-xs tracking-widest rounded border border-border bg-muted/50 px-1.5 py-0.5">
-                                    {keys}
-                                </kbd>
-                            </div>
-                        ))}
-                    </div>
+                <div className="rounded-md overflow-hidden">
+                    {SHORTCUTS_FOR_MODAL.map(({ label, keys }, i) => (
+                        <div
+                            key={label}
+                            className={cn(
+                                "flex cursor-default items-center px-2 py-3 text-sm outline-hidden select-none",
+                                "text-foreground [&_svg]:shrink-0 [&_svg]:size-4",
+                                i < SHORTCUTS_FOR_MODAL.length - 1 && "",
+                            )}
+                        >
+                            <span className="flex-1 truncate text-left">{label}</span>
+                            <kbd className="text-muted-foreground ml-auto font-mono text-xs tracking-widest rounded border border-border bg-muted/50 px-1.5 py-0.5">
+                                {keys}
+                            </kbd>
+                        </div>
+                    ))}
                 </div>
             </CentricModalContent>
         </CentricModal>

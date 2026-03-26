@@ -1,11 +1,147 @@
 "use client";
 
+import { SCROLL_EDGE_FADER_DEFAULT_FROM, ScrollEdgeFader } from "@/components/scroll-edge-fader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { XIcon } from "lucide-react";
 import * as React from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "./drawer";
+
+/** Shell max height for dialog + drawer (all sizing lives here, not on consumers). */
+export const CENTRIC_MODAL_SHELL_MAX_H = "max-h-[80dvh]";
+
+/** Body scrollport cap (space for header, close, drawer handle). */
+export const CENTRIC_MODAL_BODY_SCROLL_MAX_H = "max-h-[calc(80dvh-7rem)]";
+
+/**
+ * Reject Tailwind utilities that set block-axis size on `CentricModalContent`.
+ * Width utilities (`max-w-*`, `w-*`) are allowed.
+ */
+const DISALLOWED_CENTRIC_MODAL_CONTENT_CLASS =
+    /(?:^|\s)(?:[a-z0-9_-]+:)*(?:(?:min-h|max-h|h)-(?:\[[^\]]+\]|[^\s]+)|size-(?:full|auto|\[[^\]]+\]))/;
+
+function assertCentricModalContentClassName(className: string | undefined, context: string) {
+    if (!className?.trim()) return;
+    if (import.meta.env.DEV && DISALLOWED_CENTRIC_MODAL_CONTENT_CLASS.test(className)) {
+        throw new Error(
+            `${context}: className must not set height or block size (h-, min-h-, max-h-, size-full, …). ` +
+                `Sizing is controlled by CentricModal only (${CENTRIC_MODAL_SHELL_MAX_H}, ${CENTRIC_MODAL_BODY_SCROLL_MAX_H}). ` +
+                `Received: ${className}`,
+        );
+    }
+}
+
+const SCROLL_END_THRESHOLD = 2;
+
+function getScrollFlagsVertical(el: HTMLDivElement) {
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const canScroll = scrollHeight > clientHeight;
+    return {
+        canScroll,
+        showStart: canScroll && scrollTop > SCROLL_END_THRESHOLD,
+        showEnd: canScroll && scrollTop + clientHeight < scrollHeight - SCROLL_END_THRESHOLD,
+    };
+}
+
+/** Native overflow-y + edge fades; lives only in this module (not {@link FadedScrollArea}). */
+function CentricModalBodyScroll({ children, isDesktop }: { children: React.ReactNode; isDesktop?: boolean }) {
+    const viewportRef = React.useRef<HTMLDivElement>(null);
+    const startFadeRef = React.useRef<HTMLDivElement>(null);
+    const endFadeRef = React.useRef<HTMLDivElement>(null);
+    const rafRef = React.useRef<number | null>(null);
+    const lastRef = React.useRef({
+        canScroll: false,
+        showStart: false,
+        showEnd: true,
+    });
+
+    const flush = React.useCallback(() => {
+        const el = viewportRef.current;
+        if (!el) return;
+        const next = getScrollFlagsVertical(el);
+        const prev = lastRef.current;
+        const unchanged = prev.canScroll === next.canScroll && prev.showStart === next.showStart && prev.showEnd === next.showEnd;
+        lastRef.current = next;
+        if (unchanged) return;
+
+        if (startFadeRef.current) startFadeRef.current.style.opacity = next.showStart ? "1" : "0";
+        if (endFadeRef.current) endFadeRef.current.style.opacity = next.showEnd ? "1" : "0";
+    }, []);
+
+    const onScroll = React.useCallback(() => {
+        if (rafRef.current != null) return;
+        rafRef.current = requestAnimationFrame(() => {
+            rafRef.current = null;
+            flush();
+        });
+    }, [flush]);
+
+    const scrollToEndAndFlush = React.useCallback(() => {
+        flush();
+    }, [flush]);
+
+    React.useEffect(() => {
+        const el = viewportRef.current;
+        if (!el) return;
+        flush();
+        const ro = new ResizeObserver(flush);
+        ro.observe(el);
+        const content = el.firstElementChild;
+        const contentRo = content ? new ResizeObserver(scrollToEndAndFlush) : null;
+        if (contentRo && content) contentRo.observe(content);
+        return () => {
+            ro.disconnect();
+            contentRo?.disconnect();
+            if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+        };
+    }, [flush, scrollToEndAndFlush]);
+
+    return (
+        <div className="relative min-w-0">
+            <div
+                ref={viewportRef}
+                onScroll={onScroll}
+                tabIndex={-1}
+                className={cn(
+                    "focus-visible:ring-ring/50 overflow-y-auto overflow-x-hidden overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:outline-1",
+                    /* Desktop: no reserved gutter — matches header/footer horizontal inset (`px-4`). Mobile keeps stable gutter. */
+                    !isDesktop && "[scrollbar-gutter:stable]",
+                    isDesktop
+                        ? "px-4 pb-4"
+                        : "px-4 pb-4 sm:px-6 sm:pb-6",
+                    CENTRIC_MODAL_BODY_SCROLL_MAX_H,
+                )}
+            >
+                {children}
+            </div>
+            <ScrollEdgeFader
+                ref={startFadeRef}
+                edge="top"
+                fromClassName={SCROLL_EDGE_FADER_DEFAULT_FROM}
+                className="right-4"
+                style={{ opacity: 0 }}
+            />
+            <ScrollEdgeFader
+                ref={endFadeRef}
+                edge="bottom"
+                fromClassName={SCROLL_EDGE_FADER_DEFAULT_FROM}
+                className="right-4"
+                style={{ opacity: 1 }}
+            />
+        </div>
+    );
+}
+
+function splitCentricModalChildren(children: React.ReactNode) {
+    const nodes = React.Children.toArray(children);
+    const headerIndex = nodes.findIndex((child) => React.isValidElement(child) && child.type === CentricModalHeader);
+    const footerIndex = nodes.findIndex((child) => React.isValidElement(child) && child.type === CentricModalFooter);
+    const header = headerIndex >= 0 ? nodes[headerIndex] : null;
+    const footer = footerIndex >= 0 ? nodes[footerIndex] : null;
+    const body = nodes.filter((_, index) => index !== headerIndex && index !== footerIndex);
+    return { header, footer, body };
+}
 
 function CentricModal(props: React.ComponentProps<typeof Dialog>) {
     const isMobile = useIsMobile();
@@ -25,29 +161,20 @@ function CentricModalClose(props: React.ComponentProps<typeof DialogClose>) {
     return <Component {...props} />;
 }
 
-function CentricModalContent({
-    className,
-    children,
-    showCloseButton = true,
-    ...props
-}: React.ComponentProps<typeof DialogContent> & {
-    showCloseButton?: boolean;
-}) {
+function CentricModalContent({ className, children, showCloseButton = true, ...props }: React.ComponentProps<typeof DialogContent> & { showCloseButton?: boolean }) {
+    assertCentricModalContentClassName(className, "CentricModalContent");
+
     const isMobile = useIsMobile();
+    const { header, footer, body } = splitCentricModalChildren(children);
+
+    const bodyRegion = <CentricModalBodyScroll isDesktop={!isMobile}>{body}</CentricModalBodyScroll>;
 
     if (isMobile) {
-        const mobileChildren = React.Children.toArray(children);
-        const headerIndex = mobileChildren.findIndex((child) => React.isValidElement(child) && child.type === CentricModalHeader);
-        const footerIndex = mobileChildren.findIndex((child) => React.isValidElement(child) && child.type === CentricModalFooter);
-        const header = headerIndex >= 0 ? mobileChildren[headerIndex] : null;
-        const footer = footerIndex >= 0 ? mobileChildren[footerIndex] : null;
-        const body = mobileChildren.filter((_, index) => index !== headerIndex && index !== footerIndex);
-
         return (
-            <DrawerContent className={cn("h-auto max-h-[80dvh] overflow-hidden", className)} {...props}>
-                <div className="flex min-h-0 flex-1 flex-col">
+            <DrawerContent className={cn("flex h-auto flex-col overflow-hidden", CENTRIC_MODAL_SHELL_MAX_H, className)} {...props}>
+                <div className="flex min-w-0 flex-col">
                     {header}
-                    <div className="min-h-0 overflow-y-auto">{body}</div>
+                    {bodyRegion}
                     {footer}
                 </div>
                 {showCloseButton && (
@@ -61,16 +188,27 @@ function CentricModalContent({
     }
 
     return (
-        <DialogContent className={className} showCloseButton={showCloseButton} {...props}>
-            {children}
+        <DialogContent
+            className={cn("flex flex-col gap-0 overflow-hidden p-0", CENTRIC_MODAL_SHELL_MAX_H, className)}
+            showCloseButton={showCloseButton}
+            {...props}
+        >
+            {header ? (
+                <div className="shrink-0 px-4 pt-4 pb-3 sm:pb-3.5">
+                    {header}
+                </div>
+            ) : null}
+            {bodyRegion}
+            {footer ? <div className="shrink-0 px-4 pt-3 pb-4 sm:pb-5">{footer}</div> : null}
         </DialogContent>
     );
 }
 
-function CentricModalHeader(props: React.ComponentProps<typeof DialogHeader>) {
+function CentricModalHeader({ className, ...props }: React.ComponentProps<typeof DialogHeader>) {
     const isMobile = useIsMobile();
     const Component = isMobile ? DrawerHeader : DialogHeader;
-    return <Component {...props} />;
+    /** Consistent vertical rhythm between title and trailing content (e.g. badges); drawer defaults are tighter. */
+    return <Component className={cn("gap-2", className)} {...props} />;
 }
 
 function CentricModalFooter(props: React.ComponentProps<typeof DialogFooter>) {
@@ -79,10 +217,11 @@ function CentricModalFooter(props: React.ComponentProps<typeof DialogFooter>) {
     return <Component {...props} />;
 }
 
-function CentricModalTitle(props: React.ComponentProps<typeof DialogTitle>) {
+function CentricModalTitle({ className, ...props }: React.ComponentProps<typeof DialogTitle>) {
     const isMobile = useIsMobile();
     const Component = isMobile ? DrawerTitle : DialogTitle;
-    return <Component {...props} />;
+    /** Drawer title defaults are lighter than dialog; align both to the same modal heading. */
+    return <Component className={cn("text-lg leading-none font-semibold tracking-tight", className)} {...props} />;
 }
 
 function CentricModalDescription(props: React.ComponentProps<typeof DialogDescription>) {

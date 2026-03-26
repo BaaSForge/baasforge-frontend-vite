@@ -6,7 +6,7 @@ import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { CentricModal, CentricModalContent, CentricModalHeader } from "@/components/ui/centric-modal";
+import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
 import { useState } from "react";
@@ -63,20 +63,21 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
-                    trigger={(_isOpen, _setOpen, isOverflowing) =>
-                        isOverflowing && (
-                            <ExpandableFullReadTrigger ariaLabel="Show full release notes" onClick={() => setModalOpen(true)}>
-                                Read full release notes
-                            </ExpandableFullReadTrigger>
-                        )
-                    }
+                    trigger={(_isOpen, _setOpen) => (
+                        <ExpandableFullReadTrigger ariaLabel="Show full release notes" onClick={() => setModalOpen(true)}>
+                            Read full release notes
+                        </ExpandableFullReadTrigger>
+                    )}
                 >
                     <Markdown components={{ pre: () => null }}>{release.notes}</Markdown>
                 </Expandable>
                 <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
-                    <CentricModalContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
-                        <CentricModalHeader className="flex">{badges}</CentricModalHeader>
-                        <div className="prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2">
+                    <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
+                        <CentricModalHeader>
+                            <CentricModalTitle>Release notes</CentricModalTitle>
+                            <div className="flex flex-wrap items-center gap-1">{badges}</div>
+                        </CentricModalHeader>
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
                             <Markdown>{release.notes}</Markdown>
                         </div>
                     </CentricModalContent>

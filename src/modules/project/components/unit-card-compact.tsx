@@ -6,7 +6,7 @@ import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { CentricModal, CentricModalContent, CentricModalHeader } from "@/components/ui/centric-modal";
+import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
@@ -62,24 +62,25 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
-                    trigger={(_isOpen, _setOpen, isOverflowing) =>
-                        isOverflowing && (
-                            <ExpandableFullReadTrigger ariaLabel="Show full description" onClick={() => setModalOpen(true)}>
-                                Read full explanation
-                            </ExpandableFullReadTrigger>
-                        )
-                    }
+                    trigger={(_isOpen, _setOpen) => (
+                        <ExpandableFullReadTrigger ariaLabel="Show full description" onClick={() => setModalOpen(true)}>
+                            Read full explanation
+                        </ExpandableFullReadTrigger>
+                    )}
                 >
                     <div className={cn(isDeleted && "line-through")}>
                         {explanation}
                     </div>
                 </Expandable>
                 <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
-                    <CentricModalContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
-                        <CentricModalHeader className="flex flex-row">{badges}</CentricModalHeader>
+                    <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
+                        <CentricModalHeader>
+                            <CentricModalTitle>Full explanation</CentricModalTitle>
+                            <div className="flex flex-row flex-wrap items-center gap-1">{badges}</div>
+                        </CentricModalHeader>
                         <div
                             className={cn(
-                                "prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2",
+                                "prose prose-sm dark:prose-invert max-w-none",
                                 isDeleted && "line-through",
                             )}
                         >

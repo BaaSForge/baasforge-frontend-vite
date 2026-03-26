@@ -36,23 +36,21 @@ export function ChatSessionsListModal() {
 
     return (
         <CentricModal open={isOpen} onOpenChange={handleOpenChange}>
-            <CentricModalContent className="sm:max-w-md sm:max-h-[80dvh] sm:overflow-hidden">
+            <CentricModalContent className="sm:max-w-md">
                 <CentricModalHeader>
                     <CentricModalTitle>Chat sessions</CentricModalTitle>
                 </CentricModalHeader>
-                <div className="sm:max-h-[calc(80dvh-8rem)] sm:overflow-y-auto pr-1">
-                    {isLoading ? (
-                        <div className="text-muted-foreground flex items-center justify-center px-4 py-8 text-center text-sm">Loading…</div>
-                    ) : sessions.length === 0 ? (
-                        <div className="text-muted-foreground flex items-center justify-center px-4 py-8 text-center text-sm">No chat sessions yet.</div>
-                    ) : projectId != null ? (
-                        <ItemGroup className="gap-2">
-                            {sessions.map((session) => (
-                                <SessionItem key={session.id} projectId={projectId} session={session} onNavigate={close} />
-                            ))}
-                        </ItemGroup>
-                    ) : null}
-                </div>
+                {isLoading ? (
+                    <div className="text-muted-foreground flex items-center justify-center py-8 text-center text-sm">Loading…</div>
+                ) : sessions.length === 0 ? (
+                    <div className="text-muted-foreground flex items-center justify-center py-8 text-center text-sm">No chat sessions yet.</div>
+                ) : projectId != null ? (
+                    <ItemGroup className="gap-2">
+                        {sessions.map((session) => (
+                            <SessionItem key={session.id} projectId={projectId} session={session} onNavigate={close} />
+                        ))}
+                    </ItemGroup>
+                ) : null}
             </CentricModalContent>
         </CentricModal>
     );

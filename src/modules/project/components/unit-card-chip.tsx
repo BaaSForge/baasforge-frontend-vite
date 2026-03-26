@@ -3,7 +3,7 @@
 import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
-import { CentricModal, CentricModalContent, CentricModalHeader } from "@/components/ui/centric-modal";
+import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
@@ -65,23 +65,26 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                     </ExpandableFullReadTrigger>
                 </div>
                 <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
-                    <CentricModalContent className="sm:max-w-[48rem] max-h-[85vh] flex flex-col" showCloseButton>
-                        <CentricModalHeader className="flex flex-row gap-1">
-                            {isDeleted && (
-                                <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
-                                    Deleted
+                    <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
+                        <CentricModalHeader>
+                            <CentricModalTitle>Full explanation</CentricModalTitle>
+                            <div className="flex flex-row flex-wrap items-center gap-1">
+                                {isDeleted && (
+                                    <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
+                                        Deleted
+                                    </Badge>
+                                )}
+                                <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
+                                    {unit.unit_type}
                                 </Badge>
-                            )}
-                            <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
-                                {unit.unit_type}
-                            </Badge>
-                            <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">
-                                {unit.revision}
-                            </Badge>
+                                <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">
+                                    {unit.revision}
+                                </Badge>
+                            </div>
                         </CentricModalHeader>
                         <div
                             className={cn(
-                                "prose prose-sm dark:prose-invert max-w-none overflow-y-auto max-h-[70vh] pr-2",
+                                "prose prose-sm dark:prose-invert max-w-none",
                                 isDeleted && "line-through",
                             )}
                         >

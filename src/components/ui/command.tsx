@@ -11,7 +11,7 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
     return (
         <CommandPrimitive
             data-slot="command"
-            className={cn("bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md", className)}
+            className={cn("bg-popover text-popover-foreground flex min-h-0 w-full flex-col overflow-hidden rounded-md", className)}
             {...props}
         />
     );
@@ -37,7 +37,7 @@ function CommandDialog({
                 <CentricModalDescription>{description}</CentricModalDescription>
             </CentricModalHeader>
             <CentricModalContent className={cn("overflow-hidden p-0", className)} showCloseButton={showCloseButton}>
-                <Command className="[&_[cmdk-group-heading]]:text-muted-foreground **:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+                <Command className="overflow-visible [&_[cmdk-group-heading]]:text-muted-foreground **:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
                     {children}
                 </Command>
             </CentricModalContent>
@@ -63,7 +63,7 @@ function CommandInput({ className, ...props }: React.ComponentProps<typeof Comma
 
 function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
     return (
-        <CommandPrimitive.List data-slot="command-list" className={cn("max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto", className)} {...props} />
+        <CommandPrimitive.List data-slot="command-list" className={cn("scroll-py-1 overflow-x-hidden overflow-y-visible", className)} {...props} />
     );
 }
 
