@@ -15,11 +15,13 @@ import { UnitRevisionBadge } from "./unit-revision-badge";
 
 export interface UnitCardCompactProps {
     unit: ProjectUnitResponse;
+    projectId?: string;
+    chatSessionId?: string;
     className?: string;
     unitRefreshPending?: boolean;
 }
 
-export function UnitCardCompact({ unit, className, unitRefreshPending }: UnitCardCompactProps) {
+export function UnitCardCompact({ unit, projectId, chatSessionId, className, unitRefreshPending }: UnitCardCompactProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
     const explanation = unit.explanation?.trim() ?? "No description";
@@ -27,7 +29,12 @@ export function UnitCardCompact({ unit, className, unitRefreshPending }: UnitCar
 
     const badges = (
         <>
-            <UnitRevisionBadge unit={unit} refreshPending={unitRefreshPending} />
+            <UnitRevisionBadge
+                unit={unit}
+                projectId={projectId}
+                chatSessionId={chatSessionId}
+                refreshPending={unitRefreshPending}
+            />
             {isDeleted && (
                 <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
                     Deleted

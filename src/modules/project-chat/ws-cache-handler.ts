@@ -11,6 +11,7 @@ import {
     isChatSessionNewThinkingChunkEvent,
     isProjectUnitWsEvent,
 } from "@/lib/ws-events";
+import { mergeChatSessionUnitLatestRevisionFromWsUnit } from "@/modules/project/chat-session-unit-latest-revisions-cache";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import {
     ChatMessageDeliveryStatus,
@@ -232,6 +233,7 @@ export function handleProjectUnitWsEvent(data: unknown, queryClient: QueryClient
 
     const cacheKey = QueryKeys.projectDraftUnits(project_id, session_id);
     queryClient.setQueryData<ProjectUnitResponse[]>(cacheKey, (old) => upsertDraftUnitInList(old, unit));
+    mergeChatSessionUnitLatestRevisionFromWsUnit(queryClient, project_id, session_id, unit);
     return true;
 }
 

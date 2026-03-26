@@ -52,7 +52,7 @@ function getStoredGroupMode(): GroupMode {
     return "ungrouped";
 }
 
-function UnitsGroupedByType({ units }: { units: ProjectUnitResponse[] }) {
+function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: ProjectUnitResponse[] }) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
     const sortedTypes = useMemo(() => [...grouped.keys()].sort((a, b) => a.localeCompare(b)), [grouped]);
 
@@ -63,7 +63,7 @@ function UnitsGroupedByType({ units }: { units: ProjectUnitResponse[] }) {
                     <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {grouped.get(unitType)?.map((unit) => (
-                            <UnitCardCompact key={unit.id} unit={unit} />
+                            <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} />
                         ))}
                     </div>
                 </div>
@@ -169,11 +169,11 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
                     ) : groupMode === "ungrouped" ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {releaseUnits?.map((unit) => (
-                                <UnitCardCompact key={unit.id} unit={unit} />
+                                <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} />
                             ))}
                         </div>
                     ) : (
-                        <UnitsGroupedByType units={releaseUnits ?? []} />
+                        <UnitsGroupedByType projectId={projectId} units={releaseUnits ?? []} />
                     )}
                 </Container>
             </SidebarInset>

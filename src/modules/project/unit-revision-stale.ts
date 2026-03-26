@@ -1,5 +1,9 @@
 import type { ProjectUnitResponse } from "./types";
 
-export function isUnitRevisionStale(unit: ProjectUnitResponse): boolean {
-    return unit.latest_revision != null && unit.revision < unit.latest_revision;
+/**
+ * @param latestKnown — when set (e.g. from `chatSessionUnitLatestRevisionsByUnitId` cache), used instead of `unit.latest_revision`.
+ */
+export function isUnitRevisionStale(unit: ProjectUnitResponse, latestKnown?: number | null): boolean {
+    const latest = latestKnown != null ? latestKnown : unit.latest_revision;
+    return latest != null && unit.revision < latest;
 }

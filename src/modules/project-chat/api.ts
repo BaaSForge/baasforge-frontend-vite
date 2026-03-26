@@ -1,6 +1,5 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
-import type { ProjectUnitResponse } from "@/modules/project/types";
 import {
     ChatMessageDeliveryStatus,
     type ChatMessageDTO,
@@ -12,20 +11,23 @@ import {
 const GET_MESSAGES_QUERY_LIMIT = 20;
 
 const chatSessionsEndpoint = (projectId: string) => `/v1/platform/projects/${projectId}/chat-sessions`;
-const chatSessionDetailEndpoint = (projectId: string, chatSessionId: string) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}`;
-const chatSessionMessagesEndpoint = (projectId: string, chatSessionId: string) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages`;
+const chatSessionDetailEndpoint = (projectId: string, chatSessionId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}`;
+const chatSessionMessagesEndpoint = (projectId: string, chatSessionId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages`;
 const chatSessionStopEndpoint = (projectId: string, chatSessionId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/stop-generating`;
-const chatSessionUnitByIdsEndpoint = (projectId: string, chatSessionId: string) =>
-    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/units-by-ids`;
-// const chatSessionMessagesWebsocketEndpoint = (projectId: number, chatSessionId: number) => `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/channel`
+const chatSessionUnitLatestRevisionsByIdsEndpoint = (projectId: string, chatSessionId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-latest-revisions-by-ids`;
 
-export type ChatSessionUnitByIdsRequestBody = {
-    unit_ids: string[];
+/** Matches backend `UnitPathsBody`: each string is the unit path (full id without the trailing `.<revision>` segment). */
+export type UnitPathsBody = {
+    unit_paths: string[];
 };
 
-export type ChatSessionUnitByIdsData = {
-    units: ProjectUnitResponse[];
+/** Same length and order as request `unit_paths`; `null` when no unit exists for that path in this session. */
+export type UnitLatestRevisionsResponse = {
+    revisions: (number | null)[];
 };
 
 export function getProjectChatSessions(projectId: string): Promise<ChatSessionResponse[]> {
@@ -96,16 +98,20 @@ export function stopProjectChatSession(projectId: string, chatSessionId: string)
     return apiClient.post<ApiResponse<StopProjectChatSessionResponse>>(chatSessionStopEndpoint(projectId, chatSessionId)).then((res) => res.data);
 }
 
-export function getChatSessionUnitsByIds(
+/**
+ * Resolves largest revision per unit path in this chat session.
+ * Pass unit paths (omit trailing `.<revision>`); order matches `revisions` in the response.
+ */
+export function postChatSessionUnitLatestRevisionsByIds(
     projectId: string,
     chatSessionId: string,
-    unitIds: string[],
-): Promise<ProjectUnitResponse[]> {
-    if (unitIds.length === 0) {
-        return Promise.resolve([]);
+    unitPaths: string[],
+): Promise<UnitLatestRevisionsResponse> {
+    if (unitPaths.length === 0) {
+        return Promise.resolve({ revisions: [] });
     }
-    const body: ChatSessionUnitByIdsRequestBody = { unit_ids: unitIds };
+    const body: UnitPathsBody = { unit_paths: unitPaths };
     return apiClient
-        .post<ApiResponse<ChatSessionUnitByIdsData>>(chatSessionUnitByIdsEndpoint(projectId, chatSessionId), body)
-        .then((res) => res.data?.units ?? []);
+        .post<ApiResponse<UnitLatestRevisionsResponse>>(chatSessionUnitLatestRevisionsByIdsEndpoint(projectId, chatSessionId), body)
+        .then((res) => res.data ?? { revisions: [] });
 }

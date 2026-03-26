@@ -5,7 +5,7 @@ import { useParams } from "react-router";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardCompact } from "@/modules/project";
-import { useChatSessionUnitTipsFresh } from "@/modules/project-chat/use-chat-session-unit-tips";
+import { useChatSessionEmbeddedUnitsLatestRevisions } from "@/modules/project-chat/use-chat-session-embedded-units-latest-revisions";
 import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
@@ -23,7 +23,7 @@ export function ToolUnitMutationLayout({ message, nestedMessages, statusLine, ar
     const { projectId, conversationId: chatSessionId } = useParams<{ projectId: string; conversationId?: string }>();
     const initialUnits = useMemo(() => (unit != null ? [unit] : []), [unit]);
     const shouldRefreshFromHistory = message.status !== ChatMessageStatus.Generating;
-    const { units: refreshedUnits, isRefreshing } = useChatSessionUnitTipsFresh(
+    const { units: refreshedUnits, isRefreshing } = useChatSessionEmbeddedUnitsLatestRevisions(
         projectId,
         chatSessionId,
         initialUnits,
@@ -56,7 +56,13 @@ export function ToolUnitMutationLayout({ message, nestedMessages, statusLine, ar
                     </Tooltip>
                     {hasUnit && displayUnit != null && (
                         <div className="w-fit max-w-full min-w-0 self-start">
-                            <UnitCardCompact className="w-auto" unit={displayUnit} unitRefreshPending={isRefreshing} />
+                            <UnitCardCompact
+                                className="w-auto"
+                                projectId={projectId}
+                                chatSessionId={chatSessionId}
+                                unit={displayUnit}
+                                unitRefreshPending={isRefreshing}
+                            />
                         </div>
                     )}
                 </div>

@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardChip } from "@/modules/project";
-import { useChatSessionUnitTipsFresh } from "@/modules/project-chat/use-chat-session-unit-tips";
+import { useChatSessionEmbeddedUnitsLatestRevisions } from "@/modules/project-chat/use-chat-session-embedded-units-latest-revisions";
 import { ChatMessageStatus, type ChatMessageWithDeliveryStatus, type ToolFetchRelevantUnitsPayload } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
@@ -45,7 +45,7 @@ export function ToolFetchRelevantUnitsMessage({
     const { projectId, conversationId: chatSessionId } = useParams<{ projectId: string; conversationId?: string }>();
     const units = getToolFetchRelevantUnitsPayload(message);
     const shouldRefreshFromHistory = message.status !== ChatMessageStatus.Generating;
-    const { units: displayUnits, isRefreshing } = useChatSessionUnitTipsFresh(
+    const { units: displayUnits, isRefreshing } = useChatSessionEmbeddedUnitsLatestRevisions(
         projectId,
         chatSessionId,
         units,
@@ -114,7 +114,13 @@ export function ToolFetchRelevantUnitsMessage({
                                 >
                                     <div className="flex w-max items-stretch gap-2">
                                         {displayUnits.map((unit) => (
-                                            <UnitCardChip key={unit.id} unit={unit} unitRefreshPending={isRefreshing} />
+                                            <UnitCardChip
+                                                key={unit.id}
+                                                projectId={projectId}
+                                                chatSessionId={chatSessionId}
+                                                unit={unit}
+                                                unitRefreshPending={isRefreshing}
+                                            />
                                         ))}
                                     </div>
                                 </FadedScrollArea>

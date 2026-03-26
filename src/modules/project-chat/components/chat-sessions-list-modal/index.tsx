@@ -50,7 +50,12 @@ function SessionItem({
                     </div>
                 </div>
                 <SessionLastMessageRow lastMessage={session.last_message} />
-                <SessionOwnershipChipsRow ownedReleases={session.owned_releases} ownedUnits={session.owned_units} />
+                <SessionOwnershipChipsRow
+                    projectId={projectId}
+                    chatSessionId={session.id}
+                    ownedReleases={session.owned_releases}
+                    ownedUnits={session.owned_units}
+                />
             </Link>
         </Item>
     );

@@ -12,11 +12,13 @@ import { UnitRevisionBadge } from "./unit-revision-badge";
 
 export interface UnitCardChipProps {
     unit: ProjectUnitResponse;
+    projectId?: string;
+    chatSessionId?: string;
     className?: string;
     unitRefreshPending?: boolean;
 }
 
-export function UnitCardChip({ unit, className, unitRefreshPending }: UnitCardChipProps) {
+export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRefreshPending }: UnitCardChipProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
     const explanation = unit.explanation?.trim() ?? "No description";
@@ -33,7 +35,12 @@ export function UnitCardChip({ unit, className, unitRefreshPending }: UnitCardCh
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {unit.unit_type}
             </Badge>
-            <UnitRevisionBadge unit={unit} refreshPending={unitRefreshPending} />
+            <UnitRevisionBadge
+                unit={unit}
+                projectId={projectId}
+                chatSessionId={chatSessionId}
+                refreshPending={unitRefreshPending}
+            />
         </>
     );
 

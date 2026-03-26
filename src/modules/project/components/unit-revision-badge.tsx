@@ -6,18 +6,25 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckCircle2, Loader2Icon, Sparkles } from "lucide-react";
 import type { ProjectUnitResponse } from "../types";
 import { isUnitRevisionStale } from "../unit-revision-stale";
+import { useChatSessionUnitLatestRevision } from "../use-chat-session-unit-latest-revision";
 
 export function UnitRevisionBadge({
     unit,
+    projectId,
+    chatSessionId,
     className,
     refreshPending,
 }: {
     unit: ProjectUnitResponse;
+    /** When both are set, stale/latest display prefers `chatSessionUnitLatestRevisionsByUnitId` for this session. */
+    projectId?: string;
+    chatSessionId?: string;
     className?: string;
     refreshPending?: boolean;
 }) {
-    const stale = isUnitRevisionStale(unit);
-    const latest = unit.latest_revision;
+    const latestFromCache = useChatSessionUnitLatestRevision(projectId, chatSessionId, unit.id);
+    const stale = isUnitRevisionStale(unit, latestFromCache);
+    const latest = latestFromCache ?? unit.latest_revision;
     const isFirstRevisionOnly = unit.revision === 1 && !stale;
 
     const tooltipContent = refreshPending

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
 import { isUnitRevisionStale } from "@/modules/project/unit-revision-stale";
+import { useChatSessionUnitLatestRevision } from "@/modules/project/use-chat-session-unit-latest-revision";
 
 export function CompactSessionReleaseBadge({ release, className }: { release: ReleaseResponse; className?: string }) {
     return (
@@ -21,9 +22,21 @@ export function CompactSessionReleaseBadge({ release, className }: { release: Re
     );
 }
 
-export function CompactSessionUnitChip({ unit, className }: { unit: ProjectUnitResponse; className?: string }) {
-    const stale = isUnitRevisionStale(unit);
-    const latest = unit.latest_revision;
+export function CompactSessionUnitChip({
+    unit,
+    projectId,
+    chatSessionId,
+    className,
+}: {
+    unit: ProjectUnitResponse;
+    projectId?: string;
+    /** Revisions in this map are scoped to this chat session. */
+    chatSessionId?: string;
+    className?: string;
+}) {
+    const latestFromCache = useChatSessionUnitLatestRevision(projectId, chatSessionId, unit.id);
+    const stale = isUnitRevisionStale(unit, latestFromCache);
+    const latest = latestFromCache ?? unit.latest_revision;
     const revisionText =
         stale && latest != null ? `revision ${unit.revision} / ${latest}` : `revision ${unit.revision}`;
 
@@ -62,10 +75,15 @@ export function CompactSessionUnitChip({ unit, className }: { unit: ProjectUnitR
 }
 
 export function SessionOwnershipChipsRow({
+    projectId,
+    chatSessionId,
     ownedReleases = [],
     ownedUnits = [],
     className,
 }: {
+    projectId?: string;
+    /** Session that `ownedUnits` belong to (required for revision cache alignment). */
+    chatSessionId?: string;
     ownedReleases?: ReleaseResponse[];
     ownedUnits?: ProjectUnitResponse[];
     className?: string;
@@ -100,7 +118,12 @@ export function SessionOwnershipChipsRow({
                 >
                     <div className={chipRowClass}>
                         {ownedUnits.map((unit) => (
-                            <CompactSessionUnitChip key={`${unit.id}-${unit.revision}`} unit={unit} />
+                            <CompactSessionUnitChip
+                                key={`${unit.id}-${unit.revision}`}
+                                projectId={projectId}
+                                chatSessionId={chatSessionId}
+                                unit={unit}
+                            />
                         ))}
                     </div>
                 </FadedScrollArea>

@@ -39,7 +39,13 @@ export function SecondarySideBar() {
             {draftUnits && draftUnits.length > 0 && (
                 <FadedScrollArea className="flex flex-col gap-2 max-h-none h-full">
                     {draftUnits.map((unit) => (
-                        <UnitCardCompact className="mb-2" key={unit.id} unit={unit} />
+                        <UnitCardCompact
+                            className="mb-2"
+                            key={unit.id}
+                            projectId={projectId}
+                            chatSessionId={chatSessionId}
+                            unit={unit}
+                        />
                     ))}
                 </FadedScrollArea>
             )}
