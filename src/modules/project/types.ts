@@ -42,6 +42,7 @@ export interface ProjectUnitResponse {
     code: string | null;
     explanation: string | null;
     revision: number;
+    latest_revision?: number;
     context_slug: string;
     module_slug: string;
     unit_name_slug: string;

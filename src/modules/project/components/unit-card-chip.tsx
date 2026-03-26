@@ -8,6 +8,7 @@ import type { ProjectUnitResponse } from "../types";
 import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
 import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
+import { UnitRevisionBadge } from "./unit-revision-badge";
 
 export interface UnitCardChipProps {
     unit: ProjectUnitResponse;
@@ -31,9 +32,7 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {unit.unit_type}
             </Badge>
-            <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]" title={`revision ${unit.revision}`}>
-                revision {unit.revision}
-            </Badge>
+            <UnitRevisionBadge unit={unit} />
         </>
     );
 
