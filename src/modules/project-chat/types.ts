@@ -1,11 +1,4 @@
-export interface ChatSessionResponse {
-    id: string;
-    project_id: string;
-    user_id: string;
-    title: string;
-    created_at: string;
-    stage_project_runtime_id?: string | null;
-}
+import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
 
 export enum ChatSessionRoleType {
     User = "user",
@@ -73,6 +66,19 @@ export interface ChatMessageResponse {
     status: ChatMessageStatus;
     /** When set, this message is invoked by another message. */
     invoking_message_id?: string | null;
+}
+
+export interface ChatSessionResponse {
+    id: string;
+    project_id: string;
+    user_id: string;
+    title: string;
+    created_at: string;
+    stage_project_runtime_id?: string | null;
+    /** Latest message in the session (same shape as {@link ChatMessageResponse}). */
+    last_message?: ChatMessageResponse | null;
+    owned_units?: ProjectUnitResponse[];
+    owned_releases?: ReleaseResponse[];
 }
 
 export interface CreateChatMessageApiResponse extends ChatMessageResponse {

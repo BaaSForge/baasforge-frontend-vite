@@ -29,8 +29,9 @@ export function ReleaseCardChip({ release, className }: ReleaseCardChipProps) {
                 <Badge
                     variant="secondary"
                     className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[0.625rem]"
+                    title={`revision ${release.version}`}
                 >
-                    {release.version}
+                    revision {release.version}
                 </Badge>
                 <span className="text-[0.625rem] text-muted-foreground">
                     {formatDateTimeMedium(release.created_at)}

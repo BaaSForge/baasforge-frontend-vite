@@ -55,8 +55,8 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                         <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                             {unit.unit_type}
                         </Badge>
-                        <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">
-                            {unit.revision}
+                        <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]" title={`revision ${unit.revision}`}>
+                            revision {unit.revision}
                         </Badge>
                     </div>
                     <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
@@ -77,8 +77,8 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
                                 <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                                     {unit.unit_type}
                                 </Badge>
-                                <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]">
-                                    {unit.revision}
+                                <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]" title={`revision ${unit.revision}`}>
+                                    revision {unit.revision}
                                 </Badge>
                             </div>
                         </CentricModalHeader>

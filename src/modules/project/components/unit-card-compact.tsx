@@ -31,8 +31,8 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                     Deleted
                 </Badge>
             )}
-            <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[0.625rem]" title={`Revision ${unit.revision}`}>
-                {unit.revision}
+            <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 border-blue-500/30 text-[0.625rem]" title={`revision ${unit.revision}`}>
+                revision {unit.revision}
             </Badge>
             <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
                 {capitalizeFirstLetter(unit.unit_type)}
