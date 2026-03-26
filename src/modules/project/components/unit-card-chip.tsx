@@ -1,14 +1,13 @@
 "use client";
 
 import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
-import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
-import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
 import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
 import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
+import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 
 export interface UnitCardChipProps {
     unit: ProjectUnitResponse;
@@ -21,6 +20,22 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
     const explanation = unit.explanation?.trim() ?? "No description";
     const summary = explanation.length > 60 ? explanation.slice(0, 60) + "..." : explanation;
     const [modalOpen, setModalOpen] = useState(false);
+
+    const badges = (
+        <>
+            {isDeleted && (
+                <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
+                    Deleted
+                </Badge>
+            )}
+            <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
+                {unit.unit_type}
+            </Badge>
+            <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]" title={`revision ${unit.revision}`}>
+                revision {unit.revision}
+            </Badge>
+        </>
+    );
 
     return (
         <div
@@ -46,52 +61,19 @@ export function UnitCardChip({ unit, className }: UnitCardChipProps) {
             >
                 <UnitCardIdRow unitId={unit.id} className="z-3" />
                 <div className="group/expandable-read relative flex flex-col gap-1 px-2.5 pt-4 pb-1.5">
-                    <div className="flex flex-wrap items-center gap-1">
-                        {isDeleted && (
-                            <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
-                                Deleted
-                            </Badge>
-                        )}
-                        <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
-                            {unit.unit_type}
-                        </Badge>
-                        <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]" title={`revision ${unit.revision}`}>
-                            revision {unit.revision}
-                        </Badge>
-                    </div>
+                    <div className="flex flex-wrap items-center gap-1">{badges}</div>
                     <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
                     <ExpandableFullReadTrigger ariaLabel="Show full explanation" onClick={() => setModalOpen(true)}>
                         Read full explanation
                     </ExpandableFullReadTrigger>
                 </div>
-                <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
-                    <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
-                        <CentricModalHeader>
-                            <CentricModalTitle>Full explanation</CentricModalTitle>
-                            <div className="flex flex-row flex-wrap items-center gap-1">
-                                {isDeleted && (
-                                    <Badge variant="destructive" className="text-[0.625rem]" title="This unit has been removed">
-                                        Deleted
-                                    </Badge>
-                                )}
-                                <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
-                                    {unit.unit_type}
-                                </Badge>
-                                <Badge variant="secondary" className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 text-[0.625rem]" title={`revision ${unit.revision}`}>
-                                    revision {unit.revision}
-                                </Badge>
-                            </div>
-                        </CentricModalHeader>
-                        <div
-                            className={cn(
-                                "prose prose-sm dark:prose-invert max-w-none",
-                                isDeleted && "line-through",
-                            )}
-                        >
-                            <Markdown>{explanation}</Markdown>
-                        </div>
-                    </CentricModalContent>
-                </CentricModal>
+                <UnitFullExplanationModal
+                    open={modalOpen}
+                    onOpenChange={setModalOpen}
+                    explanation={explanation}
+                    isDeleted={isDeleted}
+                    badges={badges}
+                />
             </div>
         </div>
     );

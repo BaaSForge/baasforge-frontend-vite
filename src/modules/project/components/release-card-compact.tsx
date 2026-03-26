@@ -6,11 +6,11 @@ import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
 import { useState } from "react";
 import type { ProjectRuntimeResponse, ReleaseResponse } from "../types";
+import { ReleaseNotesModal } from "./release-notes-modal";
 
 export interface ReleaseCardCompactProps {
     release: ReleaseResponse;
@@ -71,17 +71,7 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                 >
                     <Markdown components={{ pre: () => null }}>{release.notes}</Markdown>
                 </Expandable>
-                <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
-                    <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
-                        <CentricModalHeader>
-                            <CentricModalTitle>Release notes</CentricModalTitle>
-                            <div className="flex flex-wrap items-center gap-1">{badges}</div>
-                        </CentricModalHeader>
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <Markdown>{release.notes}</Markdown>
-                        </div>
-                    </CentricModalContent>
-                </CentricModal>
+                <ReleaseNotesModal open={modalOpen} onOpenChange={setModalOpen} notes={release.notes ?? ""} badges={badges} />
                 <CardAction
                     className={cn(
                         "bg-muted/30 w-full flex flex-wrap items-center justify-start p-2 gap-2 border-t",

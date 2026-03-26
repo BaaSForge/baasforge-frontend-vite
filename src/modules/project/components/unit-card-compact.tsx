@@ -3,15 +3,14 @@
 import { Expandable } from "@/components/expandable";
 import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
 import { LiveBadge } from "@/components/live-badge";
-import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
 import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
 import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
+import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 
 export interface UnitCardCompactProps {
     unit: ProjectUnitResponse;
@@ -72,22 +71,13 @@ export function UnitCardCompact({ unit, className }: UnitCardCompactProps) {
                         {explanation}
                     </div>
                 </Expandable>
-                <CentricModal open={modalOpen} onOpenChange={setModalOpen}>
-                    <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
-                        <CentricModalHeader>
-                            <CentricModalTitle>Full explanation</CentricModalTitle>
-                            <div className="flex flex-row flex-wrap items-center gap-1">{badges}</div>
-                        </CentricModalHeader>
-                        <div
-                            className={cn(
-                                "prose prose-sm dark:prose-invert max-w-none",
-                                isDeleted && "line-through",
-                            )}
-                        >
-                            <Markdown>{explanation}</Markdown>
-                        </div>
-                    </CentricModalContent>
-                </CentricModal>
+                <UnitFullExplanationModal
+                    open={modalOpen}
+                    onOpenChange={setModalOpen}
+                    explanation={explanation}
+                    isDeleted={isDeleted}
+                    badges={badges}
+                />
                 <CardAction className="bg-muted/30 w-full flex items-center justify-start p-2 gap-2 border-t">{badges}</CardAction>
             </Card>
         </div>
