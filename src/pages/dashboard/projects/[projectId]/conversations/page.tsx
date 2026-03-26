@@ -4,7 +4,6 @@ import { PageTitleBox } from "@/components/page-title-box";
 import {
     SecondarySidebar,
     SecondarySidebarProvider,
-    SidebarContent,
     SidebarInset,
     useRegisterSecondarySidebarShortcut,
     useSecondarySidebar,
@@ -391,9 +390,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 {isFetchingPreviousPage && <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />}
             </PageTitleBox>
             <SecondarySidebar>
-                <SidebarContent>
-                    <SecondarySideBar />
-                </SidebarContent>
+                <SecondarySideBar />
             </SecondarySidebar>
             <SidebarInset>
                 <Container>

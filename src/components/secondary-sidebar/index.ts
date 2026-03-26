@@ -23,4 +23,10 @@ export function useRegisterSecondarySidebarShortcut() {
 }
 
 export { SidebarContent, SidebarInset, useSidebar } from "../ui/sidebar";
+export {
+    SecondarySidebarContent,
+    SecondarySidebarStickyFooter,
+    SecondarySidebarStickyHeader,
+} from "./secondary-sidebar-content";
+export type { SecondarySidebarContentProps } from "./secondary-sidebar-content";
 export { SecondarySidebar, SecondarySidebarProvider } from "./secondary-sidebar";

@@ -3,7 +3,6 @@ import { PageTitleBox } from "@/components/page-title-box";
 import {
     SecondarySidebar,
     SecondarySidebarProvider,
-    SidebarContent,
     SidebarInset,
     useRegisterSecondarySidebarShortcut,
     useSecondarySidebar,
@@ -156,9 +155,7 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
                 }
             />
             <SecondarySidebar>
-                <SidebarContent>
-                    <SecondarySideBar />
-                </SidebarContent>
+                <SecondarySideBar />
             </SecondarySidebar>
             <SidebarInset className="here-is-the-content">
                 <Container>

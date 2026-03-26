@@ -18,6 +18,10 @@ interface FadedScrollAreaProps {
     scrollToEndByDefault?: boolean;
     hideScrollbar?: boolean;
     faderFromClassName?: string;
+    /** When false, omits the start-edge fader (top for vertical, left for horizontal). Use when a sticky header covers that edge. */
+    showStartFader?: boolean;
+    /** When false, omits the end-edge fader (bottom for vertical, right for horizontal). */
+    showEndFader?: boolean;
 }
 
 function getScrollFlagsVertical(el: HTMLDivElement) {
@@ -49,6 +53,8 @@ export function FadedScrollArea({
     scrollToEndByDefault = false,
     hideScrollbar = false,
     faderFromClassName = SCROLL_EDGE_FADER_DEFAULT_FROM,
+    showStartFader = true,
+    showEndFader = true,
 }: FadedScrollAreaProps) {
     const fromClass = faderFromClassName || SCROLL_EDGE_FADER_DEFAULT_FROM;
     const viewportRef = React.useRef<HTMLDivElement>(null);
@@ -75,9 +81,9 @@ export function FadedScrollArea({
         if (unchanged) return;
 
         if (prev.canScroll !== next.canScroll) setCanScroll(next.canScroll);
-        if (startFadeRef.current) startFadeRef.current.style.opacity = next.showStart ? "1" : "0";
-        if (endFadeRef.current) endFadeRef.current.style.opacity = next.showEnd ? "1" : "0";
-    }, [getScrollFlags]);
+        if (showStartFader && startFadeRef.current) startFadeRef.current.style.opacity = next.showStart ? "1" : "0";
+        if (showEndFader && endFadeRef.current) endFadeRef.current.style.opacity = next.showEnd ? "1" : "0";
+    }, [getScrollFlags, showStartFader, showEndFader]);
 
     const onScroll = React.useCallback(() => {
         if (rafRef.current != null) return;
@@ -154,13 +160,21 @@ export function FadedScrollArea({
             )}
             {isHorizontal ? (
                 <>
-                    <ScrollEdgeFader ref={startFadeRef} edge="left" fromClassName={fromClass} style={{ opacity: 0 }} />
-                    <ScrollEdgeFader ref={endFadeRef} edge="right" fromClassName={fromClass} style={{ opacity: 1 }} />
+                    {showStartFader && (
+                        <ScrollEdgeFader ref={startFadeRef} edge="left" fromClassName={fromClass} style={{ opacity: 0 }} />
+                    )}
+                    {showEndFader && (
+                        <ScrollEdgeFader ref={endFadeRef} edge="right" fromClassName={fromClass} style={{ opacity: 1 }} />
+                    )}
                 </>
             ) : (
                 <>
-                    <ScrollEdgeFader ref={startFadeRef} edge="top" fromClassName={fromClass} className="right-4" style={{ opacity: 0 }} />
-                    <ScrollEdgeFader ref={endFadeRef} edge="bottom" fromClassName={fromClass} className="right-4" style={{ opacity: 1 }} />
+                    {showStartFader && (
+                        <ScrollEdgeFader ref={startFadeRef} edge="top" fromClassName={fromClass} className="right-4" style={{ opacity: 0 }} />
+                    )}
+                    {showEndFader && (
+                        <ScrollEdgeFader ref={endFadeRef} edge="bottom" fromClassName={fromClass} className="right-4" style={{ opacity: 1 }} />
+                    )}
                 </>
             )}
         </ScrollAreaPrimitive.Root>

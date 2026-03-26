@@ -1,4 +1,7 @@
-import { FadedScrollArea } from "@/components/faded-scroll-area";
+import {
+    SecondarySidebarContent,
+    SecondarySidebarStickyHeader,
+} from "@/components/secondary-sidebar/secondary-sidebar-content";
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
 import { UnitCardCompact, useProjectDraftUnitsQuery } from "@/modules/project";
@@ -15,29 +18,29 @@ export function SecondarySideBar() {
     const { data: draftUnits, isLoading, error } = useProjectDraftUnitsQuery(projectId ?? undefined, chatSessionId);
 
     return (
-        <div className="flex flex-col gap-2 p-2 mt-1.5">
-            <div className="sticky top-0 z-10 -mx-2 flex shrink-0 items-center justify-between gap-2 bg-sidebar px-2 py-2">
-                <SectionTitle className="mb-0">Draft units</SectionTitle>
-                <Button variant="outline" size="xs" asChild>
-                    <Link to={`/dashboard/projects/${projectId}/units-releases`}>
-                        {/* TODO: add a modal to all units */}
-                        all units
-                    </Link>
-                </Button>
-            </div>
-
-            {(projectId == null || chatSessionId == null) && (
-                <div className="p-2 text-sm text-muted-foreground">Start the conversation to generate draft units by using AI.</div>
-            )}
-
-            {isLoading && <div className="p-2 text-sm text-muted-foreground">Loading draft units…</div>}
-
-            {error && <div className="p-2 text-sm text-destructive">Failed to load draft units.</div>}
-
-            {(draftUnits == null || draftUnits.length === 0) && <div className="p-2 text-sm text-muted-foreground">No draft units in this conversation.</div>}
-
-            {draftUnits && draftUnits.length > 0 && (
-                <FadedScrollArea className="flex flex-col gap-2 max-h-none h-full">
+        <SecondarySidebarContent
+            header={
+                <SecondarySidebarStickyHeader className="flex items-center justify-between gap-2 border-b border-sidebar-border pb-[calc(1rem+1px)]">
+                    <SectionTitle className="mb-0">Draft units</SectionTitle>
+                    <Button variant="outline" size="xs" asChild>
+                        <Link to={`/dashboard/projects/${projectId}/units-releases`}>
+                            {/* TODO: add a modal to all units */}
+                            all units
+                        </Link>
+                    </Button>
+                </SecondarySidebarStickyHeader>
+            }
+        >
+            {projectId == null || chatSessionId == null ? (
+                <div className="text-sm text-muted-foreground">Start the conversation to generate draft units by using AI.</div>
+            ) : isLoading ? (
+                <div className="text-sm text-muted-foreground">Loading draft units…</div>
+            ) : error ? (
+                <div className="text-sm text-destructive">Failed to load draft units.</div>
+            ) : draftUnits == null || draftUnits.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No draft units in this conversation.</div>
+            ) : (
+                <div className="flex flex-col gap-2">
                     {draftUnits.map((unit) => (
                         <UnitCardCompact
                             className="mb-2"
@@ -47,8 +50,8 @@ export function SecondarySideBar() {
                             unit={unit}
                         />
                     ))}
-                </FadedScrollArea>
+                </div>
             )}
-        </div>
+        </SecondarySidebarContent>
     );
 }
