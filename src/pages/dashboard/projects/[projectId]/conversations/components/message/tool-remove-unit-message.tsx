@@ -18,6 +18,11 @@ function removeStatusLine(status: ChatMessageStatus): string {
     return status === ChatMessageStatus.Completed ? "Removed unit" : "Removing unit";
 }
 
+function formatRemoveUnitArgs(args: ToolRemoveUnitPayload["args"] | undefined): string {
+    if (args?.unit_id == null) return "—";
+    return `unit_id: ${String(args.unit_id)}`;
+}
+
 export function ToolRemoveUnitMessage({
     message,
     nestedMessages,
@@ -31,6 +36,12 @@ export function ToolRemoveUnitMessage({
     const statusLine = removeStatusLine(status);
 
     return (
-        <ToolUnitMutationLayout message={message} nestedMessages={nestedMessages} statusLine={statusLine} unit={unit} />
+        <ToolUnitMutationLayout
+            message={message}
+            nestedMessages={nestedMessages}
+            statusLine={statusLine}
+            argsTooltip={formatRemoveUnitArgs(payload?.args)}
+            unit={unit}
+        />
     );
 }

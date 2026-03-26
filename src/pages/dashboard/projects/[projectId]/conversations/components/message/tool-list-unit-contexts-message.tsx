@@ -3,6 +3,7 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
     ChatMessageStatus,
@@ -13,12 +14,8 @@ import {
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
 
-function getToolListUnitContextsPayload(message: ChatMessageWithDeliveryStatus): string[] {
-    const p = message.payload as ToolListUnitContextsPayload | string[] | undefined | null;
-    if (Array.isArray(p)) return p.filter((v): v is string => typeof v === "string");
-    const contextSlugs = (p as ToolListUnitContextsPayload)?.context_slugs;
-    return Array.isArray(contextSlugs) ? contextSlugs.filter((v): v is string => typeof v === "string") : [];
-}
+/** API may return either `{ context_slugs }` or a bare `string[]`. */
+type ListUnitContextsPayload = ToolListUnitContextsPayload | string[] | undefined;
 
 export function ToolListUnitContextsMessage({
     message,
@@ -27,36 +24,58 @@ export function ToolListUnitContextsMessage({
     message: ChatMessageWithDeliveryStatus;
     nestedMessages?: ReactNode;
 }) {
-    const contextSlugs = getToolListUnitContextsPayload(message);
+    const p = message.payload as ListUnitContextsPayload;
+    const contextSlugs = Array.isArray(p) ? p : (p?.context_slugs ?? []);
     const contextCount = contextSlugs.length;
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasContent = contextCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
+    const argsLine =
+        p && !Array.isArray(p) && p.context_slugs?.length
+            ? `context_slugs: [${p.context_slugs.join(", ")}]`
+            : "—";
+
+    const headerTooltip = (
+        <TooltipContent side="top" className="max-w-xs">
+            <span className="font-medium">Arguments</span>
+            <span className="mt-0.5 block text-muted-foreground">{argsLine}</span>
+        </TooltipContent>
+    );
 
     return (
         <>
             <div className="relative flex w-full min-w-0 max-w-full justify-start overflow-hidden">
                 {showInvokedConnector && <InvokedMessageConnector />}
                 {!hasContent ? (
-                    <div className="flex max-w-full items-center gap-2 rounded-md py-3 pr-3 text-left">
-                        <span className="shrink-0">
-                            <AiMessageStatusIcon status={status} />
-                        </span>
-                        <span className="text-sm font-medium">Reading unit contexts</span>
-                        <span className="text-xs text-muted-foreground">no content</span>
-                    </div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex max-w-full items-center gap-2 rounded-md py-3 pr-3 text-left">
+                                <span className="shrink-0">
+                                    <AiMessageStatusIcon status={status} />
+                                </span>
+                                <span className="text-sm font-medium">Reading unit contexts</span>
+                                <span className="text-xs text-muted-foreground">no content</span>
+                            </div>
+                        </TooltipTrigger>
+                        {headerTooltip}
+                    </Tooltip>
                 ) : (
                     <Collapsible defaultOpen className="group/tool-list-unit-contexts w-full min-w-0 max-w-full overflow-hidden">
-                        <CollapsibleTrigger className="flex items-center gap-2 rounded-md py-3 pr-3 text-left outline-none transition-all hover:bg-muted/50 hover:pl-3">
-                            <span className="shrink-0">
-                                <AiMessageStatusIcon status={status} />
-                            </span>
-                            <span className="text-sm font-medium">Reading unit contexts</span>
-                            <span className="text-xs text-muted-foreground">
-                                {contextCount} {contextCount === 1 ? "context" : "contexts"}
-                            </span>
-                            <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-list-unit-contexts:rotate-180" />
-                        </CollapsibleTrigger>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <CollapsibleTrigger className="flex items-center gap-2 rounded-md py-3 pr-3 text-left outline-none transition-all hover:bg-muted/50 hover:pl-3">
+                                    <span className="shrink-0">
+                                        <AiMessageStatusIcon status={status} />
+                                    </span>
+                                    <span className="text-sm font-medium">Reading unit contexts</span>
+                                    <span className="text-xs text-muted-foreground">
+                                        {contextCount} {contextCount === 1 ? "context" : "contexts"}
+                                    </span>
+                                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-list-unit-contexts:rotate-180" />
+                                </CollapsibleTrigger>
+                            </TooltipTrigger>
+                            {headerTooltip}
+                        </Tooltip>
                         <CollapsibleContent
                             className={cn(
                                 "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",

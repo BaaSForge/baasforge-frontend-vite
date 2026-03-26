@@ -18,6 +18,22 @@ function modifyStatusLine(status: ChatMessageStatus): string {
     return status === ChatMessageStatus.Completed ? "Modified unit" : "Modifying unit";
 }
 
+function formatModifyUnitArgs(args: ToolModifyUnitPayload["args"] | undefined): string {
+    if (!args) return "—";
+    const parts: string[] = [];
+    if (args.unit_id != null) parts.push(`unit_id: ${String(args.unit_id)}`);
+    if (args.revision != null) parts.push(`revision: ${String(args.revision)}`);
+    if (args.code != null && String(args.code).trim() !== "") {
+        const c = String(args.code);
+        parts.push(c.length > 120 ? `code: ${c.slice(0, 120)}…` : `code: ${c}`);
+    }
+    if (args.explanation != null && String(args.explanation).trim() !== "") {
+        const ex = String(args.explanation);
+        parts.push(ex.length > 120 ? `explanation: ${ex.slice(0, 120)}…` : `explanation: ${ex}`);
+    }
+    return parts.length ? parts.join(", ") : "—";
+}
+
 export function ToolModifyUnitMessage({
     message,
     nestedMessages,
@@ -31,6 +47,12 @@ export function ToolModifyUnitMessage({
     const statusLine = modifyStatusLine(status);
 
     return (
-        <ToolUnitMutationLayout message={message} nestedMessages={nestedMessages} statusLine={statusLine} unit={unit} />
+        <ToolUnitMutationLayout
+            message={message}
+            nestedMessages={nestedMessages}
+            statusLine={statusLine}
+            argsTooltip={formatModifyUnitArgs(payload?.args)}
+            unit={unit}
+        />
     );
 }
