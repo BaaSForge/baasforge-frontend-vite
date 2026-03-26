@@ -10,7 +10,7 @@ export function CompactSessionReleaseBadge({ release, className }: { release: Re
         <Badge
             variant="secondary"
             className={cn(
-                "shrink-0 border-emerald-500/30 bg-emerald-500/15 text-[0.625rem] text-emerald-700 dark:text-emerald-400",
+                "shrink-0 rounded-md border-amber-500/45 bg-amber-500/20 font-medium text-[0.625rem] text-amber-950 dark:border-amber-400/45 dark:bg-amber-400/18 dark:text-amber-100",
                 className,
             )}
             title={release.version}
@@ -24,14 +24,14 @@ export function CompactSessionUnitChip({ unit, className }: { unit: ProjectUnitR
     return (
         <span
             className={cn(
-                "inline-flex max-w-[min(100%,14rem)] shrink-0 items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5 text-[0.625rem] tabular-nums text-muted-foreground",
+                "inline-flex max-w-[min(100%,14rem)] shrink-0 items-center gap-1 rounded-md border border-sky-500/45 bg-sky-500/20 px-2 py-0.5 text-[0.625rem] font-medium tabular-nums text-sky-950 dark:border-sky-400/45 dark:bg-sky-400/18 dark:text-sky-100",
                 className,
             )}
             title={`${unit.id} · revision ${unit.revision}`}
         >
-            <span className="min-w-0 truncate font-mono text-foreground">{unit.id}</span>
-            <span className="shrink-0 text-muted-foreground">·</span>
-            <span className="shrink-0">revision {unit.revision}</span>
+            <span className="min-w-0 truncate font-mono text-sky-900 dark:text-sky-50">{unit.id}</span>
+            <span className="shrink-0 text-sky-700/80 dark:text-sky-300/90">·</span>
+            <span className="shrink-0 text-sky-900 dark:text-sky-50">revision {unit.revision}</span>
         </span>
     );
 }
@@ -47,23 +47,39 @@ export function SessionOwnershipChipsRow({
 }) {
     if (ownedReleases.length === 0 && ownedUnits.length === 0) return null;
 
+    const scrollRowClass = "min-h-0 min-w-0 w-full max-w-full";
+    const chipRowClass = "flex w-max flex-nowrap items-center gap-1.5 py-0.5 pr-1";
+
     return (
-        <div className={cn("w-full min-w-0", className)}>
-            <FadedScrollArea
-                orientation="horizontal"
-                horizontalIntrinsicHeight
-                hideScrollbar
-                className="min-h-0 min-w-0 w-full max-w-full"
-            >
-                <div className="flex w-max flex-nowrap items-center gap-1.5 py-0.5 pr-1">
-                    {ownedReleases.map((release) => (
-                        <CompactSessionReleaseBadge key={release.id} release={release} />
-                    ))}
-                    {ownedUnits.map((unit) => (
-                        <CompactSessionUnitChip key={`${unit.id}-${unit.revision}`} unit={unit} />
-                    ))}
-                </div>
-            </FadedScrollArea>
+        <div className={cn("flex w-full min-w-0 flex-col gap-1", className)}>
+            {ownedReleases.length > 0 ? (
+                <FadedScrollArea
+                    orientation="horizontal"
+                    horizontalIntrinsicHeight
+                    hideScrollbar
+                    className={scrollRowClass}
+                >
+                    <div className={chipRowClass}>
+                        {ownedReleases.map((release) => (
+                            <CompactSessionReleaseBadge key={release.id} release={release} />
+                        ))}
+                    </div>
+                </FadedScrollArea>
+            ) : null}
+            {ownedUnits.length > 0 ? (
+                <FadedScrollArea
+                    orientation="horizontal"
+                    horizontalIntrinsicHeight
+                    hideScrollbar
+                    className={scrollRowClass}
+                >
+                    <div className={chipRowClass}>
+                        {ownedUnits.map((unit) => (
+                            <CompactSessionUnitChip key={`${unit.id}-${unit.revision}`} unit={unit} />
+                        ))}
+                    </div>
+                </FadedScrollArea>
+            ) : null}
         </div>
     );
 }

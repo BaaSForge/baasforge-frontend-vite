@@ -34,7 +34,7 @@ function SessionItem({
                 className={cn(
                     "flex w-full min-w-0 flex-col gap-1.5 rounded-lg border border-solid px-3 py-2.5 text-sm outline-none hover:bg-transparent",
                     "focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                    isCurrentChat ? "border-primary/60 bg-muted/70 shadow-sm" : "border-border",
+                    isCurrentChat ? "border-primary/60" : "border-border",
                 )}
             >
                 <div className="flex w-full min-w-0 justify-end">
