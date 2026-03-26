@@ -3,7 +3,6 @@ import { ChevronDownIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
     ChatMessageStatus,
@@ -30,52 +29,31 @@ export function ToolListUnitContextsMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasContent = contextCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
-    const argsLine =
-        p && !Array.isArray(p) && p.context_slugs?.length
-            ? `context_slugs: [${p.context_slugs.join(", ")}]`
-            : "—";
-
-    const headerTooltip = (
-        <TooltipContent side="top" className="max-w-xs">
-            <span className="font-medium">Arguments</span>
-            <span className="mt-0.5 block text-muted-foreground">{argsLine}</span>
-        </TooltipContent>
-    );
 
     return (
         <>
             <div className="relative flex w-full min-w-0 max-w-full justify-start overflow-hidden">
                 {showInvokedConnector && <InvokedMessageConnector />}
                 {!hasContent ? (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="flex max-w-full items-center gap-2 rounded-md py-3 pr-3 text-left">
-                                <span className="shrink-0">
-                                    <AiMessageStatusIcon status={status} />
-                                </span>
-                                <span className="text-sm font-medium">Reading unit contexts</span>
-                                <span className="text-xs text-muted-foreground">no content</span>
-                            </div>
-                        </TooltipTrigger>
-                        {headerTooltip}
-                    </Tooltip>
+                    <div className="flex max-w-full items-center gap-2 rounded-md py-3 pr-3 text-left">
+                        <span className="shrink-0">
+                            <AiMessageStatusIcon status={status} />
+                        </span>
+                        <span className="text-sm font-medium">Reading unit contexts</span>
+                        <span className="text-xs text-muted-foreground">no content</span>
+                    </div>
                 ) : (
                     <Collapsible defaultOpen className="group/tool-list-unit-contexts w-full min-w-0 max-w-full overflow-hidden">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <CollapsibleTrigger className="flex items-center gap-2 rounded-md py-3 pr-3 text-left outline-none transition-all hover:bg-muted/50 hover:pl-3">
-                                    <span className="shrink-0">
-                                        <AiMessageStatusIcon status={status} />
-                                    </span>
-                                    <span className="text-sm font-medium">Reading unit contexts</span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {contextCount} {contextCount === 1 ? "context" : "contexts"}
-                                    </span>
-                                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-list-unit-contexts:rotate-180" />
-                                </CollapsibleTrigger>
-                            </TooltipTrigger>
-                            {headerTooltip}
-                        </Tooltip>
+                        <CollapsibleTrigger className="flex items-center gap-2 rounded-md py-3 pr-3 text-left outline-none transition-all hover:bg-muted/50 hover:pl-3">
+                            <span className="shrink-0">
+                                <AiMessageStatusIcon status={status} />
+                            </span>
+                            <span className="text-sm font-medium">Reading unit contexts</span>
+                            <span className="text-xs text-muted-foreground">
+                                {contextCount} {contextCount === 1 ? "context" : "contexts"}
+                            </span>
+                            <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-list-unit-contexts:rotate-180" />
+                        </CollapsibleTrigger>
                         <CollapsibleContent
                             className={cn(
                                 "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",
