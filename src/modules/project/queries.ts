@@ -74,10 +74,11 @@ export function useProjectReleaseUnitsQuery(projectId: string | undefined, relea
     });
 }
 
-export function useProjectRuntimesQuery(projectId: string | undefined) {
+export function useProjectRuntimesQuery(projectId: string | undefined, options?: { enabled?: boolean }) {
+    const enabledByOption = options?.enabled ?? true;
     return useQuery({
         queryKey: QueryKeys.projectRuntimes(projectId ?? ""),
         queryFn: () => getProjectRuntimes(projectId!),
-        enabled: !!projectId,
+        enabled: !!projectId && enabledByOption,
     });
 }

@@ -9,6 +9,7 @@ export {
     patchProject,
 } from "./api";
 export { CreateProjectForm } from "./components/create-project-form";
+export { CompactReleaseBadge } from "./components/compact-release-badge";
 export { ReleaseCardChip } from "./components/release-card-chip";
 export { UnitCardChip } from "./components/unit-card-chip";
 export { UnitCardCompact } from "./components/unit-card-compact";
@@ -31,4 +32,5 @@ export type {
     ProjectUnitResponse,
     ProjectUnitType,
     ReleaseResponse,
+    StageReleaseRequest,
 } from "./types";

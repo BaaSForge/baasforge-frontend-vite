@@ -1,26 +1,11 @@
 "use client";
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { CompactReleaseBadge } from "@/modules/project";
 import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
 import { isUnitRevisionStale } from "@/modules/project/unit-revision-stale";
 import { useChatSessionUnitLatestRevision } from "@/modules/project/use-chat-session-unit-latest-revision";
-
-export function CompactSessionReleaseBadge({ release, className }: { release: ReleaseResponse; className?: string }) {
-    return (
-        <Badge
-            variant="secondary"
-            className={cn(
-                "shrink-0 rounded-md border-amber-500/45 bg-amber-500/20 font-medium text-[0.625rem] text-amber-950 dark:border-amber-400/45 dark:bg-amber-400/18 dark:text-amber-100",
-                className,
-            )}
-            title={release.revision}
-        >
-            revision {release.revision}
-        </Badge>
-    );
-}
 
 export function CompactSessionUnitChip({
     unit,
@@ -43,33 +28,15 @@ export function CompactSessionUnitChip({
     return (
         <span
             className={cn(
-                "inline-flex max-w-[min(100%,14rem)] shrink-0 items-center gap-1 rounded-md border px-2 py-0.5 text-[0.625rem] font-medium tabular-nums",
-                stale
-                    ? "border-muted-foreground/35 bg-muted/75 text-muted-foreground dark:border-muted-foreground/40 dark:bg-muted/55"
-                    : "border-sky-500/45 bg-sky-500/20 text-sky-950 dark:border-sky-400/45 dark:bg-sky-400/18 dark:text-sky-100",
+                "inline-flex max-w-[calc(100%-1rem)] min-h-[1.375rem] min-w-0 shrink-0 items-center gap-2 rounded-[4px] border border-border/45 bg-muted px-2 py-0.5 font-mono text-[0.625rem] leading-tight text-muted-foreground dark:border-border/50 z-[3]",
+                stale && "opacity-90",
                 className,
             )}
             title={`${unit.id} · ${revisionText}`}
         >
-            <span
-                className={cn(
-                    "min-w-0 truncate font-mono",
-                    stale ? "text-muted-foreground" : "text-sky-900 dark:text-sky-50",
-                )}
-            >
-                {unit.id}
-            </span>
-            <span
-                className={cn(
-                    "shrink-0",
-                    stale ? "text-muted-foreground/80" : "text-sky-700/80 dark:text-sky-300/90",
-                )}
-            >
-                ·
-            </span>
-            <span className={cn("shrink-0", stale ? "text-muted-foreground" : "text-sky-900 dark:text-sky-50")}>
-                {revisionText}
-            </span>
+            <span className="min-w-0 truncate">{unit.id}</span>
+            <span className="shrink-0 text-muted-foreground/80">·</span>
+            <span className="shrink-0 tabular-nums">{revisionText}</span>
         </span>
     );
 }
@@ -95,26 +62,12 @@ export function SessionOwnershipChipsRow({
 
     return (
         <div className={cn("flex w-full min-w-0 flex-col gap-1", className)}>
-            {ownedReleases.length > 0 ? (
-                <FadedScrollArea
-                    orientation="horizontal"
-                    horizontalIntrinsicHeight
-                    hideScrollbar
-                    className={scrollRowClass}
-                >
-                    <div className={chipRowClass}>
-                        {ownedReleases.map((release) => (
-                            <CompactSessionReleaseBadge key={release.id} release={release} />
-                        ))}
-                    </div>
-                </FadedScrollArea>
-            ) : null}
             {ownedUnits.length > 0 ? (
                 <FadedScrollArea
                     orientation="horizontal"
                     horizontalIntrinsicHeight
                     hideScrollbar
-                    className={scrollRowClass}
+                    className={cn(scrollRowClass, "mt-1.5")}
                 >
                     <div className={chipRowClass}>
                         {ownedUnits.map((unit) => (
@@ -124,6 +77,20 @@ export function SessionOwnershipChipsRow({
                                 chatSessionId={chatSessionId}
                                 unit={unit}
                             />
+                        ))}
+                    </div>
+                </FadedScrollArea>
+            ) : null}
+            {ownedReleases.length > 0 ? (
+                <FadedScrollArea
+                    orientation="horizontal"
+                    horizontalIntrinsicHeight
+                    hideScrollbar
+                    className={scrollRowClass}
+                >
+                    <div className={chipRowClass}>
+                        {ownedReleases.map((release) => (
+                            <CompactReleaseBadge key={release.id} release={release} projectId={projectId} />
                         ))}
                     </div>
                 </FadedScrollArea>

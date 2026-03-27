@@ -1,6 +1,14 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
-import type { ProjectPatchRequest, ProjectRequest, ProjectResponse, ProjectRuntimeResponse, ProjectUnitResponse, ReleaseResponse } from "./types";
+import type {
+    ProjectPatchRequest,
+    ProjectRequest,
+    ProjectResponse,
+    ProjectRuntimeResponse,
+    ProjectUnitResponse,
+    ReleaseResponse,
+    StageReleaseRequest,
+} from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
 const projectNonDraftUnitsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/non-draft-units`;
@@ -14,6 +22,12 @@ const projectDraftUnitsAsOfReleaseControllerMessageEndpoint = (
 const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
 const projectReleaseUnitsEndpoint = (projectId: string, releaseRevision: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseRevision}/units`;
 const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
+const projectRuntimeDetachLiveReleaseEndpoint = (projectId: string, runtimeId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/detach-live-release`;
+const projectReleaseControllerStageReleaseEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/stage-release`;
+const projectReleaseControllerProductionReleaseEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/production-release`;
 
 export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
     return apiClient.post<ApiResponse<ProjectResponse>>(PROJECTS_ENDPOINT, body).then((res) => {
@@ -78,4 +92,27 @@ export function getReleaseUnits(projectId: string, releaseRevision: string): Pro
 
 export function getProjectRuntimes(projectId: string): Promise<ProjectRuntimeResponse[]> {
     return apiClient.get<ApiResponse<ProjectRuntimeResponse[]>>(projectRuntimesEndpoint(projectId)).then((res) => res.data ?? []);
+}
+
+export function detachRuntimeLiveRelease(projectId: string, runtimeId: string): Promise<void> {
+    return apiClient.post<ApiResponse<unknown>>(projectRuntimeDetachLiveReleaseEndpoint(projectId, runtimeId)).then(() => undefined);
+}
+
+export function postReleaseControllerStageRelease(
+    projectId: string,
+    chatSessionId: string,
+    messageId: string,
+    body: StageReleaseRequest,
+): Promise<void> {
+    return apiClient.post<ApiResponse<unknown>>(projectReleaseControllerStageReleaseEndpoint(projectId, chatSessionId, messageId), body).then(() => undefined);
+}
+
+export function postReleaseControllerProductionRelease(
+    projectId: string,
+    chatSessionId: string,
+    messageId: string,
+): Promise<void> {
+    return apiClient
+        .post<ApiResponse<unknown>>(projectReleaseControllerProductionReleaseEndpoint(projectId, chatSessionId, messageId))
+        .then(() => undefined);
 }

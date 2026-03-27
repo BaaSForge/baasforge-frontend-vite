@@ -78,3 +78,7 @@ export interface ProjectRuntimeResponse {
     server_cluster_deployment_status: DeploymentStatusType | null;
     live_release_revision: string | null;
 }
+
+export interface StageReleaseRequest {
+    stage_project_runtime_id: string;
+}

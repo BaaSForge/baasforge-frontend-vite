@@ -2,11 +2,23 @@
 
 import type { ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { QueryKeys } from "@/constants/query-keys";
+import { postReleaseControllerProductionRelease } from "@/modules/project/api";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
-import { ReleaseCardChip, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
+import { CompactReleaseBadge, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
 import {
     ChatSessionViewChangesModal,
     postChatSessionUnitPreChatBaseByPaths,
@@ -18,11 +30,13 @@ import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlignJustify, Columns2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
+import { ReleaseStageRuntimeModal } from "./release-stage-runtime-modal";
 
 function uniqueUnitPathsFromDraftUnits(units: { id: string }[]): string[] {
     const seen = new Set<string>();
@@ -85,6 +99,22 @@ export function ReleaseControllerBoxMessage({
     const [viewChangesOpen, setViewChangesOpen] = useState(false);
     const [viewChangesUnits, setViewChangesUnits] = useState<ChatSessionUnitChangePair[]>([]);
     const [isPreparingViewChanges, setIsPreparingViewChanges] = useState(false);
+    const [stageReleaseModalOpen, setStageReleaseModalOpen] = useState(false);
+    const [productionConfirmOpen, setProductionConfirmOpen] = useState(false);
+
+    const queryClient = useQueryClient();
+    const productionReleaseMutation = useMutation({
+        mutationFn: () => postReleaseControllerProductionRelease(projectId!, chatSessionId!, message.id),
+        onSuccess: async () => {
+            setProductionConfirmOpen(false);
+            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionMessages(projectId!, chatSessionId!) });
+            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId!) });
+            toast.success("Production release process has started.", { position: "top-center" });
+        },
+        onError: () => {
+            toast.error("Could not start production release.", { position: "top-center" });
+        },
+    });
 
     const hasDraftUnits = (draftUnits?.length ?? 0) > 0;
     const canViewChanges =
@@ -115,8 +145,9 @@ export function ReleaseControllerBoxMessage({
         }
     }, [projectId, chatSessionId, refetchDraftUnits]);
 
-    const canReleaseProd = stageRelease != null && prodRelease == null;
-    const prodButtonDisabled = prodRelease != null || !canReleaseProd;
+    const canOpenStageReleaseModal = projectId != null && chatSessionId != null && stageRelease == null;
+    const canCallProductionRelease =
+        stageRelease != null && prodRelease == null && projectId != null && chatSessionId != null;
 
     return (
         <>
@@ -166,53 +197,102 @@ export function ReleaseControllerBoxMessage({
                     </Button>
 
                     {stageRelease != null ? (
-                        <div
-                            className={cn(
-                                "flex min-w-0 flex-col items-center gap-0.5",
-                                !compactToolbar && "sm:items-start",
-                            )}
-                        >
-                            <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted-foreground">
-                                Stage
-                            </span>
-                            <ReleaseCardChip release={stageRelease} className="max-w-[min(100%,220px)]" />
-                        </div>
+                        <CompactReleaseBadge release={stageRelease} projectId={projectId} />
+                    ) : !canOpenStageReleaseModal ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                    <Button type="button" variant="outline" size="xs" disabled>
+                                        Release Stage
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">Missing project or conversation context.</TooltipContent>
+                        </Tooltip>
                     ) : (
-                        <Button type="button" variant="secondary" size="xs">
+                        <Button type="button" variant="outline" size="xs" onClick={() => setStageReleaseModalOpen(true)}>
                             Release Stage
                         </Button>
                     )}
 
                     {prodRelease != null ? (
-                        <div
-                            className={cn(
-                                "flex min-w-0 flex-col items-center gap-0.5",
-                                !compactToolbar && "sm:items-start",
-                            )}
-                        >
-                            <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted-foreground">
-                                Production
-                            </span>
-                            <ReleaseCardChip release={prodRelease} className="max-w-[min(100%,220px)]" />
-                        </div>
+                        <CompactReleaseBadge release={prodRelease} projectId={projectId} />
                     ) : stageRelease == null ? (
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span className="inline-flex">
-                                    <Button type="button" variant="secondary" size="xs" disabled={prodButtonDisabled}>
+                                    <Button type="button" variant="outline" size="xs" disabled>
                                         Release production
                                     </Button>
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">Release to stage first.</TooltipContent>
                         </Tooltip>
+                    ) : !canCallProductionRelease ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                    <Button type="button" variant="outline" size="xs" disabled>
+                                        Release production
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">Missing project or conversation context.</TooltipContent>
+                        </Tooltip>
                     ) : (
-                        <Button type="button" variant="secondary" size="xs" disabled={prodButtonDisabled}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="xs"
+                            disabled={productionReleaseMutation.isPending}
+                            aria-busy={productionReleaseMutation.isPending}
+                            onClick={() => setProductionConfirmOpen(true)}
+                        >
                             Release production
                         </Button>
                     )}
                 </div>
             </div>
+
+            <AlertDialog open={productionConfirmOpen} onOpenChange={setProductionConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>I have tested, let&apos;s deploy</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This starts a production release for the scope up to this message. Confirm only when you have tested on
+                            stage and are ready for these changes to go live.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={productionReleaseMutation.isPending}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            className={buttonVariants({ variant: "destructive" })}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                productionReleaseMutation.mutate();
+                            }}
+                            disabled={productionReleaseMutation.isPending}
+                        >
+                            {productionReleaseMutation.isPending ? (
+                                <>
+                                    <Spinner className="size-3" aria-hidden />
+                                    Releasing…
+                                </>
+                            ) : (
+                                "Deploy to production"
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <ReleaseStageRuntimeModal
+                open={stageReleaseModalOpen}
+                onOpenChange={setStageReleaseModalOpen}
+                projectId={projectId}
+                chatSessionId={chatSessionId}
+                messageId={message.id}
+            />
             <ChatSessionViewChangesModal
                 open={viewChangesOpen}
                 onOpenChange={setViewChangesOpen}
