@@ -1,6 +1,15 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import { getDraftUnits, getProject, getProjectNonDraftUnits, getProjects, getReleases, getReleaseUnits, getRuntimesWithConnectedChat } from "./api";
+import {
+    getDraftUnits,
+    getDraftUnitsAsOfReleaseControllerMessage,
+    getProject,
+    getProjectNonDraftUnits,
+    getProjects,
+    getReleases,
+    getReleaseUnits,
+    getRuntimesWithConnectedChat,
+} from "./api";
 
 export function useProjectsQuery() {
     return useQuery({
@@ -30,6 +39,22 @@ export function useProjectDraftUnitsQuery(projectId: string | undefined, chatSes
         queryKey: QueryKeys.projectDraftUnits(projectId ?? "", chatSessionId ?? ""),
         queryFn: () => getDraftUnits(projectId!, chatSessionId!),
         enabled: !!projectId && !!chatSessionId,
+    });
+}
+
+export function useProjectDraftUnitsAsOfReleaseControllerMessageQuery(
+    projectId: string | undefined,
+    chatSessionId: string | undefined,
+    releaseControllerMessageId: string | undefined,
+) {
+    return useQuery({
+        queryKey: QueryKeys.projectDraftUnitsAsOfReleaseControllerMessage(
+            projectId ?? "",
+            chatSessionId ?? "",
+            releaseControllerMessageId ?? "",
+        ),
+        queryFn: () => getDraftUnitsAsOfReleaseControllerMessage(projectId!, chatSessionId!, releaseControllerMessageId!),
+        enabled: !!projectId && !!chatSessionId && !!releaseControllerMessageId,
     });
 }
 

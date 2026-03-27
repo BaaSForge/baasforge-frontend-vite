@@ -1,6 +1,7 @@
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import {
+    NestedMainSidebarProvider,
     SecondarySidebar,
     SecondarySidebarProvider,
     SidebarInset,
@@ -109,71 +110,73 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
     }, [releaseVersion, navigate, projectId, releases]);
 
     return (
-        <>
-            <PageTitleBox
-                title={`Units for release ${releaseVersion}`}
-                mainSidebar={mainSidebar}
-                tools={
-                    <div className="flex items-center gap-3">
-                        <ToggleGroup
-                            type="single"
-                            value={groupMode}
-                            onValueChange={(v) => v != null && v !== "" && setGroupMode(v as GroupMode)}
-                            variant="outline"
-                            size="sm"
-                        >
-                            <ToggleGroupItem value="ungrouped">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span>
-                                            <TextAlignJustifyIcon />
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom">Ungrouped view</TooltipContent>
-                                </Tooltip>
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="grouped">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span>
-                                            <LayersIcon />
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom">Group by type</TooltipContent>
-                                </Tooltip>
-                            </ToggleGroupItem>
-                        </ToggleGroup>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
-                                    <SidebarIcon className="size-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">Toggle releases ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
-                        </Tooltip>
-                    </div>
-                }
-            />
-            <SecondarySidebar>
-                <SecondarySideBar />
-            </SecondarySidebar>
-            <SidebarInset className="here-is-the-content">
-                <Container>
-                    {isLoading ? (
-                        <div className="p-4 text-muted-foreground text-center text-sm">Loading units…</div>
-                    ) : error ? (
-                        <div className="p-4 text-destructive text-center text-sm">Failed to load units.</div>
-                    ) : groupMode === "ungrouped" ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            {releaseUnits?.map((unit) => (
-                                <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} />
-                            ))}
+        <NestedMainSidebarProvider mainSidebar={mainSidebar}>
+            <>
+                <PageTitleBox
+                    title={`Units for release ${releaseVersion}`}
+                    mainSidebar={mainSidebar}
+                    tools={
+                        <div className="flex items-center gap-3">
+                            <ToggleGroup
+                                type="single"
+                                value={groupMode}
+                                onValueChange={(v) => v != null && v !== "" && setGroupMode(v as GroupMode)}
+                                variant="outline"
+                                size="sm"
+                            >
+                                <ToggleGroupItem value="ungrouped">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span>
+                                                <TextAlignJustifyIcon />
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom">Ungrouped view</TooltipContent>
+                                    </Tooltip>
+                                </ToggleGroupItem>
+                                <ToggleGroupItem value="grouped">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span>
+                                                <LayersIcon />
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="bottom">Group by type</TooltipContent>
+                                    </Tooltip>
+                                </ToggleGroupItem>
+                            </ToggleGroup>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
+                                        <SidebarIcon className="size-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">Toggle releases ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
+                            </Tooltip>
                         </div>
-                    ) : (
-                        <UnitsGroupedByType projectId={projectId} units={releaseUnits ?? []} />
-                    )}
-                </Container>
-            </SidebarInset>
-        </>
+                    }
+                />
+                <SecondarySidebar>
+                    <SecondarySideBar />
+                </SecondarySidebar>
+                <SidebarInset className="here-is-the-content">
+                    <Container>
+                        {isLoading ? (
+                            <div className="p-4 text-muted-foreground text-center text-sm">Loading units…</div>
+                        ) : error ? (
+                            <div className="p-4 text-destructive text-center text-sm">Failed to load units.</div>
+                        ) : groupMode === "ungrouped" ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {releaseUnits?.map((unit) => (
+                                    <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} />
+                                ))}
+                            </div>
+                        ) : (
+                            <UnitsGroupedByType projectId={projectId} units={releaseUnits ?? []} />
+                        )}
+                    </Container>
+                </SidebarInset>
+            </>
+        </NestedMainSidebarProvider>
     );
 }

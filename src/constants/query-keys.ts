@@ -14,6 +14,8 @@ export const QueryKeys = {
         ["chat", "sessions", "unit-latest-revisions-by-unit-id", projectId, chatSessionId] as const,
     projectNonDraftUnits: (projectId: string) => ["project", "non-draft-units", projectId] as const,
     projectDraftUnits: (projectId: string, chatSessionId: string) => ["project", "draft-units", projectId, chatSessionId] as const,
+    projectDraftUnitsAsOfReleaseControllerMessage: (projectId: string, chatSessionId: string, messageId: string) =>
+        ["project", "draft-units", "as-of-release-controller-message", projectId, chatSessionId, messageId] as const,
     PROJECTS_LIST: ["project", "list"] as const,
     projectChatSessionList: (projectId: string) => ["chat", "sessions", "list", projectId] as const,
     projectChatSessionDetail: (projectId: string, chatSessionId: string) => ["chat", "sessions", "detail", projectId, chatSessionId] as const,

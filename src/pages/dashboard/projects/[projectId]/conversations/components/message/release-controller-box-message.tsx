@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
-import { ReleaseCardChip, useProjectDraftUnitsQuery } from "@/modules/project";
+import { ReleaseCardChip, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
 import {
     ChatSessionViewChangesModal,
     postChatSessionUnitPreChatBaseByPaths,
@@ -16,10 +16,13 @@ import { usePersistedUnitDiffViewMode } from "@/modules/project-chat/hooks/use-p
 import type { ReleaseControllerBoxPayload } from "@/modules/project-chat/payloads";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import type { ProjectUnitResponse } from "@/modules/project/types";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { AlignJustify, Columns2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
+import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
 
 function uniqueUnitPathsFromDraftUnits(units: { id: string }[]): string[] {
     const seen = new Set<string>();
@@ -66,13 +69,18 @@ export function ReleaseControllerBoxMessage({
     const { projectId, conversationId } = useParams<{ projectId: string; conversationId?: string }>();
     const chatSessionId = conversationId ?? undefined;
     const [diffViewMode] = usePersistedUnitDiffViewMode();
+    const isMobile = useIsMobile();
+    const bothSidebarsOpen = useAreBothSidebarsOpen();
+    const compactToolbar = isMobile || bothSidebarsOpen;
 
     const { stage_release: stageRelease, prod_release: prodRelease } = getReleaseControllerPayload(message);
 
-    const { data: draftUnits, isLoading, error, refetch: refetchDraftUnits } = useProjectDraftUnitsQuery(
-        projectId ?? undefined,
-        chatSessionId,
-    );
+    const {
+        data: draftUnits,
+        isLoading,
+        error,
+        refetch: refetchDraftUnits,
+    } = useProjectDraftUnitsAsOfReleaseControllerMessageQuery(projectId ?? undefined, chatSessionId, message.id);
 
     const [viewChangesOpen, setViewChangesOpen] = useState(false);
     const [viewChangesUnits, setViewChangesUnits] = useState<ChatSessionUnitChangePair[]>([]);
@@ -112,11 +120,26 @@ export function ReleaseControllerBoxMessage({
 
     return (
         <>
-            <div className="flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-border/80 bg-muted/25 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 mb-4">
-                <p className="w-full min-w-0 text-center text-sm text-muted-foreground sm:flex-1 sm:text-left">
+            <div
+                className={cn(
+                    "flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-border/80 bg-muted/25 px-3 py-2.5 mb-4",
+                    !compactToolbar && "sm:flex-row sm:items-center sm:justify-between sm:gap-3",
+                )}
+            >
+                <p
+                    className={cn(
+                        "w-full min-w-0 text-center text-sm text-muted-foreground",
+                        !compactToolbar && "sm:flex-1 sm:text-left",
+                    )}
+                >
                     Release scope up to here
                 </p>
-                <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-end">
+                <div
+                    className={cn(
+                        "flex w-full min-w-0 flex-wrap items-center justify-center gap-2",
+                        !compactToolbar && "sm:w-auto sm:justify-end",
+                    )}
+                >
                     <Button
                         type="button"
                         variant="outline"
@@ -143,7 +166,12 @@ export function ReleaseControllerBoxMessage({
                     </Button>
 
                     {stageRelease != null ? (
-                        <div className="flex min-w-0 flex-col items-center gap-0.5 sm:items-start">
+                        <div
+                            className={cn(
+                                "flex min-w-0 flex-col items-center gap-0.5",
+                                !compactToolbar && "sm:items-start",
+                            )}
+                        >
                             <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted-foreground">
                                 Stage
                             </span>
@@ -156,7 +184,12 @@ export function ReleaseControllerBoxMessage({
                     )}
 
                     {prodRelease != null ? (
-                        <div className="flex min-w-0 flex-col items-center gap-0.5 sm:items-start">
+                        <div
+                            className={cn(
+                                "flex min-w-0 flex-col items-center gap-0.5",
+                                !compactToolbar && "sm:items-start",
+                            )}
+                        >
                             <span className="text-[0.625rem] font-medium uppercase tracking-wide text-muted-foreground">
                                 Production
                             </span>

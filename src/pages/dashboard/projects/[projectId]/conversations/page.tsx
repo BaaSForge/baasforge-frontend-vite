@@ -2,6 +2,7 @@ import { FancyButton } from "@/components/fancy-button";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import {
+    NestedMainSidebarProvider,
     SecondarySidebar,
     SecondarySidebarProvider,
     SidebarInset,
@@ -339,100 +340,102 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }, [projectIdOrUndefined, chatSessionIdOrUndefined, projectId, queryClient]);
 
     return (
-        <>
-            <PageTitleBox
-                title={title}
-                mainSidebar={mainSidebar}
-                tools={
-                    <>
-                        {chatSession && (
+        <NestedMainSidebarProvider mainSidebar={mainSidebar}>
+            <>
+                <PageTitleBox
+                    title={title}
+                    mainSidebar={mainSidebar}
+                    tools={
+                        <>
+                            {chatSession && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        {chatSession.stage_project_runtime_id ? (
+                                            <FancyButton size="sm" className="mr-2" color="green" onClick={() => setRuntimesModalOpen(true)}>
+                                                <ConnectIcon className="size-4" />
+                                                Connected
+                                            </FancyButton>
+                                        ) : (
+                                            <Button variant="secondary" size="sm" className="mr-2" onClick={() => setRuntimesModalOpen(true)}>
+                                                <DisconnectIcon className="size-4" />
+                                                Disconnected
+                                            </Button>
+                                        )}
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom">See runtimes operations</TooltipContent>
+                                </Tooltip>
+                            )}
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    {chatSession.stage_project_runtime_id ? (
-                                        <FancyButton size="sm" className="mr-2" color="green" onClick={() => setRuntimesModalOpen(true)}>
-                                            <ConnectIcon className="size-4" />
-                                            Connected
-                                        </FancyButton>
-                                    ) : (
-                                        <Button variant="secondary" size="sm" className="mr-2" onClick={() => setRuntimesModalOpen(true)}>
-                                            <DisconnectIcon className="size-4" />
-                                            Disconnected
-                                        </Button>
-                                    )}
+                                    <Button variant="secondary" size="sm" onClick={toggleSidebar}>
+                                        <SidebarIcon className="size-4 rotate-180" />
+                                    </Button>
                                 </TooltipTrigger>
-                                <TooltipContent side="bottom">See runtimes operations</TooltipContent>
+                                <TooltipContent side="bottom">Toggle draft units ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
                             </Tooltip>
-                        )}
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="secondary" size="sm" onClick={toggleSidebar}>
-                                    <SidebarIcon className="size-4 rotate-180" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">Toggle draft units ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
-                        </Tooltip>
-                    </>
-                }
-            >
-                {isFetchingPreviousPage && <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />}
-            </PageTitleBox>
-            <SecondarySidebar>
-                <SecondarySideBar />
-            </SecondarySidebar>
-            <SidebarInset>
-                <Container>
-                    {hasPreviousPage && <div ref={loadMoreRef} className="h-px w-full shrink-0" aria-hidden />}
-                    <div className={cn("flex flex-col gap-0 min-h-0 min-w-0 flex-1 pb-4 overflow-x-hidden", MIDDLE_CONTENT_CLASSNAME)}>
-                        {displayRootMessages.map((message) => (
-                            <MessageBranch
-                                key={message.id}
-                                message={message}
-                                childrenByParentId={displayChildrenByParentId}
-                                onRetry={handleRetryMessage}
-                            />
-                        ))}
-                        {shouldShowTemporaryMessageBeforeRedirecting && (
-                            <Message
-                                message={temporaryMessageBeforeRedirectingToNewSession}
-                                onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
-                            />
-                        )}
-                        {lastAiEndStatus != null && !isGenerating && (
-                            <div
-                                className={cn(
-                                    "py-1 text-sm",
-                                    lastAiEndStatus === "failed" ? "text-destructive" : "text-muted-foreground",
-                                )}
-                            >
-                                {lastAiEndStatus === "failed" ? "Generation failed." : "Generation stopped."}
-                            </div>
-                        )}
-                        {(isGenerating || placeholderVisible) && (
-                            <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />
-                        )}
-                    </div>
-                    <Controls
-                        messageInputRef={messageInputRef}
-                        messageInputValue={messageInput}
-                        setMessageInputValue={setMessageInput}
-                        handleSend={handleSend}
-                        handleStop={handleStop}
-                        canSend={canSend}
-                        isGenerating={isGenerating}
-                        isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
-                        mainSidebar={mainSidebar}
+                        </>
+                    }
+                >
+                    {isFetchingPreviousPage && <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />}
+                </PageTitleBox>
+                <SecondarySidebar>
+                    <SecondarySideBar />
+                </SecondarySidebar>
+                <SidebarInset>
+                    <Container>
+                        {hasPreviousPage && <div ref={loadMoreRef} className="h-px w-full shrink-0" aria-hidden />}
+                        <div className={cn("flex flex-col gap-0 min-h-0 min-w-0 flex-1 pb-4 overflow-x-hidden", MIDDLE_CONTENT_CLASSNAME)}>
+                            {displayRootMessages.map((message) => (
+                                <MessageBranch
+                                    key={message.id}
+                                    message={message}
+                                    childrenByParentId={displayChildrenByParentId}
+                                    onRetry={handleRetryMessage}
+                                />
+                            ))}
+                            {shouldShowTemporaryMessageBeforeRedirecting && (
+                                <Message
+                                    message={temporaryMessageBeforeRedirectingToNewSession}
+                                    onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
+                                />
+                            )}
+                            {lastAiEndStatus != null && !isGenerating && (
+                                <div
+                                    className={cn(
+                                        "py-1 text-sm",
+                                        lastAiEndStatus === "failed" ? "text-destructive" : "text-muted-foreground",
+                                    )}
+                                >
+                                    {lastAiEndStatus === "failed" ? "Generation failed." : "Generation stopped."}
+                                </div>
+                            )}
+                            {(isGenerating || placeholderVisible) && (
+                                <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />
+                            )}
+                        </div>
+                        <Controls
+                            messageInputRef={messageInputRef}
+                            messageInputValue={messageInput}
+                            setMessageInputValue={setMessageInput}
+                            handleSend={handleSend}
+                            handleStop={handleStop}
+                            canSend={canSend}
+                            isGenerating={isGenerating}
+                            isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
+                            mainSidebar={mainSidebar}
+                        />
+                    </Container>
+                </SidebarInset>
+                {chatSession && (
+                    <RuntimesModal
+                        open={runtimesModalOpen}
+                        onOpenChange={setRuntimesModalOpen}
+                        projectId={projectId ?? ""}
+                        chatSessionId={chatSession.id}
+                        alreadyConnectedRuntimeId={chatSession.stage_project_runtime_id}
                     />
-                </Container>
-            </SidebarInset>
-            {chatSession && (
-                <RuntimesModal
-                    open={runtimesModalOpen}
-                    onOpenChange={setRuntimesModalOpen}
-                    projectId={projectId ?? ""}
-                    chatSessionId={chatSession.id}
-                    alreadyConnectedRuntimeId={chatSession.stage_project_runtime_id}
-                />
-            )}
-        </>
+                )}
+            </>
+        </NestedMainSidebarProvider>
     );
 }

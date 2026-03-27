@@ -22,6 +22,8 @@ export function useRegisterSecondarySidebarShortcut() {
     }, [toggleSidebar]);
 }
 
+export { NestedMainSidebarProvider, useNestedMainSidebar } from "./nested-main-sidebar-context";
+export { useAreBothSidebarsOpen } from "./use-are-both-sidebars-open";
 export { SidebarContent, SidebarInset, useSidebar } from "../ui/sidebar";
 export {
     SecondarySidebarContent,

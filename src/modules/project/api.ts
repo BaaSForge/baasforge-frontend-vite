@@ -12,6 +12,12 @@ import type {
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
 const projectNonDraftUnitsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/non-draft-units`;
 const projectDraftUnitsEndpoint = (projectId: string, chatSessionId: string) => `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units`;
+const projectDraftUnitsAsOfReleaseControllerMessageEndpoint = (
+    projectId: string,
+    chatSessionId: string,
+    releaseControllerMessageId: string,
+) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units/as-of-release-controller-message/${releaseControllerMessageId}`;
 const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
 const projectReleaseUnitsEndpoint = (projectId: string, releaseVersion: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseVersion}/units`;
 const projectRuntimesWithConnectedChatEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes-with-connected-chat-sessions`;
@@ -89,6 +95,16 @@ export function getProjectNonDraftUnits(projectId: string): Promise<ProjectUnitR
 
 export function getDraftUnits(projectId: string, chatSessionId: string): Promise<ProjectUnitResponse[]> {
     return apiClient.get<ApiResponse<ProjectUnitResponse[]>>(projectDraftUnitsEndpoint(projectId, chatSessionId)).then((res) => res.data ?? []);
+}
+
+export function getDraftUnitsAsOfReleaseControllerMessage(
+    projectId: string,
+    chatSessionId: string,
+    releaseControllerMessageId: string,
+): Promise<ProjectUnitResponse[]> {
+    return apiClient
+        .get<ApiResponse<ProjectUnitResponse[]>>(projectDraftUnitsAsOfReleaseControllerMessageEndpoint(projectId, chatSessionId, releaseControllerMessageId))
+        .then((res) => res.data ?? []);
 }
 
 export function getReleases(projectId: string): Promise<ReleaseResponse[]> {
