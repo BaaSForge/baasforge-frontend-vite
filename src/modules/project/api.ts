@@ -13,7 +13,7 @@ const projectDraftUnitsAsOfReleaseControllerMessageEndpoint = (
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units/as-of-release-controller-message/${releaseControllerMessageId}`;
 const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
 const projectReleaseUnitsEndpoint = (projectId: string, releaseRevision: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseRevision}/units`;
-const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes-with-connected-chat-sessions`;
+const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
 
 export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
     return apiClient.post<ApiResponse<ProjectResponse>>(PROJECTS_ENDPOINT, body).then((res) => {
