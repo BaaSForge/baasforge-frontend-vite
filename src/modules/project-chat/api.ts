@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
+import type { ProjectUnitResponse } from "@/modules/project/types";
 import {
     ChatMessageDeliveryStatus,
     type ChatMessageDTO,
@@ -19,6 +20,8 @@ const chatSessionStopEndpoint = (projectId: string, chatSessionId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/stop-generating`;
 const chatSessionUnitLatestRevisionsByIdsEndpoint = (projectId: string, chatSessionId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-latest-revisions-by-ids`;
+const chatSessionUnitPreChatBaseByPathsEndpoint = (projectId: string, chatSessionId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-pre-chat-base-by-paths`;
 
 /** Matches backend `UnitPathsBody`: each string is the unit path (full id without the trailing `.<revision>` segment). */
 export type UnitPathsBody = {
@@ -28,6 +31,11 @@ export type UnitPathsBody = {
 /** Same length and order as request `unit_paths`; `null` when no unit exists for that path in this session. */
 export type UnitLatestRevisionsResponse = {
     revisions: (number | null)[];
+};
+
+/** Same length and order as request `unit_paths`; `null` when there is no pre-chat base revision for that path. */
+export type UnitPreChatBaseByPathsResponse = {
+    units: (ProjectUnitResponse | null)[];
 };
 
 export function getProjectChatSessions(projectId: string): Promise<ChatSessionResponse[]> {
@@ -114,4 +122,21 @@ export function postChatSessionUnitLatestRevisionsByIds(
     return apiClient
         .post<ApiResponse<UnitLatestRevisionsResponse>>(chatSessionUnitLatestRevisionsByIdsEndpoint(projectId, chatSessionId), body)
         .then((res) => res.data ?? { revisions: [] });
+}
+
+/**
+ * For each unit path, returns the unit row at revision `MIN(revision) - 1` in this session (state before the first in-session revision).
+ */
+export function postChatSessionUnitPreChatBaseByPaths(
+    projectId: string,
+    chatSessionId: string,
+    unitPaths: string[],
+): Promise<UnitPreChatBaseByPathsResponse> {
+    if (unitPaths.length === 0) {
+        return Promise.resolve({ units: [] });
+    }
+    const body: UnitPathsBody = { unit_paths: unitPaths };
+    return apiClient
+        .post<ApiResponse<UnitPreChatBaseByPathsResponse>>(chatSessionUnitPreChatBaseByPathsEndpoint(projectId, chatSessionId), body)
+        .then((res) => res.data ?? { units: [] });
 }
