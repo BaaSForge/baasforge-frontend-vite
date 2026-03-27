@@ -1,20 +1,12 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useRuntimeChatSessionActions } from "@/modules/project";
-import type { ChatSessionResponse } from "@/modules/project-chat";
-import { DisconnectIcon } from "@/modules/project/stores/runtime-store/exports";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
-import { MessageSquare } from "lucide-react";
-import { Link } from "react-router";
 import { DeploymentStatusBadge } from "./deployment-status-badge";
 import { LiveBadge } from "./live-badge";
 import { PlatformEnvironmentBadge } from "./platform-environment-badge";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export interface RuntimeCardProps {
     runtime: ProjectRuntimeResponse;
-    connectedChatSession?: ChatSessionResponse | null;
 }
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -27,19 +19,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     );
 }
 
-export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps) {
-    const { detachRuntime } = useRuntimeChatSessionActions();
-
-    const handleDisconnect = () => {
-        if (connectedChatSession) {
-            detachRuntime({
-                projectId: runtime.project_id,
-                chatSessionId: connectedChatSession.id,
-                projectRuntimeId: runtime.id,
-            });
-        }
-    };
-
+export function RuntimeCard({ runtime }: RuntimeCardProps) {
     const liveBadge = (
         <LiveBadge
             isOn={runtime.live_release_revision != null}
@@ -50,43 +30,10 @@ export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps)
         />
     );
 
-    const isStage = runtime.environment === "stage";
-
     return (
         <Card className={`p-0 gap-0 overflow-hidden shadow-none rounded-md`}>
             <CardHeader className={cn("flex flex-row items-center border-b bg-muted justify-between gap-3 !py-2.5 px-3")}>
                 <h3 className="font-semibold text-sm truncate">{runtime.name}</h3>
-                {isStage && (
-                    <div className="flex items-center gap-1.5 shrink-0">
-                        {connectedChatSession && (
-                            <>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="outline" size="xs" asChild>
-                                            <Link to={`/dashboard/projects/${runtime.project_id}/conversations/${connectedChatSession.id}`}>
-                                                <MessageSquare className="size-4" />
-                                            </Link>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">Go to the connected chat session.</TooltipContent>
-                                </Tooltip>
-                                <Tooltip delayDuration={400}>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="destructive" size="xs" onClick={handleDisconnect}>
-                                            <DisconnectIcon className="size-4" />
-                                            Disconnect
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">
-                                        Disconnect the chat session from this runtime
-                                        <br />
-                                        Then the runtime will be free to be used by another chat session to test new releases.
-                                    </TooltipContent>
-                                </Tooltip>
-                            </>
-                        )}
-                    </div>
-                )}
             </CardHeader>
             <CardContent className="py-4 px-4 space-y-3">
                 <InfoRow label="Live release revision" value={liveBadge} />

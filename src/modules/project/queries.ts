@@ -5,10 +5,10 @@ import {
     getDraftUnitsAsOfReleaseControllerMessage,
     getProject,
     getProjectNonDraftUnits,
+    getProjectRuntimes,
     getProjects,
     getReleases,
     getReleaseUnits,
-    getRuntimesWithConnectedChat,
 } from "./api";
 
 export function useProjectsQuery() {
@@ -74,10 +74,10 @@ export function useProjectReleaseUnitsQuery(projectId: string | undefined, relea
     });
 }
 
-export function useProjectRuntimesWithConnectedChatQuery(projectId: string | undefined) {
+export function useProjectRuntimesQuery(projectId: string | undefined) {
     return useQuery({
-        queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId ?? ""),
-        queryFn: () => getRuntimesWithConnectedChat(projectId!),
+        queryKey: QueryKeys.projectRuntimes(projectId ?? ""),
+        queryFn: () => getProjectRuntimes(projectId!),
         enabled: !!projectId,
     });
 }

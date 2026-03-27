@@ -9,7 +9,6 @@ export {
     patchProject,
 } from "./api";
 export { CreateProjectForm } from "./components/create-project-form";
-export { RuntimesModal } from "./components/runtimes-modal";
 export { ReleaseCardChip } from "./components/release-card-chip";
 export { UnitCardChip } from "./components/unit-card-chip";
 export { UnitCardCompact } from "./components/unit-card-compact";
@@ -19,18 +18,16 @@ export {
     useProjectDraftUnitsQuery,
     useProjectNonDraftUnitsQuery,
     useProjectQuery,
-    useProjectRuntimesWithConnectedChatQuery,
+    useProjectRuntimesQuery,
     useProjectsQuery,
 } from "./queries";
-export { RuntimeChatSessionDialogs } from "./stores/runtime-store";
-export { useRuntimeChatSessionActions } from "./stores/runtime-store/exports";
 export type {
     FrameworkType,
     LanguageType,
     ProjectPatchRequest,
     ProjectRequest,
     ProjectResponse,
-    ProjectRuntimeWithConnectedChatResponse,
+    ProjectRuntimeResponse,
     ProjectUnitResponse,
     ProjectUnitType,
     ReleaseResponse,

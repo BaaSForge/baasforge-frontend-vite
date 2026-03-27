@@ -2,7 +2,7 @@ import { QueryKeys } from "@/constants/query-keys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { attachChatSessionStageRuntime, createProject, deleteProject, detachChatSessionStageRuntime, patchProject } from "./api";
+import { createProject, deleteProject, patchProject } from "./api";
 import type { ProjectPatchRequest, ProjectRequest } from "./types";
 
 export function useCreateProjectMutation(options?: { onSuccess?: (projectId: string) => void; redirect?: boolean }) {
@@ -52,37 +52,3 @@ export function useDeleteProjectMutation(projectId: string) {
     });
 }
 
-export function useAttachChatSessionStageRuntimeMutation({
-    projectId,
-    chatSessionId,
-    projectRuntimeId,
-}: {
-    projectId: string;
-    chatSessionId: string;
-    projectRuntimeId: string;
-}) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: () => attachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionDetail(projectId, chatSessionId) });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId) });
-        },
-    });
-}
-
-export function useDetachChatSessionStageRuntimeMutation() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ projectId, chatSessionId, projectRuntimeId }: { projectId: string; chatSessionId: string; projectRuntimeId: string }) =>
-            detachChatSessionStageRuntime({ projectId, chatSessionId, projectRuntimeId }),
-        onSuccess: (_, { chatSessionId, projectId }) => {
-            queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionDetail(projectId, chatSessionId) });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimesWithConnectedChat(projectId) });
-        },
-    });
-}

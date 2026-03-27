@@ -1,4 +1,3 @@
-import { FancyButton } from "@/components/fancy-button";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import {
@@ -20,7 +19,6 @@ import { scrollToBottom, scrollToTop, smoothScrollToElementTop } from "@/lib/dom
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { register, SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
-import { RuntimesModal } from "@/modules/project";
 import { stopProjectChatSession } from "@/modules/project-chat/api";
 import { addSessionToGeneratingSet } from "@/modules/project-chat/ws-cache-handler";
 import { useCreateProjectChatSessionMessageMutation, useCreateProjectChatSessionMutation } from "@/modules/project-chat/mutations";
@@ -33,7 +31,6 @@ import {
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
-import { ConnectIcon, DisconnectIcon } from "@/modules/project/stores/runtime-store/exports";
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
@@ -69,7 +66,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<
         ChatMessageWithDeliveryStatus | undefined
     >();
-    const [runtimesModalOpen, setRuntimesModalOpen] = useState(false);
     const [messageInput, setMessageInput] = useState("");
     const { setOpenSkipStorage, toggleSidebar, rereadSidebarOpen } = useSecondarySidebar();
     useRegisterSecondarySidebarShortcut();
@@ -347,24 +343,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                     mainSidebar={mainSidebar}
                     tools={
                         <>
-                            {chatSession && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        {chatSession.stage_project_runtime_id ? (
-                                            <FancyButton size="sm" className="mr-2" color="green" onClick={() => setRuntimesModalOpen(true)}>
-                                                <ConnectIcon className="size-4" />
-                                                Connected
-                                            </FancyButton>
-                                        ) : (
-                                            <Button variant="secondary" size="sm" className="mr-2" onClick={() => setRuntimesModalOpen(true)}>
-                                                <DisconnectIcon className="size-4" />
-                                                Disconnected
-                                            </Button>
-                                        )}
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom">See runtimes operations</TooltipContent>
-                                </Tooltip>
-                            )}
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button variant="secondary" size="sm" onClick={toggleSidebar}>
@@ -426,15 +404,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                         />
                     </Container>
                 </SidebarInset>
-                {chatSession && (
-                    <RuntimesModal
-                        open={runtimesModalOpen}
-                        onOpenChange={setRuntimesModalOpen}
-                        projectId={projectId ?? ""}
-                        chatSessionId={chatSession.id}
-                        alreadyConnectedRuntimeId={chatSession.stage_project_runtime_id}
-                    />
-                )}
             </>
         </NestedMainSidebarProvider>
     );

@@ -1,5 +1,3 @@
-import type { ChatSessionResponse } from "@/modules/project-chat/types";
-
 export type FrameworkType = "mvc";
 
 export type LanguageType = "rust";
@@ -79,8 +77,4 @@ export interface ProjectRuntimeResponse {
     server_cluster_id: string | null;
     server_cluster_deployment_status: DeploymentStatusType | null;
     live_release_revision: string | null;
-}
-
-export interface ProjectRuntimeWithConnectedChatResponse extends ProjectRuntimeResponse {
-    connected_chat_session?: ChatSessionResponse;
 }

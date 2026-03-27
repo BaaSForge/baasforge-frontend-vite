@@ -5,7 +5,7 @@ import {
 import { SectionTitle } from "@/components/section-title";
 import { Separator } from "@/components/ui/separator";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
-import { useProjectReleasesQuery, useProjectRuntimesWithConnectedChatQuery } from "@/modules/project/queries";
+import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import React from "react";
 import { useNavigate, useParams } from "react-router";
 
@@ -19,7 +19,7 @@ export function SecondarySideBar() {
     const projectIdOrUndefined = projectId ?? undefined;
 
     const { data: releases, isLoading, error } = useProjectReleasesQuery(projectIdOrUndefined);
-    const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesWithConnectedChatQuery(projectIdOrUndefined);
+    const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesQuery(projectIdOrUndefined);
 
     if (projectIdOrUndefined == null) {
         return (

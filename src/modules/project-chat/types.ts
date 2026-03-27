@@ -76,7 +76,6 @@ export interface ChatSessionResponse {
     user_id: string;
     title: string;
     created_at: string;
-    stage_project_runtime_id?: string | null;
     /** Latest message in the session (same shape as {@link ChatMessageResponse}). */
     last_message?: ChatMessageResponse | null;
     owned_units?: ProjectUnitResponse[];
