@@ -8,36 +8,93 @@ import type { ProjectUnitResponse } from "../types";
 import { isUnitRevisionStale } from "../unit-revision-stale";
 import { useChatSessionUnitLatestRevision } from "../use-chat-session-unit-latest-revision";
 
-export function UnitRevisionBadge({
-    unit,
-    projectId,
-    chatSessionId,
-    className,
-    refreshPending,
-}: {
+export type UnitRevisionBadgeProps = {
     unit: ProjectUnitResponse;
+    /**
+     * Omit on unit cards. When provided (including `null`), the badge keeps the same look as the base
+     * mode; only the tooltip and revision line reflect before → after for this chat.
+     */
+    beforeUnit?: ProjectUnitResponse | null;
     /** When both are set, stale/latest display prefers `chatSessionUnitLatestRevisionsByUnitId` for this session. */
     projectId?: string;
     chatSessionId?: string;
     className?: string;
     refreshPending?: boolean;
-}) {
+};
+
+function diffRevisionLabel(beforeUnit: ProjectUnitResponse | null, after: ProjectUnitResponse) {
+    if (after.is_deleted && beforeUnit == null) {
+        return (
+            <>
+                revision {after.revision} (New) → Deleted
+            </>
+        );
+    }
+    if (after.is_deleted && beforeUnit != null) {
+        return (
+            <>
+                revision {beforeUnit.revision} → Deleted
+            </>
+        );
+    }
+    if (beforeUnit == null) {
+        return (
+            <>
+                revision {after.revision} (New)
+            </>
+        );
+    }
+    return (
+        <>
+            revision {beforeUnit.revision} → {after.revision}
+        </>
+    );
+}
+
+export function UnitRevisionBadge({
+    unit,
+    beforeUnit,
+    projectId,
+    chatSessionId,
+    className,
+    refreshPending,
+}: UnitRevisionBadgeProps) {
     const latestFromCache = useChatSessionUnitLatestRevision(projectId, chatSessionId, unit.id);
-    const stale = isUnitRevisionStale(unit, latestFromCache);
+    const isDiff = beforeUnit !== undefined;
+
+    const stale = !isDiff && isUnitRevisionStale(unit, latestFromCache);
     const latest = latestFromCache ?? unit.latest_revision;
-    const isFirstRevisionOnly = unit.revision === 1 && !stale;
     const isDeleted = unit.is_deleted === true;
+    /** Aligns diff “new” with dashed first-revision styling; base mode uses live revision + stale. */
+    const isFirstRevisionOnly = isDiff
+        ? beforeUnit == null && !isDeleted
+        : unit.revision === 1 && !stale;
     /** Deleted unit still on latest revision — solid destructive fill; outdated deleted — destructive outline only. */
     const deletedFullDestructiveBg = isDeleted && !stale;
 
-    const baseTooltip = refreshPending
-        ? "Refreshing…"
-        : stale && latest != null
-          ? `Outdated (${unit.revision} / ${latest})`
-          : isFirstRevisionOnly
-            ? "Just created"
-            : "Latest";
-    const tooltipContent = isDeleted ? `${baseTooltip} (deleted)` : baseTooltip;
+    let tooltipContent: string;
+    if (isDiff) {
+        if (isDeleted && beforeUnit == null) {
+            tooltipContent = "Just created, then deleted";
+        } else if (isDeleted && beforeUnit != null) {
+            tooltipContent = `Revision ${beforeUnit.revision} → deleted`;
+        } else if (isFirstRevisionOnly) {
+            tooltipContent = "Just created";
+        } else if (beforeUnit != null) {
+            tooltipContent = `Revision ${beforeUnit.revision} → ${unit.revision} (vs before this chat)`;
+        } else {
+            tooltipContent = "Just created";
+        }
+    } else {
+        const baseTooltip = refreshPending
+            ? "Refreshing…"
+            : stale && latest != null
+              ? `Outdated (${unit.revision} / ${latest})`
+              : isFirstRevisionOnly
+                ? "Just created"
+                : "Latest";
+        tooltipContent = isDeleted ? `${baseTooltip} (deleted)` : baseTooltip;
+    }
 
     const badge = (
         <Badge
@@ -74,8 +131,14 @@ export function UnitRevisionBadge({
             ) : (
                 <CheckCircle2 className="size-2.5 shrink-0" aria-hidden />
             )}
-            revision {unit.revision}
-            {stale && latest != null ? <> / {latest}</> : null}
+            {isDiff ? (
+                <span className="min-w-0 truncate">{diffRevisionLabel(beforeUnit!, unit)}</span>
+            ) : (
+                <>
+                    revision {unit.revision}
+                    {stale && latest != null ? <> / {latest}</> : null}
+                </>
+            )}
         </Badge>
     );
 

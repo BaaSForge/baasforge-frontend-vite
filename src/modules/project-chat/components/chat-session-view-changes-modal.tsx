@@ -14,9 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
+import { UnitCardIdRow } from "@/modules/project/components/unit-card-id-row";
+import { UnitRevisionBadge } from "@/modules/project/components/unit-revision-badge";
 import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types";
 import { getProjectUnitTypeBadgeClass } from "@/modules/project/unit-type-badge-class";
-import { AlignJustify, Columns2, Sparkles, XIcon } from "lucide-react";
+import { AlignJustify, Columns2, XIcon } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePersistedUnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
 import { UnitExplanationDiffViewer } from "./unit-explanation-diff-viewer";
@@ -33,26 +35,6 @@ type ChatSessionViewChangesModalProps = {
     /** If set, selects this `afterUnit.id` when the modal opens; otherwise the first item is selected. */
     activeUnitId?: string;
 };
-
-function unitChangeBadge(pair: ChatSessionUnitChangePair): {
-    label: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
-    showNewSparkles: boolean;
-} {
-    const { beforeUnit, afterUnit } = pair;
-    if (afterUnit.is_deleted) {
-        const label = beforeUnit == null ? "New → Deleted" : `Revision ${beforeUnit.revision} → Deleted`;
-        return { label, variant: "destructive", showNewSparkles: false };
-    }
-    if (beforeUnit == null) {
-        return { label: "New", variant: "outline", showNewSparkles: true };
-    }
-    return {
-        label: `Revision ${beforeUnit.revision} → ${afterUnit.revision}`,
-        variant: "outline",
-        showNewSparkles: false,
-    };
-}
 
 export function ChatSessionViewChangesModal({
     open,
@@ -129,7 +111,6 @@ export function ChatSessionViewChangesModal({
                                         <TabsList className="h-auto min-h-7 w-max flex-nowrap justify-start gap-0.5 bg-muted p-[3px]">
                                             {unitsChanged.map((pair) => {
                                                 const id = pair.afterUnit.id;
-                                                const { label, variant, showNewSparkles } = unitChangeBadge(pair);
                                                 return (
                                                     <TabsTrigger
                                                         key={id}
@@ -149,22 +130,11 @@ export function ChatSessionViewChangesModal({
                                                         >
                                                             {id}
                                                         </span>
-                                                        <Badge
-                                                            variant={variant}
-                                                            className={cn(
-                                                                "max-w-full shrink-0 px-1.5 py-0 text-[10px] font-medium",
-                                                                showNewSparkles &&
-                                                                    "border-transparent bg-blue-500/15 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200",
-                                                            )}
-                                                        >
-                                                            {showNewSparkles && (
-                                                                <Sparkles
-                                                                    className="!size-2.5 shrink-0 text-blue-600 dark:text-blue-400"
-                                                                    aria-hidden
-                                                                />
-                                                            )}
-                                                            <span className="truncate">{label}</span>
-                                                        </Badge>
+                                                        <UnitRevisionBadge
+                                                            unit={pair.afterUnit}
+                                                            beforeUnit={pair.beforeUnit}
+                                                            className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
+                                                        />
                                                     </TabsTrigger>
                                                 );
                                             })}
@@ -182,35 +152,23 @@ export function ChatSessionViewChangesModal({
                         </div>
                         {unitsChanged.map((pair) => {
                             const id = pair.afterUnit.id;
-                            const { label, variant, showNewSparkles } = unitChangeBadge(pair);
                             const after = pair.afterUnit;
                             return (
                                 <TabsContent key={id} value={id} className="mt-0 min-h-0 space-y-3 outline-none">
                                     <div
                                         className={cn(
-                                            "sticky z-[9] -mx-4 border-b border-border/60 bg-background/95 px-4 pt-3 pb-1.5 backdrop-blur-sm supports-[backdrop-filter]:bg-background/90 sm:-mx-6 sm:px-6",
+                                            "sticky z-[9] -mx-4 flex flex-col gap-1.5 border-b border-border/60 bg-background/95 px-4 pt-3 pb-1.5 backdrop-blur-sm supports-[backdrop-filter]:bg-background/90 sm:-mx-6 sm:px-6",
                                             /* Sits below the unit-tabs sticky strip (~3.25–3.75rem) */
                                             "top-14 sm:top-[3.75rem]",
                                         )}
                                     >
                                         <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                                             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-                                                <Badge
-                                                    variant={variant}
-                                                    className={cn(
-                                                        "max-w-full shrink-0 px-1.5 py-0 text-[10px] font-medium",
-                                                        showNewSparkles &&
-                                                            "border-transparent bg-blue-500/15 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200",
-                                                    )}
-                                                >
-                                                    {showNewSparkles && (
-                                                        <Sparkles
-                                                            className="!size-2.5 shrink-0 text-blue-600 dark:text-blue-400"
-                                                            aria-hidden
-                                                        />
-                                                    )}
-                                                    <span className="truncate">{label}</span>
-                                                </Badge>
+                                                <UnitRevisionBadge
+                                                    unit={pair.afterUnit}
+                                                    beforeUnit={pair.beforeUnit}
+                                                    className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
+                                                />
                                                 <Badge
                                                     variant="outline"
                                                     className={cn(
@@ -260,11 +218,12 @@ export function ChatSessionViewChangesModal({
                                                 </ToggleGroup>
                                             ) : null}
                                         </div>
+                                        <UnitCardIdRow variant="inline" unitId={after.id} />
                                     </div>
                                     <div className="rounded-lg border bg-muted/20 p-1">
                                         <UnitExplanationDiffViewer
-                                            beforeExplanation={pair.beforeUnit?.explanation ?? null}
-                                            afterExplanation={pair.afterUnit.explanation}
+                                            beforeExplanation={pair.beforeUnit?.code ?? null}
+                                            afterExplanation={pair.afterUnit.code}
                                             splitView={splitView}
                                         />
                                     </div>
