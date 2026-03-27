@@ -3,7 +3,7 @@
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
-import ReactDiffViewer, { DiffMethod, type ReactDiffViewerStylesOverride } from "react-diff-viewer-continued";
+import ReactDiffViewer, { DiffMethod, type ReactDiffViewerStylesOverride } from "@/components/react-diff-viewer";
 
 /** Semantic tokens + soft tints; `var(--*)` tracks light/dark theme automatically. */
 function shadcnDiffThemeVariables(): NonNullable<ReactDiffViewerStylesOverride["variables"]> {
@@ -96,6 +96,7 @@ export function UnitExplanationDiffViewer({
                 styles={styles}
                 leftTitle="Before (pre-chat)"
                 rightTitle="After (current draft)"
+                inlineTitle="Before (pre-chat) → After (current draft)"
                 hideSummary
             />
         </div>
