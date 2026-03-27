@@ -15,9 +15,9 @@ export function CompactSessionReleaseBadge({ release, className }: { release: Re
                 "shrink-0 rounded-md border-amber-500/45 bg-amber-500/20 font-medium text-[0.625rem] text-amber-950 dark:border-amber-400/45 dark:bg-amber-400/18 dark:text-amber-100",
                 className,
             )}
-            title={release.version}
+            title={release.revision}
         >
-            revision {release.version}
+            revision {release.revision}
         </Badge>
     );
 }

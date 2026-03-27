@@ -92,28 +92,28 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
         localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, groupMode);
     }, [groupMode]);
 
-    const { projectId, releaseVersion } = useParams<{
+    const { projectId, releaseRevision } = useParams<{
         projectId: string;
-        releaseVersion: string;
+        releaseRevision: string;
     }>();
 
     const projectIdOrUndefined = projectId ?? undefined;
 
     const { data: releases } = useProjectReleasesQuery(projectIdOrUndefined);
 
-    const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(projectIdOrUndefined, releaseVersion);
+    const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(projectIdOrUndefined, releaseRevision);
 
     useEffect(() => {
-        if (releaseVersion == null && releases != null && releases.length > 0) {
-            navigate(`/dashboard/projects/${projectId}/units-releases/${releases?.[0]?.version}`, { replace: true });
+        if (releaseRevision == null && releases != null && releases.length > 0) {
+            navigate(`/dashboard/projects/${projectId}/units-releases/${releases?.[0]?.revision}`, { replace: true });
         }
-    }, [releaseVersion, navigate, projectId, releases]);
+    }, [releaseRevision, navigate, projectId, releases]);
 
     return (
         <NestedMainSidebarProvider mainSidebar={mainSidebar}>
             <>
                 <PageTitleBox
-                    title={`Units for release ${releaseVersion}`}
+                    title={`Units for release ${releaseRevision}`}
                     mainSidebar={mainSidebar}
                     tools={
                         <div className="flex items-center gap-3">

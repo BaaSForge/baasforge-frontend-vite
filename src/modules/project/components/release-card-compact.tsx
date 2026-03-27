@@ -30,10 +30,15 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
             <Badge
                 variant="secondary"
                 className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[0.625rem]"
-                title={`revision ${release.version}`}
+                title={`revision ${release.revision}`}
             >
-                revision {release.version}
+                revision {release.revision}
             </Badge>
+            {release.is_stage && (
+                <Badge variant="outline" className="text-[0.625rem]">
+                    Stage
+                </Badge>
+            )}
             {isLive && (
                 <Badge variant="outline" className="text-[0.625rem]">
                     deployed to {runtime.name}

@@ -56,7 +56,8 @@ export interface ReleaseResponse {
     id: string;
     project_id: string;
     notes: string | null;
-    version: string;
+    revision: string;
+    is_stage: boolean;
     created_at: string;
 }
 
@@ -77,7 +78,7 @@ export interface ProjectRuntimeResponse {
     db_cluster_deployment_status: DeploymentStatusType | null;
     server_cluster_id: string | null;
     server_cluster_deployment_status: DeploymentStatusType | null;
-    live_release_version: string | null;
+    live_release_revision: string | null;
 }
 
 export interface ProjectRuntimeWithConnectedChatResponse extends ProjectRuntimeResponse {

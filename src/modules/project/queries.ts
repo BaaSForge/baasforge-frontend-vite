@@ -66,11 +66,11 @@ export function useProjectReleasesQuery(projectId: string | undefined) {
     });
 }
 
-export function useProjectReleaseUnitsQuery(projectId: string | undefined, releaseVersion: string | undefined) {
+export function useProjectReleaseUnitsQuery(projectId: string | undefined, releaseRevision: string | undefined) {
     return useQuery({
-        queryKey: QueryKeys.projectReleaseUnits(projectId!, releaseVersion!),
-        queryFn: () => getReleaseUnits(projectId!, releaseVersion!),
-        enabled: !!projectId && !!releaseVersion,
+        queryKey: QueryKeys.projectReleaseUnits(projectId!, releaseRevision!),
+        queryFn: () => getReleaseUnits(projectId!, releaseRevision!),
+        enabled: !!projectId && !!releaseRevision,
     });
 }
 

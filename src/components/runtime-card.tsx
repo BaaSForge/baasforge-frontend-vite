@@ -42,8 +42,8 @@ export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps)
 
     const liveBadge = (
         <LiveBadge
-            isOn={runtime.live_release_version != null}
-            onLabel={`${runtime.live_release_version} is live`}
+            isOn={runtime.live_release_revision != null}
+            onLabel={`${runtime.live_release_revision} is live`}
             offLabel="Not live"
             className="text-sm"
             size={0.5}
@@ -89,7 +89,7 @@ export function RuntimeCard({ runtime, connectedChatSession }: RuntimeCardProps)
                 )}
             </CardHeader>
             <CardContent className="py-4 px-4 space-y-3">
-                <InfoRow label="Live release version" value={liveBadge} />
+                <InfoRow label="Live release revision" value={liveBadge} />
                 <InfoRow label="Environment" value={<PlatformEnvironmentBadge environment={runtime.environment} />} />
                 <InfoRow label="Server Status" value={<DeploymentStatusBadge status={runtime.server_cluster_deployment_status} />} />
                 <InfoRow label="Database Status" value={<DeploymentStatusBadge status={runtime.db_cluster_deployment_status} />} />

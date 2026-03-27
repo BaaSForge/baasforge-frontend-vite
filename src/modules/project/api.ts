@@ -19,7 +19,7 @@ const projectDraftUnitsAsOfReleaseControllerMessageEndpoint = (
 ) =>
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units/as-of-release-controller-message/${releaseControllerMessageId}`;
 const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
-const projectReleaseUnitsEndpoint = (projectId: string, releaseVersion: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseVersion}/units`;
+const projectReleaseUnitsEndpoint = (projectId: string, releaseRevision: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseRevision}/units`;
 const projectRuntimesWithConnectedChatEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes-with-connected-chat-sessions`;
 
 export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
@@ -111,8 +111,8 @@ export function getReleases(projectId: string): Promise<ReleaseResponse[]> {
     return apiClient.get<ApiResponse<ReleaseResponse[]>>(projectReleasesEndpoint(projectId)).then((res) => res.data ?? []);
 }
 
-export function getReleaseUnits(projectId: string, releaseVersion: string): Promise<ProjectUnitResponse[]> {
-    return apiClient.get<ApiResponse<ProjectUnitResponse[]>>(projectReleaseUnitsEndpoint(projectId, releaseVersion)).then((res) => res.data ?? []);
+export function getReleaseUnits(projectId: string, releaseRevision: string): Promise<ProjectUnitResponse[]> {
+    return apiClient.get<ApiResponse<ProjectUnitResponse[]>>(projectReleaseUnitsEndpoint(projectId, releaseRevision)).then((res) => res.data ?? []);
 }
 
 export function getRuntimesWithConnectedChat(projectId: string): Promise<ProjectRuntimeWithConnectedChatResponse[]> {
