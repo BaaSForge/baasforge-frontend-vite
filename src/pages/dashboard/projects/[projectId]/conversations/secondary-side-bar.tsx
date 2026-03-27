@@ -12,6 +12,8 @@ import {
     postChatSessionUnitPreChatBaseByPaths,
     type ChatSessionUnitChangePair,
 } from "@/modules/project-chat";
+import { usePersistedUnitDiffViewMode } from "@/modules/project-chat/hooks/use-persisted-unit-diff-view-mode";
+import { AlignJustify, Columns2 } from "lucide-react";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
@@ -55,6 +57,7 @@ export function SecondarySideBar() {
     const chatSessionId = conversationId ?? undefined;
 
     const { data: draftUnits, isLoading, error, refetch: refetchDraftUnits } = useProjectDraftUnitsQuery(projectId ?? undefined, chatSessionId);
+    const [diffViewMode] = usePersistedUnitDiffViewMode();
     const [viewChangesOpen, setViewChangesOpen] = useState(false);
     const [viewChangesUnits, setViewChangesUnits] = useState<ChatSessionUnitChangePair[]>([]);
     const [isPreparingViewChanges, setIsPreparingViewChanges] = useState(false);
@@ -107,7 +110,14 @@ export function SecondarySideBar() {
                                 Loading…
                             </>
                         ) : (
-                            "View changes"
+                            <>
+                                {diffViewMode === "split" ? (
+                                    <Columns2 className="size-3" aria-hidden />
+                                ) : (
+                                    <AlignJustify className="size-3" aria-hidden />
+                                )}
+                                View changes
+                            </>
                         )}
                     </Button>
                 </SecondarySidebarStickyHeader>

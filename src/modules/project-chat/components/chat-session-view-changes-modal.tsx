@@ -1,8 +1,8 @@
 "use client";
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
+import { LiveBadge } from "@/components/live-badge";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     CentricModal,
     CentricModalClose,
@@ -11,10 +11,15 @@ import {
     CentricModalTitle,
 } from "@/components/ui/centric-modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types";
-import { Sparkles, XIcon } from "lucide-react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { getProjectUnitTypeBadgeClass } from "@/modules/project/unit-type-badge-class";
+import { AlignJustify, Columns2, Sparkles, XIcon } from "lucide-react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { usePersistedUnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
+import { UnitExplanationDiffViewer } from "./unit-explanation-diff-viewer";
 
 export type ChatSessionUnitChangePair = {
     beforeUnit: ProjectUnit | null;
@@ -55,18 +60,27 @@ export function ChatSessionViewChangesModal({
     unitsChanged,
     activeUnitId,
 }: ChatSessionViewChangesModalProps) {
-    const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+    const [tabUserOverride, setTabUserOverride] = useState<string | null>(null);
+    const [diffLayoutMode, setDiffLayoutMode] = usePersistedUnitDiffViewMode();
+    const isMobile = useIsMobile();
 
     const afterIds = useMemo(() => unitsChanged.map((u) => u.afterUnit.id), [unitsChanged]);
 
-    useEffect(() => {
-        if (!open || unitsChanged.length === 0) return;
-        const next =
-            activeUnitId != null && afterIds.includes(activeUnitId) ? activeUnitId : unitsChanged[0]!.afterUnit.id;
-        setSelectedUnitId(next);
-    }, [open, unitsChanged, activeUnitId, afterIds]);
+    const defaultTabId = useMemo(() => {
+        if (unitsChanged.length === 0) return "";
+        return activeUnitId != null && afterIds.includes(activeUnitId) ? activeUnitId : unitsChanged[0]!.afterUnit.id;
+    }, [unitsChanged, activeUnitId, afterIds]);
 
-    const tabValue = selectedUnitId ?? unitsChanged[0]?.afterUnit.id ?? "";
+    const tabValue = useMemo(() => {
+        if (!open || unitsChanged.length === 0) return "";
+        if (tabUserOverride != null && afterIds.includes(tabUserOverride)) return tabUserOverride;
+        return defaultTabId;
+    }, [open, unitsChanged.length, tabUserOverride, afterIds, defaultTabId]);
+
+    const handleModalOpenChange = (next: boolean) => {
+        if (!next) setTabUserOverride(null);
+        onOpenChange(next);
+    };
 
     const tabTriggerRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
@@ -87,13 +101,18 @@ export function ChatSessionViewChangesModal({
         };
     }, [open, tabValue]);
 
+    const splitView = !isMobile && diffLayoutMode === "split";
+    const modalWidthClass = splitView
+        ? "sm:max-w-[80vw]"
+        : "sm:min-w-[min(100%,36rem)] sm:max-w-[max(40vw,36rem)]";
+
     return (
-        <CentricModal open={open} onOpenChange={onOpenChange}>
-            <CentricModalContent className="sm:max-w-[80vw]" showCloseButton={false}>
+        <CentricModal open={open} onOpenChange={handleModalOpenChange}>
+            <CentricModalContent className={modalWidthClass} showCloseButton={false}>
                 {unitsChanged.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No units to compare.</p>
                 ) : (
-                    <Tabs value={tabValue} onValueChange={setSelectedUnitId} className="min-h-0 w-full gap-0">
+                    <Tabs value={tabValue} onValueChange={setTabUserOverride} className="min-h-0 w-full gap-0">
                         <div className="sticky top-0 z-10 -mx-4 border-b bg-background px-4 pb-3 sm:-mx-6 sm:px-6">
                             <CentricModalTitle className="sr-only">Unit changes</CentricModalTitle>
                             <CentricModalDescription className="sr-only">
@@ -163,30 +182,92 @@ export function ChatSessionViewChangesModal({
                         </div>
                         {unitsChanged.map((pair) => {
                             const id = pair.afterUnit.id;
+                            const { label, variant, showNewSparkles } = unitChangeBadge(pair);
+                            const after = pair.afterUnit;
                             return (
-                                <TabsContent key={id} value={id} className="mt-0 space-y-4 outline-none">
-                                    <Card className="gap-4 py-4">
-                                        <CardHeader className="gap-2 px-6 pb-0">
-                                            <CardTitle className="text-base">Before</CardTitle>
-                                            <CardDescription>Snapshot before this chat (pre-chat base).</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="px-6 font-mono text-xs">
-                                            <pre className="whitespace-pre-wrap break-words rounded-md border bg-muted/30 p-3">
-                                                {JSON.stringify(pair.beforeUnit, null, 2)}
-                                            </pre>
-                                        </CardContent>
-                                    </Card>
-                                    <Card className="gap-4 py-4">
-                                        <CardHeader className="gap-2 px-6 pb-0">
-                                            <CardTitle className="text-base">After</CardTitle>
-                                            <CardDescription>Current draft in this conversation.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="px-6 font-mono text-xs">
-                                            <pre className="whitespace-pre-wrap break-words rounded-md border bg-muted/30 p-3">
-                                                {JSON.stringify(pair.afterUnit, null, 2)}
-                                            </pre>
-                                        </CardContent>
-                                    </Card>
+                                <TabsContent key={id} value={id} className="mt-0 min-h-0 space-y-3 outline-none">
+                                    <div
+                                        className={cn(
+                                            "sticky z-[9] -mx-4 border-b border-border/60 bg-background/95 px-4 pt-3 pb-1.5 backdrop-blur-sm supports-[backdrop-filter]:bg-background/90 sm:-mx-6 sm:px-6",
+                                            /* Sits below the unit-tabs sticky strip (~3.25–3.75rem) */
+                                            "top-14 sm:top-[3.75rem]",
+                                        )}
+                                    >
+                                        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                                            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+                                                <Badge
+                                                    variant={variant}
+                                                    className={cn(
+                                                        "max-w-full shrink-0 px-1.5 py-0 text-[10px] font-medium",
+                                                        showNewSparkles &&
+                                                            "border-transparent bg-blue-500/15 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200",
+                                                    )}
+                                                >
+                                                    {showNewSparkles && (
+                                                        <Sparkles
+                                                            className="text-blue-600 dark:text-blue-400"
+                                                            aria-hidden
+                                                        />
+                                                    )}
+                                                    <span className="truncate">{label}</span>
+                                                </Badge>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "text-[0.625rem]",
+                                                        getProjectUnitTypeBadgeClass(after.unit_type),
+                                                    )}
+                                                >
+                                                    {capitalizeFirstLetter(after.unit_type)}
+                                                </Badge>
+                                                <LiveBadge
+                                                    isOn={!after.is_draft}
+                                                    offLabel="Draft"
+                                                    offTitle="Draft, not ready"
+                                                    onLabel="Published"
+                                                    onTitle="Published, ready"
+                                                />
+                                            </div>
+                                            {!isMobile ? (
+                                                <ToggleGroup
+                                                    type="single"
+                                                    value={diffLayoutMode}
+                                                    onValueChange={(v) => {
+                                                        if (v === "split" || v === "inline") setDiffLayoutMode(v);
+                                                    }}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    spacing={2}
+                                                    className="h-7 shrink-0 gap-2"
+                                                    aria-label="Diff layout"
+                                                >
+                                                    <ToggleGroupItem
+                                                        value="split"
+                                                        aria-label="Split view"
+                                                        className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm [&_svg]:size-3"
+                                                    >
+                                                        <Columns2 className="size-3 shrink-0" aria-hidden />
+                                                        <span className="hidden sm:inline">Split</span>
+                                                    </ToggleGroupItem>
+                                                    <ToggleGroupItem
+                                                        value="inline"
+                                                        aria-label="Inline view"
+                                                        className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm [&_svg]:size-3"
+                                                    >
+                                                        <AlignJustify className="size-3 shrink-0" aria-hidden />
+                                                        <span className="hidden sm:inline">Inline</span>
+                                                    </ToggleGroupItem>
+                                                </ToggleGroup>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                    <div className="rounded-lg border bg-muted/20 p-1">
+                                        <UnitExplanationDiffViewer
+                                            beforeExplanation={pair.beforeUnit?.explanation ?? null}
+                                            afterExplanation={pair.afterUnit.explanation}
+                                            splitView={splitView}
+                                        />
+                                    </div>
                                 </TabsContent>
                             );
                         })}

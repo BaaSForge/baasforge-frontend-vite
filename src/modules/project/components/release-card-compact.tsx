@@ -63,7 +63,7 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
-                    trigger={(_isOpen, _setOpen) => (
+                    trigger={() => (
                         <ExpandableFullReadTrigger
                             ariaLabel="Show full release notes"
                             onClick={() => setModalOpen(true)}

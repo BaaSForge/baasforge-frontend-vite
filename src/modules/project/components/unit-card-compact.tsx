@@ -63,7 +63,7 @@ export function UnitCardCompact({ unit, projectId, chatSessionId, className, uni
                     maxLines={4}
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
-                    trigger={(_isOpen, _setOpen) => (
+                    trigger={() => (
                         <ExpandableFullReadTrigger
                             ariaLabel="Expand full explanation"
                             onClick={() => setModalOpen(true)}
