@@ -20,6 +20,7 @@ export enum ChatMessageType {
     ToolCreateUnit = "tool_create_unit",
     ToolModifyUnit = "tool_modify_unit",
     ToolRemoveUnit = "tool_remove_unit",
+    ReleaseControllerBox = "release_controller_box",
     Units = "units",
     Unit = "unit",
     Generating = "generating",
@@ -51,6 +52,7 @@ export type {
     ToolCreateUnitPayload,
     ToolModifyUnitPayload,
     ToolRemoveUnitPayload,
+    ReleaseControllerBoxPayload,
 } from "./payloads";
 export { getTextPayloadThinkingDisplay, getToolPayloadErrorString } from "./payloads";
 

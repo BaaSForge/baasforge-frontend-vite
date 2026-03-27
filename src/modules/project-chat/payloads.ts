@@ -1,4 +1,4 @@
-import type { ProjectUnitResponse } from "@/modules/project/types";
+import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
 
 export interface TextMessageRequestedToolCall {
     tool_call_id?: string;
@@ -173,6 +173,11 @@ export interface ToolRemoveUnitPayload {
     error?: string;
     tool_call_id?: string;
     tool_name?: string;
+}
+
+export interface ReleaseControllerBoxPayload {
+    stage_release?: ReleaseResponse | null;
+    prod_release?: ReleaseResponse | null;
 }
 
 /** Non-empty `error` from any tool message payload (optional on all tool payloads). */
