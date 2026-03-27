@@ -64,19 +64,17 @@ export function ToolListUnitContextsMessage({
                                 "min-w-0 max-w-full overflow-hidden outline-none",
                             )}
                         >
-                            <div className="w-fit max-w-full min-w-0 py-1.5">
-                                <div className="w-fit max-w-full rounded border p-1.5">
-                                    <div className="flex w-fit max-w-full min-w-0 flex-wrap gap-1">
-                                        {contextSlugs.map((contextSlug) => (
-                                            <Badge
-                                                key={contextSlug}
-                                                variant="outline"
-                                                className="px-1.5 py-0 text-[11px] font-normal leading-tight text-foreground"
-                                            >
-                                                {contextSlug}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                            <div className="min-w-0 max-w-full py-1.5">
+                                <div className="flex min-w-0 max-w-full flex-wrap gap-x-2 gap-y-2">
+                                    {contextSlugs.map((contextSlug) => (
+                                        <Badge
+                                            key={contextSlug}
+                                            variant="outline"
+                                            className="px-1.5 py-0 text-[11px] font-normal leading-tight text-foreground"
+                                        >
+                                            {contextSlug}
+                                        </Badge>
+                                    ))}
                                 </div>
                             </div>
                         </CollapsibleContent>
