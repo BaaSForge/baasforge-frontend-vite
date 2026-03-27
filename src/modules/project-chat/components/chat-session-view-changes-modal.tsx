@@ -120,7 +120,7 @@ export function ChatSessionViewChangesModal({
                                                         }}
                                                         value={id}
                                                         className={cn(
-                                                            "!h-auto min-h-0 max-w-[min(100%,18rem)] shrink-0 flex-none flex-col items-start gap-1 px-1.5 py-1 text-xs sm:flex-row sm:items-center",
+                                                            "!h-auto min-h-0 w-max shrink-0 flex-none flex-col items-start gap-1 px-1.5 py-1 text-xs sm:flex-row sm:items-center",
                                                             "data-[state=active]:shadow-sm",
                                                         )}
                                                     >
@@ -133,7 +133,7 @@ export function ChatSessionViewChangesModal({
                                                         <UnitRevisionBadge
                                                             unit={pair.afterUnit}
                                                             beforeUnit={pair.beforeUnit}
-                                                            className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
+                                                            className="shrink-0 px-1.5 py-0 text-[10px] font-medium"
                                                         />
                                                     </TabsTrigger>
                                                 );

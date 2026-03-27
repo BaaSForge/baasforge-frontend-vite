@@ -132,7 +132,7 @@ export function UnitRevisionBadge({
                 <CheckCircle2 className="size-2.5 shrink-0" aria-hidden />
             )}
             {isDiff ? (
-                <span className="min-w-0 truncate">{diffRevisionLabel(beforeUnit!, unit)}</span>
+                <span className="whitespace-nowrap">{diffRevisionLabel(beforeUnit!, unit)}</span>
             ) : (
                 <>
                     revision {unit.revision}
