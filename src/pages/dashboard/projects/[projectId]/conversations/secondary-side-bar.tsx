@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
 import { UnitCardCompact, useProjectDraftUnitsQuery } from "@/modules/project";
-import { ChatSessionViewChangesModal, postChatSessionUnitPreChatBaseByPaths } from "@/modules/project-chat";
+import {
+    ChatSessionViewChangesModal,
+    postChatSessionUnitPreChatBaseByPaths,
+    type ChatSessionUnitChangePair,
+} from "@/modules/project-chat";
+import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -24,6 +29,23 @@ function uniqueUnitPathsFromDraftUnits(units: { id: string }[]): string[] {
     return out;
 }
 
+function viewChangesPairsFromPreChat(
+    freshDraftUnits: ProjectUnitResponse[],
+    unitPaths: string[],
+    beforeUnits: (ProjectUnitResponse | null)[],
+): ChatSessionUnitChangePair[] {
+    const pairs: ChatSessionUnitChangePair[] = [];
+    const n = Math.min(unitPaths.length, beforeUnits.length);
+    for (let i = 0; i < n; i++) {
+        const path = unitPaths[i]!;
+        const beforeUnit = beforeUnits[i] ?? null;
+        const afterUnit = freshDraftUnits.find((u) => stableUnitIdForRevisionCache(u.id) === path);
+        if (afterUnit == null) continue;
+        pairs.push({ beforeUnit, afterUnit });
+    }
+    return pairs;
+}
+
 export function SecondarySideBar() {
     const { projectId, conversationId } = useParams<{
         projectId: string;
@@ -34,6 +56,7 @@ export function SecondarySideBar() {
 
     const { data: draftUnits, isLoading, error, refetch: refetchDraftUnits } = useProjectDraftUnitsQuery(projectId ?? undefined, chatSessionId);
     const [viewChangesOpen, setViewChangesOpen] = useState(false);
+    const [viewChangesUnits, setViewChangesUnits] = useState<ChatSessionUnitChangePair[]>([]);
     const [isPreparingViewChanges, setIsPreparingViewChanges] = useState(false);
 
     const hasDraftUnits = (draftUnits?.length ?? 0) > 0;
@@ -55,7 +78,8 @@ export function SecondarySideBar() {
                 return;
             }
             const unitPaths = uniqueUnitPathsFromDraftUnits(fresh);
-            await postChatSessionUnitPreChatBaseByPaths(projectId, chatSessionId, unitPaths);
+            const preChat = await postChatSessionUnitPreChatBaseByPaths(projectId, chatSessionId, unitPaths);
+            setViewChangesUnits(viewChangesPairsFromPreChat(fresh, unitPaths, preChat.units));
             setViewChangesOpen(true);
         } catch {
             toast.error("Could not load pre-chat unit versions.");
@@ -110,7 +134,7 @@ export function SecondarySideBar() {
                     ))}
                 </div>
             )}
-            <ChatSessionViewChangesModal open={viewChangesOpen} onOpenChange={setViewChangesOpen} />
+            <ChatSessionViewChangesModal open={viewChangesOpen} onOpenChange={setViewChangesOpen} unitsChanged={viewChangesUnits} />
         </SecondarySidebarContent>
     );
 }
