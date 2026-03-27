@@ -64,14 +64,11 @@ export function NavProjects() {
                 <SidebarGroupLabel>{project.name} Area</SidebarGroupLabel>
                 <SidebarMenu>
                     <SidebarMenuItem className="my-2">
-                        <SidebarMenuButton asChild tooltip={`Develop by AI (${SHORTCUT_LABELS.NEW_CONVERSATION})`}>
+                        <SidebarMenuButton asChild tooltip="Develop by AI">
                             <FancyButton size="xs" asChild className="rounded-full">
                                 <Link to={conversationsUrl}>
                                     <Bot className="size-4 shrink-0" />
-                                    <span className="group-data-[collapsible=icon]:hidden">
-                                        Develop by AI
-                                        <span className="text-xs ml-2">({SHORTCUT_LABELS.NEW_CONVERSATION})</span>
-                                    </span>
+                                    <span className="group-data-[collapsible=icon]:hidden">Develop by AI</span>
                                 </Link>
                             </FancyButton>
                         </SidebarMenuButton>

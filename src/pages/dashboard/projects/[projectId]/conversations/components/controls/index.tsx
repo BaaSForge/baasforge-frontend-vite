@@ -93,16 +93,12 @@ export default function Controls({
                                     e.currentTarget.blur();
                                     return;
                                 }
-                                if (isGenerating) {
-                                    e.preventDefault();
-                                    return;
-                                }
                                 if (e.key === "Enter" && !e.shiftKey) {
                                     e.preventDefault();
-                                    if (canSend) handleSend();
+                                    if (isGenerating || !canSend) return;
+                                    handleSend();
                                 }
                             }}
-                            disabled={isGenerating}
                             placeholder={(isNewSession ? "Type a message to start a new conversation" : "Type a message") + `, Shift+Enter for new line`}
                             className="px-3 py-3 pb-0 min-h-10 max-h-40"
                             rows={1}
@@ -126,7 +122,7 @@ export default function Controls({
                                     >
                                         {isGenerating ? (
                                             <>
-                                                Stop ({SHORTCUT_LABELS.STOP_GENERATION}) <Square className="size-3.5" />
+                                                Stop <Square className="size-3.5" />
                                             </>
                                         ) : (
                                             <>
@@ -136,7 +132,7 @@ export default function Controls({
                                     </InputGroupButton>
                                 </TooltipTrigger>
                                 <TooltipContent side="top">
-                                    {isGenerating ? `Stop generating (${SHORTCUT_LABELS.STOP_GENERATION})` : "Send message"}
+                                    {isGenerating ? "Stop generating" : "Send message"}
                                 </TooltipContent>
                             </Tooltip>
                         </InputGroupAddon>

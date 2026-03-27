@@ -2,10 +2,8 @@ export const UNIFIED_KEYBOARD_SCOPES = {
     MAIN_SIDEBAR: "main-sidebar",
     SECONDARY_SIDEBAR: "secondary-sidebar",
     FOCUS_CHAT: "focus-chat",
-    NEW_CONVERSATION: "new-conversation",
     OPEN_PREVIOUS_CONVERSATIONS: "open-previous-conversations",
     FALLBACK_KEY: "fallback-key",
-    STOP_GENERATION: "stop-generation",
     OPEN_SHORTCUTS_MODAL: "open-shortcuts-modal",
 } as const;
 
@@ -24,9 +22,7 @@ export const SHORTCUT_LABELS = {
     MAIN_SIDEBAR: `${mod}+\\`,
     SECONDARY_SIDEBAR: `${mod}+Shift+\\`,
     FOCUS_CHAT: "/",
-    NEW_CONVERSATION: `${mod}+K`,
     OPEN_PREVIOUS_CONVERSATIONS: `${mod}+Shift+O`,
-    STOP_GENERATION: "Esc",
     OPEN_SHORTCUTS_MODAL: "?",
 } as const;
 
@@ -35,9 +31,7 @@ export const SHORTCUTS_FOR_MODAL: { label: string; keys: string }[] = [
     { label: "Toggle main sidebar", keys: SHORTCUT_LABELS.MAIN_SIDEBAR },
     { label: "Toggle secondary sidebar", keys: SHORTCUT_LABELS.SECONDARY_SIDEBAR },
     { label: "Focus chat input", keys: SHORTCUT_LABELS.FOCUS_CHAT },
-    { label: "New conversation", keys: SHORTCUT_LABELS.NEW_CONVERSATION },
     { label: "Previous conversations", keys: SHORTCUT_LABELS.OPEN_PREVIOUS_CONVERSATIONS },
-    { label: "Stop message generation", keys: SHORTCUT_LABELS.STOP_GENERATION },
 ];
 
 const handlers: Handlers = {};
@@ -72,12 +66,6 @@ const SHORTCUT_RULES: ShortcutRule[] = [
         allowInModal: true,
     },
     {
-        scope: UNIFIED_KEYBOARD_SCOPES.STOP_GENERATION,
-        match: (e) => e.key === "Escape",
-        allowInInput: false,
-        allowInModal: false,
-    },
-    {
         scope: UNIFIED_KEYBOARD_SCOPES.MAIN_SIDEBAR,
         match: (e) => (e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "\\",
         allowInInput: true,
@@ -93,12 +81,6 @@ const SHORTCUT_RULES: ShortcutRule[] = [
         scope: UNIFIED_KEYBOARD_SCOPES.FOCUS_CHAT,
         match: (e) => e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey,
         allowInInput: false,
-        allowInModal: true,
-    },
-    {
-        scope: UNIFIED_KEYBOARD_SCOPES.NEW_CONVERSATION,
-        match: (e) => (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "k",
-        allowInInput: true,
         allowInModal: true,
     },
     {

@@ -112,7 +112,7 @@ export function ReleaseControllerBoxMessage({
 
     return (
         <>
-            <div className="flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-border/80 bg-muted/25 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <div className="flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-border/80 bg-muted/25 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 mb-4">
                 <p className="w-full min-w-0 text-center text-sm text-muted-foreground sm:flex-1 sm:text-left">
                     Release scope up to here
                 </p>
