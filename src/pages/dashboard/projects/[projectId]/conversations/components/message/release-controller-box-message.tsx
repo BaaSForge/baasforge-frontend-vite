@@ -213,7 +213,13 @@ export function ReleaseControllerBoxMessage({
                     )}
                 </div>
             </div>
-            <ChatSessionViewChangesModal open={viewChangesOpen} onOpenChange={setViewChangesOpen} unitsChanged={viewChangesUnits} />
+            <ChatSessionViewChangesModal
+                open={viewChangesOpen}
+                onOpenChange={setViewChangesOpen}
+                unitsChanged={viewChangesUnits}
+                projectId={projectId}
+                chatSessionId={chatSessionId}
+            />
             {nestedMessages}
         </>
     );

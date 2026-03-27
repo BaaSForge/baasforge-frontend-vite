@@ -20,6 +20,7 @@ import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types
 import { AlignJustify, Columns2, XIcon } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePersistedUnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
+import { ChatSessionDiffNewerRevisionChip } from "./chat-session-diff-newer-revision-chip";
 import { UnitExplanationDiffViewer } from "./unit-explanation-diff-viewer";
 
 export type ChatSessionUnitChangePair = {
@@ -33,6 +34,9 @@ type ChatSessionViewChangesModalProps = {
     unitsChanged: ChatSessionUnitChangePair[];
     /** If set, selects this `afterUnit.id` when the modal opens; otherwise the first item is selected. */
     activeUnitId?: string;
+    /** When set with `chatSessionId`, the “newer revision” chip can resolve latest revision for this session. */
+    projectId?: string;
+    chatSessionId?: string;
 };
 
 export function ChatSessionViewChangesModal({
@@ -40,6 +44,8 @@ export function ChatSessionViewChangesModal({
     onOpenChange,
     unitsChanged,
     activeUnitId,
+    projectId,
+    chatSessionId,
 }: ChatSessionViewChangesModalProps) {
     const [tabUserOverride, setTabUserOverride] = useState<string | null>(null);
     const [diffLayoutMode, setDiffLayoutMode] = usePersistedUnitDiffViewMode();
@@ -163,11 +169,19 @@ export function ChatSessionViewChangesModal({
                                     >
                                         <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
                                             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-                                                <UnitRevisionBadge
-                                                    unit={pair.afterUnit}
-                                                    beforeUnit={pair.beforeUnit}
-                                                    className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
-                                                />
+                                                <div className="flex min-w-0 flex-wrap items-center gap-1">
+                                                    <UnitRevisionBadge
+                                                        unit={pair.afterUnit}
+                                                        beforeUnit={pair.beforeUnit}
+                                                        className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
+                                                    />
+                                                    <ChatSessionDiffNewerRevisionChip
+                                                        unit={pair.afterUnit}
+                                                        projectId={projectId}
+                                                        chatSessionId={chatSessionId}
+                                                        className="shrink-0 px-1.5 py-0 text-[10px] font-medium"
+                                                    />
+                                                </div>
                                                 <UnitTypeBadge unitType={after.unit_type} />
                                                 <LiveBadge
                                                     isOn={!after.is_draft}

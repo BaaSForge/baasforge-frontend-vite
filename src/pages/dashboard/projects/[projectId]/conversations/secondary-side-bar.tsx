@@ -144,7 +144,13 @@ export function SecondarySideBar() {
                     ))}
                 </div>
             )}
-            <ChatSessionViewChangesModal open={viewChangesOpen} onOpenChange={setViewChangesOpen} unitsChanged={viewChangesUnits} />
+            <ChatSessionViewChangesModal
+                open={viewChangesOpen}
+                onOpenChange={setViewChangesOpen}
+                unitsChanged={viewChangesUnits}
+                projectId={projectId}
+                chatSessionId={chatSessionId}
+            />
         </SecondarySidebarContent>
     );
 }
