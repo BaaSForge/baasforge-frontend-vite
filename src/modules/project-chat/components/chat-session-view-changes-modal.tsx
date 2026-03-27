@@ -140,7 +140,7 @@ export function ChatSessionViewChangesModal({
                                                         value={id}
                                                         className={cn(
                                                             "!h-auto min-h-0 max-w-[min(100%,18rem)] shrink-0 flex-none flex-col items-start gap-1 px-1.5 py-1 text-xs sm:flex-row sm:items-center",
-                                                            "data-[state=active]:shadow-sm [&_svg]:size-3",
+                                                            "data-[state=active]:shadow-sm",
                                                         )}
                                                     >
                                                         <span
@@ -159,7 +159,7 @@ export function ChatSessionViewChangesModal({
                                                         >
                                                             {showNewSparkles && (
                                                                 <Sparkles
-                                                                    className="text-blue-600 dark:text-blue-400"
+                                                                    className="!size-2.5 shrink-0 text-blue-600 dark:text-blue-400"
                                                                     aria-hidden
                                                                 />
                                                             )}
@@ -205,7 +205,7 @@ export function ChatSessionViewChangesModal({
                                                 >
                                                     {showNewSparkles && (
                                                         <Sparkles
-                                                            className="text-blue-600 dark:text-blue-400"
+                                                            className="!size-2.5 shrink-0 text-blue-600 dark:text-blue-400"
                                                             aria-hidden
                                                         />
                                                     )}
@@ -244,17 +244,17 @@ export function ChatSessionViewChangesModal({
                                                     <ToggleGroupItem
                                                         value="split"
                                                         aria-label="Split view"
-                                                        className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm [&_svg]:size-3"
+                                                        className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm"
                                                     >
-                                                        <Columns2 className="size-3 shrink-0" aria-hidden />
+                                                        <Columns2 className="size-2.5 shrink-0" aria-hidden />
                                                         <span className="hidden sm:inline">Split</span>
                                                     </ToggleGroupItem>
                                                     <ToggleGroupItem
                                                         value="inline"
                                                         aria-label="Inline view"
-                                                        className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm [&_svg]:size-3"
+                                                        className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm"
                                                     >
-                                                        <AlignJustify className="size-3 shrink-0" aria-hidden />
+                                                        <AlignJustify className="size-2.5 shrink-0" aria-hidden />
                                                         <span className="hidden sm:inline">Inline</span>
                                                     </ToggleGroupItem>
                                                 </ToggleGroup>
