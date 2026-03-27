@@ -89,7 +89,7 @@ export function ToolFetchRelevantUnitsMessage({
                         {headerTooltip}
                     </Tooltip>
                 ) : (
-                    <Collapsible defaultOpen={false} className="group/tool-units w-full min-w-0 max-w-full overflow-hidden">
+                    <Collapsible defaultOpen className="group/tool-units w-full min-w-0 max-w-full overflow-hidden">
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <CollapsibleTrigger className="flex items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
