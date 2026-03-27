@@ -2,7 +2,6 @@
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { LiveBadge } from "@/components/live-badge";
-import { Badge } from "@/components/ui/badge";
 import {
     CentricModal,
     CentricModalClose,
@@ -13,11 +12,11 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { capitalizeFirstLetter, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { UnitCardIdRow } from "@/modules/project/components/unit-card-id-row";
 import { UnitRevisionBadge } from "@/modules/project/components/unit-revision-badge";
+import { UnitTypeBadge } from "@/modules/project/components/unit-type-badge";
 import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types";
-import { getProjectUnitTypeBadgeClass } from "@/modules/project/unit-type-badge-class";
 import { AlignJustify, Columns2, XIcon } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { usePersistedUnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
@@ -169,15 +168,7 @@ export function ChatSessionViewChangesModal({
                                                     beforeUnit={pair.beforeUnit}
                                                     className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
                                                 />
-                                                <Badge
-                                                    variant="outline"
-                                                    className={cn(
-                                                        "text-[0.625rem]",
-                                                        getProjectUnitTypeBadgeClass(after.unit_type),
-                                                    )}
-                                                >
-                                                    {capitalizeFirstLetter(after.unit_type)}
-                                                </Badge>
+                                                <UnitTypeBadge unitType={after.unit_type} />
                                                 <LiveBadge
                                                     isOn={!after.is_draft}
                                                     offLabel="Draft"

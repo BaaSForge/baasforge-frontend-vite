@@ -3,13 +3,12 @@
 import { Expandable } from "@/components/expandable";
 import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
 import { LiveBadge } from "@/components/live-badge";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { capitalizeFirstLetter, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
-import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
 import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
+import { UnitTypeBadge } from "./unit-type-badge";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 import { UnitRevisionBadge } from "./unit-revision-badge";
 
@@ -35,9 +34,7 @@ export function UnitCardCompact({ unit, projectId, chatSessionId, className, uni
                 chatSessionId={chatSessionId}
                 refreshPending={unitRefreshPending}
             />
-            <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
-                {capitalizeFirstLetter(unit.unit_type)}
-            </Badge>
+            <UnitTypeBadge unitType={unit.unit_type} />
             <LiveBadge isOn={!unit.is_draft} offLabel="Draft" offTitle="Draft, not ready" onLabel="Published" onTitle="Published, ready" />
         </>
     );

@@ -1,12 +1,11 @@
 "use client";
 
 import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
-import { getProjectUnitTypeBadgeClass } from "../unit-type-badge-class";
 import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
+import { UnitTypeBadge } from "./unit-type-badge";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 import { UnitRevisionBadge } from "./unit-revision-badge";
 
@@ -27,22 +26,20 @@ export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRe
 
     const badges = (
         <>
-            <Badge variant="outline" className={cn("text-[0.625rem]", getProjectUnitTypeBadgeClass(unit.unit_type))}>
-                {unit.unit_type}
-            </Badge>
             <UnitRevisionBadge
                 unit={unit}
                 projectId={projectId}
                 chatSessionId={chatSessionId}
                 refreshPending={unitRefreshPending}
             />
+            <UnitTypeBadge unitType={unit.unit_type} label={unit.unit_type} />
         </>
     );
 
     return (
         <div
             className={cn(
-                "relative inline-block shrink-0 min-w-0 max-w-[200px]",
+                "relative inline-block shrink-0 min-w-0 max-w-[min(100%,20rem)]",
                 UNIT_CARD_ID_BADGE_RESERVE_CLASS,
                 className,
             )}
