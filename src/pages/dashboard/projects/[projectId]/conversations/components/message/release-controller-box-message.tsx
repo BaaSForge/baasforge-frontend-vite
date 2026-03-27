@@ -122,13 +122,13 @@ export function ReleaseControllerBoxMessage({
         <>
             <div
                 className={cn(
-                    "flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-border/80 bg-muted/25 px-3 py-2.5 mb-4",
+                    "flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-dashed border-emerald-400/25 bg-emerald-400/6 px-3 py-2.5 mb-4 dark:border-emerald-500/20 dark:bg-emerald-950/20",
                     !compactToolbar && "sm:flex-row sm:items-center sm:justify-between sm:gap-3",
                 )}
             >
                 <p
                     className={cn(
-                        "w-full min-w-0 text-center text-sm text-muted-foreground",
+                        "w-full min-w-0 text-center text-sm font-medium text-emerald-600 dark:text-emerald-400/90",
                         !compactToolbar && "sm:flex-1 sm:text-left",
                     )}
                 >
