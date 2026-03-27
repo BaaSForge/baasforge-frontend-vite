@@ -9,7 +9,7 @@ import {
     type ChatSessionResponse,
 } from "./types";
 
-const GET_MESSAGES_QUERY_LIMIT = 20;
+const GET_MESSAGES_QUERY_LIMIT = 100;
 
 const chatSessionsEndpoint = (projectId: string) => `/v1/platform/projects/${projectId}/chat-sessions`;
 const chatSessionDetailEndpoint = (projectId: string, chatSessionId: string) =>
