@@ -5,10 +5,11 @@ import { useTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const THEME_ORDER: Theme[] = ["light", "dark", "system"];
+const THEME_ORDER: Theme[] = ["light", "dark-midnight", "dark-default", "system"];
 const THEME_LABELS: Record<Theme, string> = {
     light: "Light",
-    dark: "Dark",
+    "dark-midnight": "Midnight",
+    "dark-default": "Default dark",
     system: "System",
 };
 
@@ -25,7 +26,7 @@ export function ModeToggle() {
         setTheme(nextTheme);
     };
 
-    const Icon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+    const Icon = theme === "light" ? Sun : theme === "system" ? Monitor : Moon;
 
     return (
         <Tooltip>

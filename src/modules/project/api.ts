@@ -28,6 +28,29 @@ const projectReleaseControllerStageReleaseEndpoint = (projectId: string, chatSes
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/stage-release`;
 const projectReleaseControllerProductionReleaseEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/production-release`;
+const projectRuntimeDeployStageReleaseEndpoint = (projectId: string, runtimeId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/deploy-stage-release`;
+const projectRuntimeDeployProductionReleaseEndpoint = (projectId: string, runtimeId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/deploy-production-release`;
+
+export interface DeployReleaseBody {
+    revision: number;
+}
+
+/** After detach: connect an existing stage release (same revision as deploy-stage-release). */
+export type DetachRuntimeLiveReleaseDeployBody = {
+    revision: number;
+};
+
+/** After detach: connect the stage release for this release-controller message scope (same scope as stage-release from message). */
+export type DetachRuntimeLiveReleaseFromControllerBody = {
+    chat_session_id: string;
+    release_controller_message_id: string;
+};
+
+export type DetachRuntimeLiveReleaseBody =
+    | DetachRuntimeLiveReleaseDeployBody
+    | DetachRuntimeLiveReleaseFromControllerBody;
 
 export function createProject(body: ProjectRequest): Promise<ProjectResponse> {
     return apiClient.post<ApiResponse<ProjectResponse>>(PROJECTS_ENDPOINT, body).then((res) => {
@@ -94,8 +117,13 @@ export function getProjectRuntimes(projectId: string): Promise<ProjectRuntimeRes
     return apiClient.get<ApiResponse<ProjectRuntimeResponse[]>>(projectRuntimesEndpoint(projectId)).then((res) => res.data ?? []);
 }
 
-export function detachRuntimeLiveRelease(projectId: string, runtimeId: string): Promise<void> {
-    return apiClient.post<ApiResponse<unknown>>(projectRuntimeDetachLiveReleaseEndpoint(projectId, runtimeId)).then(() => undefined);
+/** Detach the runtime’s current live release, then connect using either an existing revision or a release-controller scope. */
+export function detachRuntimeLiveRelease(
+    projectId: string,
+    runtimeId: string,
+    body: DetachRuntimeLiveReleaseBody,
+): Promise<void> {
+    return apiClient.post<ApiResponse<unknown>>(projectRuntimeDetachLiveReleaseEndpoint(projectId, runtimeId), body).then(() => undefined);
 }
 
 export function postReleaseControllerStageRelease(
@@ -115,4 +143,12 @@ export function postReleaseControllerProductionRelease(
     return apiClient
         .post<ApiResponse<unknown>>(projectReleaseControllerProductionReleaseEndpoint(projectId, chatSessionId, messageId))
         .then(() => undefined);
+}
+
+export function postRuntimeDeployStageRelease(projectId: string, runtimeId: string, body: DeployReleaseBody): Promise<void> {
+    return apiClient.post<ApiResponse<unknown>>(projectRuntimeDeployStageReleaseEndpoint(projectId, runtimeId), body).then(() => undefined);
+}
+
+export function postRuntimeDeployProductionRelease(projectId: string, runtimeId: string, body: DeployReleaseBody): Promise<void> {
+    return apiClient.post<ApiResponse<unknown>>(projectRuntimeDeployProductionReleaseEndpoint(projectId, runtimeId), body).then(() => undefined);
 }

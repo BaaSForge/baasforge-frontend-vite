@@ -16,7 +16,13 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryKeys } from "@/constants/query-keys";
-import { postReleaseControllerProductionRelease } from "@/modules/project/api";
+import {
+    postReleaseControllerProductionRelease,
+    postRuntimeDeployProductionRelease,
+    postRuntimeDeployStageRelease,
+} from "@/modules/project/api";
+import { useProjectRuntimesQuery } from "@/modules/project/queries";
+import { PlatformEnvironmentType } from "@/modules/project/types";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
 import { CompactReleaseBadge, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
 import {
@@ -31,12 +37,18 @@ import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlignJustify, Columns2 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { AlignJustify, Columns2, FlaskConical, Rocket } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
+import { DeployReleaseToRuntimeModal } from "./deploy-release-to-runtime-modal";
 import { ReleaseStageRuntimeModal } from "./release-stage-runtime-modal";
+
+function parseReleaseRevision(revision: string): number | null {
+    const n = Number.parseInt(revision, 10);
+    return Number.isFinite(n) && !Number.isNaN(n) ? n : null;
+}
 
 function uniqueUnitPathsFromDraftUnits(units: { id: string }[]): string[] {
     const seen = new Set<string>();
@@ -101,8 +113,77 @@ export function ReleaseControllerBoxMessage({
     const [isPreparingViewChanges, setIsPreparingViewChanges] = useState(false);
     const [stageReleaseModalOpen, setStageReleaseModalOpen] = useState(false);
     const [productionConfirmOpen, setProductionConfirmOpen] = useState(false);
+    const [stageDeployRuntimePickOpen, setStageDeployRuntimePickOpen] = useState(false);
+    const [productionRedeployConfirmOpen, setProductionRedeployConfirmOpen] = useState(false);
+    const [prodRedeployRuntimeId, setProdRedeployRuntimeId] = useState<string | null>(null);
+
+    const { data: runtimes } = useProjectRuntimesQuery(projectId);
+
+    const stageRuntimes = useMemo(
+        () => (runtimes ?? []).filter((r) => r.environment === PlatformEnvironmentType.stage),
+        [runtimes],
+    );
+    const prodRuntimes = useMemo(
+        () => (runtimes ?? []).filter((r) => r.environment === PlatformEnvironmentType.prod),
+        [runtimes],
+    );
+
+    const isStageReleaseLiveOnRuntime = useMemo(() => {
+        if (stageRelease == null) return false;
+        return stageRuntimes.some(
+            (r) => r.live_release_revision != null && r.live_release_revision === stageRelease.revision,
+        );
+    }, [stageRelease, stageRuntimes]);
+
+    const isProdReleaseLiveOnRuntime = useMemo(() => {
+        if (prodRelease == null) return false;
+        return prodRuntimes.some(
+            (r) => r.live_release_revision != null && r.live_release_revision === prodRelease.revision,
+        );
+    }, [prodRelease, prodRuntimes]);
+
+    const stageRevisionNum = stageRelease != null ? parseReleaseRevision(stageRelease.revision) : null;
+    const prodRevisionNum = prodRelease != null ? parseReleaseRevision(prodRelease.revision) : null;
 
     const queryClient = useQueryClient();
+
+    const invalidateAfterRuntimeDeploy = useCallback(async () => {
+        if (projectId == null || chatSessionId == null) return;
+        await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId) });
+        await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleases(projectId) });
+    }, [projectId, chatSessionId, queryClient]);
+
+    const stageRedeployMutation = useMutation({
+        mutationFn: async (runtimeId: string) => {
+            if (projectId == null || stageRevisionNum == null) throw new Error("Missing project or revision");
+            await postRuntimeDeployStageRelease(projectId, runtimeId, { revision: stageRevisionNum });
+        },
+        onSuccess: async () => {
+            await invalidateAfterRuntimeDeploy();
+            setStageDeployRuntimePickOpen(false);
+            toast.success("Stage deploy has started.", { position: "top-center" });
+        },
+        onError: () => {
+            toast.error("Could not start stage deploy.", { position: "top-center" });
+        },
+    });
+
+    const prodRedeployMutation = useMutation({
+        mutationFn: async (runtimeId: string) => {
+            if (projectId == null || prodRevisionNum == null) throw new Error("Missing project or revision");
+            await postRuntimeDeployProductionRelease(projectId, runtimeId, { revision: prodRevisionNum });
+        },
+        onSuccess: async () => {
+            setProductionRedeployConfirmOpen(false);
+            setProdRedeployRuntimeId(null);
+            await invalidateAfterRuntimeDeploy();
+            toast.success("Production deploy has started.", { position: "top-center" });
+        },
+        onError: () => {
+            toast.error("Could not start production deploy.", { position: "top-center" });
+        },
+    });
+
     const productionReleaseMutation = useMutation({
         mutationFn: () => postReleaseControllerProductionRelease(projectId!, chatSessionId!, message.id),
         onSuccess: async () => {
@@ -148,6 +229,21 @@ export function ReleaseControllerBoxMessage({
     const canOpenStageReleaseModal = projectId != null && chatSessionId != null && stageRelease == null;
     const canCallProductionRelease =
         stageRelease != null && prodRelease == null && projectId != null && chatSessionId != null;
+
+    const handleStageRedeploy = useCallback(() => {
+        if (stageRevisionNum == null) return;
+        if (stageRuntimes.length === 0) return;
+        
+        setStageDeployRuntimePickOpen(true);
+    }, [stageRevisionNum, stageRuntimes, stageRedeployMutation]);
+
+    const handleProdRedeployClick = useCallback(() => {
+        if (prodRevisionNum == null) return;
+        const prodRuntimeId = prodRuntimes[0]?.id;
+        if (prodRuntimeId == null) return;
+        setProdRedeployRuntimeId(prodRuntimeId);
+        setProductionRedeployConfirmOpen(true);
+    }, [prodRevisionNum, prodRuntimes]);
 
     return (
         <>
@@ -197,7 +293,46 @@ export function ReleaseControllerBoxMessage({
                     </Button>
 
                     {stageRelease != null ? (
-                        <CompactReleaseBadge release={stageRelease} projectId={projectId} />
+                        isStageReleaseLiveOnRuntime ? (
+                            <CompactReleaseBadge release={stageRelease} projectId={projectId} />
+                        ) : (
+                            projectId != null &&
+                            stageRevisionNum != null &&
+                            (stageRuntimes.length === 0 ? (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-flex">
+                                            <Button type="button" variant="outline" size="xs" disabled>
+                                                <FlaskConical className="size-3 shrink-0" aria-hidden />
+                                                Deploy revision {stageRelease.revision} to stage
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">No stage runtimes available.</TooltipContent>
+                                </Tooltip>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="xs"
+                                    disabled={stageRedeployMutation.isPending}
+                                    aria-busy={stageRedeployMutation.isPending}
+                                    onClick={() => void handleStageRedeploy()}
+                                >
+                                    {stageRedeployMutation.isPending ? (
+                                        <>
+                                            <Spinner className="size-3" />
+                                            Deploying…
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FlaskConical className="size-3 shrink-0" aria-hidden />
+                                            Deploy revision {stageRelease.revision} to stage
+                                        </>
+                                    )}
+                                </Button>
+                            ))
+                        )
                     ) : !canOpenStageReleaseModal ? (
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -216,7 +351,46 @@ export function ReleaseControllerBoxMessage({
                     )}
 
                     {prodRelease != null ? (
-                        <CompactReleaseBadge release={prodRelease} projectId={projectId} />
+                        isProdReleaseLiveOnRuntime ? (
+                            <CompactReleaseBadge release={prodRelease} projectId={projectId} />
+                        ) : (
+                            projectId != null &&
+                            prodRevisionNum != null &&
+                            (prodRuntimes.length === 0 ? (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-flex">
+                                            <Button type="button" variant="outline" size="xs" disabled>
+                                                <Rocket className="size-3 shrink-0" aria-hidden />
+                                                Deploy revision {prodRelease.revision} to production
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">No production runtimes available.</TooltipContent>
+                                </Tooltip>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="xs"
+                                    disabled={prodRedeployMutation.isPending}
+                                    aria-busy={prodRedeployMutation.isPending}
+                                    onClick={() => void handleProdRedeployClick()}
+                                >
+                                    {prodRedeployMutation.isPending ? (
+                                        <>
+                                            <Spinner className="size-3" />
+                                            Deploying…
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Rocket className="size-3 shrink-0" aria-hidden />
+                                            Deploy revision {prodRelease.revision} to production
+                                        </>
+                                    )}
+                                </Button>
+                            ))
+                        )
                     ) : stageRelease == null ? (
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -285,6 +459,61 @@ export function ReleaseControllerBoxMessage({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <AlertDialog
+                open={productionRedeployConfirmOpen}
+                onOpenChange={(open) => {
+                    setProductionRedeployConfirmOpen(open);
+                    if (!open) setProdRedeployRuntimeId(null);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Deploy revision {prodRelease?.revision ?? ""} to production?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This deploys release revision {prodRelease?.revision ?? ""} to the production runtime.
+                            Confirm only when you have tested on stage and are ready for these changes to go live.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={prodRedeployMutation.isPending}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            className={buttonVariants({ variant: "destructive" })}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (prodRedeployRuntimeId == null) return;
+                                prodRedeployMutation.mutate(prodRedeployRuntimeId);
+                            }}
+                            disabled={prodRedeployMutation.isPending || prodRedeployRuntimeId == null}
+                        >
+                            {prodRedeployMutation.isPending ? (
+                                <>
+                                    <Spinner className="size-3" aria-hidden />
+                                    Deploying…
+                                </>
+                            ) : (
+                                <>
+                                    Deploy revision {prodRelease?.revision ?? ""}
+                                </>
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {stageRevisionNum != null && (
+                <DeployReleaseToRuntimeModal
+                    open={stageDeployRuntimePickOpen}
+                    onOpenChange={setStageDeployRuntimePickOpen}
+                    projectId={projectId}
+                    revision={stageRevisionNum}
+                    revisionLabel={stageRelease?.revision ?? ""}
+                    onDeployRuntime={(runtimeId) => stageRedeployMutation.mutate(runtimeId)}
+                    deployingRuntimeId={stageRedeployMutation.isPending ? stageRedeployMutation.variables ?? null : null}
+                />
+            )}
 
             <ReleaseStageRuntimeModal
                 open={stageReleaseModalOpen}

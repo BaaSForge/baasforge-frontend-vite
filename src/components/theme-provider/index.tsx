@@ -4,36 +4,59 @@ import { ThemeProviderContext, type Theme } from "./hooks";
 type ThemeProviderProps = {
     children: React.ReactNode;
     defaultTheme?: Theme;
-    storageKey?: string;
+    storageKey: string;
 };
 
-export function ThemeProvider({ children, defaultTheme = "system", storageKey = "vite-ui-theme", ...props }: ThemeProviderProps) {
-    const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(storageKey) as Theme) || defaultTheme);
+function normalizeStoredTheme(raw: string | null, fallback: Theme): Theme {
+    if (raw === "dark") return "dark-midnight";
+    if (raw === "light" || raw === "system" || raw === "dark-default" || raw === "dark-midnight") return raw;
+    return fallback;
+}
+
+export function ThemeProvider({ children, defaultTheme = "system", storageKey, ...props }: ThemeProviderProps) {
+    const [theme, setTheme] = useState<Theme>(() => normalizeStoredTheme(localStorage.getItem(storageKey), defaultTheme));
 
     useEffect(() => {
         const root = window.document.documentElement;
 
-        const applyTheme = (value: "light" | "dark") => {
-            root.classList.remove("light", "dark");
-            root.classList.add(value);
+        const applyLight = () => {
+            root.classList.remove("dark-default", "dark-midnight");
+            root.classList.add("light");
+        };
+
+        const applyDarkVariant = (variant: "dark-default" | "dark-midnight") => {
+            root.classList.remove("light");
+            root.classList.remove("dark-default", "dark-midnight");
+            root.classList.add(variant);
         };
 
         if (theme === "system") {
             const media = window.matchMedia("(prefers-color-scheme: dark)");
-            applyTheme(media.matches ? "dark" : "light");
-            const handler = () => applyTheme(media.matches ? "dark" : "light");
-            media.addEventListener("change", handler);
-            return () => media.removeEventListener("change", handler);
+            const sync = () => {
+                if (media.matches) {
+                    applyDarkVariant("dark-midnight");
+                } else {
+                    applyLight();
+                }
+            };
+            sync();
+            media.addEventListener("change", sync);
+            return () => media.removeEventListener("change", sync);
         }
 
-        applyTheme(theme);
+        if (theme === "light") {
+            applyLight();
+            return;
+        }
+
+        applyDarkVariant(theme);
     }, [theme]);
 
     const value = {
         theme,
-        setTheme: (theme: Theme) => {
-            localStorage.setItem(storageKey, theme);
-            setTheme(theme);
+        setTheme: (next: Theme) => {
+            localStorage.setItem(storageKey, next);
+            setTheme(next);
         },
     };
 

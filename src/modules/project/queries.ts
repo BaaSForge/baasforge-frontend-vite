@@ -58,11 +58,12 @@ export function useProjectDraftUnitsAsOfReleaseControllerMessageQuery(
     });
 }
 
-export function useProjectReleasesQuery(projectId: string | undefined) {
+export function useProjectReleasesQuery(projectId: string | undefined, options?: { enabled?: boolean }) {
+    const enabledByOption = options?.enabled ?? true;
     return useQuery({
         queryKey: QueryKeys.projectReleases(projectId ?? ""),
         queryFn: () => getReleases(projectId!),
-        enabled: !!projectId,
+        enabled: !!projectId && enabledByOption,
     });
 }
 

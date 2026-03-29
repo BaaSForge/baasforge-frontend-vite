@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "dark" | "light" | "system";
+export type Theme = "dark-default" | "dark-midnight" | "light" | "system";
 
 export type ThemeProviderState = {
     theme: Theme;
@@ -34,7 +34,7 @@ export function useResolvedTheme() {
             media.addEventListener("change", handler);
             return () => media.removeEventListener("change", handler);
         }
-        queueMicrotask(() => setResolved(theme));
+        queueMicrotask(() => setResolved(theme === "light" ? "light" : "dark"));
     }, [theme]);
 
     return resolved;

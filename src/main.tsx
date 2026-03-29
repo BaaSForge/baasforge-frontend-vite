@@ -8,7 +8,7 @@ import router from "./pages/router.tsx";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <ThemeProvider defaultTheme="system" storageKey="ui-theme">
             <Providers>
                 <RouterProvider router={router} />
             </Providers>

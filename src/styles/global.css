@@ -5,7 +5,7 @@
 @plugin "tailwindcss-react-aria-components";
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark-default *, .dark-midnight *));
 
 html,
 body {
@@ -43,6 +43,23 @@ html {
     /* For Firefox */
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+html.dark-default::-webkit-scrollbar-thumb,
+html.dark-midnight::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    background-clip: content-box;
+}
+
+html.dark-default::-webkit-scrollbar-thumb:hover,
+html.dark-midnight::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.26);
+    background-clip: content-box;
+}
+
+html.dark-default,
+html.dark-midnight {
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }
 
 /* Hide the default expand arrow on Safari.  */
@@ -152,7 +169,8 @@ input[type="search"]::-webkit-search-cancel-button {
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
-.dark {
+/* Previous single dark palette (unchanged values), kept as "Default dark". */
+.dark-default {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);
@@ -183,6 +201,41 @@ input[type="search"]::-webkit-search-cancel-button {
     --sidebar-accent: hsl(240 3.7% 15.9%);
     --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
     --sidebar-border: hsl(240 3.7% 15.9%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+/* Lighter blue-gray dark (Cursor-style "Midnight"); elevated surfaces, softer contrast. */
+.dark-midnight {
+    --background: oklch(0.23 0.019 260);
+    --foreground: oklch(0.93 0.012 260);
+    --card: oklch(0.27 0.021 260);
+    --card-foreground: oklch(0.93 0.012 260);
+    --popover: oklch(0.29 0.022 260);
+    --popover-foreground: oklch(0.93 0.012 260);
+    --primary: oklch(0.93 0.012 260);
+    --primary-foreground: oklch(0.23 0.019 260);
+    --secondary: oklch(0.33 0.026 260);
+    --secondary-foreground: oklch(0.93 0.012 260);
+    --muted: oklch(0.31 0.024 260);
+    --muted-foreground: oklch(0.72 0.022 260);
+    --accent: oklch(0.34 0.028 260);
+    --accent-foreground: oklch(0.93 0.012 260);
+    --destructive: oklch(0.66 0.19 22);
+    --border: oklch(0.93 0.03 260 / 16%);
+    --input: oklch(0.93 0.03 260 / 20%);
+    --ring: oklch(0.58 0.04 260);
+    --chart-1: oklch(0.55 0.22 264);
+    --chart-2: oklch(0.68 0.16 162);
+    --chart-3: oklch(0.75 0.17 85);
+    --chart-4: oklch(0.62 0.24 304);
+    --chart-5: oklch(0.64 0.22 20);
+    --sidebar: hsl(222 16% 17%);
+    --sidebar-foreground: hsl(210 15% 94%);
+    --sidebar-primary: hsl(221 83% 53%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(222 14% 22%);
+    --sidebar-accent-foreground: hsl(210 15% 94%);
+    --sidebar-border: hsl(222 12% 26%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 

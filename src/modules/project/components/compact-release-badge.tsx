@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { FlaskConical, Rocket } from "lucide-react";
 import { useProjectRuntimesQuery } from "../queries";
-import type { ReleaseResponse } from "../types";
+import { PlatformEnvironmentType, type ReleaseResponse } from "../types";
 
 export interface CompactReleaseBadgeProps {
     release: ReleaseResponse;
@@ -16,11 +16,16 @@ export interface CompactReleaseBadgeProps {
 export function CompactReleaseBadge({ release, projectId, className }: CompactReleaseBadgeProps) {
     const { data: runtimes } = useProjectRuntimesQuery(projectId);
     const isLiveOnRuntime =
-        runtimes?.some((r) => r.live_release_revision != null && r.live_release_revision === release.revision) ??
-        false;
+        runtimes?.some((r) => {
+            const envMatches = release.is_stage
+                ? r.environment === PlatformEnvironmentType.stage
+                : r.environment === PlatformEnvironmentType.prod;
+            return envMatches && r.live_release_revision != null && r.live_release_revision === release.revision;
+        }) ?? false;
 
     const kind = release.is_stage ? "Stage" : "Production";
-    const label = `${kind} release ${release.revision}${isLiveOnRuntime ? " (live)" : ""}`;
+    const mainLabel = `${kind} release ${release.revision}`;
+    const title = `${mainLabel}${isLiveOnRuntime ? " — live on a runtime" : ""}`;
     const Icon = release.is_stage ? FlaskConical : Rocket;
     const isStage = release.is_stage;
 
@@ -28,7 +33,7 @@ export function CompactReleaseBadge({ release, projectId, className }: CompactRe
         <Badge
             variant="secondary"
             className={cn(
-                "shrink-0 rounded-md font-medium text-[0.625rem]",
+                "inline-flex max-w-full shrink-0 items-center gap-1 rounded-md font-medium text-[0.625rem]",
                 // Stage: muted, blends with chat copy
                 isStage &&
                     "border border-stone-200/80 bg-stone-50 text-stone-600 dark:border-stone-600/25 dark:bg-stone-500/8 dark:text-stone-300",
@@ -43,10 +48,22 @@ export function CompactReleaseBadge({ release, projectId, className }: CompactRe
                     "border-emerald-400/85 bg-emerald-100/90 text-emerald-950 dark:border-emerald-400/55 dark:bg-emerald-500/22 dark:text-emerald-50",
                 className,
             )}
-            title={label}
+            title={title}
         >
             <Icon className="shrink-0 opacity-90" aria-hidden />
-            {label}
+            <span className="min-w-0 truncate">{mainLabel}</span>
+            {isLiveOnRuntime && (
+                <span
+                    className={cn(
+                        "shrink-0 rounded border px-1 py-px text-[0.5rem] font-semibold uppercase leading-none tracking-wide",
+                        isStage
+                            ? "border-amber-400/60 bg-amber-200/90 text-amber-950 dark:border-amber-400/40 dark:bg-amber-400/25 dark:text-amber-50"
+                            : "border-emerald-400/60 bg-emerald-200/90 text-emerald-950 dark:border-emerald-400/40 dark:bg-emerald-400/25 dark:text-emerald-50",
+                    )}
+                >
+                    Live
+                </span>
+            )}
         </Badge>
     );
 }
