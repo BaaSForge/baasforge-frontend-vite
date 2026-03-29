@@ -21,8 +21,6 @@ import {
     postRuntimeDeployProductionRelease,
     postRuntimeDeployStageRelease,
 } from "@/modules/project/api";
-import { useProjectRuntimesQuery } from "@/modules/project/queries";
-import { PlatformEnvironmentType } from "@/modules/project/types";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
 import { CompactReleaseBadge, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
 import {
@@ -31,20 +29,20 @@ import {
     type ChatSessionUnitChangePair,
 } from "@/modules/project-chat";
 import { usePersistedUnitDiffViewMode } from "@/modules/project-chat/hooks/use-persisted-unit-diff-view-mode";
-import type { ReleaseControllerBoxPayload } from "@/modules/project-chat/payloads";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlignJustify, Columns2, FlaskConical, Rocket } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 import { DeployReleaseToRuntimeModal } from "./deploy-release-to-runtime-modal";
+import { getReleaseControllerPayload, useReleaseControllerRuntimeLiveFlags } from "./release-controller-box-shared";
 import { ReleaseStageRuntimeModal } from "./release-stage-runtime-modal";
 
 function parseReleaseRevision(revision: string): number | null {
@@ -81,12 +79,6 @@ function viewChangesPairsFromPreChat(
     return pairs;
 }
 
-function getReleaseControllerPayload(message: ChatMessageWithDeliveryStatus): ReleaseControllerBoxPayload {
-    const p = message.payload as ReleaseControllerBoxPayload | undefined | null;
-    if (p == null || typeof p !== "object") return {};
-    return p;
-}
-
 export function ReleaseControllerBoxMessage({
     message,
     nestedMessages,
@@ -119,30 +111,8 @@ export function ReleaseControllerBoxMessage({
     const [productionRedeployConfirmOpen, setProductionRedeployConfirmOpen] = useState(false);
     const [prodRedeployRuntimeId, setProdRedeployRuntimeId] = useState<string | null>(null);
 
-    const { data: runtimes } = useProjectRuntimesQuery(projectId);
-
-    const stageRuntimes = useMemo(
-        () => (runtimes ?? []).filter((r) => r.environment === PlatformEnvironmentType.stage),
-        [runtimes],
-    );
-    const prodRuntimes = useMemo(
-        () => (runtimes ?? []).filter((r) => r.environment === PlatformEnvironmentType.prod),
-        [runtimes],
-    );
-
-    const isStageReleaseLiveOnRuntime = useMemo(() => {
-        if (stageRelease == null) return false;
-        return stageRuntimes.some(
-            (r) => r.live_release_revision != null && r.live_release_revision === stageRelease.revision,
-        );
-    }, [stageRelease, stageRuntimes]);
-
-    const isProdReleaseLiveOnRuntime = useMemo(() => {
-        if (prodRelease == null) return false;
-        return prodRuntimes.some(
-            (r) => r.live_release_revision != null && r.live_release_revision === prodRelease.revision,
-        );
-    }, [prodRelease, prodRuntimes]);
+    const { stageRuntimes, prodRuntimes, isStageReleaseLiveOnRuntime, isProdReleaseLiveOnRuntime } =
+        useReleaseControllerRuntimeLiveFlags(projectId, stageRelease, prodRelease);
 
     const stageRevisionNum = stageRelease != null ? parseReleaseRevision(stageRelease.revision) : null;
     const prodRevisionNum = prodRelease != null ? parseReleaseRevision(prodRelease.revision) : null;

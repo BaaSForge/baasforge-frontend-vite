@@ -164,7 +164,8 @@ const StickyMessageBarRow = React.forwardRef<
                 data-slot="sticky-message-bar"
                 data-sticky-group={group}
                 className={cn(
-                    "pointer-events-auto flex min-h-10 w-[80%] max-w-[80%] min-w-0 cursor-pointer flex-row items-center gap-0 rounded-xl border-0 bg-inverse/80 px-4 py-2 text-inverse-foreground shadow-none backdrop-blur-md",
+                    "pointer-events-auto flex min-h-10 w-[80%] max-w-[80%] min-w-0 cursor-pointer flex-row gap-0 rounded-xl border-0 bg-inverse/80 px-4 py-2 text-inverse-foreground shadow-none backdrop-blur-md",
+                    group === "release_controller" ? "items-start md:items-center" : "items-center",
                     "transition-[background-color,backdrop-filter]",
                     stickyBarTransition,
                 )}
@@ -182,8 +183,19 @@ const StickyMessageBarRow = React.forwardRef<
                     }
                 }}
             >
-                <div className="flex min-w-0 flex-1 items-center justify-start gap-1.5 text-left select-none">
-                    <ChevronUp className="size-4 shrink-0 text-inverse-foreground/85" aria-hidden />
+                <div
+                    className={cn(
+                        "flex min-w-0 flex-1 justify-start gap-1.5 text-left select-none",
+                        group === "release_controller" ? "items-start md:items-center" : "items-center",
+                    )}
+                >
+                    <ChevronUp
+                        className={cn(
+                            "size-4 shrink-0 text-inverse-foreground/85",
+                            group === "release_controller" && "mt-0.5 md:mt-0",
+                        )}
+                        aria-hidden
+                    />
                     {group === "user" ? (
                         <StickyMessageLineUser message={message} className="min-w-0 flex-1 text-inverse-foreground" />
                     ) : (
