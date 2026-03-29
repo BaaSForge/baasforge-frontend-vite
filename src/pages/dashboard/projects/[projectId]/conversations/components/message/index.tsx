@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -24,6 +24,7 @@ import { ToolRemoveUnitMessage } from "./tool-remove-unit-message";
 import { ToolListUnitContextsMessage } from "./tool-list-unit-contexts-message";
 import { ToolListModulesForUnitContextsMessage } from "./tool-list-modules-for-unit-contexts-message";
 import { ReleaseControllerBoxMessage } from "./release-controller-box-message";
+import { getStickyMessageGroupForMessage, useStickyMessageRegistration } from "../sticky-messages";
 
 type MessageProps = {
     message: ChatMessageWithDeliveryStatus;
@@ -111,8 +112,13 @@ export function Message({ message, onRetry, nestedMessages, isNested }: MessageP
             ? getTextPayloadThinkingDisplay(message.payload)
             : null;
 
+    const stickyGroup = getStickyMessageGroupForMessage(message);
+    const stickyAnchorRef = useRef<HTMLDivElement>(null);
+    useStickyMessageRegistration(stickyGroup, message, stickyAnchorRef);
+
     return (
         <div
+            ref={stickyAnchorRef}
             className={cn(
                 "relative flex min-w-0 flex-col",
                 isUser ? "items-end" : "items-start",

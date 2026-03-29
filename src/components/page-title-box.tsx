@@ -61,7 +61,7 @@ export function PageTitleBox({ title, tools, className, mainSidebar: passedSideb
                 ref={barRef}
                 data-slot="page-title-box"
                 className={cn(
-                    "fixed right-0 z-10 flex h-14 shrink-0 flex-row items-center justify-between gap-4 border-b px-4 py-4",
+                    "fixed right-0 z-[15] flex h-14 shrink-0 flex-row items-center justify-between gap-4 border-b px-4 py-4",
                     "bg-background transition-all",
                     stickyBarTransition,
                     `top-[var(--top)]`,

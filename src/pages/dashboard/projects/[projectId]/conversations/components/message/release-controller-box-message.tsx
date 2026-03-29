@@ -42,6 +42,8 @@ import { useCallback, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
+import { useIsMessageScrollHighlighted } from "../sticky-messages";
+import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 import { DeployReleaseToRuntimeModal } from "./deploy-release-to-runtime-modal";
 import { ReleaseStageRuntimeModal } from "./release-stage-runtime-modal";
 
@@ -230,6 +232,8 @@ export function ReleaseControllerBoxMessage({
     const canCallProductionRelease =
         stageRelease != null && prodRelease == null && projectId != null && chatSessionId != null;
 
+    const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
+
     const handleStageRedeploy = useCallback(() => {
         if (stageRevisionNum == null) return;
         if (stageRuntimes.length === 0) return;
@@ -249,13 +253,17 @@ export function ReleaseControllerBoxMessage({
         <>
             <div
                 className={cn(
-                    "flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-dashed border-emerald-400/25 bg-emerald-400/6 px-3 py-2.5 mb-4 dark:border-emerald-500/20 dark:bg-emerald-950/20",
+                    "relative overflow-hidden flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-dashed border-emerald-400/25 bg-emerald-400/6 px-3 py-2.5 mb-4 dark:border-emerald-500/20 dark:bg-emerald-950/20",
                     !compactToolbar && "sm:flex-row sm:items-center sm:justify-between sm:gap-3",
                 )}
             >
+                <ScrollHighlightOverlay
+                    show={isScrollHighlight}
+                    className="rounded-xl bg-emerald-500/30 dark:bg-emerald-400/25"
+                />
                 <p
                     className={cn(
-                        "w-full min-w-0 text-center text-sm font-medium text-emerald-600 dark:text-emerald-400/90",
+                        "relative z-[1] w-full min-w-0 text-center text-sm font-medium text-emerald-600 dark:text-emerald-400/90",
                         !compactToolbar && "sm:flex-1 sm:text-left",
                     )}
                 >
@@ -263,7 +271,7 @@ export function ReleaseControllerBoxMessage({
                 </p>
                 <div
                     className={cn(
-                        "flex w-full min-w-0 flex-wrap items-center justify-center gap-2",
+                        "relative z-[1] flex w-full min-w-0 flex-wrap items-center justify-center gap-2",
                         !compactToolbar && "sm:w-auto sm:justify-end",
                     )}
                 >

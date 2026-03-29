@@ -13,9 +13,11 @@ import {
 import { toast } from "sonner";
 import { Copy } from "lucide-react";
 
+import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
+import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 
 export type TextMessageProps = {
     message: ChatMessageWithDeliveryStatus;
@@ -43,6 +45,7 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
     const { copy } = useClipboard();
     const { text, isExploringPlaceholder, toolCallCount } = getTextMessageDisplay(message.payload);
+    const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
 
     if (isExploringPlaceholder) {
         return <ExploringToolCallsMessage message={message} toolCallCount={toolCallCount} onRetry={onRetry} />;
@@ -79,16 +82,21 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
         <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
             <div className={cn("flex min-w-0 flex-col gap-1", isUser ? "items-end max-w-[80%]" : "items-start max-w-full")}>
                 {isUser ? (
-                    <InverseMessageCard>
-                        <div className="min-w-0 text-sm">
+                    <InverseMessageCard className="relative overflow-hidden">
+                        <ScrollHighlightOverlay
+                            show={isScrollHighlight}
+                            className="rounded-2xl rounded-br-md bg-primary/65"
+                        />
+                        <div className="relative z-[1] min-w-0 text-sm">
                             <Markdown theme={markdownTheme} embeddedOnInverse>
                                 {text}
                             </Markdown>
                         </div>
                     </InverseMessageCard>
                 ) : (
-                    <div className="min-w-0 max-w-full">
-                        <div className="min-w-0 text-sm">
+                    <div className="relative min-w-0 max-w-full overflow-hidden rounded-2xl border border-transparent px-3 py-2">
+                        <ScrollHighlightOverlay show={isScrollHighlight} className="rounded-2xl bg-muted/90" />
+                        <div className="relative z-[1] min-w-0 text-sm">
                             <Markdown theme={markdownTheme}>{text}</Markdown>
                         </div>
                     </div>

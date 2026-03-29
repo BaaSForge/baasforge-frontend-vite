@@ -38,6 +38,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useNavigate, useParams } from "react-router";
 import Controls from "./components/controls";
 import { Message, MessageBranch, partitionMessagesByInvokingParent } from "./components/message";
+import { StickyMessageBars, StickyMessageGroupsProvider } from "./components/sticky-messages";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll } from "./hooks";
 import { SecondarySideBar } from "./secondary-side-bar";
@@ -337,7 +338,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
     return (
         <NestedMainSidebarProvider mainSidebar={mainSidebar}>
-            <>
+            <StickyMessageGroupsProvider>
                 <PageTitleBox
                     title={title}
                     mainSidebar={mainSidebar}
@@ -356,6 +357,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 >
                     {isFetchingPreviousPage && <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />}
                 </PageTitleBox>
+                <StickyMessageBars mainSidebar={mainSidebar} />
                 <SecondarySidebar>
                     <SecondarySideBar />
                 </SecondarySidebar>
@@ -404,7 +406,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                         />
                     </Container>
                 </SidebarInset>
-            </>
+            </StickyMessageGroupsProvider>
         </NestedMainSidebarProvider>
     );
 }
