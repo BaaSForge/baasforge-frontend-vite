@@ -109,6 +109,8 @@ input[type="search"]::-webkit-search-cancel-button {
     --color-popover-foreground: var(--popover-foreground);
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
+    --color-inverse: var(--inverse);
+    --color-inverse-foreground: var(--inverse-foreground);
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
     --color-muted: var(--muted);
@@ -136,14 +138,16 @@ input[type="search"]::-webkit-search-cancel-button {
 
 :root {
     --radius: 0.625rem;
-    --background: oklch(1 0 0);
+    --background: oklch(0.991 0.002 260);
     --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
+    --card: oklch(0.991 0.002 260);
     --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
+    --popover: oklch(0.991 0.002 260);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.48 0.04 260);
+    --primary-foreground: oklch(0.99 0.005 260);
+    --inverse: oklch(0.93 0.012 260);
+    --inverse-foreground: oklch(0.34 0.032 260);
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
@@ -151,8 +155,8 @@ input[type="search"]::-webkit-search-cancel-button {
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
+    --border: oklch(0.90 0.006 260);
+    --input: oklch(0.90 0.006 260);
     --ring: oklch(0.708 0 0);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
@@ -165,7 +169,7 @@ input[type="search"]::-webkit-search-cancel-button {
     --sidebar-primary-foreground: hsl(0 0% 98%);
     --sidebar-accent: hsl(240 4.8% 95.9%);
     --sidebar-accent-foreground: hsl(240 5.9% 10%);
-    --sidebar-border: hsl(220 13% 91%);
+    --sidebar-border: hsl(220 13% 86%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
@@ -173,12 +177,14 @@ input[type="search"]::-webkit-search-cancel-button {
 .dark-default {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
+    --card: oklch(0.145 0 0);
     --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
+    --popover: oklch(0.145 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
+    --primary: oklch(0.76 0.018 260);
+    --primary-foreground: oklch(0.2 0.015 260);
+    --inverse: oklch(0.20 0.012 260);
+    --inverse-foreground: oklch(0.86 0.014 260);
     --secondary: oklch(0.269 0 0);
     --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.269 0 0);
@@ -186,8 +192,8 @@ input[type="search"]::-webkit-search-cancel-button {
     --accent: oklch(0.269 0 0);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
+    --border: oklch(1 0 0 / 6%);
+    --input: oklch(1 0 0 / 10%);
     --ring: oklch(0.556 0 0);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
@@ -208,12 +214,14 @@ input[type="search"]::-webkit-search-cancel-button {
 .dark-midnight {
     --background: oklch(0.23 0.019 260);
     --foreground: oklch(0.93 0.012 260);
-    --card: oklch(0.27 0.021 260);
+    --card: oklch(0.23 0.019 260);
     --card-foreground: oklch(0.93 0.012 260);
-    --popover: oklch(0.29 0.022 260);
+    --popover: oklch(0.23 0.019 260);
     --popover-foreground: oklch(0.93 0.012 260);
-    --primary: oklch(0.93 0.012 260);
-    --primary-foreground: oklch(0.23 0.019 260);
+    --primary: oklch(0.75 0.022 260);
+    --primary-foreground: oklch(0.22 0.018 260);
+    --inverse: oklch(0.30 0.019 260);
+    --inverse-foreground: oklch(0.88 0.012 260);
     --secondary: oklch(0.33 0.026 260);
     --secondary-foreground: oklch(0.93 0.012 260);
     --muted: oklch(0.31 0.024 260);
@@ -221,8 +229,8 @@ input[type="search"]::-webkit-search-cancel-button {
     --accent: oklch(0.34 0.028 260);
     --accent-foreground: oklch(0.93 0.012 260);
     --destructive: oklch(0.66 0.19 22);
-    --border: oklch(0.93 0.03 260 / 16%);
-    --input: oklch(0.93 0.03 260 / 20%);
+    --border: oklch(0.93 0.03 260 / 10%);
+    --input: oklch(0.93 0.03 260 / 14%);
     --ring: oklch(0.58 0.04 260);
     --chart-1: oklch(0.55 0.22 264);
     --chart-2: oklch(0.68 0.16 162);

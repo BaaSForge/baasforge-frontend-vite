@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { Copy } from "lucide-react";
 
+import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 
@@ -77,11 +78,21 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
     return (
         <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
             <div className={cn("flex min-w-0 flex-col gap-1", isUser ? "items-end max-w-[80%]" : "items-start max-w-full")}>
-                <div className={cn("min-w-0 max-w-full", isUser ? "rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground" : "")}>
-                    <div className="min-w-0 text-sm">
-                        <Markdown theme={markdownTheme}>{text}</Markdown>
+                {isUser ? (
+                    <InverseMessageCard>
+                        <div className="min-w-0 text-sm">
+                            <Markdown theme={markdownTheme} embeddedOnInverse>
+                                {text}
+                            </Markdown>
+                        </div>
+                    </InverseMessageCard>
+                ) : (
+                    <div className="min-w-0 max-w-full">
+                        <div className="min-w-0 text-sm">
+                            <Markdown theme={markdownTheme}>{text}</Markdown>
+                        </div>
                     </div>
-                </div>
+                )}
                 <div className={cn("flex min-h-6 flex-wrap items-center gap-x-2 gap-y-1", isUser ? "flex-row-reverse" : "flex-row")}>
                     {hasStatusStrip && (
                         <div className={cn("flex items-center gap-1.5", isUser && "flex-row-reverse")}>
@@ -97,7 +108,12 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
                                     type="button"
                                     variant="ghost"
                                     size="xs"
-                                    className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-primary hover:bg-primary/10 hover:text-primary"
+                                    className={cn(
+                                        "h-6 shrink-0 gap-1 px-2 text-xs font-medium",
+                                        isUser
+                                            ? "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                                            : "text-primary hover:bg-primary/10 hover:text-primary",
+                                    )}
                                     onClick={handleCopy}
                                 >
                                     <Copy className="size-3" />

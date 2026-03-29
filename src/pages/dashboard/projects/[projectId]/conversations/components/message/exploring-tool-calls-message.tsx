@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ChatMessageDeliveryStatus, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
@@ -25,22 +27,17 @@ export function ExploringToolCallsMessage({ message, toolCallCount, onRetry }: E
     return (
         <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
             <div className={cn("flex min-w-0 flex-col gap-1", isUser ? "items-end max-w-[80%]" : "items-start max-w-full")}>
-                <div
-                    className={cn(
-                        "flex min-w-0 max-w-full items-center gap-2",
-                        isUser && "rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-primary-foreground",
-                    )}
-                >
-                    {statusSlot}
-                    <span
-                        className={cn(
-                            "min-w-0 text-sm",
-                            isUser ? "text-primary-foreground/70" : "text-muted-foreground",
-                        )}
-                    >
-                        {label}
-                    </span>
-                </div>
+                {isUser ? (
+                    <InverseMessageCard className="flex flex-row items-center gap-2">
+                        {statusSlot}
+                        <span className="min-w-0 text-sm text-inverse-foreground/70">{label}</span>
+                    </InverseMessageCard>
+                ) : (
+                    <div className="flex min-w-0 max-w-full items-center gap-2">
+                        {statusSlot}
+                        <span className="min-w-0 text-sm text-muted-foreground">{label}</span>
+                    </div>
+                )}
                 {isFailed && (
                     <div className={cn("flex min-h-6 items-center gap-2", isUser ? "flex-row-reverse" : "flex-row")}>
                         <Button
