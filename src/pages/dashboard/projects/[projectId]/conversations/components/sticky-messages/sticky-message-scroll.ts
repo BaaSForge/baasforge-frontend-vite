@@ -126,4 +126,44 @@ export function scrollWindowToAlignElementTopWithCompletion(
     const fallbackTimer = window.setTimeout(finish, 700);
 }
 
+const SMOOTH_ALIGN_BASE_LERP = 0.2;
+const SMOOTH_ALIGN_MAX_DURATION_MS = 1200;
+const SMOOTH_ALIGN_TOLERANCE_PX = 0.75;
+
+/**
+ * Smoothly scrolls the window so `element`'s top aligns under the page title + sticky message bars.
+ * Recomputes the target offset every animation frame so layout stays in sync without a follow-up instant scroll.
+ */
+export function smoothScrollWindowToAlignElementBelowStickyHeaders(element: HTMLElement, onComplete: () => void): void {
+    const root = document.scrollingElement ?? document.documentElement;
+    const start = performance.now();
+
+    const tick = () => {
+        if (!element.isConnected) {
+            queueMicrotask(onComplete);
+            return;
+        }
+
+        const targetTop = getScrollTargetTopBelowStickyHeadersFromDom();
+        const rect = element.getBoundingClientRect();
+        const error = rect.top - targetTop;
+
+        if (Math.abs(error) <= SMOOTH_ALIGN_TOLERANCE_PX) {
+            queueMicrotask(onComplete);
+            return;
+        }
+
+        if (performance.now() - start > SMOOTH_ALIGN_MAX_DURATION_MS) {
+            queueMicrotask(onComplete);
+            return;
+        }
+
+        const lerp = Math.min(1, Math.max(SMOOTH_ALIGN_BASE_LERP, 1 - Math.abs(error) / 12));
+        root.scrollTop = root.scrollTop + error * lerp;
+        requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+}
+
 export { DEFAULT_ROW_FALLBACK_PX };

@@ -21,5 +21,6 @@ export {
     SCROLL_TO_MESSAGE_EXTRA_PADDING_PX,
     scrollWindowToAlignElementTop,
     scrollWindowToAlignElementTopWithCompletion,
+    smoothScrollWindowToAlignElementBelowStickyHeaders,
 } from "./sticky-message-scroll";
 export { useIsMessageScrollHighlighted } from "./use-message-scroll-highlight";

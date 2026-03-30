@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { ScrollBehavior } from "@/lib/dom";
 import { useStickyBreadcrumbBarTransition } from "@/stores/breadcrumb";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import * as React from "react";
@@ -16,15 +15,14 @@ import {
 } from "./sticky-message-groups";
 
 import { getReleaseControllerStickyLineText, StickyMessageLineReleaseController } from "./sticky-message-line-release-controller";
+import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 import { StickyMessageLineUser } from "./sticky-message-line-user";
-import {
-    DEFAULT_ROW_FALLBACK_PX,
-    getScrollTargetTopBelowStickyHeadersFromDom,
-    scrollWindowToAlignElementTop,
-    scrollWindowToAlignElementTopWithCompletion,
-} from "./sticky-message-scroll";
+import { DEFAULT_ROW_FALLBACK_PX, smoothScrollWindowToAlignElementBelowStickyHeaders } from "./sticky-message-scroll";
 
 type Sidebar = ReturnType<typeof useSidebar>;
+
+/** Matches chat column: `Container` horizontal padding + `MIDDLE_CONTENT_CLASSNAME` width. */
+const stickyMessageBarWidthClassName = cn(MIDDLE_CONTENT_CLASSNAME, "min-w-0");
 
 export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?: Sidebar }) {
     const {
@@ -114,38 +112,14 @@ export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?
                 stickyBarTransition={stickyBarTransition}
                 stickyBarTransitionStyles={stickyBarTransitionStyles}
                 onScrollToUser={() => {
-                    const targetTop = getScrollTargetTopBelowStickyHeadersFromDom();
-                    scrollWindowToAlignElementTopWithCompletion(
-                        userEntry.element,
-                        targetTop,
-                        ScrollBehavior.Smooth,
-                        () => {
-                            requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
-                                    const refinedTop = getScrollTargetTopBelowStickyHeadersFromDom();
-                                    scrollWindowToAlignElementTop(userEntry.element, refinedTop, ScrollBehavior.Instant);
-                                    queueMicrotask(() => flashMessageHighlight(userEntry.message.id));
-                                });
-                            });
-                        },
-                    );
+                    smoothScrollWindowToAlignElementBelowStickyHeaders(userEntry.element, () => {
+                        queueMicrotask(() => flashMessageHighlight(userEntry.message.id));
+                    });
                 }}
                 onScrollToRelease={() => {
-                    const targetTop = getScrollTargetTopBelowStickyHeadersFromDom();
-                    scrollWindowToAlignElementTopWithCompletion(
-                        releaseEntry.element,
-                        targetTop,
-                        ScrollBehavior.Smooth,
-                        () => {
-                            requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
-                                    const refinedTop = getScrollTargetTopBelowStickyHeadersFromDom();
-                                    scrollWindowToAlignElementTop(releaseEntry.element, refinedTop, ScrollBehavior.Instant);
-                                    queueMicrotask(() => flashMessageHighlight(releaseEntry.message.id));
-                                });
-                            });
-                        },
-                    );
+                    smoothScrollWindowToAlignElementBelowStickyHeaders(releaseEntry.element, () => {
+                        queueMicrotask(() => flashMessageHighlight(releaseEntry.message.id));
+                    });
                 }}
             />,
         );
@@ -177,21 +151,9 @@ export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?
                     stickyBarTransition={stickyBarTransition}
                     stickyBarTransitionStyles={stickyBarTransitionStyles}
                     onScrollTo={() => {
-                        const targetTop = getScrollTargetTopBelowStickyHeadersFromDom();
-                        scrollWindowToAlignElementTopWithCompletion(
-                            entry.element,
-                            targetTop,
-                            ScrollBehavior.Smooth,
-                            () => {
-                                requestAnimationFrame(() => {
-                                    requestAnimationFrame(() => {
-                                        const refinedTop = getScrollTargetTopBelowStickyHeadersFromDom();
-                                        scrollWindowToAlignElementTop(entry.element, refinedTop, ScrollBehavior.Instant);
-                                        queueMicrotask(() => flashMessageHighlight(entry.message.id));
-                                    });
-                                });
-                            },
-                        );
+                        smoothScrollWindowToAlignElementBelowStickyHeaders(entry.element, () => {
+                            queueMicrotask(() => flashMessageHighlight(entry.message.id));
+                        });
                     }}
                 />,
             );
@@ -240,7 +202,7 @@ const CombinedStickyMessageBarRow = React.forwardRef<
     return (
         <div
             className={cn(
-                "pointer-events-none fixed right-0 z-[15] flex justify-center px-2 sm:px-3",
+                "pointer-events-none fixed right-0 z-[15] flex px-4",
                 stickyBarTransition,
                 pageTitleBoxLeftClassName,
                 pageTitleBoxRightClassName,
@@ -255,7 +217,8 @@ const CombinedStickyMessageBarRow = React.forwardRef<
                 data-slot="sticky-message-bar"
                 data-sticky-combined="user-release"
                 className={cn(
-                    "pointer-events-auto flex min-h-9 w-[80%] max-w-[80%] min-w-0 flex-row items-stretch",
+                    stickyMessageBarWidthClassName,
+                    "pointer-events-auto flex min-h-9 min-w-0 flex-1 flex-row items-stretch",
                     stickyBarTransition,
                 )}
                 style={{
@@ -337,7 +300,7 @@ const StickyMessageBarRow = React.forwardRef<
     return (
         <div
             className={cn(
-                "pointer-events-none fixed right-0 z-[15] flex justify-center px-2 sm:px-3",
+                "pointer-events-none fixed right-0 z-[15] flex px-4",
                 stickyBarTransition,
                 pageTitleBoxLeftClassName,
                 pageTitleBoxRightClassName,
@@ -352,7 +315,8 @@ const StickyMessageBarRow = React.forwardRef<
                 data-slot="sticky-message-bar"
                 data-sticky-group={group}
                 className={cn(
-                    "pointer-events-auto flex min-h-9 w-[80%] max-w-[80%] min-w-0 cursor-pointer flex-row gap-0 rounded-xl border border-inverse-foreground/15 bg-inverse/80 py-1 pl-2 pr-4 text-inverse-foreground shadow-none backdrop-blur-md",
+                    stickyMessageBarWidthClassName,
+                    "pointer-events-auto flex min-h-9 min-w-0 flex-1 cursor-pointer flex-row gap-0 rounded-xl border border-inverse-foreground/15 bg-inverse/80 py-1 pl-2 pr-4 text-inverse-foreground shadow-none backdrop-blur-md",
                     group === "release_controller" ? "items-start md:items-center" : "items-center",
                     "transition-[background-color,backdrop-filter]",
                     stickyBarTransition,
