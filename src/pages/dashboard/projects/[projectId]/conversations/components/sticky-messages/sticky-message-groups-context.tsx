@@ -6,7 +6,9 @@ import {
     STICKY_MESSAGE_GROUP_GAP_PX,
     STICKY_MESSAGE_GROUP_ORDER,
     STICKY_MESSAGES_STACK_MARGIN_TOP_PX,
+    STICKY_USER_RELEASE_COMBINED_GAP_PX,
     type StickyMessageGroupId,
+    type StickyRowHeights,
 } from "./sticky-message-groups";
 import { DEFAULT_ROW_FALLBACK_PX } from "./sticky-message-scroll";
 
@@ -44,8 +46,9 @@ function sortEntriesByDocumentOrder(entries: RegistryEntry[]): RegistryEntry[] {
 type StickyMessageGroupsContextValue = {
     register: (group: StickyMessageGroupId, message: ChatMessageWithDeliveryStatus, element: HTMLElement) => void;
     unregister: (group: StickyMessageGroupId, messageId: string) => void;
-    getRowHeights: () => Readonly<Partial<Record<StickyMessageGroupId, number>>>;
+    getRowHeights: () => Readonly<StickyRowHeights>;
     setRowHeight: (group: StickyMessageGroupId, heightPx: number) => void;
+    setCombinedRowHeight: (heightPx: number | null) => void;
     getRegistryEntry: (group: StickyMessageGroupId, messageId: string) => RegistryEntry | undefined;
     layoutBaseTopPx: number;
     activeByGroup: Record<StickyMessageGroupId, string | null>;
@@ -60,7 +63,7 @@ export function StickyMessageGroupsProvider({ children }: { children: React.Reac
     const layoutBaseTopPx = useLayoutBaseTopPx();
 
     const registryRef = React.useRef<Map<StickyMessageGroupId, Map<string, RegistryEntry>>>(new Map());
-    const rowHeightsRef = React.useRef<Partial<Record<StickyMessageGroupId, number>>>({});
+    const rowHeightsRef = React.useRef<StickyRowHeights>({});
     const [activeByGroup, setActiveByGroup] = React.useState<Record<StickyMessageGroupId, string | null>>(emptyActive);
 
     /** Sticky row only for messages fully scrolled past the line: bottom edge above threshold (not only top). */
@@ -79,19 +82,35 @@ export function StickyMessageGroupsProvider({ children }: { children: React.Reac
     }, []);
 
     const recomputeActive = React.useCallback(() => {
-        let threshold = layoutBaseTopPx + STICKY_MESSAGES_STACK_MARGIN_TOP_PX;
-        const next = emptyActive();
-        for (let i = 0; i < STICKY_MESSAGE_GROUP_ORDER.length; i++) {
-            const group = STICKY_MESSAGE_GROUP_ORDER[i]!;
-            const id = findActiveForGroup(group, threshold);
-            next[group] = id;
-            if (id != null) {
-                threshold += rowHeightsRef.current[group] ?? DEFAULT_ROW_FALLBACK_PX;
-                if (i < STICKY_MESSAGE_GROUP_ORDER.length - 1) {
-                    threshold += STICKY_MESSAGE_GROUP_GAP_PX;
-                }
+        const T0 = layoutBaseTopPx + STICKY_MESSAGES_STACK_MARGIN_TOP_PX;
+        const Hu = rowHeightsRef.current.user ?? DEFAULT_ROW_FALLBACK_PX;
+        const Hc = rowHeightsRef.current.combined;
+
+        const id_u = findActiveForGroup("user", T0);
+
+        let id_r: string | null;
+        if (id_u == null) {
+            id_r = findActiveForGroup("release_controller", T0);
+        } else {
+            const sepT = T0 + Hu + STICKY_MESSAGE_GROUP_GAP_PX;
+            const id_r_sep = findActiveForGroup("release_controller", sepT);
+            if (id_r_sep == null) {
+                id_r = null;
+            } else {
+                const combT =
+                    T0 +
+                    (Hc ??
+                        Math.max(Hu, 40) +
+                            STICKY_USER_RELEASE_COMBINED_GAP_PX +
+                            Math.max(rowHeightsRef.current.release_controller ?? DEFAULT_ROW_FALLBACK_PX, 40));
+                const id_r_comb = findActiveForGroup("release_controller", combT);
+                id_r = id_r_comb ?? id_r_sep;
             }
         }
+
+        const next = emptyActive();
+        next.user = id_u;
+        next.release_controller = id_r;
         setActiveByGroup((prev) => (shallowActiveEqual(prev, next) ? prev : next));
     }, [findActiveForGroup, layoutBaseTopPx]);
 
@@ -171,6 +190,23 @@ export function StickyMessageGroupsProvider({ children }: { children: React.Reac
         [recomputeActive],
     );
 
+    const setCombinedRowHeight = React.useCallback(
+        (heightPx: number | null) => {
+            if (heightPx == null) {
+                if (rowHeightsRef.current.combined === undefined) return;
+                const next = { ...rowHeightsRef.current };
+                delete next.combined;
+                rowHeightsRef.current = next;
+                queueMicrotask(() => recomputeActive());
+                return;
+            }
+            if (rowHeightsRef.current.combined === heightPx) return;
+            rowHeightsRef.current = { ...rowHeightsRef.current, combined: heightPx };
+            queueMicrotask(() => recomputeActive());
+        },
+        [recomputeActive],
+    );
+
     const value = React.useMemo(
         () =>
             ({
@@ -178,6 +214,7 @@ export function StickyMessageGroupsProvider({ children }: { children: React.Reac
                 unregister,
                 getRowHeights,
                 setRowHeight,
+                setCombinedRowHeight,
                 getRegistryEntry,
                 layoutBaseTopPx,
                 activeByGroup,
@@ -189,6 +226,7 @@ export function StickyMessageGroupsProvider({ children }: { children: React.Reac
             unregister,
             getRowHeights,
             setRowHeight,
+            setCombinedRowHeight,
             getRegistryEntry,
             layoutBaseTopPx,
             activeByGroup,

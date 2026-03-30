@@ -1,6 +1,6 @@
 import { ScrollBehavior } from "@/lib/dom";
 
-import { STICKY_MESSAGE_GROUP_ORDER, type StickyMessageGroupId } from "./sticky-message-groups";
+import { STICKY_MESSAGE_GROUP_ORDER, type StickyMessageGroupId, type StickyRowHeights } from "./sticky-message-groups";
 
 const DEFAULT_ROW_FALLBACK_PX = 40;
 
@@ -55,12 +55,16 @@ export function getScrollTargetTopBelowStickyHeadersFromDom(
  */
 export function getStickyMessageRowsTotalHeightPx(
     activeByGroup: Record<StickyMessageGroupId, string | null>,
-    getRowHeights: () => Readonly<Partial<Record<StickyMessageGroupId, number>>>,
+    getRowHeights: () => Readonly<StickyRowHeights>,
 ): number {
+    const h = getRowHeights();
+    if (activeByGroup.user != null && activeByGroup.release_controller != null && h.combined != null && h.combined > 0) {
+        return h.combined;
+    }
     let sum = 0;
     for (const g of STICKY_MESSAGE_GROUP_ORDER) {
         if (activeByGroup[g] != null) {
-            sum += getRowHeights()[g] ?? DEFAULT_ROW_FALLBACK_PX;
+            sum += h[g] ?? DEFAULT_ROW_FALLBACK_PX;
         }
     }
     return sum;
@@ -73,7 +77,7 @@ export function getStickyMessageRowsTotalHeightPx(
 export function getScrollTargetTopBelowStickyHeadersPx(
     layoutBaseTopPx: number,
     activeByGroup: Record<StickyMessageGroupId, string | null>,
-    getRowHeights: () => Readonly<Partial<Record<StickyMessageGroupId, number>>>,
+    getRowHeights: () => Readonly<StickyRowHeights>,
     extraPaddingPx: number = SCROLL_TO_MESSAGE_EXTRA_PADDING_PX,
 ): number {
     return layoutBaseTopPx + getStickyMessageRowsTotalHeightPx(activeByGroup, getRowHeights) + extraPaddingPx;

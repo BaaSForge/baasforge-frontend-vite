@@ -11,6 +11,14 @@ export const STICKY_MESSAGES_STACK_MARGIN_TOP_PX = 10;
 
 export type StickyMessageGroupId = (typeof STICKY_MESSAGE_GROUP_ORDER)[number];
 
+/** Horizontal gap between the user strip and the release square when both stickies share one row. */
+export const STICKY_USER_RELEASE_COMBINED_GAP_PX = 6;
+
+/** Measured row heights; `combined` is set when user + release share one bar. */
+export type StickyRowHeights = Partial<Record<StickyMessageGroupId, number>> & {
+    combined?: number;
+};
+
 export function getStickyMessageGroupForMessage(
     message: ChatMessageWithDeliveryStatus,
     options?: { hideReleaseControllerSticky?: boolean },

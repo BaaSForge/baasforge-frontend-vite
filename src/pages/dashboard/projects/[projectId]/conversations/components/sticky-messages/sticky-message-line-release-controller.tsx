@@ -28,7 +28,8 @@ export function getReleaseControllerStickyLineText(message: ChatMessageWithDeliv
     return parts.join(" · ");
 }
 
-const STICKY_RELEASE_TITLE = "Release scope up to here";
+/** Label used in sticky bars (pinned row, mobile, and combined user+release row). */
+export const STICKY_RELEASE_TITLE = "Release scope up to here";
 
 const stickyOutlineBtn =
     "border-inverse-foreground/25 bg-transparent text-inverse-foreground/90 shadow-none hover:bg-transparent";

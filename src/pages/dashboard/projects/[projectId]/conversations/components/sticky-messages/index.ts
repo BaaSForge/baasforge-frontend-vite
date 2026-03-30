@@ -5,7 +5,9 @@ export {
     STICKY_MESSAGE_GROUP_GAP_PX,
     STICKY_MESSAGE_GROUP_ORDER,
     STICKY_MESSAGES_STACK_MARGIN_TOP_PX,
+    STICKY_USER_RELEASE_COMBINED_GAP_PX,
     type StickyMessageGroupId,
+    type StickyRowHeights,
 } from "./sticky-message-groups";
 export { getReleaseControllerStickyLineText, StickyMessageLineReleaseController } from "./sticky-message-line-release-controller";
 export { StickyMessageLineUser } from "./sticky-message-line-user";

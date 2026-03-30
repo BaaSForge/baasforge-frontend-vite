@@ -10,15 +10,12 @@ function getUserTextStickyPreview(message: ChatMessageWithDeliveryStatus): strin
     return typeof p.text === "string" ? p.text.replace(/\s+/g, " ").trim() : "";
 }
 
-const STICKY_USER_PREFIX = "You: ";
-
 export function StickyMessageLineUser({ message, className }: { message: ChatMessageWithDeliveryStatus; className?: string }) {
     const line = getUserTextStickyPreview(message);
     const body = line || "Message";
-    const full = `${STICKY_USER_PREFIX}${body}`;
     return (
-        <span className={cn("min-w-0 truncate text-sm text-foreground", className)} title={full}>
-            {full}
+        <span className={cn("min-w-0 truncate text-sm text-inverse-foreground", className)} title={body}>
+            {body}
         </span>
     );
 }

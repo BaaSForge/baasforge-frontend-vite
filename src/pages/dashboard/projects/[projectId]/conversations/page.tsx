@@ -37,6 +37,7 @@ import { SidebarIcon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ConversationReadOnlyProvider } from "./components/conversation-read-only-context";
+import { ConversationReadOnlyTitleBadge } from "./components/conversation-read-only-title-badge";
 import Controls from "./components/controls";
 import { Message, MessageBranch, partitionMessagesByInvokingParent } from "./components/message";
 import { StickyMessageBars, StickyMessageGroupsProvider } from "./components/sticky-messages";
@@ -346,7 +347,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                         title={title}
                         mainSidebar={mainSidebar}
                         tools={
-                            <>
+                            <div className="flex min-w-0 shrink-0 items-center gap-2">
+                                <ConversationReadOnlyTitleBadge />
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="secondary" size="sm" onClick={toggleSidebar}>
@@ -355,7 +357,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom">Toggle draft units ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
                                 </Tooltip>
-                            </>
+                            </div>
                         }
                     >
                         {isFetchingPreviousPage && (
