@@ -45,11 +45,6 @@ import { DeployReleaseToRuntimeModal } from "./deploy-release-to-runtime-modal";
 import { getReleaseControllerPayload, useReleaseControllerRuntimeLiveFlags } from "./release-controller-box-shared";
 import { ReleaseStageRuntimeModal } from "./release-stage-runtime-modal";
 
-function parseReleaseRevision(revision: string): number | null {
-    const n = Number.parseInt(revision, 10);
-    return Number.isFinite(n) && !Number.isNaN(n) ? n : null;
-}
-
 function uniqueUnitPathsFromDraftUnits(units: { id: string }[]): string[] {
     const seen = new Set<string>();
     const out: string[] = [];
@@ -114,8 +109,8 @@ export function ReleaseControllerBoxMessage({
     const { stageRuntimes, prodRuntimes, isStageReleaseLiveOnRuntime, isProdReleaseLiveOnRuntime } =
         useReleaseControllerRuntimeLiveFlags(projectId, stageRelease, prodRelease);
 
-    const stageRevisionNum = stageRelease != null ? parseReleaseRevision(stageRelease.revision) : null;
-    const prodRevisionNum = prodRelease != null ? parseReleaseRevision(prodRelease.revision) : null;
+    const stageRevisionNum = stageRelease?.revision ?? null;
+    const prodRevisionNum = prodRelease?.revision ?? null;
 
     const queryClient = useQueryClient();
 
@@ -487,7 +482,7 @@ export function ReleaseControllerBoxMessage({
                     onOpenChange={setStageDeployRuntimePickOpen}
                     projectId={projectId}
                     revision={stageRevisionNum}
-                    revisionLabel={stageRelease?.revision ?? ""}
+                    revisionLabel={stageRelease != null ? String(stageRelease.revision) : ""}
                     onDeployRuntime={(runtimeId) => stageRedeployMutation.mutate(runtimeId)}
                     deployingRuntimeId={stageRedeployMutation.isPending ? stageRedeployMutation.variables ?? null : null}
                 />

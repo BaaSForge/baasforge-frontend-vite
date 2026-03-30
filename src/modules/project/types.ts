@@ -54,7 +54,8 @@ export interface ReleaseResponse {
     id: string;
     project_id: string;
     notes: string | null;
-    revision: string;
+    /** Release row revision (API: float). */
+    revision: number;
     is_stage: boolean;
     created_at: string;
 }

@@ -25,9 +25,7 @@ export function RuntimeCard({ runtime }: RuntimeCardProps) {
     const liveBadge = (
         <LiveBadge
             isOn={hasLiveRelease}
-            onLabel={
-                revision != null && revision !== "" ? `${revision} is live` : "Live release attached"
-            }
+            onLabel={revision != null ? `${revision} is live` : "Live release attached"}
             offLabel="Not live"
             className="text-sm"
             size={0.5}

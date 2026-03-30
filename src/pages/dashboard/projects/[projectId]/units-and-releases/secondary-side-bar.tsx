@@ -71,7 +71,10 @@ export function SecondarySideBar() {
                         )}
                         <ReleaseCardCompact
                             release={release}
-                            selected={release.revision === releaseRevision}
+                            selected={
+                                releaseRevision != null &&
+                                release.revision === Number.parseFloat(releaseRevision)
+                            }
                             runtime={runtimes.find((rt) => rt.liveRelease?.id === release.id)}
                             onClick={() => {
                                 navigate(`/dashboard/projects/${projectId}/units-releases/${release.revision}`);
