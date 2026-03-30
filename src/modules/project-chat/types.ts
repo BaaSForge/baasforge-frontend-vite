@@ -76,6 +76,9 @@ export interface ChatSessionResponse {
     user_id: string;
     title: string;
     created_at: string;
+    live_production_release_id?: string | null;
+    /** When true, the session is read-only for app-changing actions (releases, deploys, etc.). */
+    read_only?: boolean;
     /** Latest message in the session (same shape as {@link ChatMessageResponse}). */
     last_message?: ChatMessageResponse | null;
     owned_units?: ProjectUnitResponse[];

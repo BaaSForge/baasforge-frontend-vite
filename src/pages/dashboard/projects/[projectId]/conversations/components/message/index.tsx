@@ -24,6 +24,7 @@ import { ToolRemoveUnitMessage } from "./tool-remove-unit-message";
 import { ToolListUnitContextsMessage } from "./tool-list-unit-contexts-message";
 import { ToolListModulesForUnitContextsMessage } from "./tool-list-modules-for-unit-contexts-message";
 import { ReleaseControllerBoxMessage } from "./release-controller-box-message";
+import { useConversationReadOnly } from "../conversation-read-only-context";
 import { getStickyMessageGroupForMessage, useStickyMessageRegistration } from "../sticky-messages";
 
 type MessageProps = {
@@ -105,6 +106,7 @@ const toolMessageTypes = [
 ];
 
 export function Message({ message, onRetry, nestedMessages, isNested }: MessageProps) {
+    const readOnlyConversation = useConversationReadOnly();
     const isToolMessage = toolMessageTypes.includes(message.type);
     const isUser = message.role === ChatSessionRoleType.User;
     const thinkingText =
@@ -112,7 +114,9 @@ export function Message({ message, onRetry, nestedMessages, isNested }: MessageP
             ? getTextPayloadThinkingDisplay(message.payload)
             : null;
 
-    const stickyGroup = getStickyMessageGroupForMessage(message);
+    const stickyGroup = getStickyMessageGroupForMessage(message, {
+        hideReleaseControllerSticky: readOnlyConversation,
+    });
     const stickyAnchorRef = useRef<HTMLDivElement>(null);
     useStickyMessageRegistration(stickyGroup, message, stickyAnchorRef);
 

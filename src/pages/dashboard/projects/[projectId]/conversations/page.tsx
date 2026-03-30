@@ -36,6 +36,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { ConversationReadOnlyProvider } from "./components/conversation-read-only-context";
 import Controls from "./components/controls";
 import { Message, MessageBranch, partitionMessagesByInvokingParent } from "./components/message";
 import { StickyMessageBars, StickyMessageGroupsProvider } from "./components/sticky-messages";
@@ -119,6 +120,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }, [chatSessionIdOrUndefined]);
 
     const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdOrUndefined, chatSessionIdOrUndefined);
+    const conversationReadOnly = chatSession?.read_only === true;
     const { setSegmentLabel, clearSegmentLabel } = useBreadcrumbActions();
 
     useEffect(() => {
@@ -338,75 +340,84 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
     return (
         <NestedMainSidebarProvider mainSidebar={mainSidebar}>
-            <StickyMessageGroupsProvider>
-                <PageTitleBox
-                    title={title}
-                    mainSidebar={mainSidebar}
-                    tools={
-                        <>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Button variant="secondary" size="sm" onClick={toggleSidebar}>
-                                        <SidebarIcon className="size-4 rotate-180" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom">Toggle draft units ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
-                            </Tooltip>
-                        </>
-                    }
-                >
-                    {isFetchingPreviousPage && <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />}
-                </PageTitleBox>
-                <StickyMessageBars mainSidebar={mainSidebar} />
-                <SecondarySidebar>
-                    <SecondarySideBar />
-                </SecondarySidebar>
-                <SidebarInset>
-                    <Container>
-                        {hasPreviousPage && <div ref={loadMoreRef} className="h-px w-full shrink-0" aria-hidden />}
-                        <div className={cn("flex flex-col gap-0 min-h-0 min-w-0 flex-1 pb-4 overflow-x-hidden", MIDDLE_CONTENT_CLASSNAME)}>
-                            {displayRootMessages.map((message) => (
-                                <MessageBranch
-                                    key={message.id}
-                                    message={message}
-                                    childrenByParentId={displayChildrenByParentId}
-                                    onRetry={handleRetryMessage}
-                                />
-                            ))}
-                            {shouldShowTemporaryMessageBeforeRedirecting && (
-                                <Message
-                                    message={temporaryMessageBeforeRedirectingToNewSession}
-                                    onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
-                                />
-                            )}
-                            {lastAiEndStatus != null && !isGenerating && (
-                                <div
-                                    className={cn(
-                                        "py-1 text-sm",
-                                        lastAiEndStatus === "failed" ? "text-destructive" : "text-muted-foreground",
-                                    )}
-                                >
-                                    {lastAiEndStatus === "failed" ? "Generation failed." : "Generation stopped."}
-                                </div>
-                            )}
-                            {(isGenerating || placeholderVisible) && (
-                                <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />
-                            )}
-                        </div>
-                        <Controls
-                            messageInputRef={messageInputRef}
-                            messageInputValue={messageInput}
-                            setMessageInputValue={setMessageInput}
-                            handleSend={handleSend}
-                            handleStop={handleStop}
-                            canSend={canSend}
-                            isGenerating={isGenerating}
-                            isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
-                            mainSidebar={mainSidebar}
-                        />
-                    </Container>
-                </SidebarInset>
-            </StickyMessageGroupsProvider>
+            <ConversationReadOnlyProvider readOnly={conversationReadOnly}>
+                <StickyMessageGroupsProvider>
+                    <PageTitleBox
+                        title={title}
+                        mainSidebar={mainSidebar}
+                        tools={
+                            <>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="secondary" size="sm" onClick={toggleSidebar}>
+                                            <SidebarIcon className="size-4 rotate-180" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom">Toggle draft units ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
+                                </Tooltip>
+                            </>
+                        }
+                    >
+                        {isFetchingPreviousPage && (
+                            <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />
+                        )}
+                    </PageTitleBox>
+                    <StickyMessageBars mainSidebar={mainSidebar} />
+                    <SecondarySidebar>
+                        <SecondarySideBar />
+                    </SecondarySidebar>
+                    <SidebarInset>
+                        <Container>
+                            {hasPreviousPage && <div ref={loadMoreRef} className="h-px w-full shrink-0" aria-hidden />}
+                            <div
+                                className={cn(
+                                    "flex flex-col gap-0 min-h-0 min-w-0 flex-1 pb-4 overflow-x-hidden",
+                                    MIDDLE_CONTENT_CLASSNAME,
+                                )}
+                            >
+                                {displayRootMessages.map((message) => (
+                                    <MessageBranch
+                                        key={message.id}
+                                        message={message}
+                                        childrenByParentId={displayChildrenByParentId}
+                                        onRetry={handleRetryMessage}
+                                    />
+                                ))}
+                                {shouldShowTemporaryMessageBeforeRedirecting && (
+                                    <Message
+                                        message={temporaryMessageBeforeRedirectingToNewSession}
+                                        onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
+                                    />
+                                )}
+                                {lastAiEndStatus != null && !isGenerating && (
+                                    <div
+                                        className={cn(
+                                            "py-1 text-sm",
+                                            lastAiEndStatus === "failed" ? "text-destructive" : "text-muted-foreground",
+                                        )}
+                                    >
+                                        {lastAiEndStatus === "failed" ? "Generation failed." : "Generation stopped."}
+                                    </div>
+                                )}
+                                {(isGenerating || placeholderVisible) && (
+                                    <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />
+                                )}
+                            </div>
+                            <Controls
+                                messageInputRef={messageInputRef}
+                                messageInputValue={messageInput}
+                                setMessageInputValue={setMessageInput}
+                                handleSend={handleSend}
+                                handleStop={handleStop}
+                                canSend={canSend}
+                                isGenerating={isGenerating}
+                                isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
+                                mainSidebar={mainSidebar}
+                            />
+                        </Container>
+                    </SidebarInset>
+                </StickyMessageGroupsProvider>
+            </ConversationReadOnlyProvider>
         </NestedMainSidebarProvider>
     );
 }

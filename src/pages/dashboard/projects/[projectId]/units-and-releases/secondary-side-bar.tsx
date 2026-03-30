@@ -75,7 +75,7 @@ export function SecondarySideBar() {
                                 releaseRevision != null &&
                                 release.revision === Number.parseFloat(releaseRevision)
                             }
-                            runtime={runtimes.find((rt) => rt.liveRelease?.id === release.id)}
+                            runtime={runtimes.find((rt) => rt.live_release?.id === release.id)}
                             onClick={() => {
                                 navigate(`/dashboard/projects/${projectId}/units-releases/${release.revision}`);
                             }}

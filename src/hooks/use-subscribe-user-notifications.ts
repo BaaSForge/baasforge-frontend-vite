@@ -1,7 +1,7 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
-import { isProjectDeletedEvent, isRuntimeCreatedEvent, userTopic } from "@/lib/ws-events";
+import { isProductionLiveReleaseChangedEvent, isProjectDeletedEvent, isRuntimeCreatedEvent, userTopic } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
 import { handleChatSessionWsEvent, handleProjectUnitWsEvent } from "@/modules/project-chat/ws-cache-handler";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,7 +13,10 @@ const TOAST_POSITION = "top-center" as const;
 
 export function useSubscribeUserNotifications(): void {
     const { user } = useAuth();
-    const { projectId: routeProjectId } = useParams<{ projectId?: string }>();
+    const { projectId: routeProjectId, conversationId: routeConversationId } = useParams<{
+        projectId?: string;
+        conversationId?: string;
+    }>();
     const queryClient = useQueryClient();
     const chunkTracking = useRef({
         messageChunks: new Map<string, number>(),
@@ -46,6 +49,20 @@ export function useSubscribeUserNotifications(): void {
                     queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
                 }
 
+                return;
+            }
+
+            if (isProductionLiveReleaseChangedEvent(data)) {
+                queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(data.project_id) });
+                if (
+                    routeProjectId != null &&
+                    routeConversationId != null &&
+                    data.project_id === routeProjectId
+                ) {
+                    queryClient.invalidateQueries({
+                        queryKey: QueryKeys.projectChatSessionDetail(data.project_id, routeConversationId),
+                    });
+                }
                 return;
             }
 

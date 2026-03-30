@@ -32,12 +32,12 @@ export function useReleaseControllerRuntimeLiveFlags(
 
     const isStageReleaseLiveOnRuntime = useMemo(() => {
         if (stageRelease == null) return false;
-        return stageRuntimes.some((r) => r.liveRelease != null && r.liveRelease.id === stageRelease.id);
+        return stageRuntimes.some((r) => r.live_release != null && r.live_release.id === stageRelease.id);
     }, [stageRelease, stageRuntimes]);
 
     const isProdReleaseLiveOnRuntime = useMemo(() => {
         if (prodRelease == null) return false;
-        return prodRuntimes.some((r) => r.liveRelease != null && r.liveRelease.id === prodRelease.id);
+        return prodRuntimes.some((r) => r.live_release != null && r.live_release.id === prodRelease.id);
     }, [prodRelease, prodRuntimes]);
 
     return { stageRuntimes, prodRuntimes, isStageReleaseLiveOnRuntime, isProdReleaseLiveOnRuntime };

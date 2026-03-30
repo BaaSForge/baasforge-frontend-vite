@@ -78,7 +78,8 @@ export interface ProjectRuntimeResponse {
     server_cluster_id: string | null;
     server_cluster_deployment_status: DeploymentStatusType | null;
     /** Embedded release row when this runtime has a live release; omitted or null when idle. */
-    liveRelease?: ReleaseResponse | null;
+    live_release?: ReleaseResponse | null;
+    live_release_id?: string | null;
 }
 
 export interface StageReleaseRequest {

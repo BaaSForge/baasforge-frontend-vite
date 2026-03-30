@@ -17,8 +17,8 @@ export default function ProjectRuntimesPage() {
     const { busyRuntimes, idleRuntimes } = useMemo(() => {
         const list = runtimes ?? [];
         return {
-            busyRuntimes: list.filter((r) => r.liveRelease != null),
-            idleRuntimes: list.filter((r) => r.liveRelease == null),
+            busyRuntimes: list.filter((r) => r.live_release != null),
+            idleRuntimes: list.filter((r) => r.live_release == null),
         };
     }, [runtimes]);
 

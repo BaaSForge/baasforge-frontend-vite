@@ -11,11 +11,15 @@ export const STICKY_MESSAGES_STACK_MARGIN_TOP_PX = 10;
 
 export type StickyMessageGroupId = (typeof STICKY_MESSAGE_GROUP_ORDER)[number];
 
-export function getStickyMessageGroupForMessage(message: ChatMessageWithDeliveryStatus): StickyMessageGroupId | null {
+export function getStickyMessageGroupForMessage(
+    message: ChatMessageWithDeliveryStatus,
+    options?: { hideReleaseControllerSticky?: boolean },
+): StickyMessageGroupId | null {
     if (message.type === ChatMessageType.Text && message.role === ChatSessionRoleType.User) {
         return "user";
     }
     if (message.type === ChatMessageType.ReleaseControllerBox) {
+        if (options?.hideReleaseControllerSticky) return null;
         return "release_controller";
     }
     return null;

@@ -68,6 +68,11 @@ export type RuntimeCreatedEvent = {
     runtime_id: string;
 };
 
+export type ProductionLiveReleaseChangedEvent = {
+    type: "production_live_release_changed";
+    project_id: string;
+};
+
 export type ProjectUnitWsEvent = {
     type: "project_unit_created" | "project_unit_modified" | "project_unit_deleted";
     project_id: string;
@@ -85,6 +90,7 @@ export type WsServerEvent =
     | ChatSessionGenerationEndedEvent
     | ProjectDeletedEvent
     | RuntimeCreatedEvent
+    | ProductionLiveReleaseChangedEvent
     | ProjectUnitWsEvent
     | { type: "subscribed"; topic: string }
     | { type: "unsubscribed"; topic: string }
@@ -100,6 +106,13 @@ export function isProjectDeletedEvent(data: unknown): data is ProjectDeletedEven
 
 export function isRuntimeCreatedEvent(data: unknown): data is RuntimeCreatedEvent {
     return isWsServerEvent(data) && data.type === "runtime_created";
+}
+
+export function isProductionLiveReleaseChangedEvent(data: unknown): data is ProductionLiveReleaseChangedEvent {
+    if (!isWsServerEvent(data)) return false;
+    const t = data.type;
+    if (t !== "production_live_release_changed") return false;
+    return typeof (data as { project_id?: unknown }).project_id === "string";
 }
 
 function isRecord(data: unknown): data is Record<string, unknown> {

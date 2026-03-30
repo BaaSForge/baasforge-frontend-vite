@@ -15,6 +15,7 @@ export { UnitCardChip } from "./components/unit-card-chip";
 export { UnitCardCompact } from "./components/unit-card-compact";
 export { useCreateProjectMutation, useDeleteProjectMutation, usePatchProjectMutation } from "./mutations";
 export {
+    useProductionRuntimeQuery,
     useProjectDraftUnitsAsOfReleaseControllerMessageQuery,
     useProjectDraftUnitsQuery,
     useProjectNonDraftUnitsQuery,
@@ -22,6 +23,7 @@ export {
     useProjectRuntimesQuery,
     useProjectsQuery,
 } from "./queries";
+export { getRuntimeLiveReleaseId, pickProductionRuntime } from "./runtime-release";
 export type {
     FrameworkType,
     LanguageType,

@@ -20,8 +20,8 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export function RuntimeCard({ runtime }: RuntimeCardProps) {
-    const revision = runtime.liveRelease?.revision;
-    const hasLiveRelease = runtime.liveRelease != null;
+    const revision = runtime.live_release?.revision;
+    const hasLiveRelease = runtime.live_release != null;
     const liveBadge = (
         <LiveBadge
             isOn={hasLiveRelease}

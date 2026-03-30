@@ -39,6 +39,7 @@ import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
+import { READ_ONLY_CONVERSATION_MESSAGE, useConversationReadOnly } from "../conversation-read-only-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 import { DeployReleaseToRuntimeModal } from "./deploy-release-to-runtime-modal";
@@ -83,6 +84,7 @@ export function ReleaseControllerBoxMessage({
 }) {
     const { projectId, conversationId } = useParams<{ projectId: string; conversationId?: string }>();
     const chatSessionId = conversationId ?? undefined;
+    const readOnlyConversation = useConversationReadOnly();
     const [diffViewMode] = usePersistedUnitDiffViewMode();
     const isMobile = useIsMobile();
     const bothSidebarsOpen = useAreBothSidebarsOpen();
@@ -204,7 +206,7 @@ export function ReleaseControllerBoxMessage({
         if (stageRuntimes.length === 0) return;
         
         setStageDeployRuntimePickOpen(true);
-    }, [stageRevisionNum, stageRuntimes, stageRedeployMutation]);
+    }, [stageRevisionNum, stageRuntimes]);
 
     const handleProdRedeployClick = useCallback(() => {
         if (prodRevisionNum == null) return;
@@ -284,26 +286,35 @@ export function ReleaseControllerBoxMessage({
                                     <TooltipContent side="top">No stage runtimes available.</TooltipContent>
                                 </Tooltip>
                             ) : (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="xs"
-                                    disabled={stageRedeployMutation.isPending}
-                                    aria-busy={stageRedeployMutation.isPending}
-                                    onClick={() => void handleStageRedeploy()}
-                                >
-                                    {stageRedeployMutation.isPending ? (
-                                        <>
-                                            <Spinner className="size-3" />
-                                            Deploying…
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FlaskConical className="size-3 shrink-0" aria-hidden />
-                                            Deploy revision {stageRelease.revision} to stage
-                                        </>
-                                    )}
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-flex">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="xs"
+                                                disabled={stageRedeployMutation.isPending || readOnlyConversation}
+                                                aria-busy={stageRedeployMutation.isPending}
+                                                onClick={() => void handleStageRedeploy()}
+                                            >
+                                                {stageRedeployMutation.isPending ? (
+                                                    <>
+                                                        <Spinner className="size-3" />
+                                                        Deploying…
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FlaskConical className="size-3 shrink-0" aria-hidden />
+                                                        Deploy revision {stageRelease.revision} to stage
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    {readOnlyConversation ? (
+                                        <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                                    ) : null}
+                                </Tooltip>
                             ))
                         )
                     ) : !canOpenStageReleaseModal ? (
@@ -318,9 +329,24 @@ export function ReleaseControllerBoxMessage({
                             <TooltipContent side="top">Missing project or conversation context.</TooltipContent>
                         </Tooltip>
                     ) : (
-                        <Button type="button" variant="outline" size="xs" onClick={() => setStageReleaseModalOpen(true)}>
-                            Release Stage
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="xs"
+                                        disabled={readOnlyConversation}
+                                        onClick={() => setStageReleaseModalOpen(true)}
+                                    >
+                                        Release Stage
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {readOnlyConversation ? (
+                                <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                            ) : null}
+                        </Tooltip>
                     )}
 
                     {prodRelease != null ? (
@@ -342,26 +368,35 @@ export function ReleaseControllerBoxMessage({
                                     <TooltipContent side="top">No production runtimes available.</TooltipContent>
                                 </Tooltip>
                             ) : (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="xs"
-                                    disabled={prodRedeployMutation.isPending}
-                                    aria-busy={prodRedeployMutation.isPending}
-                                    onClick={() => void handleProdRedeployClick()}
-                                >
-                                    {prodRedeployMutation.isPending ? (
-                                        <>
-                                            <Spinner className="size-3" />
-                                            Deploying…
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Rocket className="size-3 shrink-0" aria-hidden />
-                                            Deploy revision {prodRelease.revision} to production
-                                        </>
-                                    )}
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-flex">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="xs"
+                                                disabled={prodRedeployMutation.isPending || readOnlyConversation}
+                                                aria-busy={prodRedeployMutation.isPending}
+                                                onClick={() => void handleProdRedeployClick()}
+                                            >
+                                                {prodRedeployMutation.isPending ? (
+                                                    <>
+                                                        <Spinner className="size-3" />
+                                                        Deploying…
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Rocket className="size-3 shrink-0" aria-hidden />
+                                                        Deploy revision {prodRelease.revision} to production
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    {readOnlyConversation ? (
+                                        <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                                    ) : null}
+                                </Tooltip>
                             ))
                         )
                     ) : stageRelease == null ? (
@@ -387,16 +422,25 @@ export function ReleaseControllerBoxMessage({
                             <TooltipContent side="top">Missing project or conversation context.</TooltipContent>
                         </Tooltip>
                     ) : (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="xs"
-                            disabled={productionReleaseMutation.isPending}
-                            aria-busy={productionReleaseMutation.isPending}
-                            onClick={() => setProductionConfirmOpen(true)}
-                        >
-                            Release production
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="xs"
+                                        disabled={productionReleaseMutation.isPending || readOnlyConversation}
+                                        aria-busy={productionReleaseMutation.isPending}
+                                        onClick={() => setProductionConfirmOpen(true)}
+                                    >
+                                        Release production
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            {readOnlyConversation ? (
+                                <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                            ) : null}
+                        </Tooltip>
                     )}
                 </div>
             </div>
@@ -418,7 +462,7 @@ export function ReleaseControllerBoxMessage({
                                 e.preventDefault();
                                 productionReleaseMutation.mutate();
                             }}
-                            disabled={productionReleaseMutation.isPending}
+                            disabled={productionReleaseMutation.isPending || readOnlyConversation}
                         >
                             {productionReleaseMutation.isPending ? (
                                 <>
@@ -459,7 +503,7 @@ export function ReleaseControllerBoxMessage({
                                 if (prodRedeployRuntimeId == null) return;
                                 prodRedeployMutation.mutate(prodRedeployRuntimeId);
                             }}
-                            disabled={prodRedeployMutation.isPending || prodRedeployRuntimeId == null}
+                            disabled={prodRedeployMutation.isPending || prodRedeployRuntimeId == null || readOnlyConversation}
                         >
                             {prodRedeployMutation.isPending ? (
                                 <>

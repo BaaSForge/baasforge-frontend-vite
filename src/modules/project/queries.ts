@@ -1,5 +1,6 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import {
     getDraftUnits,
     getDraftUnitsAsOfReleaseControllerMessage,
@@ -10,6 +11,7 @@ import {
     getReleases,
     getReleaseUnits,
 } from "./api";
+import { pickProductionRuntime } from "./runtime-release";
 
 export function useProjectsQuery() {
     return useQuery({
@@ -82,4 +84,11 @@ export function useProjectRuntimesQuery(projectId: string | undefined, options?:
         queryFn: () => getProjectRuntimes(projectId!),
         enabled: !!projectId && enabledByOption,
     });
+}
+
+/** Same cache as {@link useProjectRuntimesQuery}; exposes the single production runtime row. */
+export function useProductionRuntimeQuery(projectId: string | undefined, options?: { enabled?: boolean }) {
+    const runtimesQuery = useProjectRuntimesQuery(projectId, options);
+    const productionRuntime = useMemo(() => pickProductionRuntime(runtimesQuery.data), [runtimesQuery.data]);
+    return { ...runtimesQuery, data: productionRuntime };
 }

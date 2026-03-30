@@ -7,8 +7,9 @@ import {
 } from "@/stores/breadcrumb";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import * as React from "react";
-import { ChevronUp } from "lucide-react";
+import { AlertTriangle, ChevronUp } from "lucide-react";
 
+import { READ_ONLY_CONVERSATION_MESSAGE, useConversationReadOnly } from "../conversation-read-only-context";
 import { useStickyMessageGroups } from "./sticky-message-groups-context";
 import {
     STICKY_MESSAGE_GROUP_GAP_PX,
@@ -16,6 +17,9 @@ import {
     STICKY_MESSAGES_STACK_MARGIN_TOP_PX,
     type StickyMessageGroupId,
 } from "./sticky-message-groups";
+
+/** Local offset only: read-only banner uses `h-12` (48px); keeps message stickies visually below it. */
+const READ_ONLY_BANNER_STACK_OFFSET_PX = 48 + STICKY_MESSAGE_GROUP_GAP_PX;
 import { StickyMessageLineReleaseController } from "./sticky-message-line-release-controller";
 import { StickyMessageLineUser } from "./sticky-message-line-user";
 import {
@@ -28,6 +32,7 @@ import {
 type Sidebar = ReturnType<typeof useSidebar>;
 
 export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?: Sidebar }) {
+    const readOnlyConversation = useConversationReadOnly();
     const { getRegistryEntry, getRowHeights, setRowHeight, layoutBaseTopPx, activeByGroup, flashMessageHighlight } =
         useStickyMessageGroups();
     const useSidebarRes = useSidebar();
@@ -63,6 +68,22 @@ export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?
     let offsetY = 0;
     let isFirstStickyRow = true;
     const rows: React.ReactNode[] = [];
+
+    if (readOnlyConversation) {
+        const topPx = layoutBaseTopPx + STICKY_MESSAGES_STACK_MARGIN_TOP_PX;
+        rows.push(
+            <ReadOnlyConversationStickyBanner
+                key="read-only-conversation"
+                topPx={topPx}
+                pageTitleBoxLeftClassName={pageTitleBoxLeftClassName}
+                pageTitleBoxRightClassName={pageTitleBoxRightClassName}
+                stickyBarTransition={stickyBarTransition}
+                stickyBarTransitionStyles={stickyBarTransitionStyles}
+            />,
+        );
+        offsetY = READ_ONLY_BANNER_STACK_OFFSET_PX;
+        isFirstStickyRow = false;
+    }
 
     for (const group of STICKY_MESSAGE_GROUP_ORDER) {
         const messageId = activeByGroup[group];
@@ -112,6 +133,54 @@ export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?
     }
 
     return <>{rows}</>;
+}
+
+function ReadOnlyConversationStickyBanner({
+    topPx,
+    pageTitleBoxLeftClassName,
+    pageTitleBoxRightClassName,
+    stickyBarTransition,
+    stickyBarTransitionStyles,
+}: {
+    topPx: number;
+    pageTitleBoxLeftClassName: string;
+    pageTitleBoxRightClassName: string;
+    stickyBarTransition: string;
+    stickyBarTransitionStyles: React.CSSProperties;
+}) {
+    return (
+        <div
+            className={cn(
+                "pointer-events-none fixed right-0 z-[15] flex justify-center px-3 sm:px-4",
+                stickyBarTransition,
+                pageTitleBoxLeftClassName,
+                pageTitleBoxRightClassName,
+            )}
+            style={{
+                top: topPx,
+                ...stickyBarTransitionStyles,
+            }}
+        >
+            <Card
+                data-slot="sticky-message-bar"
+                data-sticky-read-only-banner
+                className={cn(
+                    "pointer-events-auto flex h-12 w-[80%] max-w-[80%] min-w-0 flex-row items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/15 px-4 py-2 text-amber-950 shadow-none backdrop-blur-md dark:border-amber-400/35 dark:bg-amber-500/12 dark:text-amber-50",
+                    "transition-[background-color,backdrop-filter]",
+                    stickyBarTransition,
+                )}
+                role="status"
+            >
+                <AlertTriangle className="size-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden />
+                <span
+                    className="min-w-0 flex-1 truncate text-left text-xs sm:text-sm"
+                    title={READ_ONLY_CONVERSATION_MESSAGE}
+                >
+                    {READ_ONLY_CONVERSATION_MESSAGE}
+                </span>
+            </Card>
+        </div>
+    );
 }
 
 const StickyMessageBarRow = React.forwardRef<
@@ -164,7 +233,7 @@ const StickyMessageBarRow = React.forwardRef<
                 data-slot="sticky-message-bar"
                 data-sticky-group={group}
                 className={cn(
-                    "pointer-events-auto flex min-h-10 w-[80%] max-w-[80%] min-w-0 cursor-pointer flex-row gap-0 rounded-xl border-0 bg-inverse/80 px-4 py-2 text-inverse-foreground shadow-none backdrop-blur-md",
+                    "pointer-events-auto flex min-h-10 w-[80%] max-w-[80%] min-w-0 cursor-pointer flex-row gap-0 rounded-xl border border-inverse-foreground/15 bg-inverse/80 px-4 py-2 text-inverse-foreground shadow-none backdrop-blur-md",
                     group === "release_controller" ? "items-start md:items-center" : "items-center",
                     "transition-[background-color,backdrop-filter]",
                     stickyBarTransition,

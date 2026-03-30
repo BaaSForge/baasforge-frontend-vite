@@ -105,8 +105,8 @@ function StageRuntimeRow({
     swapDisabled?: boolean;
     swapDisabledReason?: string;
 }) {
-    const busy = runtime.liveRelease != null;
-    const liveRevision = runtime.liveRelease?.revision ?? null;
+    const busy = runtime.live_release != null;
+    const liveRevision = runtime.live_release?.revision ?? null;
     const swapBlocked = Boolean(busy && swapDisabled);
 
     const swapButton = (
@@ -147,7 +147,7 @@ function StageRuntimeRow({
                     </div>
                     {busy && (
                         <p className="text-xs text-amber-700 dark:text-amber-500/90">
-                            {liveRevision != null && liveRevision !== ""
+                            {liveRevision != null
                                 ? `Currently live on revision ${liveRevision}`
                                 : "A release is currently live on this runtime"}
                         </p>
@@ -219,8 +219,8 @@ export function StageRuntimePickerModal({
     const stageRuntimes = useMemo(() => filterStageRuntimes(runtimes), [runtimes]);
 
     const { idleRuntimes, busyRuntimes } = useMemo(() => {
-        const idle = stageRuntimes.filter((r) => r.liveRelease == null);
-        const busy = stageRuntimes.filter((r) => r.liveRelease != null);
+        const idle = stageRuntimes.filter((r) => r.live_release == null);
+        const busy = stageRuntimes.filter((r) => r.live_release != null);
         return { idleRuntimes: idle, busyRuntimes: busy };
     }, [stageRuntimes]);
 
@@ -234,7 +234,7 @@ export function StageRuntimePickerModal({
 
     const swapConfirmOpen = runtimeToDetach != null;
     const swapDisabledOnBusy = swapConnectTarget == null;
-    const runtimeToDetachLiveRevision = runtimeToDetach?.liveRelease?.revision ?? null;
+    const runtimeToDetachLiveRevision = runtimeToDetach?.live_release?.revision ?? null;
 
     return (
         <>
