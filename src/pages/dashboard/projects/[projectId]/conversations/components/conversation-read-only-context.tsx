@@ -1,9 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- paired provider + hook */
 import * as React from "react";
 
-/** Title-bar badge + release-controller tooltips when the session is read-only for app-changing actions. */
-export const READ_ONLY_CONVERSATION_MESSAGE =
-    "Read-only: production no longer matches this session. Chat only — no releases.";
+export { READ_ONLY_CONVERSATION_MESSAGE } from "@/modules/project-chat/read-only-conversation-message";
 
 const ConversationReadOnlyContext = React.createContext(false);
 

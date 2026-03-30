@@ -4,6 +4,7 @@ import { envConfig } from "@/lib/env";
 import { isProductionLiveReleaseChangedEvent, isProjectDeletedEvent, isRuntimeCreatedEvent, userTopic } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
 import { handleChatSessionWsEvent, handleProjectUnitWsEvent } from "@/modules/project-chat/ws-cache-handler";
+import { READ_ONLY_CONVERSATION_MESSAGE } from "@/modules/project-chat/read-only-conversation-message";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { useRef } from "react";
@@ -61,6 +62,11 @@ export function useSubscribeUserNotifications(): void {
                 ) {
                     queryClient.invalidateQueries({
                         queryKey: QueryKeys.projectChatSessionDetail(data.project_id, routeConversationId),
+                    });
+                    toast.warning("This conversation is read-only", {
+                        position: TOAST_POSITION,
+                        closeButton: true,
+                        description: READ_ONLY_CONVERSATION_MESSAGE,
                     });
                 }
                 return;
