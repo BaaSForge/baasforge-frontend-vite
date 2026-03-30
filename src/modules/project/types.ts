@@ -76,7 +76,8 @@ export interface ProjectRuntimeResponse {
     db_cluster_deployment_status: DeploymentStatusType | null;
     server_cluster_id: string | null;
     server_cluster_deployment_status: DeploymentStatusType | null;
-    live_release_revision: string | null;
+    /** Embedded release row when this runtime has a live release; omitted or null when idle. */
+    liveRelease?: ReleaseResponse | null;
 }
 
 export interface StageReleaseRequest {

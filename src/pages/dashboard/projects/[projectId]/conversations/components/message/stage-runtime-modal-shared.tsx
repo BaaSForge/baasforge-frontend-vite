@@ -105,7 +105,8 @@ function StageRuntimeRow({
     swapDisabled?: boolean;
     swapDisabledReason?: string;
 }) {
-    const busy = runtime.live_release_revision != null;
+    const busy = runtime.liveRelease != null;
+    const liveRevision = runtime.liveRelease?.revision ?? null;
     const swapBlocked = Boolean(busy && swapDisabled);
 
     const swapButton = (
@@ -146,7 +147,9 @@ function StageRuntimeRow({
                     </div>
                     {busy && (
                         <p className="text-xs text-amber-700 dark:text-amber-500/90">
-                            Currently live on revision {runtime.live_release_revision}
+                            {liveRevision != null && liveRevision !== ""
+                                ? `Currently live on revision ${liveRevision}`
+                                : "A release is currently live on this runtime"}
                         </p>
                     )}
                 </div>
@@ -216,8 +219,8 @@ export function StageRuntimePickerModal({
     const stageRuntimes = useMemo(() => filterStageRuntimes(runtimes), [runtimes]);
 
     const { idleRuntimes, busyRuntimes } = useMemo(() => {
-        const idle = stageRuntimes.filter((r) => r.live_release_revision == null);
-        const busy = stageRuntimes.filter((r) => r.live_release_revision != null);
+        const idle = stageRuntimes.filter((r) => r.liveRelease == null);
+        const busy = stageRuntimes.filter((r) => r.liveRelease != null);
         return { idleRuntimes: idle, busyRuntimes: busy };
     }, [stageRuntimes]);
 
@@ -231,6 +234,7 @@ export function StageRuntimePickerModal({
 
     const swapConfirmOpen = runtimeToDetach != null;
     const swapDisabledOnBusy = swapConnectTarget == null;
+    const runtimeToDetachLiveRevision = runtimeToDetach?.liveRelease?.revision ?? null;
 
     return (
         <>
@@ -310,8 +314,8 @@ export function StageRuntimePickerModal({
                                 <>
                                     This will remove the current live release from runtime{" "}
                                     <strong>{runtimeToDetach.name}</strong>
-                                    {runtimeToDetach.live_release_revision != null ? (
-                                        <> (revision {runtimeToDetach.live_release_revision} is live)</>
+                                    {runtimeToDetachLiveRevision != null ? (
+                                        <> (revision {runtimeToDetachLiveRevision} is live)</>
                                     ) : null}{" "}
                                     and connect existing stage release revision{" "}
                                     <strong>{swapConnectTarget.revision}</strong> to that runtime instead.
@@ -321,8 +325,8 @@ export function StageRuntimePickerModal({
                                 <>
                                     This will remove the current live release from runtime{" "}
                                     <strong>{runtimeToDetach.name}</strong>
-                                    {runtimeToDetach.live_release_revision != null ? (
-                                        <> (revision {runtimeToDetach.live_release_revision} is live)</>
+                                    {runtimeToDetachLiveRevision != null ? (
+                                        <> (revision {runtimeToDetachLiveRevision} is live)</>
                                     ) : null}{" "}
                                     and connect the stage release for <strong>this scope</strong> (release up to this
                                     message) to that runtime instead.

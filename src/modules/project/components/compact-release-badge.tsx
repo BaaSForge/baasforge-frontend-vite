@@ -20,7 +20,7 @@ export function CompactReleaseBadge({ release, projectId, className }: CompactRe
             const envMatches = release.is_stage
                 ? r.environment === PlatformEnvironmentType.stage
                 : r.environment === PlatformEnvironmentType.prod;
-            return envMatches && r.live_release_revision != null && r.live_release_revision === release.revision;
+            return envMatches && r.liveRelease != null && r.liveRelease.id === release.id;
         }) ?? false;
 
     const kind = release.is_stage ? "Stage" : "Production";
