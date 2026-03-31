@@ -11,9 +11,9 @@ import { useNavigate, useParams } from "react-router";
 
 export function SecondarySideBar() {
     const navigate = useNavigate();
-    const { projectId, releaseId } = useParams<{
+    const { projectId, releaseID } = useParams<{
         projectId: string;
-        releaseId: string;
+        releaseID: string;
     }>();
 
     const projectIdOrUndefined = projectId ?? undefined;
@@ -71,7 +71,7 @@ export function SecondarySideBar() {
                         )}
                         <ReleaseCardCompact
                             release={release}
-                            selected={releaseId != null && release.id === releaseId}
+                            selected={releaseID != null && release.id === releaseID}
                             runtime={runtimes.find((rt) => rt.live_release?.id === release.id)}
                             onClick={() => {
                                 navigate(`/dashboard/projects/${projectId}/units-releases/${release.id}`);

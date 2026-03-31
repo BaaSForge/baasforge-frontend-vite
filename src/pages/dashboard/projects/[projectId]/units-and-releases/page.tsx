@@ -92,26 +92,26 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
         localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, groupMode);
     }, [groupMode]);
 
-    const { projectId, releaseId } = useParams<{
+    const { projectId, releaseID } = useParams<{
         projectId: string;
-        releaseId: string;
+        releaseID: string;
     }>();
 
     const projectIdOrUndefined = projectId ?? undefined;
 
     const { data: releases } = useProjectReleasesQuery(projectIdOrUndefined);
 
-    const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(projectIdOrUndefined, releaseId);
+    const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(projectIdOrUndefined, releaseID);
 
     useEffect(() => {
-        if (releaseId == null && releases != null && releases.length > 0) {
+        if (releaseID == null && releases != null && releases.length > 0) {
             navigate(`/dashboard/projects/${projectId}/units-releases/${releases[0].id}`, { replace: true });
         }
-    }, [releaseId, navigate, projectId, releases]);
+    }, [releaseID, navigate, projectId, releases]);
 
     const selectedRelease: ReleaseResponse | undefined = useMemo(
-        () => releases?.find((r) => r.id === releaseId),
-        [releases, releaseId],
+        () => releases?.find((r) => r.id === releaseID),
+        [releases, releaseID],
     );
     const releaseTitleLabel = selectedRelease != null ? String(selectedRelease.revision) : "…";
 
