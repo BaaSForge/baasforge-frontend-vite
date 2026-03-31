@@ -330,56 +330,58 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                 </div>
             )}
 
-            <div className="text-muted-foreground flex flex-col gap-3 border-t pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap items-center gap-2">
-                    <span>
-                        Page <span className="text-foreground font-medium">{page}</span> of {totalPages}
-                        <span className="mx-1.5">·</span>
-                        {total} unit{total === 1 ? "" : "s"}
-                    </span>
+            {totalPages > 1 ? (
+                <div className="text-muted-foreground flex flex-col gap-3 border-t pt-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span>
+                            Page <span className="text-foreground font-medium">{page}</span> of {totalPages}
+                            <span className="mx-1.5">·</span>
+                            {total} unit{total === 1 ? "" : "s"}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                disabled={page <= 1 || isFetching}
+                                onClick={() => patchUrl({ page: Math.max(1, page - 1) })}
+                                aria-label="Previous page"
+                            >
+                                <ChevronLeftIcon className="size-4" />
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                disabled={page >= totalPages || isFetching}
+                                onClick={() => patchUrl({ page: Math.min(totalPages, page + 1) })}
+                                aria-label="Next page"
+                            >
+                                <ChevronRightIcon className="size-4" />
+                            </Button>
+                        </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="size-8"
-                            disabled={page <= 1 || isFetching}
-                            onClick={() => patchUrl({ page: Math.max(1, page - 1) })}
-                            aria-label="Previous page"
+                        <span className="whitespace-nowrap">Page size</span>
+                        <NativeSelect
+                            size="sm"
+                            className="w-[4.5rem]"
+                            value={String(pageSize)}
+                            onChange={(e) => {
+                                const next = Number.parseInt(e.target.value, 10);
+                                if (!isAllowedPageSize(next)) return;
+                                patchUrl({ pageSize: next, page: DEFAULT_ALL_UNITS_PAGE });
+                            }}
                         >
-                            <ChevronLeftIcon className="size-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="size-8"
-                            disabled={page >= totalPages || isFetching}
-                            onClick={() => patchUrl({ page: Math.min(totalPages, page + 1) })}
-                            aria-label="Next page"
-                        >
-                            <ChevronRightIcon className="size-4" />
-                        </Button>
+                            <NativeSelectOption value="10">10</NativeSelectOption>
+                            <NativeSelectOption value="20">20</NativeSelectOption>
+                            <NativeSelectOption value="50">50</NativeSelectOption>
+                        </NativeSelect>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="whitespace-nowrap">Page size</span>
-                    <NativeSelect
-                        size="sm"
-                        className="w-[4.5rem]"
-                        value={String(pageSize)}
-                        onChange={(e) => {
-                            const next = Number.parseInt(e.target.value, 10);
-                            if (!isAllowedPageSize(next)) return;
-                            patchUrl({ pageSize: next, page: DEFAULT_ALL_UNITS_PAGE });
-                        }}
-                    >
-                        <NativeSelectOption value="10">10</NativeSelectOption>
-                        <NativeSelectOption value="20">20</NativeSelectOption>
-                        <NativeSelectOption value="50">50</NativeSelectOption>
-                    </NativeSelect>
-                </div>
-            </div>
+            ) : null}
         </div>
     );
 }
