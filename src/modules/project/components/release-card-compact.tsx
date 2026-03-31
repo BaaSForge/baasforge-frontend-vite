@@ -30,7 +30,7 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
             <Badge
                 variant="secondary"
                 className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[0.625rem]"
-                title={`revision ${release.revision}`}
+                title={`revision ${release.revision} · id ${release.id}`}
             >
                 revision {release.revision}
             </Badge>

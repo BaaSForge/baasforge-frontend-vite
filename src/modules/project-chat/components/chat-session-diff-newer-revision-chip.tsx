@@ -9,8 +9,8 @@ import { AlertTriangle } from "lucide-react";
 
 export type ChatSessionDiffNewerRevisionChipProps = {
     unit: ProjectUnitResponse;
-    projectId?: string;
-    chatSessionId?: string;
+    projectId: string;
+    chatSessionId: string;
     className?: string;
 };
 
@@ -25,7 +25,7 @@ export function ChatSessionDiffNewerRevisionChip({
 }: ChatSessionDiffNewerRevisionChipProps) {
     const latestFromCache = useChatSessionUnitLatestRevision(projectId, chatSessionId, unit.id);
     const latest = latestFromCache ?? unit.latest_revision;
-    const stale = isUnitRevisionStale(unit, latestFromCache);
+    const stale = isUnitRevisionStale(unit, latestFromCache, chatSessionId);
 
     if (!stale || latest == null) return null;
 

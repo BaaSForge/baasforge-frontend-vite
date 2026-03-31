@@ -113,6 +113,8 @@ export function ReleaseControllerBoxMessage({
 
     const stageRevisionNum = stageRelease?.revision ?? null;
     const prodRevisionNum = prodRelease?.revision ?? null;
+    const stageReleaseId = stageRelease?.id ?? null;
+    const prodReleaseId = prodRelease?.id ?? null;
 
     const queryClient = useQueryClient();
 
@@ -124,8 +126,9 @@ export function ReleaseControllerBoxMessage({
 
     const stageRedeployMutation = useMutation({
         mutationFn: async (runtimeId: string) => {
-            if (projectId == null || stageRevisionNum == null) throw new Error("Missing project or revision");
-            await postRuntimeDeployStageRelease(projectId, runtimeId, { revision: stageRevisionNum });
+            if (projectId == null) throw new Error("Missing project");
+            if (stageReleaseId == null) throw new Error("Missing stage release id");
+            await postRuntimeDeployStageRelease(projectId, runtimeId, { release_id: stageReleaseId });
         },
         onSuccess: async () => {
             await invalidateAfterRuntimeDeploy();
@@ -139,8 +142,9 @@ export function ReleaseControllerBoxMessage({
 
     const prodRedeployMutation = useMutation({
         mutationFn: async (runtimeId: string) => {
-            if (projectId == null || prodRevisionNum == null) throw new Error("Missing project or revision");
-            await postRuntimeDeployProductionRelease(projectId, runtimeId, { revision: prodRevisionNum });
+            if (projectId == null) throw new Error("Missing project");
+            if (prodReleaseId == null) throw new Error("Missing production release id");
+            await postRuntimeDeployProductionRelease(projectId, runtimeId, { release_id: prodReleaseId });
         },
         onSuccess: async () => {
             setProductionRedeployConfirmOpen(false);
@@ -207,19 +211,19 @@ export function ReleaseControllerBoxMessage({
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
 
     const handleStageRedeploy = useCallback(() => {
-        if (stageRevisionNum == null) return;
+        if (stageReleaseId == null) return;
         if (stageRuntimes.length === 0) return;
-        
+
         setStageDeployRuntimePickOpen(true);
-    }, [stageRevisionNum, stageRuntimes]);
+    }, [stageReleaseId, stageRuntimes]);
 
     const handleProdRedeployClick = useCallback(() => {
-        if (prodRevisionNum == null) return;
+        if (prodReleaseId == null) return;
         const prodRuntimeId = prodRuntimes[0]?.id;
         if (prodRuntimeId == null) return;
         setProdRedeployRuntimeId(prodRuntimeId);
         setProductionRedeployConfirmOpen(true);
-    }, [prodRevisionNum, prodRuntimes]);
+    }, [prodReleaseId, prodRuntimes]);
 
     return (
         <>
@@ -525,11 +529,12 @@ export function ReleaseControllerBoxMessage({
                 </AlertDialogContent>
             </AlertDialog>
 
-            {stageRevisionNum != null && (
+            {stageRevisionNum != null && stageReleaseId != null && (
                 <DeployReleaseToRuntimeModal
                     open={stageDeployRuntimePickOpen}
                     onOpenChange={setStageDeployRuntimePickOpen}
                     projectId={projectId}
+                    releaseId={stageReleaseId}
                     revision={stageRevisionNum}
                     revisionLabel={stageRelease != null ? String(stageRelease.revision) : ""}
                     onDeployRuntime={(runtimeId) => stageRedeployMutation.mutate(runtimeId)}

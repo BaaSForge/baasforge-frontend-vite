@@ -6,6 +6,7 @@ export function DeployReleaseToRuntimeModal({
     open,
     onOpenChange,
     projectId,
+    releaseId,
     revision,
     revisionLabel,
     onDeployRuntime,
@@ -14,7 +15,9 @@ export function DeployReleaseToRuntimeModal({
     open: boolean;
     onOpenChange: (open: boolean) => void;
     projectId: string | undefined;
-    /** Existing stage release revision to deploy or to connect after detach. */
+    /** Release row id — required so deploy/swap targets the correct row when revision numbers repeat across sessions. */
+    releaseId: string;
+    /** Display only (revision can duplicate across chat sessions). */
     revision: number;
     revisionLabel: string;
     onDeployRuntime: (runtimeId: string) => void;
@@ -35,11 +38,11 @@ export function DeployReleaseToRuntimeModal({
                     revision).
                 </>
             }
-            swapConnectTarget={{ mode: "deploy_revision", revision }}
+            swapConnectTarget={{ mode: "deploy_revision", revision, releaseId }}
             onDeploy={(r) => onDeployRuntime(r.id)}
             onSwapLiveRelease={(runtimeId) =>
                 detachMutation.mutate(
-                    { runtimeId, body: { revision } },
+                    { runtimeId, body: { release_id: releaseId } },
                     { onSuccess: () => onOpenChange(false) },
                 )
             }

@@ -16,11 +16,11 @@ export function CompactSessionUnitChip({
     unit: ProjectUnitResponse;
     projectId?: string;
     /** Revisions in this map are scoped to this chat session. */
-    chatSessionId?: string;
+    chatSessionId: string;
     className?: string;
 }) {
     const latestFromCache = useChatSessionUnitLatestRevision(projectId, chatSessionId, unit.id);
-    const stale = isUnitRevisionStale(unit, latestFromCache);
+    const stale = isUnitRevisionStale(unit, latestFromCache, chatSessionId);
     const latest = latestFromCache ?? unit.latest_revision;
     const revisionText =
         stale && latest != null ? `revision ${unit.revision} / ${latest}` : `revision ${unit.revision}`;
@@ -49,8 +49,8 @@ export function SessionOwnershipChipsRow({
     className,
 }: {
     projectId?: string;
-    /** Session that `ownedUnits` belong to (required for revision cache alignment). */
-    chatSessionId?: string;
+    /** Session that `ownedUnits` belong to. */
+    chatSessionId: string;
     ownedReleases?: ReleaseResponse[];
     ownedUnits?: ProjectUnitResponse[];
     className?: string;
@@ -72,7 +72,7 @@ export function SessionOwnershipChipsRow({
                     <div className={chipRowClass}>
                         {ownedUnits.map((unit) => (
                             <CompactSessionUnitChip
-                                key={`${unit.id}-${unit.revision}`}
+                                key={`${unit.id}-${unit.chat_session_id ?? ""}-${unit.revision}`}
                                 projectId={projectId}
                                 chatSessionId={chatSessionId}
                                 unit={unit}

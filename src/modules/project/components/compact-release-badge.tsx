@@ -25,7 +25,7 @@ export function CompactReleaseBadge({ release, projectId, className }: CompactRe
 
     const kind = release.is_stage ? "Stage" : "Production";
     const mainLabel = `${kind} release ${release.revision}`;
-    const title = `${mainLabel}${isLiveOnRuntime ? " — live on a runtime" : ""}`;
+    const title = `${mainLabel}${isLiveOnRuntime ? " — live on a runtime" : ""} · id ${release.id}`;
     const Icon = release.is_stage ? FlaskConical : Rocket;
     const isStage = release.is_stage;
 

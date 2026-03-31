@@ -128,7 +128,7 @@ export const router = createBrowserRouter([
                                                                         element: <ProjectUnitsAndReleasesPage />,
                                                                     },
                                                                     {
-                                                                        path: "units-releases/:releaseRevision",
+                                                                        path: "units-releases/:releaseId",
                                                                         element: <ProjectUnitsAndReleasesPage />,
                                                                     },
                                                                     {

@@ -11,9 +11,9 @@ import { useNavigate, useParams } from "react-router";
 
 export function SecondarySideBar() {
     const navigate = useNavigate();
-    const { projectId, releaseRevision } = useParams<{
+    const { projectId, releaseId } = useParams<{
         projectId: string;
-        releaseRevision: string;
+        releaseId: string;
     }>();
 
     const projectIdOrUndefined = projectId ?? undefined;
@@ -71,13 +71,10 @@ export function SecondarySideBar() {
                         )}
                         <ReleaseCardCompact
                             release={release}
-                            selected={
-                                releaseRevision != null &&
-                                release.revision === Number.parseFloat(releaseRevision)
-                            }
+                            selected={releaseId != null && release.id === releaseId}
                             runtime={runtimes.find((rt) => rt.live_release?.id === release.id)}
                             onClick={() => {
-                                navigate(`/dashboard/projects/${projectId}/units-releases/${release.revision}`);
+                                navigate(`/dashboard/projects/${projectId}/units-releases/${release.id}`);
                             }}
                             className="cursor-pointer"
                         />

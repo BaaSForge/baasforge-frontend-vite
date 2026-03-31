@@ -20,7 +20,8 @@ const projectDraftUnitsAsOfReleaseControllerMessageEndpoint = (
 ) =>
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/draft-units/as-of-release-controller-message/${releaseControllerMessageId}`;
 const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
-const projectReleaseUnitsEndpoint = (projectId: string, releaseRevision: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseRevision}/units`;
+/** `releaseId` is the release row id (UUID), not the numeric revision — revision can repeat across chat sessions. */
+const projectReleaseUnitsEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units`;
 const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
 const projectRuntimeDetachLiveReleaseEndpoint = (projectId: string, runtimeId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/detach-live-release`;
@@ -33,18 +34,15 @@ const projectRuntimeDeployStageReleaseEndpoint = (projectId: string, runtimeId: 
 const projectRuntimeDeployProductionReleaseEndpoint = (projectId: string, runtimeId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/deploy-production-release`;
 
-export interface DeployReleaseBody {
-    revision: number;
-}
+/** Always use the release row id — numeric revision can repeat across chat sessions. */
+export type DeployReleaseBody = { release_id: string };
 
 export interface ProductionReleaseControllerBody {
     stage_release_id: string;
 }
 
-/** After detach: connect an existing stage release (same revision as deploy-stage-release). */
-export type DetachRuntimeLiveReleaseDeployBody = {
-    revision: number;
-};
+/** After detach: connect an existing stage release by row id. */
+export type DetachRuntimeLiveReleaseDeployBody = { release_id: string };
 
 /** After detach: connect the stage release for this release-controller message scope (same scope as stage-release from message). */
 export type DetachRuntimeLiveReleaseFromControllerBody = {
@@ -113,8 +111,8 @@ export function getReleases(projectId: string): Promise<ReleaseResponse[]> {
     return apiClient.get<ApiResponse<ReleaseResponse[]>>(projectReleasesEndpoint(projectId)).then((res) => res.data ?? []);
 }
 
-export function getReleaseUnits(projectId: string, releaseRevision: string): Promise<ProjectUnitResponse[]> {
-    return apiClient.get<ApiResponse<ProjectUnitResponse[]>>(projectReleaseUnitsEndpoint(projectId, releaseRevision)).then((res) => res.data ?? []);
+export function getReleaseUnits(projectId: string, releaseId: string): Promise<ProjectUnitResponse[]> {
+    return apiClient.get<ApiResponse<ProjectUnitResponse[]>>(projectReleaseUnitsEndpoint(projectId, releaseId)).then((res) => res.data ?? []);
 }
 
 export function getProjectRuntimes(projectId: string): Promise<ProjectRuntimeResponse[]> {

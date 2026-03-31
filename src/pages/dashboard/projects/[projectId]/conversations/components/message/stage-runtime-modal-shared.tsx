@@ -170,7 +170,7 @@ function StageRuntimeRow({
 
 /** What we connect after detach — drives confirmation copy; parent maps this to `DetachRuntimeLiveReleaseBody`. */
 export type StageRuntimeSwapConnectTarget =
-    | { mode: "deploy_revision"; revision: number }
+    | { mode: "deploy_revision"; revision: number; releaseId: string }
     | { mode: "release_from_controller"; chatSessionId: string; releaseControllerMessageId: string };
 
 export type StageRuntimePickerModalProps = {
@@ -317,8 +317,13 @@ export function StageRuntimePickerModal({
                                     {runtimeToDetachLiveRevision != null ? (
                                         <> (revision {runtimeToDetachLiveRevision} is live)</>
                                     ) : null}{" "}
-                                    and connect existing stage release revision{" "}
-                                    <strong>{swapConnectTarget.revision}</strong> to that runtime instead.
+                                    and connect the selected stage release (revision{" "}
+                                    <strong>{swapConnectTarget.revision}</strong>
+                                    {", id "}
+                                    <span className="font-mono text-xs">
+                                        {swapConnectTarget.releaseId.slice(0, 8)}…
+                                    </span>
+                                    ) to that runtime instead.
                                 </>
                             )}
                             {runtimeToDetach != null && swapConnectTarget?.mode === "release_from_controller" && (

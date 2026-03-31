@@ -62,7 +62,11 @@ export function UnitRevisionBadge({
     const latestFromCache = useChatSessionUnitLatestRevision(projectId, chatSessionId, unit.id);
     const isDiff = beforeUnit !== undefined;
 
-    const stale = !isDiff && isUnitRevisionStale(unit, latestFromCache);
+    const stale =
+        !isDiff &&
+        (chatSessionId != null && chatSessionId !== ""
+            ? isUnitRevisionStale(unit, latestFromCache, chatSessionId)
+            : unit.latest_revision != null && unit.revision < unit.latest_revision);
     const latest = latestFromCache ?? unit.latest_revision;
     const isDeleted = unit.is_deleted === true;
     /** Aligns diff “new” with dashed first-revision styling; base mode uses live revision + stale. */

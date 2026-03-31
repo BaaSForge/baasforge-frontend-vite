@@ -138,6 +138,8 @@ export function ChatSessionViewChangesModal({
                                                         <UnitRevisionBadge
                                                             unit={pair.afterUnit}
                                                             beforeUnit={pair.beforeUnit}
+                                                            projectId={projectId}
+                                                            chatSessionId={chatSessionId}
                                                             className="shrink-0 px-1.5 py-0 text-[10px] font-medium"
                                                         />
                                                     </TabsTrigger>
@@ -173,14 +175,18 @@ export function ChatSessionViewChangesModal({
                                                     <UnitRevisionBadge
                                                         unit={pair.afterUnit}
                                                         beforeUnit={pair.beforeUnit}
-                                                        className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
-                                                    />
-                                                    <ChatSessionDiffNewerRevisionChip
-                                                        unit={pair.afterUnit}
                                                         projectId={projectId}
                                                         chatSessionId={chatSessionId}
-                                                        className="shrink-0 px-1.5 py-0 text-[10px] font-medium"
+                                                        className="max-w-full min-w-0 shrink px-1.5 py-0 text-[10px] font-medium"
                                                     />
+                                                    {projectId != null && chatSessionId != null ? (
+                                                        <ChatSessionDiffNewerRevisionChip
+                                                            unit={pair.afterUnit}
+                                                            projectId={projectId}
+                                                            chatSessionId={chatSessionId}
+                                                            className="shrink-0 px-1.5 py-0 text-[10px] font-medium"
+                                                        />
+                                                    ) : null}
                                                 </div>
                                                 <UnitTypeBadge unitType={after.unit_type} />
                                                 <LiveBadge

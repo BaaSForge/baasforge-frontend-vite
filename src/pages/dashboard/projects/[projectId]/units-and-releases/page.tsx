@@ -18,7 +18,7 @@ import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
 import { useProjectReleasesQuery, useProjectReleaseUnitsQuery } from "@/modules/project/queries";
-import type { ProjectUnitResponse, ProjectUnitType } from "@/modules/project/types";
+import type { ProjectUnitResponse, ProjectUnitType, ReleaseResponse } from "@/modules/project/types";
 import { LayersIcon, SidebarIcon, TextAlignJustifyIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -92,28 +92,34 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
         localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, groupMode);
     }, [groupMode]);
 
-    const { projectId, releaseRevision } = useParams<{
+    const { projectId, releaseId } = useParams<{
         projectId: string;
-        releaseRevision: string;
+        releaseId: string;
     }>();
 
     const projectIdOrUndefined = projectId ?? undefined;
 
     const { data: releases } = useProjectReleasesQuery(projectIdOrUndefined);
 
-    const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(projectIdOrUndefined, releaseRevision);
+    const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(projectIdOrUndefined, releaseId);
 
     useEffect(() => {
-        if (releaseRevision == null && releases != null && releases.length > 0) {
-            navigate(`/dashboard/projects/${projectId}/units-releases/${releases?.[0]?.revision}`, { replace: true });
+        if (releaseId == null && releases != null && releases.length > 0) {
+            navigate(`/dashboard/projects/${projectId}/units-releases/${releases[0].id}`, { replace: true });
         }
-    }, [releaseRevision, navigate, projectId, releases]);
+    }, [releaseId, navigate, projectId, releases]);
+
+    const selectedRelease: ReleaseResponse | undefined = useMemo(
+        () => releases?.find((r) => r.id === releaseId),
+        [releases, releaseId],
+    );
+    const releaseTitleLabel = selectedRelease != null ? String(selectedRelease.revision) : "…";
 
     return (
         <NestedMainSidebarProvider mainSidebar={mainSidebar}>
             <>
                 <PageTitleBox
-                    title={`Units for release ${releaseRevision}`}
+                    title={`Units for release ${releaseTitleLabel}`}
                     mainSidebar={mainSidebar}
                     tools={
                         <div className="flex items-center gap-3">
