@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import type { ProjectRuntimeResponse, ReleaseResponse } from "../types";
 import { ReleaseNotesModal } from "./release-notes-modal";
 
@@ -18,12 +18,25 @@ export interface ReleaseCardCompactProps {
     selected?: boolean;
     runtime?: ProjectRuntimeResponse;
     onClick?: () => void;
+    /** Dims the card when this production revision is a leaf (not shipped to prod yet). */
+    undeployedProductionLeafMuted?: boolean;
+    /** Extra controls in the footer row (e.g. deploy); clicks must call stopPropagation if the card is clickable. */
+    cardActionEnd?: ReactNode;
 }
 
-export function ReleaseCardCompact({ release, runtime, className, selected, onClick }: ReleaseCardCompactProps) {
+export function ReleaseCardCompact({
+    release,
+    runtime,
+    className,
+    selected,
+    onClick,
+    undeployedProductionLeafMuted,
+    cardActionEnd,
+}: ReleaseCardCompactProps) {
     const [modalOpen, setModalOpen] = useState(false);
 
     const isLive = !!runtime;
+    const showNotShippedBadge = !!undeployedProductionLeafMuted && !isLive;
 
     const badges = (
         <>
@@ -37,6 +50,11 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
             {release.is_stage && (
                 <Badge variant="outline" className="text-[0.625rem]">
                     Stage
+                </Badge>
+            )}
+            {showNotShippedBadge && (
+                <Badge variant="outline" className="text-[0.625rem] text-muted-foreground border-dashed">
+                    Not shipped
                 </Badge>
             )}
             {isLive && (
@@ -53,7 +71,12 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
 
     return (
         <div
-            className={cn("relative inline-block w-full min-w-0", selected && "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40", className)}
+            className={cn(
+                "relative inline-block w-full min-w-0",
+                showNotShippedBadge && "opacity-[0.72]",
+                selected && "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 opacity-100",
+                className,
+            )}
             aria-selected={selected}
             onClick={onClick}
         >
@@ -61,6 +84,7 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                 className={cn(
                     "p-0 z-10 rounded-xl border shadow-none overflow-hidden gap-0 transition-shadow transition-colors",
                     selected && "border-emerald-500 shadow-lg",
+                    showNotShippedBadge && !selected && "border-muted-foreground/25",
                 )}
             >
                 <Expandable
@@ -83,11 +107,13 @@ export function ReleaseCardCompact({ release, runtime, className, selected, onCl
                 <ReleaseNotesModal open={modalOpen} onOpenChange={setModalOpen} notes={release.notes ?? ""} badges={badges} />
                 <CardAction
                     className={cn(
-                        "bg-muted/30 w-full flex flex-wrap items-center justify-start p-2 gap-2 border-t",
+                        "bg-muted/30 w-full flex flex-wrap items-center justify-start gap-2 border-t p-2",
+                        cardActionEnd != null ? "justify-between" : "justify-start",
                         selected && "bg-emerald-200/40 dark:bg-emerald-900/40 border-emerald-500",
                     )}
                 >
-                    {badges}
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{badges}</div>
+                    {cardActionEnd != null ? <div className="flex shrink-0 items-center gap-2">{cardActionEnd}</div> : null}
                 </CardAction>
             </Card>
             {selected && (
