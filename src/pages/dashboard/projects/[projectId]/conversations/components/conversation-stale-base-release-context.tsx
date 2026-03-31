@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components -- paired provider + hook */
 import * as React from "react";
 
 export { STALE_BASE_RELEASE_CONVERSATION_MESSAGE } from "@/modules/project-chat/stale-base-release-conversation-message";

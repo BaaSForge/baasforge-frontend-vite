@@ -164,5 +164,3 @@ export function MessageBranch({ message, childrenByParentId, onRetry, isNested }
 
     return <Message message={message} onRetry={onRetry} nestedMessages={nested} isNested={isNested} />;
 }
-
-export { partitionMessagesByInvokingParent } from "./partition-invoked-messages";

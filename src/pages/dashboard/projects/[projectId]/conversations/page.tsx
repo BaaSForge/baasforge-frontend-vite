@@ -39,7 +39,8 @@ import { useNavigate, useParams } from "react-router";
 import { ConversationStaleBaseReleaseProvider } from "./components/conversation-stale-base-release-context";
 import { ConversationStaleBaseReleaseTitleBadge } from "./components/conversation-stale-base-release-title-badge";
 import Controls from "./components/controls";
-import { Message, MessageBranch, partitionMessagesByInvokingParent } from "./components/message";
+import { Message, MessageBranch } from "./components/message";
+import { partitionMessagesByInvokingParent } from "./components/message/partition-invoked-messages";
 import { StickyMessageBars, StickyMessageGroupsProvider } from "./components/sticky-messages";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll } from "./hooks";
@@ -291,8 +292,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdOrUndefined;
 
     const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(chatSessionMessages), [chatSessionMessages]);
-    const lastAiMessages: ChatMessageWithDeliveryStatus[] =
-        lastUserMessageIndex >= 0 && chatSessionMessages ? chatSessionMessages.slice(lastUserMessageIndex + 1) : [];
+    const lastAiMessages = useMemo((): ChatMessageWithDeliveryStatus[] => {
+        if (lastUserMessageIndex >= 0 && chatSessionMessages) {
+            return chatSessionMessages.slice(lastUserMessageIndex + 1);
+        }
+        return [];
+    }, [lastUserMessageIndex, chatSessionMessages]);
     const isGeneratingFromWs = useIsSessionGenerating(projectIdOrUndefined, chatSessionIdOrUndefined);
     const isGeneratingFromMessages = lastAiMessages.some((m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating);
     const isGenerating = isGeneratingFromWs || isGeneratingFromMessages;

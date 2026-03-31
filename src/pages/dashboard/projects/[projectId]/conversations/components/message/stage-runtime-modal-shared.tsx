@@ -227,7 +227,9 @@ export function StageRuntimePickerModal({
     const prevSwapping = useRef<string | null>(null);
     useEffect(() => {
         if (prevSwapping.current != null && swappingRuntimeId == null && runtimeToDetach != null) {
-            setRuntimeToDetach(null);
+            queueMicrotask(() => {
+                setRuntimeToDetach(null);
+            });
         }
         prevSwapping.current = swappingRuntimeId;
     }, [swappingRuntimeId, runtimeToDetach]);
