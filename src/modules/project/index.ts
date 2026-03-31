@@ -23,7 +23,7 @@ export {
     useProjectRuntimesQuery,
     useProjectsQuery,
 } from "./queries";
-export { getRuntimeLiveReleaseId, pickProductionRuntime } from "./runtime-release";
+export { getRuntimeLiveReleaseId, pickProductionRuntime, releaseIsLiveOnProjectRuntimes } from "./runtime-release";
 export type {
     ProjectPatchRequest,
     ProjectRequest,

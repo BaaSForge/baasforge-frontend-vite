@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { FlaskConical, Rocket } from "lucide-react";
 import { useProjectRuntimesQuery } from "../queries";
-import { PlatformEnvironmentType, type ReleaseResponse } from "../types";
+import { releaseIsLiveOnProjectRuntimes } from "../runtime-release";
+import type { ReleaseResponse } from "../types";
 
 export interface CompactReleaseBadgeProps {
     release: ReleaseResponse;
@@ -15,13 +16,7 @@ export interface CompactReleaseBadgeProps {
 
 export function CompactReleaseBadge({ release, projectId, className }: CompactReleaseBadgeProps) {
     const { data: runtimes } = useProjectRuntimesQuery(projectId);
-    const isLiveOnRuntime =
-        runtimes?.some((r) => {
-            const envMatches = release.is_stage
-                ? r.environment === PlatformEnvironmentType.stage
-                : r.environment === PlatformEnvironmentType.prod;
-            return envMatches && r.live_release != null && r.live_release.id === release.id;
-        }) ?? false;
+    const isLiveOnRuntime = releaseIsLiveOnProjectRuntimes(release, runtimes);
 
     const kind = release.is_stage ? "Stage" : "Production";
     const mainLabel = `${kind} release ${release.revision}`;

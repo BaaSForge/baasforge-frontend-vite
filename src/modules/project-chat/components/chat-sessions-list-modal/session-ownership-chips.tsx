@@ -2,8 +2,9 @@
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { cn } from "@/lib/utils";
-import { CompactReleaseBadge } from "@/modules/project";
+import { CompactReleaseBadge, releaseIsLiveOnProjectRuntimes, useProjectRuntimesQuery } from "@/modules/project";
 import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
+import { useMemo } from "react";
 import { isUnitRevisionStale } from "@/modules/project/unit-revision-stale";
 import { useChatSessionUnitLatestRevision } from "@/modules/project/use-chat-session-unit-latest-revision";
 
@@ -55,6 +56,18 @@ export function SessionOwnershipChipsRow({
     ownedUnits?: ProjectUnitResponse[];
     className?: string;
 }) {
+    const { data: runtimes } = useProjectRuntimesQuery(projectId);
+    const releasesOrdered = useMemo(() => {
+        if (ownedReleases.length <= 1) return ownedReleases;
+        return [...ownedReleases].sort((a, b) => {
+            const aLive = releaseIsLiveOnProjectRuntimes(a, runtimes);
+            const bLive = releaseIsLiveOnProjectRuntimes(b, runtimes);
+            if (aLive !== bLive) return aLive ? -1 : 1;
+            if (a.revision !== b.revision) return b.revision - a.revision;
+            return b.created_at.localeCompare(a.created_at);
+        });
+    }, [ownedReleases, runtimes]);
+
     if (ownedReleases.length === 0 && ownedUnits.length === 0) return null;
 
     const scrollRowClass = "min-h-0 min-w-0 w-full max-w-full";
@@ -89,7 +102,7 @@ export function SessionOwnershipChipsRow({
                     className={scrollRowClass}
                 >
                     <div className={chipRowClass}>
-                        {ownedReleases.map((release) => (
+                        {releasesOrdered.map((release) => (
                             <CompactReleaseBadge key={release.id} release={release} projectId={projectId} />
                         ))}
                     </div>

@@ -24,8 +24,8 @@ export function SessionLastMessageRow({ lastMessage }: SessionLastMessageRowProp
     if (isExploringPlaceholder) {
         return (
             <div className="flex w-full min-w-0 justify-start">
-                <div className="max-w-[80%] min-w-0">
-                    <p className="text-muted-foreground line-clamp-2 text-left text-xs leading-snug">Exploring…</p>
+                <div className="min-w-0 max-w-full">
+                    <p className="text-muted-foreground line-clamp-3 text-left text-xs leading-snug">Exploring…</p>
                 </div>
             </div>
         );
@@ -34,10 +34,10 @@ export function SessionLastMessageRow({ lastMessage }: SessionLastMessageRowProp
 
     return (
         <div className="flex w-full min-w-0 justify-start">
-            <div className="max-w-[80%] min-w-0">
+            <div className="min-w-0 max-w-full">
                 <MarkdownPlainPreview
                     source={text}
-                    className="text-muted-foreground line-clamp-2 text-left text-xs leading-snug"
+                    className="text-muted-foreground line-clamp-3 text-left text-xs leading-snug"
                 />
             </div>
         </div>

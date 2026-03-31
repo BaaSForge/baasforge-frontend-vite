@@ -73,7 +73,7 @@ export function ChatSessionsListModal() {
 
     return (
         <CentricModal open={isOpen} onOpenChange={handleOpenChange}>
-            <CentricModalContent className="sm:max-w-md">
+            <CentricModalContent className="sm:max-w-4xl">
                 <CentricModalHeader>
                     <CentricModalTitle>Chat sessions</CentricModalTitle>
                 </CentricModalHeader>
