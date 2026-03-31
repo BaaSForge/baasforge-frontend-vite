@@ -58,6 +58,8 @@ export interface ReleaseResponse {
     revision: number;
     is_stage: boolean;
     created_at: string;
+    base_production_release_id: string | null;
+    base_production_release: ReleaseResponse | null;
 }
 
 export enum PlatformEnvironmentType {
