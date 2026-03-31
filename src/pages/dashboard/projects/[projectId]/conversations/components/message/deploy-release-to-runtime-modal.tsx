@@ -7,6 +7,7 @@ export function DeployReleaseToRuntimeModal({
     onOpenChange,
     projectId,
     releaseId,
+    chatSessionIdForDetach,
     revision,
     revisionLabel,
     onDeployRuntime,
@@ -15,8 +16,10 @@ export function DeployReleaseToRuntimeModal({
     open: boolean;
     onOpenChange: (open: boolean) => void;
     projectId: string | undefined;
-    /** Release row id — required so deploy/swap targets the correct row when revision numbers repeat across sessions. */
+    /** Release row id — confirmation UI only (revision can repeat across chat sessions). */
     releaseId: string;
+    /** Owning chat session for detach-live-release / ByRevision (API does not accept release_id). */
+    chatSessionIdForDetach: string;
     /** Display only (revision can duplicate across chat sessions). */
     revision: number;
     revisionLabel: string;
@@ -42,7 +45,10 @@ export function DeployReleaseToRuntimeModal({
             onDeploy={(r) => onDeployRuntime(r.id)}
             onSwapLiveRelease={(runtimeId) =>
                 detachMutation.mutate(
-                    { runtimeId, body: { release_id: releaseId } },
+                    {
+                        runtimeId,
+                        body: { revision, chat_session_id: chatSessionIdForDetach },
+                    },
                     { onSuccess: () => onOpenChange(false) },
                 )
             }

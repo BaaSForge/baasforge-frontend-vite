@@ -17,6 +17,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryKeys } from "@/constants/query-keys";
 import {
+    detachRuntimeLiveRelease,
     postReleaseControllerProductionRelease,
     postRuntimeDeployProductionRelease,
     postRuntimeDeployStageRelease,
@@ -130,8 +131,11 @@ export function ReleaseControllerBoxMessage({
     const stageRedeployMutation = useMutation({
         mutationFn: async (runtimeId: string) => {
             if (projectId == null) throw new Error("Missing project");
-            if (stageReleaseId == null) throw new Error("Missing stage release id");
-            await postRuntimeDeployStageRelease(projectId, runtimeId, { release_id: stageReleaseId });
+            if (chatSessionId == null) throw new Error("Missing chat session");
+            if (stageRevisionNum == null) throw new Error("Missing stage revision");
+            const sessionForDeploy = stageRelease?.chat_session_id ?? chatSessionId;
+            const body = { revision: stageRevisionNum, chat_session_id: sessionForDeploy };
+            await postRuntimeDeployStageRelease(projectId, runtimeId, body);
         },
         onSuccess: async () => {
             await invalidateAfterRuntimeDeploy();
@@ -146,8 +150,19 @@ export function ReleaseControllerBoxMessage({
     const prodRedeployMutation = useMutation({
         mutationFn: async (runtimeId: string) => {
             if (projectId == null) throw new Error("Missing project");
+            if (chatSessionId == null) throw new Error("Missing chat session");
+            if (prodRevisionNum == null) throw new Error("Missing production revision");
             if (prodReleaseId == null) throw new Error("Missing production release id");
-            await postRuntimeDeployProductionRelease(projectId, runtimeId, { release_id: prodReleaseId });
+            const sessionForDeploy = prodRelease?.chat_session_id ?? chatSessionId;
+            const body = { revision: prodRevisionNum, chat_session_id: sessionForDeploy };
+            const prodRt = prodRuntimes.find((r) => r.id === runtimeId);
+            const liveId = prodRt?.live_release?.id ?? null;
+            const swapOtherLive = liveId != null && liveId !== prodReleaseId;
+            if (swapOtherLive) {
+                await detachRuntimeLiveRelease(projectId, runtimeId, body);
+            } else {
+                await postRuntimeDeployProductionRelease(projectId, runtimeId, body);
+            }
         },
         onSuccess: async () => {
             setProductionRedeployConfirmOpen(false);
@@ -549,12 +564,13 @@ export function ReleaseControllerBoxMessage({
                 </AlertDialogContent>
             </AlertDialog>
 
-            {stageRevisionNum != null && stageReleaseId != null && (
+            {stageRevisionNum != null && stageReleaseId != null && chatSessionId != null && (
                 <DeployReleaseToRuntimeModal
                     open={stageDeployRuntimePickOpen}
                     onOpenChange={setStageDeployRuntimePickOpen}
                     projectId={projectId}
                     releaseId={stageReleaseId}
+                    chatSessionIdForDetach={stageRelease?.chat_session_id ?? chatSessionId}
                     revision={stageRevisionNum}
                     revisionLabel={stageRelease != null ? String(stageRelease.revision) : ""}
                     onDeployRuntime={(runtimeId) => stageRedeployMutation.mutate(runtimeId)}

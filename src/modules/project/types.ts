@@ -85,6 +85,7 @@ export interface ProjectUnitResponse {
 export interface ReleaseResponse {
     id: string;
     project_id: string;
+    chat_session_id?: string | null;
     notes: string | null;
     /** Release row revision (API: float). */
     revision: number;

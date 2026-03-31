@@ -1,5 +1,9 @@
 # Contributing
 
+## Platform API assumptions
+
+The backend and product model treat **production as having a single runtime per project** (unlike stage, where several runtimes may exist). The release-controller UI therefore opens the **stage** runtime picker for stage deploy/swap, but uses a **confirm dialog** and deploys to the first (and expected only) production runtime without asking the user to pick a target.
+
 ## Modals
 
 Use the **centric modal** stack from `@/components/ui/centric-modal` (`CentricModal`, `CentricModalContent`, `CentricModalHeader`, `CentricModalTitle`, etc.) for user-facing dialogs and sheets.

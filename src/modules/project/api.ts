@@ -40,15 +40,15 @@ const projectRuntimeDeployStageReleaseEndpoint = (projectId: string, runtimeId: 
 const projectRuntimeDeployProductionReleaseEndpoint = (projectId: string, runtimeId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/deploy-production-release`;
 
-/** Always use the release row id — numeric revision can repeat across chat sessions. */
-export type DeployReleaseBody = { release_id: string };
+/** Point the runtime at an existing stage/production release by revision + owning chat session (revision is not unique per project). */
+export type DeployReleaseBody = { revision: number; chat_session_id: string };
 
 export interface ProductionReleaseControllerBody {
     stage_release_id: string;
 }
 
-/** After detach: connect an existing stage release by row id. */
-export type DetachRuntimeLiveReleaseDeployBody = { release_id: string };
+/** After detach: connect an existing release by revision + owning chat session (same shape as runtime deploy endpoints). */
+export type DetachRuntimeLiveReleaseDeployBody = { revision: number; chat_session_id: string };
 
 /** After detach: connect the stage release for this release-controller message scope (same scope as stage-release from message). */
 export type DetachRuntimeLiveReleaseFromControllerBody = {
@@ -150,7 +150,7 @@ export function getProjectRuntimes(projectId: string): Promise<ProjectRuntimeRes
     return apiClient.get<ApiResponse<ProjectRuntimeResponse[]>>(projectRuntimesEndpoint(projectId)).then((res) => res.data ?? []);
 }
 
-/** Detach the runtime’s current live release, then connect using either an existing revision or a release-controller scope. */
+/** Detach the runtime’s current live release, then connect via ByRevision (`revision` + `chat_session_id`) or a release-controller scope. */
 export function detachRuntimeLiveRelease(
     projectId: string,
     runtimeId: string,

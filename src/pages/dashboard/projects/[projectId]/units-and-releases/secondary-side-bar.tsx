@@ -18,7 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryKeys } from "@/constants/query-keys";
-import { postRuntimeDeployProductionRelease } from "@/modules/project/api";
+import { detachRuntimeLiveRelease, postRuntimeDeployProductionRelease } from "@/modules/project/api";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import { getRuntimeLiveReleaseId, pickProductionRuntime } from "@/modules/project/runtime-release";
@@ -50,10 +50,20 @@ export function SecondarySideBar() {
     const queryClient = useQueryClient();
 
     const deployProductionMutation = useMutation({
-        mutationFn: async (releaseId: string) => {
+        mutationFn: async (release: ReleaseResponse) => {
             if (projectIdOrUndefined == null) throw new Error("Missing project");
             if (productionRuntime == null) throw new Error("Missing production runtime");
-            await postRuntimeDeployProductionRelease(projectIdOrUndefined, productionRuntime.id, { release_id: releaseId });
+            if (release.chat_session_id == null || release.chat_session_id === "") {
+                throw new Error("Release is missing chat_session_id; cannot deploy by revision.");
+            }
+            const body = { revision: release.revision, chat_session_id: release.chat_session_id };
+            const liveId = productionRuntime.live_release?.id ?? null;
+            const swapOtherLive = liveId != null && liveId !== release.id;
+            if (swapOtherLive) {
+                await detachRuntimeLiveRelease(projectIdOrUndefined, productionRuntime.id, body);
+            } else {
+                await postRuntimeDeployProductionRelease(projectIdOrUndefined, productionRuntime.id, body);
+            }
         },
         onSuccess: async () => {
             if (projectIdOrUndefined == null) return;
@@ -210,7 +220,7 @@ export function SecondarySideBar() {
                             onClick={(e) => {
                                 e.preventDefault();
                                 if (deployTarget == null) return;
-                                deployProductionMutation.mutate(deployTarget.id);
+                                deployProductionMutation.mutate(deployTarget);
                             }}
                             disabled={deployProductionMutation.isPending || deployTarget == null}
                         >
