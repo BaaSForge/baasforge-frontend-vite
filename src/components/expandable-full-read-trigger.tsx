@@ -20,6 +20,9 @@ export function ExpandableFullReadTrigger({ onClick, ariaLabel, children, classN
         <button
             type="button"
             aria-label={ariaLabel}
+            onPointerDown={(e) => {
+                e.stopPropagation();
+            }}
             onClick={(e) => {
                 e.stopPropagation();
                 onClick(e);

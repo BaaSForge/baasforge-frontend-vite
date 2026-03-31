@@ -6,11 +6,18 @@ import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
+import { useSuppressClicksAfterRadixOverlayOpen } from "@/hooks/use-suppress-clicks-after-radix-overlay-open";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, type SyntheticEvent, useState } from "react";
+import { flushSync } from "react-dom";
 import type { ProjectRuntimeResponse, ReleaseResponse } from "../types";
 import { ReleaseNotesModal } from "./release-notes-modal";
+
+/** Release-notes block: stop bubbling so the row’s `onClick` (select release) does not run. */
+function stopNotesRegionFromSelectingCard(e: SyntheticEvent) {
+    e.stopPropagation();
+}
 
 export interface ReleaseCardCompactProps {
     release: ReleaseResponse;
@@ -37,6 +44,7 @@ export function ReleaseCardCompact({
     cardActionEnd,
 }: ReleaseCardCompactProps) {
     const [modalOpen, setModalOpen] = useState(false);
+    const { armOverlayOpenSuppression, shouldSuppressFollowUpClick } = useSuppressClicksAfterRadixOverlayOpen();
 
     const isLive = !!runtime;
     const showNotShippedBadge = !!undeployedProductionLeafMuted && !isLive;
@@ -70,6 +78,17 @@ export function ReleaseCardCompact({
         </>
     );
 
+    const handleCardClick = () => {
+        if (shouldSuppressFollowUpClick()) return;
+        onClick?.();
+    };
+
+    const openReleaseNotesModal = () => {
+        armOverlayOpenSuppression();
+        /** Commit portal + overlay before the browser finishes the opening `click` (pairs with hook’s absorber). */
+        flushSync(() => setModalOpen(true));
+    };
+
     return (
         <div
             className={cn(
@@ -79,7 +98,7 @@ export function ReleaseCardCompact({
                 className,
             )}
             aria-selected={selected}
-            onClick={onClick}
+            onClick={handleCardClick}
         >
             <Card
                 className={cn(
@@ -88,23 +107,25 @@ export function ReleaseCardCompact({
                     showNotShippedBadge && !selected && "border-muted-foreground/25",
                 )}
             >
-                <Expandable
-                    className="group/expandable-read relative overflow-hidden rounded-t-xl rounded-b-none p-2 text-xs"
-                    maxLines={4}
-                    bottomEdgeFade
-                    bottomEdgeFadeFromClassName="from-card"
-                    trigger={() => (
-                        <ExpandableFullReadTrigger
-                            ariaLabel="Show full release notes"
-                            onClick={() => setModalOpen(true)}
-                            className="rounded-t-xl rounded-b-none"
-                        >
-                            Read full release notes
-                        </ExpandableFullReadTrigger>
-                    )}
-                >
-                    <Markdown components={{ pre: () => null }}>{release.notes}</Markdown>
-                </Expandable>
+                <div className="relative" onClick={stopNotesRegionFromSelectingCard}>
+                    <Expandable
+                        className="group/expandable-read relative overflow-hidden rounded-t-xl rounded-b-none p-2 text-xs"
+                        maxLines={4}
+                        bottomEdgeFade
+                        bottomEdgeFadeFromClassName="from-card"
+                        trigger={() => (
+                            <ExpandableFullReadTrigger
+                                ariaLabel="Show full release notes"
+                                onClick={openReleaseNotesModal}
+                                className="rounded-t-xl rounded-b-none"
+                            >
+                                Read full release notes
+                            </ExpandableFullReadTrigger>
+                        )}
+                    >
+                        <Markdown components={{ pre: () => null }}>{release.notes}</Markdown>
+                    </Expandable>
+                </div>
                 <ReleaseNotesModal open={modalOpen} onOpenChange={setModalOpen} notes={release.notes ?? ""} badges={badges} />
                 <CardAction
                     className={cn(
