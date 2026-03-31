@@ -46,7 +46,9 @@ export function useStageRuntimeDetachMutation(projectId: string | undefined) {
         onSuccess: async () => {
             if (projectId == null) return;
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId) });
-            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleases(projectId) });
+            await queryClient.invalidateQueries({
+                queryKey: QueryKeys.projectReleases(projectId, PlatformEnvironmentType.stage),
+            });
             toast.success("Stage runtime live release was updated.", { position: "top-center" });
         },
         onError: () => {

@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { useProjectReleasesQuery, useProjectReleaseUnitsQuery } from "@/modules/project/queries";
-import type { ReleaseResponse } from "@/modules/project/types";
+import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { SidebarIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -54,7 +54,7 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
 
     const projectIdOrUndefined = projectId ?? undefined;
 
-    const { data: releases } = useProjectReleasesQuery(projectIdOrUndefined);
+    const { data: releases } = useProjectReleasesQuery(projectIdOrUndefined, PlatformEnvironmentType.prod);
 
     const { data: releaseUnits, isLoading, error } = useProjectReleaseUnitsQuery(projectIdOrUndefined, releaseID, {
         enabled: unitsTab === "new",

@@ -22,7 +22,7 @@ import { detachRuntimeLiveRelease, postRuntimeDeployProductionRelease } from "@/
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import { getRuntimeLiveReleaseId, pickProductionRuntime } from "@/modules/project/runtime-release";
-import type { ReleaseResponse } from "@/modules/project/types";
+import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { isUndeployedProductionLeaf } from "@/modules/project/undeployed-production-release";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Rocket } from "lucide-react";
@@ -40,7 +40,7 @@ export function SecondarySideBar() {
 
     const projectIdOrUndefined = projectId ?? undefined;
 
-    const { data: releases, isLoading, error } = useProjectReleasesQuery(projectIdOrUndefined);
+    const { data: releases, isLoading, error } = useProjectReleasesQuery(projectIdOrUndefined, PlatformEnvironmentType.prod);
     const { data: runtimes, isLoading: isRuntimesLoading, error: isRuntimesError } = useProjectRuntimesQuery(projectIdOrUndefined);
 
     const productionRuntime = useMemo(() => pickProductionRuntime(runtimes), [runtimes]);
@@ -69,7 +69,9 @@ export function SecondarySideBar() {
             if (projectIdOrUndefined == null) return;
             setDeployTarget(null);
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectIdOrUndefined) });
-            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleases(projectIdOrUndefined) });
+            await queryClient.invalidateQueries({
+                queryKey: QueryKeys.projectReleases(projectIdOrUndefined, PlatformEnvironmentType.prod),
+            });
             toast.success("Production deploy has started.", { position: "top-center" });
         },
         onError: () => {

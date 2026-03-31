@@ -1,16 +1,17 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
-import type {
-    ContextModulesByContextRow,
-    ListReleaseUnitsAllRequest,
-    ListReleaseUnitsAllResponse,
-    ProjectPatchRequest,
-    ProjectRequest,
-    ProjectResponse,
-    ProjectRuntimeResponse,
-    ProjectUnitResponse,
-    ReleaseResponse,
-    StageReleaseRequest,
+import {
+    type ContextModulesByContextRow,
+    type ListReleaseUnitsAllRequest,
+    type ListReleaseUnitsAllResponse,
+    type ProjectPatchRequest,
+    type ProjectRequest,
+    type ProjectResponse,
+    type ProjectRuntimeResponse,
+    type ProjectUnitResponse,
+    type ReleaseResponse,
+    type StageReleaseRequest,
+    PlatformEnvironmentType,
 } from "./types";
 
 const PROJECTS_ENDPOINT = "/v1/platform/projects";
@@ -113,8 +114,9 @@ export function getDraftUnitsAsOfReleaseControllerMessage(
         .then((res) => res.data ?? []);
 }
 
-export function getReleases(projectId: string): Promise<ReleaseResponse[]> {
-    return apiClient.get<ApiResponse<ReleaseResponse[]>>(projectReleasesEndpoint(projectId)).then((res) => res.data ?? []);
+export function getReleases(projectId: string, environment: PlatformEnvironmentType): Promise<ReleaseResponse[]> {
+    const url = `${projectReleasesEndpoint(projectId)}?environment=${encodeURIComponent(environment)}`;
+    return apiClient.get<ApiResponse<ReleaseResponse[]>>(url).then((res) => res.data ?? []);
 }
 
 export function getReleaseUnits(projectId: string, releaseId: string): Promise<ProjectUnitResponse[]> {

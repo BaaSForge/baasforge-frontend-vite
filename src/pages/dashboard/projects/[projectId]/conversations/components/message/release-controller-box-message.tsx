@@ -31,7 +31,7 @@ import {
 } from "@/modules/project-chat";
 import { usePersistedUnitDiffViewMode } from "@/modules/project-chat/hooks/use-persisted-unit-diff-view-mode";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
-import type { ProjectUnitResponse } from "@/modules/project/types";
+import { type ProjectUnitResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -122,10 +122,12 @@ export function ReleaseControllerBoxMessage({
 
     const queryClient = useQueryClient();
 
-    const invalidateAfterRuntimeDeploy = useCallback(async () => {
+    const invalidateAfterRuntimeDeploy = useCallback(async (env: PlatformEnvironmentType) => {
         if (projectId == null || chatSessionId == null) return;
         await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId) });
-        await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleases(projectId) });
+        await queryClient.invalidateQueries({
+            queryKey: QueryKeys.projectReleases(projectId, env),
+        });
     }, [projectId, chatSessionId, queryClient]);
 
     const stageRedeployMutation = useMutation({
@@ -138,7 +140,7 @@ export function ReleaseControllerBoxMessage({
             await postRuntimeDeployStageRelease(projectId, runtimeId, body);
         },
         onSuccess: async () => {
-            await invalidateAfterRuntimeDeploy();
+            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.stage);
             setStageDeployRuntimePickOpen(false);
             toast.success("Stage deploy has started.", { position: "top-center" });
         },
@@ -167,7 +169,7 @@ export function ReleaseControllerBoxMessage({
         onSuccess: async () => {
             setProductionRedeployConfirmOpen(false);
             setProdRedeployRuntimeId(null);
-            await invalidateAfterRuntimeDeploy();
+            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
             toast.success("Production deploy has started.", { position: "top-center" });
         },
         onError: () => {

@@ -14,7 +14,7 @@ import {
     postListReleaseUnitsAll,
     postModulesByContexts,
 } from "./api";
-import type { ListReleaseUnitsAllRequest } from "./types";
+import { type ListReleaseUnitsAllRequest, PlatformEnvironmentType } from "./types";
 import { pickProductionRuntime } from "./runtime-release";
 
 export function useProjectsQuery() {
@@ -64,11 +64,15 @@ export function useProjectDraftUnitsAsOfReleaseControllerMessageQuery(
     });
 }
 
-export function useProjectReleasesQuery(projectId: string | undefined, options?: { enabled?: boolean }) {
+export function useProjectReleasesQuery(
+    projectId: string | undefined,
+    environment: PlatformEnvironmentType,
+    options?: { enabled?: boolean },
+) {
     const enabledByOption = options?.enabled ?? true;
     return useQuery({
-        queryKey: QueryKeys.projectReleases(projectId ?? ""),
-        queryFn: () => getReleases(projectId!),
+        queryKey: QueryKeys.projectReleases(projectId ?? "", environment),
+        queryFn: () => getReleases(projectId!, environment),
         enabled: !!projectId && enabledByOption,
     });
 }
