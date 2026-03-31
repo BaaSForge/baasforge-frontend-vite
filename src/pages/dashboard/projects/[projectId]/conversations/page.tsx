@@ -313,10 +313,16 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
     const [placeholderVisible, setPlaceholderVisible] = useState(false);
     useEffect(() => {
-        setPlaceholderVisible(false);
+        queueMicrotask(() => {
+            setPlaceholderVisible(false);
+        });
     }, [chatSessionIdOrUndefined]);
     useEffect(() => {
-        if (isGenerating && chatSessionIdOrUndefined) setPlaceholderVisible(true);
+        if (isGenerating && chatSessionIdOrUndefined) {
+            queueMicrotask(() => {
+                setPlaceholderVisible(true);
+            });
+        }
     }, [isGenerating, chatSessionIdOrUndefined]);
 
     const prevIsGeneratingRef = useRef(isGenerating);
