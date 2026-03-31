@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { UNIT_TYPE_ICONS } from "@/modules/project/components/unit-type-badge";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
@@ -132,6 +133,13 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
     }, [tabActive, data, setSearchParams]);
 
     const patchUrl = (patch: Parameters<typeof mergeAllUnitsSearchParams>[1]) => {
+        if (patch.groupMode != null) {
+            try {
+                localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, patch.groupMode);
+            } catch {
+                // ignore
+            }
+        }
         setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), patch));
     };
 
@@ -294,7 +302,7 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                                     <TextAlignJustifyIcon />
                                 </span>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">Ungrouped view (this page)</TooltipContent>
+                            <TooltipContent side="bottom">Ungrouped view</TooltipContent>
                         </Tooltip>
                     </ToggleGroupItem>
                     <ToggleGroupItem value="grouped">
@@ -304,7 +312,7 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                                     <LayersIcon />
                                 </span>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">Group by type (this page)</TooltipContent>
+                            <TooltipContent side="bottom">Group by type</TooltipContent>
                         </Tooltip>
                     </ToggleGroupItem>
                 </ToggleGroup>

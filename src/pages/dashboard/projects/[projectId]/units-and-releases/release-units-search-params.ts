@@ -1,3 +1,4 @@
+import { STORAGE_KEYS } from "@/constants/storage-keys";
 import type { ContextModulePair, ProjectUnitType } from "@/modules/project/types";
 import { STATIC_PROJECT_UNIT_TYPES } from "@/modules/project/types";
 
@@ -77,8 +78,17 @@ function parsePairsFromParams(searchParams: URLSearchParams): ContextModulePair[
     }
 }
 
-function parseGroupMode(raw: string | null): AllUnitsGroupMode {
-    return raw === "grouped" ? "grouped" : "ungrouped";
+/** URL `group` when set; otherwise the same localStorage key as the New units tab. */
+export function getEffectiveGroupMode(searchParams: URLSearchParams): AllUnitsGroupMode {
+    const raw = searchParams.get("group");
+    if (raw === "grouped" || raw === "ungrouped") return raw;
+    try {
+        const stored = localStorage.getItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE);
+        if (stored === "ungrouped" || stored === "grouped") return stored;
+    } catch {
+        // ignore
+    }
+    return "ungrouped";
 }
 
 export function readReleaseUnitsSearchParams(searchParams: URLSearchParams): {
@@ -104,7 +114,7 @@ export function readReleaseUnitsSearchParams(searchParams: URLSearchParams): {
         allUnits: {
             page,
             pageSize,
-            groupMode: parseGroupMode(searchParams.get("group")),
+            groupMode: getEffectiveGroupMode(searchParams),
             contexts: parseContextsFromParams(searchParams),
             unitTypes: parseUnitTypesFromParams(searchParams),
             contextModulePairs: parsePairsFromParams(searchParams),

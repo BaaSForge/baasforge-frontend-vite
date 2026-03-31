@@ -6,20 +6,10 @@ import { capitalizeFirstLetter } from "@/lib/utils";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { LayersIcon, TextAlignJustifyIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useSearchParams } from "react-router";
 import { groupUnitsByType } from "./group-units-by-type";
-
-type GroupMode = "ungrouped" | "grouped";
-
-function getStoredGroupMode(): GroupMode {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE);
-        if (stored === "ungrouped" || stored === "grouped") return stored;
-    } catch {
-        // ignore
-    }
-    return "ungrouped";
-}
+import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type AllUnitsGroupMode } from "./release-units-search-params";
 
 function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: ProjectUnitResponse[] }) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
@@ -52,11 +42,18 @@ export function NewUnitsTab({
     isLoading: boolean;
     error: unknown;
 }) {
-    const [groupMode, setGroupMode] = useState<GroupMode>(getStoredGroupMode);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { allUnits } = readReleaseUnitsSearchParams(searchParams);
+    const groupMode = allUnits.groupMode;
 
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, groupMode);
-    }, [groupMode]);
+    const setGroupMode = (v: AllUnitsGroupMode) => {
+        try {
+            localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, v);
+        } catch {
+            // ignore
+        }
+        setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), { groupMode: v }));
+    };
 
     return (
         <div className="space-y-4">
@@ -71,7 +68,7 @@ export function NewUnitsTab({
                 <ToggleGroup
                     type="single"
                     value={groupMode}
-                    onValueChange={(v) => v != null && v !== "" && setGroupMode(v as GroupMode)}
+                    onValueChange={(v) => v != null && v !== "" && setGroupMode(v as AllUnitsGroupMode)}
                     variant="outline"
                     size="sm"
                     className="shrink-0"
