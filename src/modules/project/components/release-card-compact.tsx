@@ -57,11 +57,6 @@ export function ReleaseCardCompact({
                     Not shipped
                 </Badge>
             )}
-            {isLive && (
-                <Badge variant="outline" className="text-[0.625rem]">
-                    deployed to {runtime.name}
-                </Badge>
-            )}
             {isLive && <LiveBadge isOn onLabel="Live" />}
             <Badge variant="outline" className="text-[0.625rem]">
                 {formatDateTimeMedium(release.created_at)}

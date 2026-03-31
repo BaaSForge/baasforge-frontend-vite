@@ -68,7 +68,10 @@ export function SecondarySidebar({ children }: Props) {
             side="right"
             className={cn(
                 "z-20",
-                stickyBarVisible ? `top-[var(--sticky-bar-height)]` : "top-0",
+                stickyBarVisible
+                    ? // Match viewport below sticky bar: h-svh + offset top would extend past the screen and clip the scroll area.
+                      `top-[var(--sticky-bar-height)] h-[calc(100svh-var(--sticky-bar-height))]`
+                    : "top-0",
                 "transition-all",
                 stickyBarTransition,
             )}

@@ -120,7 +120,7 @@ export function SecondarySideBar() {
         <>
             <SecondarySidebarContent
                 header={
-                    <SecondarySidebarStickyHeader>
+                    <SecondarySidebarStickyHeader className="pt-3 pb-[calc(1rem+1px)]">
                         <SectionTitle className="mb-0">Choose release to view units</SectionTitle>
                     </SecondarySidebarStickyHeader>
                 }
