@@ -6,15 +6,13 @@ import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
-import { useSuppressClicksAfterRadixOverlayOpen } from "@/hooks/use-suppress-clicks-after-radix-overlay-open";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
 import { type ReactNode, type SyntheticEvent, useState } from "react";
-import { flushSync } from "react-dom";
 import type { ProjectRuntimeResponse, ReleaseResponse } from "../types";
 import { ReleaseNotesModal } from "./release-notes-modal";
 
-/** Release-notes block: stop bubbling so the row’s `onClick` (select release) does not run. */
+/** Release-notes block: stop bubbling so the row's `onClick` (select release) does not run. */
 function stopNotesRegionFromSelectingCard(e: SyntheticEvent) {
     e.stopPropagation();
 }
@@ -32,7 +30,7 @@ export interface ReleaseCardCompactProps {
     /** Extra controls in the footer row (e.g. deploy); clicks must call stopPropagation if the card is clickable. */
     cardActionEnd?: ReactNode;
     /**
-     * Optional trailing control(s) in the footer’s bottom row, right side (e.g. overflow menu).
+     * Optional trailing control(s) in the footer's bottom row, right side (e.g. overflow menu).
      * Triggers should call `stopPropagation` so a clickable card does not also fire.
      */
     cardOverflowMenu?: ReactNode;
@@ -50,7 +48,6 @@ export function ReleaseCardCompact({
     cardOverflowMenu,
 }: ReleaseCardCompactProps) {
     const [modalOpen, setModalOpen] = useState(false);
-    const { armOverlayOpenSuppression, shouldSuppressFollowUpClick } = useSuppressClicksAfterRadixOverlayOpen();
 
     const isLive = !!runtime;
     const showNotShippedBadge = !!undeployedProductionLeafMuted && !isLive;
@@ -84,17 +81,6 @@ export function ReleaseCardCompact({
         </>
     );
 
-    const handleCardClick = () => {
-        if (shouldSuppressFollowUpClick()) return;
-        onClick?.();
-    };
-
-    const openReleaseNotesModal = () => {
-        armOverlayOpenSuppression();
-        /** Commit portal + overlay before the browser finishes the opening `click` (pairs with hook’s absorber). */
-        flushSync(() => setModalOpen(true));
-    };
-
     return (
         <div
             className={cn(
@@ -104,7 +90,7 @@ export function ReleaseCardCompact({
                 className,
             )}
             aria-selected={selected}
-            onClick={handleCardClick}
+            onClick={onClick}
         >
             <Card
                 className={cn(
@@ -122,7 +108,7 @@ export function ReleaseCardCompact({
                         trigger={() => (
                             <ExpandableFullReadTrigger
                                 ariaLabel="Show full release notes"
-                                onClick={openReleaseNotesModal}
+                                onClick={() => setModalOpen(true)}
                                 className="rounded-t-xl rounded-b-none"
                             >
                                 Read full release notes

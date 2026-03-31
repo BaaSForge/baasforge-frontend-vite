@@ -2,6 +2,7 @@ import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/lib/utils";
+import { absorbNextClick } from "@/lib/absorb-next-click";
 
 function Drawer({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
     return <DrawerPrimitive.Root data-slot="drawer" {...props} />;
@@ -32,12 +33,31 @@ function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof Draw
     );
 }
 
-function DrawerContent({ className, children, ...props }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+function DrawerContent({
+    className,
+    children,
+    onPointerDownOutside: onPointerDownOutsideProp,
+    onCloseAutoFocus: onCloseAutoFocusProp,
+    ...props
+}: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+    const handlePointerDownOutside: React.ComponentProps<typeof DrawerPrimitive.Content>["onPointerDownOutside"] = (e) => {
+        absorbNextClick();
+        onPointerDownOutsideProp?.(e);
+    };
+
+    const handleCloseAutoFocus: React.ComponentProps<typeof DrawerPrimitive.Content>["onCloseAutoFocus"] = (e) => {
+        e.preventDefault();
+        onCloseAutoFocusProp?.(e);
+    };
+
     return (
         <DrawerPortal data-slot="drawer-portal">
             <DrawerOverlay />
             <DrawerPrimitive.Content
                 data-slot="drawer-content"
+                onPointerDownOutside={handlePointerDownOutside}
+                onCloseAutoFocus={handleCloseAutoFocus}
+                onClick={(e) => e.stopPropagation()}
                 className={cn(
                     "group/drawer-content bg-background fixed z-50 flex h-auto max-h-[80dvh] flex-col overflow-hidden",
                     "data-[vaul-drawer-direction=top]:inset-x-0 data-[vaul-drawer-direction=top]:top-0 data-[vaul-drawer-direction=top]:mb-24 data-[vaul-drawer-direction=top]:max-h-[80dvh] data-[vaul-drawer-direction=top]:rounded-b-lg data-[vaul-drawer-direction=top]:border-b",
