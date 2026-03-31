@@ -1,10 +1,18 @@
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import {
+    Combobox,
+    ComboboxChip,
+    ComboboxChips,
+    ComboboxChipsInput,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxItem,
+    ComboboxList,
+    ComboboxValue,
+    useComboboxAnchor,
+} from "@/components/ui/combobox";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
@@ -18,8 +26,8 @@ import {
 } from "@/modules/project/queries";
 import type { ContextModulePair, ListReleaseUnitsAllRequest, ProjectUnitResponse, ProjectUnitType } from "@/modules/project/types";
 import { STATIC_PROJECT_UNIT_TYPES } from "@/modules/project/types";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, LayersIcon, Loader2Icon, TextAlignJustifyIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronLeftIcon, ChevronRightIcon, FilterXIcon, LayersIcon, Loader2Icon, TextAlignJustifyIcon } from "lucide-react";
+import { Fragment, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { groupUnitsByType } from "./group-units-by-type";
 import {
@@ -31,44 +39,29 @@ import {
     type AllUnitsGroupMode,
 } from "./release-units-search-params";
 
-function FilterPopoverButton({
-    label,
-    count,
-    disabled,
-    loading,
-    children,
-    className,
-}: {
-    label: string;
-    count: number;
-    disabled?: boolean;
-    loading?: boolean;
-    children: React.ReactNode;
-    className?: string;
-}) {
-    const [open, setOpen] = useState(false);
-    return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={disabled}
-                    className={cn("min-w-[9rem] justify-between gap-2 font-normal", className)}
-                >
-                    <span className="truncate">
-                        {label}
-                        {count > 0 ? ` (${count})` : ""}
-                    </span>
-                    {loading ? <Loader2Icon className="size-4 shrink-0 animate-spin" /> : <ChevronDownIcon className="size-4 shrink-0 opacity-60" />}
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent align="start" className="w-[min(100vw-2rem,22rem)] p-0">
-                {children}
-            </PopoverContent>
-        </Popover>
-    );
+const MODULE_PAIR_SEP = "\u0000";
+
+function modulePairKey(p: ContextModulePair): string {
+    return `${p.context_slug}${MODULE_PAIR_SEP}${p.module_slug}`;
+}
+
+function parseModulePairKey(key: string): ContextModulePair | null {
+    const i = key.indexOf(MODULE_PAIR_SEP);
+    if (i <= 0) return null;
+    const context_slug = key.slice(0, i);
+    const module_slug = key.slice(i + MODULE_PAIR_SEP.length);
+    if (context_slug.length === 0 || module_slug.length === 0) return null;
+    return { context_slug, module_slug };
+}
+
+function modulePairKeyLabel(key: string): string {
+    const p = parseModulePairKey(key);
+    return p != null ? `${p.context_slug}: ${p.module_slug}` : key;
+}
+
+function sortPairs(a: ContextModulePair, b: ContextModulePair): number {
+    const c = a.context_slug.localeCompare(b.context_slug);
+    return c !== 0 ? c : a.module_slug.localeCompare(b.module_slug);
 }
 
 function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: ProjectUnitResponse[] }) {
@@ -143,29 +136,37 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
         setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), patch));
     };
 
-    const toggleContext = (slug: string, checked: boolean) => {
-        const nextContexts = checked
-            ? [...contexts, slug].sort((a, b) => a.localeCompare(b))
-            : contexts.filter((c) => c !== slug);
-        const nextPairs = pairsCompatibleWithContexts(nextContexts, contextModulePairs);
-        patchUrl({ contexts: nextContexts, contextModulePairs: nextPairs, page: DEFAULT_ALL_UNITS_PAGE });
-    };
+    const contextsAnchor = useComboboxAnchor();
+    const modulesAnchor = useComboboxAnchor();
+    const unitTypesAnchor = useComboboxAnchor();
 
-    const togglePair = (context_slug: string, module_slug: string, checked: boolean) => {
-        let next: ContextModulePair[] = [...pairs];
-        if (checked) {
-            if (!next.some((p) => p.context_slug === context_slug && p.module_slug === module_slug)) {
-                next.push({ context_slug, module_slug });
+    const moduleItemKeys = useMemo(() => {
+        const keys: string[] = [];
+        for (const ctxSlug of contexts) {
+            const row = modulesQuery.data?.find((r) => r.context_slug === ctxSlug);
+            const mods = [...(row?.module_slugs ?? [])].sort((a, b) => a.localeCompare(b));
+            for (const mod of mods) {
+                keys.push(modulePairKey({ context_slug: ctxSlug, module_slug: mod }));
             }
-        } else {
-            next = next.filter((p) => !(p.context_slug === context_slug && p.module_slug === module_slug));
         }
-        patchUrl({ contextModulePairs: next, page: DEFAULT_ALL_UNITS_PAGE });
-    };
+        return keys.sort((a, b) => a.localeCompare(b));
+    }, [contexts, modulesQuery.data]);
 
-    const toggleUnitType = (t: ProjectUnitType, checked: boolean) => {
-        const next = checked ? [...unitTypes, t].sort((a, b) => a.localeCompare(b)) : unitTypes.filter((x) => x !== t);
-        patchUrl({ unitTypes: next, page: DEFAULT_ALL_UNITS_PAGE });
+    const modulePairKeysValue = useMemo(
+        () => [...pairs].sort(sortPairs).map(modulePairKey),
+        [pairs],
+    );
+
+    const hasActiveFilters =
+        contexts.length > 0 || contextModulePairs.length > 0 || unitTypes.length > 0;
+
+    const clearFilters = () => {
+        patchUrl({
+            contexts: [],
+            contextModulePairs: [],
+            unitTypes: [],
+            page: DEFAULT_ALL_UNITS_PAGE,
+        });
     };
 
     const total = data?.total ?? 0;
@@ -183,108 +184,159 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
 
             <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
-                    <FilterPopoverButton label="Contexts" count={contexts.length} loading={contextsLoading}>
-                        <div className="border-b px-3 py-2 text-xs font-medium text-muted-foreground">Filter by context</div>
-                        <ScrollArea className="h-[min(18rem,50vh)]">
-                            <div className="space-y-2 p-3">
-                                {contextsLoading && sortedContextOptions.length === 0 ? (
-                                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                                        <Loader2Icon className="size-4 animate-spin" />
-                                        Loading contexts…
-                                    </div>
-                                ) : sortedContextOptions.length === 0 ? (
-                                    <div className="text-muted-foreground text-sm">No contexts for this release.</div>
-                                ) : (
-                                    sortedContextOptions.map((slug) => (
-                                        <div key={slug} className="flex items-center gap-2">
-                                            <Checkbox
-                                                id={`ctx-${slug}`}
-                                                checked={contexts.includes(slug)}
-                                                onCheckedChange={(v) => toggleContext(slug, v === true)}
-                                            />
-                                            <Label htmlFor={`ctx-${slug}`} className="cursor-pointer font-normal">
-                                                {slug}
-                                            </Label>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </ScrollArea>
-                    </FilterPopoverButton>
-
-                    <FilterPopoverButton
-                        label="Modules"
-                        count={pairs.length}
-                        disabled={contexts.length === 0}
-                        loading={modulesQuery.isLoading || modulesQuery.isFetching}
+                    <Combobox
+                        multiple
+                        autoHighlight
+                        items={sortedContextOptions}
+                        value={contexts}
+                        onValueChange={(next) => {
+                            const nextContexts = [...(next ?? [])].sort((a, b) => a.localeCompare(b));
+                            const nextPairs = pairsCompatibleWithContexts(nextContexts, contextModulePairs);
+                            patchUrl({ contexts: nextContexts, contextModulePairs: nextPairs, page: DEFAULT_ALL_UNITS_PAGE });
+                        }}
                     >
-                        <div className="border-b px-3 py-2 text-xs font-medium text-muted-foreground">Filter by module (scoped to selected contexts)</div>
-                        <ScrollArea className="h-[min(18rem,50vh)]">
-                            <div className="space-y-4 p-3">
-                                {contexts.length === 0 ? (
-                                    <p className="text-muted-foreground text-sm">Select one or more contexts to choose modules.</p>
-                                ) : modulesQuery.isLoading || modulesQuery.isFetching ? (
-                                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                                        <Loader2Icon className="size-4 animate-spin" />
-                                        Loading modules…
-                                    </div>
-                                ) : (
-                                    contexts.map((ctxSlug) => {
-                                        const row = modulesQuery.data?.find((r) => r.context_slug === ctxSlug);
-                                        const mods = row?.module_slugs ?? [];
-                                        const sortedMods = [...mods].sort((a, b) => a.localeCompare(b));
-                                        return (
-                                            <div key={ctxSlug} className="space-y-2">
-                                                <div className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">{ctxSlug}</div>
-                                                {sortedMods.length === 0 ? (
-                                                    <p className="text-muted-foreground pl-1 text-xs">No modules listed for this context.</p>
-                                                ) : (
-                                                    sortedMods.map((mod) => {
-                                                        const id = `mod-${ctxSlug}:${mod}`;
-                                                        const checked = pairs.some((p) => p.context_slug === ctxSlug && p.module_slug === mod);
-                                                        return (
-                                                            <div key={id} className="flex items-center gap-2 pl-1">
-                                                                <Checkbox
-                                                                    id={id}
-                                                                    checked={checked}
-                                                                    onCheckedChange={(v) => togglePair(ctxSlug, mod, v === true)}
-                                                                />
-                                                                <Label htmlFor={id} className="cursor-pointer font-normal">
-                                                                    {mod}
-                                                                </Label>
-                                                            </div>
-                                                        );
-                                                    })
-                                                )}
-                                            </div>
-                                        );
-                                    })
+                        <ComboboxChips ref={contextsAnchor} className="h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1">
+                            <ComboboxValue>
+                                {(values: string[]) => (
+                                    <Fragment>
+                                        {values.map((slug) => (
+                                            <ComboboxChip key={slug} title={slug}>
+                                                {slug}
+                                            </ComboboxChip>
+                                        ))}
+                                        <ComboboxChipsInput placeholder="Contexts" className="text-sm placeholder:text-muted-foreground" />
+                                    </Fragment>
                                 )}
-                            </div>
-                        </ScrollArea>
-                    </FilterPopoverButton>
+                            </ComboboxValue>
+                        </ComboboxChips>
+                        <ComboboxContent anchor={contextsAnchor} className="w-[var(--anchor-width)]">
+                            <ComboboxEmpty>
+                                {contextsLoading ? (
+                                    <span className="inline-flex items-center gap-2">
+                                        <Loader2Icon className="size-4 shrink-0 animate-spin" />
+                                        Loading contexts…
+                                    </span>
+                                ) : (
+                                    "No contexts for this release."
+                                )}
+                            </ComboboxEmpty>
+                            <ComboboxList>
+                                {(slug: string) => (
+                                    <ComboboxItem key={slug} value={slug}>
+                                        <span className="truncate">{slug}</span>
+                                    </ComboboxItem>
+                                )}
+                            </ComboboxList>
+                        </ComboboxContent>
+                    </Combobox>
 
-                    <FilterPopoverButton label="Unit types" count={unitTypes.length}>
-                        <div className="border-b px-3 py-2 text-xs font-medium text-muted-foreground">Filter by unit type</div>
-                        <ScrollArea className="h-[min(18rem,50vh)]">
-                            <div className="space-y-2 p-3">
-                                {STATIC_PROJECT_UNIT_TYPES.map((t) => {
+                    <Combobox
+                        multiple
+                        autoHighlight
+                        items={moduleItemKeys}
+                        value={modulePairKeysValue}
+                        disabled={contexts.length === 0}
+                        onValueChange={(next) => {
+                            const keys = [...(next ?? [])] as string[];
+                            const parsed: ContextModulePair[] = [];
+                            for (const k of keys) {
+                                const p = parseModulePairKey(k);
+                                if (p != null) parsed.push(p);
+                            }
+                            parsed.sort(sortPairs);
+                            patchUrl({ contextModulePairs: parsed, page: DEFAULT_ALL_UNITS_PAGE });
+                        }}
+                    >
+                        <ComboboxChips ref={modulesAnchor} className="h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1">
+                            <ComboboxValue>
+                                {(values: string[]) => (
+                                    <Fragment>
+                                        {values.map((key) => (
+                                            <ComboboxChip key={key} title={modulePairKeyLabel(key)}>
+                                                {modulePairKeyLabel(key)}
+                                            </ComboboxChip>
+                                        ))}
+                                        <ComboboxChipsInput placeholder="Modules" className="text-sm placeholder:text-muted-foreground" />
+                                    </Fragment>
+                                )}
+                            </ComboboxValue>
+                        </ComboboxChips>
+                        <ComboboxContent anchor={modulesAnchor} className="w-[var(--anchor-width)]">
+                            <ComboboxEmpty>
+                                {contexts.length === 0
+                                    ? "Select one or more contexts."
+                                    : modulesQuery.isLoading || modulesQuery.isFetching
+                                      ? "Loading modules…"
+                                      : moduleItemKeys.length === 0
+                                        ? "No modules for selected contexts."
+                                        : "No matching modules."}
+                            </ComboboxEmpty>
+                            <ComboboxList>
+                                {(key: string) => (
+                                    <ComboboxItem key={key} value={key}>
+                                        <span className="truncate">{modulePairKeyLabel(key)}</span>
+                                    </ComboboxItem>
+                                )}
+                            </ComboboxList>
+                        </ComboboxContent>
+                    </Combobox>
+
+                    <Combobox
+                        multiple
+                        autoHighlight
+                        items={STATIC_PROJECT_UNIT_TYPES.slice()}
+                        value={unitTypes}
+                        onValueChange={(next) => {
+                            const nextTypes = [...(next ?? [])] as ProjectUnitType[];
+                            nextTypes.sort((a, b) => a.localeCompare(b));
+                            patchUrl({ unitTypes: nextTypes, page: DEFAULT_ALL_UNITS_PAGE });
+                        }}
+                    >
+                        <ComboboxChips ref={unitTypesAnchor} className="h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1">
+                            <ComboboxValue>
+                                {(values: ProjectUnitType[]) => (
+                                    <Fragment>
+                                        {values.map((t) => {
+                                            const Icon = UNIT_TYPE_ICONS[t];
+                                            return (
+                                                <ComboboxChip key={t} title={capitalizeFirstLetter(t)}>
+                                                    <Icon className="text-muted-foreground size-3 shrink-0" aria-hidden />
+                                                    {capitalizeFirstLetter(t)}
+                                                </ComboboxChip>
+                                            );
+                                        })}
+                                        <ComboboxChipsInput placeholder="Unit types" className="text-sm placeholder:text-muted-foreground" />
+                                    </Fragment>
+                                )}
+                            </ComboboxValue>
+                        </ComboboxChips>
+                        <ComboboxContent anchor={unitTypesAnchor} className="w-[var(--anchor-width)]">
+                            <ComboboxEmpty>No unit types.</ComboboxEmpty>
+                            <ComboboxList>
+                                {(t: ProjectUnitType) => {
                                     const Icon = UNIT_TYPE_ICONS[t];
-                                    const id = `ut-${t}`;
-                                    const checked = unitTypes.includes(t);
                                     return (
-                                        <div key={t} className="flex items-center gap-2">
-                                            <Checkbox id={id} checked={checked} onCheckedChange={(v) => toggleUnitType(t, v === true)} />
-                                            <Label htmlFor={id} className="flex cursor-pointer items-center gap-2 font-normal">
-                                                <Icon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
-                                                {capitalizeFirstLetter(t)}
-                                            </Label>
-                                        </div>
+                                        <ComboboxItem key={t} value={t}>
+                                            <Icon className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                                            <span className="truncate">{capitalizeFirstLetter(t)}</span>
+                                        </ComboboxItem>
                                     );
-                                })}
-                            </div>
-                        </ScrollArea>
-                    </FilterPopoverButton>
+                                }}
+                            </ComboboxList>
+                        </ComboboxContent>
+                    </Combobox>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40"
+                        disabled={!hasActiveFilters}
+                        onClick={clearFilters}
+                    >
+                        <FilterXIcon className="size-4" />
+                        Clear filters
+                    </Button>
                 </div>
 
                 <ToggleGroup
