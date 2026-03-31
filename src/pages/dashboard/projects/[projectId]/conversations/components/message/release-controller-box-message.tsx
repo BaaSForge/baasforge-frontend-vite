@@ -128,6 +128,11 @@ export function ReleaseControllerBoxMessage({
         await queryClient.invalidateQueries({
             queryKey: QueryKeys.projectReleases(projectId, env),
         });
+        if (env === PlatformEnvironmentType.prod) {
+            await queryClient.invalidateQueries({
+                queryKey: QueryKeys.projectChatSessionDetail(projectId, chatSessionId),
+            });
+        }
     }, [projectId, chatSessionId, queryClient]);
 
     const stageRedeployMutation = useMutation({
@@ -186,8 +191,7 @@ export function ReleaseControllerBoxMessage({
         },
         onSuccess: async () => {
             setProductionConfirmOpen(false);
-            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionMessages(projectId!, chatSessionId!) });
-            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId!) });
+            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
             toast.success("Production release process has started.", { position: "top-center" });
         },
         onError: () => {
