@@ -3,6 +3,7 @@ import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
 import { isProductionLiveReleaseChangedEvent, isProjectDeletedEvent, isRuntimeCreatedEvent, userTopic } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
+import { getProjectChatSessionDetail } from "@/modules/project-chat/api";
 import { handleChatSessionWsEvent, handleProjectUnitWsEvent } from "@/modules/project-chat/ws-cache-handler";
 import { STALE_BASE_RELEASE_CONVERSATION_MESSAGE } from "@/modules/project-chat/stale-base-release-conversation-message";
 import { useQueryClient } from "@tanstack/react-query";
@@ -60,14 +61,22 @@ export function useSubscribeUserNotifications(): void {
                     routeConversationId != null &&
                     data.project_id === routeProjectId
                 ) {
-                    queryClient.invalidateQueries({
-                        queryKey: QueryKeys.projectChatSessionDetail(data.project_id, routeConversationId),
-                    });
-                    toast.warning("Production changed — this chat's base is stale", {
-                        position: TOAST_POSITION,
-                        closeButton: true,
-                        description: STALE_BASE_RELEASE_CONVERSATION_MESSAGE,
-                    });
+                    const projectId = data.project_id;
+                    const conversationId = routeConversationId;
+                    void queryClient
+                        .fetchQuery({
+                            queryKey: QueryKeys.projectChatSessionDetail(projectId, conversationId),
+                            queryFn: () => getProjectChatSessionDetail(projectId, conversationId),
+                        })
+                        .then((session) => {
+                            if (session?.stale_base_release === true) {
+                                toast.warning("Production changed — this chat's base is stale", {
+                                    position: TOAST_POSITION,
+                                    closeButton: true,
+                                    description: STALE_BASE_RELEASE_CONVERSATION_MESSAGE,
+                                });
+                            }
+                        });
                 }
                 return;
             }
