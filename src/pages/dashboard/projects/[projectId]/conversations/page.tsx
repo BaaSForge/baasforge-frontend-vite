@@ -409,7 +409,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                             lastAiEndStatus === "failed" ? "text-destructive" : "text-muted-foreground",
                                         )}
                                     >
-                                        {lastAiEndStatus === "failed" ? "Generation failed." : "Generation stopped."}
+                                        {lastAiEndStatus === "failed" ? "Generation has some failures." : "Generation stopped."}
                                     </div>
                                 )}
                                 {(isGenerating || placeholderVisible) && (

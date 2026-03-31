@@ -46,7 +46,7 @@ export function ToolModifyUnitMessage({
     const unit: ProjectUnitResponse | null = payload?.revised_unit ?? null;
     const status = message.status ?? ChatMessageStatus.Generating;
     const statusLine = modifyStatusLine(status);
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
 
     return (
         <ToolUnitMutationLayout

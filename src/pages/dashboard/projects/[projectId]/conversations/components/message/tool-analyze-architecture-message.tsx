@@ -19,6 +19,7 @@ import {
 import { useChatSessionEmbeddedUnitsLatestRevisions } from "@/modules/project-chat/use-chat-session-embedded-units-latest-revisions";
 
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 function getRelatedUnits(message: ChatMessageWithDeliveryStatus): ProjectUnitResponse[] {
@@ -61,7 +62,8 @@ export function ToolAnalyzeArchitectureMessage({ message, nestedMessages }: { me
     const hasUnits = unitCount > 0;
     const hasDetailedReport = detailedReport.trim().length > 0;
     const hasNestedMessages = nestedMessages != null;
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const formattedArgs = args ? formatAnalyzeArchitectureArgs(args) : "—";
 
     return (
         <>
@@ -84,8 +86,7 @@ export function ToolAnalyzeArchitectureMessage({ message, nestedMessages }: { me
                                 </CollapsibleTrigger>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-xs">
-                                <span className="font-medium">Arguments</span>
-                                <span className="block mt-0.5 text-muted-foreground">{args ? formatAnalyzeArchitectureArgs(args) : "—"}</span>
+                                <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
                             </TooltipContent>
                         </Tooltip>
                         <CollapsibleContent

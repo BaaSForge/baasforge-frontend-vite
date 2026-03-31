@@ -16,6 +16,7 @@ import {
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 function getToolFetchLatestReleasesPayload(message: ChatMessageWithDeliveryStatus): ReleaseResponse[] {
@@ -52,12 +53,12 @@ export function ToolFetchLatestReleasesMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasReleases = releaseCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const formattedArgs = args ? formatLatestReleasesArgs(args) : "—";
 
     const headerTooltip = (
         <TooltipContent side="top" className="max-w-xs">
-            <span className="font-medium">Arguments</span>
-            <span className="block mt-0.5 text-muted-foreground">{args ? formatLatestReleasesArgs(args) : "—"}</span>
+            <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
         </TooltipContent>
     );
 

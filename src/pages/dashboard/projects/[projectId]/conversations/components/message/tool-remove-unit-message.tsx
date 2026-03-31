@@ -35,7 +35,7 @@ export function ToolRemoveUnitMessage({
     const unit: ProjectUnitResponse | null = payload?.removed_unit ?? null;
     const status = message.status ?? ChatMessageStatus.Generating;
     const statusLine = removeStatusLine(status);
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
 
     return (
         <ToolUnitMutationLayout

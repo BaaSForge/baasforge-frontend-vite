@@ -15,6 +15,7 @@ import {
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 type ContextModulesEntry = {
@@ -71,14 +72,12 @@ export function ToolListModulesForUnitContextsMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasContent = rowCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const formattedArgs = args ? formatListModulesForUnitContextsArgs(args) : "—";
 
     const headerTooltip = (
         <TooltipContent side="top" className="max-w-xs">
-            <span className="font-medium">Arguments</span>
-            <span className="mt-0.5 block text-muted-foreground">
-                {args ? formatListModulesForUnitContextsArgs(args) : "—"}
-            </span>
+            <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
         </TooltipContent>
     );
 

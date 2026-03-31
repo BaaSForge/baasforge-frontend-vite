@@ -180,10 +180,136 @@ export interface ReleaseControllerBoxPayload {
     prod_release?: ReleaseResponse | null;
 }
 
-/** Non-empty `error` from any tool message payload (optional on all tool payloads). */
-export function getToolPayloadErrorString(payload: unknown): string | null {
-    if (payload == null || typeof payload !== "object" || Array.isArray(payload)) return null;
-    const e = (payload as { error?: unknown }).error;
+/**
+ * Backend shape when `payload` is null or incomplete (e.g. tool validation failed before a full payload was built).
+ * Matches API fields such as `error`, `raw_arguments`, `tool_call_id`, and `tool_name`.
+ */
+export interface ToolMessagePayloadRaw {
+    error?: string;
+    raw_arguments?: Record<string, unknown> | unknown;
+}
+
+function readToolPayloadErrorFromObject(obj: unknown): string | null {
+    if (obj == null || typeof obj !== "object" || Array.isArray(obj)) return null;
+    const e = (obj as { error?: unknown }).error;
     if (typeof e !== "string" || e.trim() === "") return null;
     return e;
+}
+
+/**
+ * Non-empty `error` from the tool message `payload`, else from `payload_raw` (same shape as payload error).
+ */
+export function getToolPayloadErrorString(payload: unknown, payloadRaw?: unknown): string | null {
+    const fromPayload = readToolPayloadErrorFromObject(payload);
+    if (fromPayload != null) return fromPayload;
+    return readToolPayloadErrorFromObject(payloadRaw);
+}
+
+const RAW_ARGUMENTS_TOOLTIP_TITLE = "Raw Arguments";
+
+function hasMeaningfulFormattedToolArgs(formattedArgs: string): boolean {
+    const t = formattedArgs.trim();
+    return t !== "" && t !== "—";
+}
+
+function readRawArgumentsFromPayloadRaw(payloadRaw: unknown): unknown | undefined {
+    if (payloadRaw == null || typeof payloadRaw !== "object" || Array.isArray(payloadRaw)) return undefined;
+    if (!Object.prototype.hasOwnProperty.call(payloadRaw, "raw_arguments")) return undefined;
+    return (payloadRaw as ToolMessagePayloadRaw).raw_arguments;
+}
+
+/** Default max length for each `key: value` line’s value segment (tooltip). */
+const RAW_ARGS_DEFAULT_MAX_VALUE_CHARS = 140;
+/** Default max length for the full formatted block (tooltip). */
+const RAW_ARGS_DEFAULT_MAX_TOTAL_CHARS = 900;
+
+function truncateWithEllipsis(s: string, maxLen: number): string {
+    if (maxLen <= 0) return "";
+    if (s.length <= maxLen) return s;
+    const cut = maxLen - 1;
+    return cut <= 0 ? "…" : `${s.slice(0, cut)}…`;
+}
+
+function formatRawArgumentValueForLine(v: unknown, maxValueChars: number): string {
+    if (v === undefined) return "undefined";
+    if (v === null) return "null";
+    if (typeof v === "string") {
+        const t = v.trim();
+        return truncateWithEllipsis(t.length > 0 ? t : "(empty)", maxValueChars);
+    }
+    if (typeof v === "number" || typeof v === "boolean" || typeof v === "bigint") return String(v);
+    try {
+        return truncateWithEllipsis(JSON.stringify(v), maxValueChars);
+    } catch {
+        return truncateWithEllipsis(String(v), maxValueChars);
+    }
+}
+
+/**
+ * Human-readable lines (`key: value`) for tooltip display, with per-value and total caps.
+ * Plain objects use sorted keys; arrays list indexed lines; scalars stringify simply.
+ */
+export function formatPayloadRawArgumentsForDisplay(
+    value: unknown,
+    options?: { maxValueChars?: number; maxTotalChars?: number },
+): string {
+    const maxValue = options?.maxValueChars ?? RAW_ARGS_DEFAULT_MAX_VALUE_CHARS;
+    const maxTotal = options?.maxTotalChars ?? RAW_ARGS_DEFAULT_MAX_TOTAL_CHARS;
+
+    if (value === undefined) return "undefined";
+    if (value === null) return "null";
+    if (typeof value === "string") return truncateWithEllipsis(value, maxTotal);
+    if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+        return truncateWithEllipsis(String(value), maxTotal);
+    }
+
+    let lines: string[];
+    if (Array.isArray(value)) {
+        lines = value.map((item, i) => `[${i}]: ${formatRawArgumentValueForLine(item, maxValue)}`);
+    } else if (typeof value === "object") {
+        const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b));
+        lines = entries.map(([k, v]) => `${k}: ${formatRawArgumentValueForLine(v, maxValue)}`);
+    } else {
+        return truncateWithEllipsis(String(value), maxTotal);
+    }
+
+    const out = lines.length > 0 ? lines.join("\n") : "—";
+    return truncateWithEllipsis(out, maxTotal);
+}
+
+export type ToolArgumentsTooltipParts = {
+    /** Sub-heading under the tooltip trigger title; null when {@link options.omitParsedArgumentsHeading} hides it for parsed args. */
+    heading: string | null;
+    body: string;
+};
+
+type ToolArgumentsTooltipOptions = {
+    /** When true, omit the "Arguments" sub-heading if parsed args are non-empty (e.g. finish-tool tooltips). */
+    omitParsedArgumentsHeading?: boolean;
+};
+
+/** Tooltip sub-heading + body: parsed Arguments, else Raw Arguments from `payload_raw`, else em dash. */
+export function getToolArgumentsTooltipHeadingAndBody(
+    formattedArgs: string,
+    payloadRaw: unknown | null | undefined,
+    options?: ToolArgumentsTooltipOptions,
+): ToolArgumentsTooltipParts {
+    const omitParsed = options?.omitParsedArgumentsHeading === true;
+    if (hasMeaningfulFormattedToolArgs(formattedArgs)) {
+        return {
+            heading: omitParsed ? null : "Arguments",
+            body: formattedArgs,
+        };
+    }
+    const rawOnly = readRawArgumentsFromPayloadRaw(payloadRaw);
+    if (rawOnly !== undefined) {
+        return {
+            heading: RAW_ARGUMENTS_TOOLTIP_TITLE,
+            body: formatPayloadRawArgumentsForDisplay(rawOnly),
+        };
+    }
+    return {
+        heading: omitParsed ? null : "Arguments",
+        body: "—",
+    };
 }

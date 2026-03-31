@@ -10,6 +10,7 @@ import {
 import { truncateToWords } from "@/utils/truncate-to-words";
 
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 const SUMMARY_MAX_WORDS = 30;
@@ -32,7 +33,8 @@ export function FinishSolutionAnalysisMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const payload = message?.payload as FinishSolutionAnalysisPayload | undefined | null;
     const args = payload?.args ?? null;
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const formattedArgs = args ? formatArgs(args) : "—";
 
     return (
         <>
@@ -48,7 +50,11 @@ export function FinishSolutionAnalysisMessage({
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs">
                         <span className="font-medium">Solution analysis finished</span>
-                        <span className="block mt-0.5 whitespace-pre-line text-muted-foreground">{args ? formatArgs(args) : "—"}</span>
+                        <ToolMessageArgsTooltipBlocks
+                            formattedArgs={formattedArgs}
+                            payloadRaw={message.payload_raw}
+                            omitParsedArgumentsHeading
+                        />
                     </TooltipContent>
                 </Tooltip>
             </div>

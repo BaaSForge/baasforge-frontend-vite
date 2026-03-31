@@ -22,7 +22,7 @@ export function AiMessageStatusIcon({ status, className }: { status: ChatMessage
         case ChatMessageStatus.Generating:
             return <Spinner className={cn(MESSAGE_ICON_SIZE, "text-blue-500", className)} aria-label="Generating" />;
         case ChatMessageStatus.Failed:
-            return <TriangleAlert className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)} aria-label="Generation failed" />;
+            return <TriangleAlert className={cn(MESSAGE_ICON_SIZE, "text-destructive", className)} aria-label="Generation has some failures" />;
         case ChatMessageStatus.Stopped:
             return <Pause className={cn(MESSAGE_ICON_SIZE, "text-muted-foreground", className)} aria-label="Stopped" />;
         case ChatMessageStatus.Completed:

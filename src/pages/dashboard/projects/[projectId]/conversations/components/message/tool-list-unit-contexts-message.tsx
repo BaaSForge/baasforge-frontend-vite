@@ -31,7 +31,7 @@ export function ToolListUnitContextsMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasContent = contextCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
 
     return (
         <>

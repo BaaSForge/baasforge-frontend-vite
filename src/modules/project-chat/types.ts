@@ -1,4 +1,5 @@
 import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
+import type { ToolMessagePayloadRaw } from "./payloads";
 
 export enum ChatSessionRoleType {
     User = "user",
@@ -53,16 +54,27 @@ export type {
     ToolModifyUnitPayload,
     ToolRemoveUnitPayload,
     ReleaseControllerBoxPayload,
+    ToolMessagePayloadRaw,
 } from "./payloads";
-export { getTextPayloadThinkingDisplay, getToolPayloadErrorString } from "./payloads";
+export {
+    getTextPayloadThinkingDisplay,
+    getToolPayloadErrorString,
+    getToolArgumentsTooltipHeadingAndBody,
+    formatPayloadRawArgumentsForDisplay,
+    type ToolArgumentsTooltipParts,
+} from "./payloads";
 
 export interface ChatMessageResponse {
     id: string;
     chat_session_id: string;
     role: ChatSessionRoleType;
     type: ChatMessageType;
+    /** Present on some API responses (e.g. agent that produced the message). */
+    agent?: string | null;
     // TODO: make the payload strictly typed
     payload?: unknown | null;
+    /** When set, raw tool call / parse metadata (`error`, `raw_arguments`, `tool_name`, …). */
+    payload_raw?: ToolMessagePayloadRaw | null;
     created_at: string;
     is_first: boolean;
     status: ChatMessageStatus;

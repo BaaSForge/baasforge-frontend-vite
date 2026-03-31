@@ -80,30 +80,32 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
     return (
         <NestedMainSidebarProvider mainSidebar={mainSidebar}>
             <>
-                <PageTitleBox
-                    title={`Units for release ${releaseTitleLabel}`}
-                    mainSidebar={mainSidebar}
-                    tools={
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
-                                    <SidebarIcon className="size-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">Toggle releases ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
-                        </Tooltip>
-                    }
-                />
-                <SecondarySidebar>
-                    <SecondarySideBar />
-                </SecondarySidebar>
-                <SidebarInset className="here-is-the-content">
-                    <Container>
-                        <Tabs value={unitsTab} onValueChange={onUnitsTabChange} className="gap-4">
-                            <TabsList>
-                                <TabsTrigger value="new">New units</TabsTrigger>
-                                <TabsTrigger value="all">All units</TabsTrigger>
-                            </TabsList>
+                <Tabs value={unitsTab} onValueChange={onUnitsTabChange} className="gap-4">
+                    <PageTitleBox
+                        title={`Units for release ${releaseTitleLabel}`}
+                        mainSidebar={mainSidebar}
+                        tools={
+                            <div className="flex items-center gap-2">
+                                <TabsList>
+                                    <TabsTrigger value="new">New units</TabsTrigger>
+                                    <TabsTrigger value="all">All units</TabsTrigger>
+                                </TabsList>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button variant="secondary" className="rotate-180" size="sm" onClick={toggleSidebar}>
+                                            <SidebarIcon className="size-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom">Toggle releases ({SHORTCUT_LABELS.SECONDARY_SIDEBAR})</TooltipContent>
+                                </Tooltip>
+                            </div>
+                        }
+                    />
+                    <SecondarySidebar>
+                        <SecondarySideBar />
+                    </SecondarySidebar>
+                    <SidebarInset className="here-is-the-content">
+                        <Container>
                             <TabsContent value="new" className="mt-0">
                                 <NewUnitsTab projectId={projectId} releaseUnits={releaseUnits} isLoading={isLoading} error={error} />
                             </TabsContent>
@@ -114,9 +116,9 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
                                     <div className="text-muted-foreground text-sm">Select a release to view all units.</div>
                                 )}
                             </TabsContent>
-                        </Tabs>
-                    </Container>
-                </SidebarInset>
+                        </Container>
+                    </SidebarInset>
+                </Tabs>
             </>
         </NestedMainSidebarProvider>
     );

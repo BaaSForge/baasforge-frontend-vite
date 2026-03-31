@@ -14,6 +14,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 function parseToolImplementSolutionPayload(message: ChatMessageWithDeliveryStatus): ToolImplementSolutionPayload | null {
@@ -36,7 +37,8 @@ export function ToolImplementSolutionMessage({ message, nestedMessages }: { mess
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasDetailedReport = detailedReport.trim().length > 0;
     const hasNestedMessages = nestedMessages != null;
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const formattedArgs = formatArgsTooltip(args);
 
     return (
         <>
@@ -54,8 +56,7 @@ export function ToolImplementSolutionMessage({ message, nestedMessages }: { mess
                                 </CollapsibleTrigger>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-xs">
-                                <span className="font-medium">Arguments</span>
-                                <span className="block mt-0.5 text-muted-foreground">{formatArgsTooltip(args)}</span>
+                                <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
                             </TooltipContent>
                         </Tooltip>
                         <CollapsibleContent

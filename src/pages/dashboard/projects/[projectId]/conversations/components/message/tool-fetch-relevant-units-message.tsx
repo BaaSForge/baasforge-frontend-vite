@@ -18,6 +18,7 @@ import {
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 function getToolFetchRelevantUnitsPayload(message: ChatMessageWithDeliveryStatus): ProjectUnitResponse[] {
@@ -62,12 +63,12 @@ export function ToolFetchRelevantUnitsMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasUnits = unitCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
-    const payloadError = getToolPayloadErrorString(message.payload);
+    const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const formattedArgs = args ? formatRelevantUnitsArgs(args) : "—";
 
     const headerTooltip = (
         <TooltipContent side="top" className="max-w-xs">
-            <span className="font-medium">Arguments</span>
-            <span className="block mt-0.5 text-muted-foreground">{args ? formatRelevantUnitsArgs(args) : "—"}</span>
+            <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
         </TooltipContent>
     );
 

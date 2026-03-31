@@ -10,6 +10,7 @@ import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 export type ToolUnitMutationLayoutProps = {
@@ -59,8 +60,7 @@ export function ToolUnitMutationLayout({
                             </div>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">
-                            <span className="font-medium">Arguments</span>
-                            <span className="mt-0.5 block text-muted-foreground">{argsTooltip}</span>
+                            <ToolMessageArgsTooltipBlocks formattedArgs={argsTooltip} payloadRaw={message.payload_raw} />
                         </TooltipContent>
                     </Tooltip>
                     {hasUnit && displayUnit != null && (
