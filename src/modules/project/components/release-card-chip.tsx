@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
 import { useState } from "react";
-import type { ReleaseResponse } from "../types";
+import { EMPTY_RELEASE_NOTE_DISPLAY, type ReleaseResponse } from "../types";
 import { ReleaseNotesModal } from "./release-notes-modal";
 
 export interface ReleaseCardChipProps {
@@ -15,12 +15,13 @@ export interface ReleaseCardChipProps {
 
 export function ReleaseCardChip({ release, className }: ReleaseCardChipProps) {
     const [modalOpen, setModalOpen] = useState(false);
-    const notes = release.notes?.trim() ?? "";
-    const notesPreview = notes
-        ? notes.length > 60
-            ? notes.slice(0, 60) + "…"
-            : notes
-        : "No release notes";
+    const brief = release.brief_note?.trim() ?? "";
+    const notesPreview = brief
+        ? brief.length > 60
+            ? brief.slice(0, 60) + "…"
+            : brief
+        : EMPTY_RELEASE_NOTE_DISPLAY;
+    const fullNotes = release.notes?.trim() || EMPTY_RELEASE_NOTE_DISPLAY;
 
     const badges = (
         <>
@@ -48,7 +49,7 @@ export function ReleaseCardChip({ release, className }: ReleaseCardChipProps) {
                 "group/expandable-read relative flex shrink-0 flex-col gap-1 overflow-hidden rounded-md border bg-muted/30 px-2.5 py-1.5 min-w-0 max-w-[200px]",
                 className,
             )}
-            title={release.notes ?? undefined}
+            title={brief || EMPTY_RELEASE_NOTE_DISPLAY}
         >
             <div className="flex flex-wrap items-center gap-1">{badges}</div>
             <p className="truncate text-[0.6875rem] text-muted-foreground">{notesPreview}</p>
@@ -58,7 +59,7 @@ export function ReleaseCardChip({ release, className }: ReleaseCardChipProps) {
             <ReleaseNotesModal
                 open={modalOpen}
                 onOpenChange={setModalOpen}
-                notes={notes || "No release notes"}
+                notes={fullNotes}
                 badges={badges}
             />
         </div>

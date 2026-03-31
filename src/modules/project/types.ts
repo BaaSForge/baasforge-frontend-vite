@@ -82,10 +82,15 @@ export interface ProjectUnitResponse {
     chat_session_id: string | null;
 }
 
+/** Shown when `brief_note` or `notes` are null or blank. */
+export const EMPTY_RELEASE_NOTE_DISPLAY = "- No release note";
+
 export interface ReleaseResponse {
     id: string;
     project_id: string;
     chat_session_id?: string | null;
+    /** Short summary for lists and cards; full text is `notes`. */
+    brief_note: string | null;
     notes: string | null;
     /** Release row revision (API: float). */
     revision: number;

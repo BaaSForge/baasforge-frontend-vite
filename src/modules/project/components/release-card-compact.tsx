@@ -9,7 +9,7 @@ import { Card, CardAction } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatDateTimeMedium } from "@/utils/time";
 import { type ReactNode, type SyntheticEvent, useState } from "react";
-import type { ProjectRuntimeResponse, ReleaseResponse } from "../types";
+import { EMPTY_RELEASE_NOTE_DISPLAY, type ProjectRuntimeResponse, type ReleaseResponse } from "../types";
 import { ReleaseNotesModal } from "./release-notes-modal";
 
 /** Release-notes block: stop bubbling so the row's `onClick` (select release) does not run. */
@@ -115,10 +115,17 @@ export function ReleaseCardCompact({
                             </ExpandableFullReadTrigger>
                         )}
                     >
-                        <Markdown components={{ pre: () => null }}>{release.notes}</Markdown>
+                        <Markdown components={{ pre: () => null }}>
+                            {release.brief_note?.trim() || EMPTY_RELEASE_NOTE_DISPLAY}
+                        </Markdown>
                     </Expandable>
                 </div>
-                <ReleaseNotesModal open={modalOpen} onOpenChange={setModalOpen} notes={release.notes ?? ""} badges={badges} />
+                <ReleaseNotesModal
+                    open={modalOpen}
+                    onOpenChange={setModalOpen}
+                    notes={release.notes?.trim() || EMPTY_RELEASE_NOTE_DISPLAY}
+                    badges={badges}
+                />
                 <CardAction
                     className={cn(
                         "bg-muted/30 w-full flex flex-wrap items-center justify-start gap-2 border-t p-2",
