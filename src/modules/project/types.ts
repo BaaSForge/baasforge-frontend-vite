@@ -26,6 +26,46 @@ export type ProjectUnitType =
     | "schema"
     | "timer";
 
+/** Static ordering for filters and labels (matches backend `ProjectUnitType`). */
+export const STATIC_PROJECT_UNIT_TYPES: readonly ProjectUnitType[] = [
+    "api",
+    "action",
+    "bootstrap",
+    "command",
+    "flow",
+    "gateway",
+    "projection",
+    "query",
+    "runtime",
+    "schema",
+    "timer",
+] as const;
+
+export interface ContextModulePair {
+    context_slug: string;
+    module_slug: string;
+}
+
+export interface ListReleaseUnitsAllRequest {
+    page: number;
+    page_size: number;
+    unit_types: ProjectUnitType[];
+    context_slugs: string[];
+    context_module_pairs: ContextModulePair[];
+}
+
+export interface ListReleaseUnitsAllResponse {
+    units: ProjectUnitResponse[];
+    total: number;
+    page: number;
+    page_size: number;
+}
+
+export interface ContextModulesByContextRow {
+    context_slug: string;
+    module_slugs: string[];
+}
+
 export interface ProjectUnitResponse {
     id: string;
     project_id: string;

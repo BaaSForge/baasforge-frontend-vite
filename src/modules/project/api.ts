@@ -1,6 +1,9 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
 import type {
+    ContextModulesByContextRow,
+    ListReleaseUnitsAllRequest,
+    ListReleaseUnitsAllResponse,
     ProjectPatchRequest,
     ProjectRequest,
     ProjectResponse,
@@ -22,6 +25,9 @@ const projectDraftUnitsAsOfReleaseControllerMessageEndpoint = (
 const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
 /** `releaseId` is the release row id (UUID), not the numeric revision — revision can repeat across chat sessions. */
 const projectReleaseUnitsEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units`;
+const projectReleaseContextsEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/contexts`;
+const projectModulesByContextsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/modules-by-contexts`;
+const projectReleaseUnitsAllEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units/all`;
 const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
 const projectRuntimeDetachLiveReleaseEndpoint = (projectId: string, runtimeId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/detach-live-release`;
@@ -113,6 +119,31 @@ export function getReleases(projectId: string): Promise<ReleaseResponse[]> {
 
 export function getReleaseUnits(projectId: string, releaseId: string): Promise<ProjectUnitResponse[]> {
     return apiClient.get<ApiResponse<ProjectUnitResponse[]>>(projectReleaseUnitsEndpoint(projectId, releaseId)).then((res) => res.data ?? []);
+}
+
+export function getReleaseContexts(projectId: string, releaseId: string): Promise<string[]> {
+    return apiClient
+        .get<ApiResponse<{ context_slugs: string[] }>>(projectReleaseContextsEndpoint(projectId, releaseId))
+        .then((res) => res.data?.context_slugs ?? []);
+}
+
+export function postModulesByContexts(projectId: string, body: { context_slugs: string[] }): Promise<ContextModulesByContextRow[]> {
+    return apiClient
+        .post<ApiResponse<{ by_context?: ContextModulesByContextRow[] }>>(projectModulesByContextsEndpoint(projectId), body)
+        .then((res) => res.data?.by_context ?? []);
+}
+
+export function postListReleaseUnitsAll(
+    projectId: string,
+    releaseId: string,
+    body: ListReleaseUnitsAllRequest,
+): Promise<ListReleaseUnitsAllResponse> {
+    return apiClient.post<ApiResponse<ListReleaseUnitsAllResponse>>(projectReleaseUnitsAllEndpoint(projectId, releaseId), body).then((res) => {
+        if (!res.data) {
+            throw new Error("Release units (all) response missing data");
+        }
+        return res.data;
+    });
 }
 
 export function getProjectRuntimes(projectId: string): Promise<ProjectRuntimeResponse[]> {

@@ -18,7 +18,7 @@ import type { ReactNode } from "react";
 import { NEUTRAL_PROJECT_UNIT_TYPE_BADGE_CLASS } from "../unit-type-badge-class";
 import type { ProjectUnitType } from "../types";
 
-const UNIT_TYPE_ICONS = {
+export const UNIT_TYPE_ICONS = {
     action: Zap,
     api: Plug2,
     bootstrap: Rocket,

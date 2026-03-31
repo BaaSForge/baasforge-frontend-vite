@@ -28,5 +28,10 @@ export const QueryKeys = {
     projectReleases: (projectId: string) => ["project", "releases", projectId] as const,
     /** `releaseId` — release row id, not numeric revision (revision can repeat across sessions). */
     projectReleaseUnits: (projectId: string, releaseId: string) => ["project", "release", "units", projectId, releaseId] as const,
+    projectReleaseContexts: (projectId: string, releaseId: string) => ["project", "release", "contexts", projectId, releaseId] as const,
+    projectModulesByContexts: (projectId: string, contextSlugsKey: string) =>
+        ["project", "modules-by-contexts", projectId, contextSlugsKey] as const,
+    projectReleaseUnitsAll: (projectId: string, releaseId: string, requestKey: string) =>
+        ["project", "release", "units", "all", projectId, releaseId, requestKey] as const,
     projectRuntimes: (projectId: string) => ["project", "runtimes", projectId] as const,
 };

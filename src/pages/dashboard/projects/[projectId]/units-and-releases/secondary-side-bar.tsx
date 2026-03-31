@@ -7,10 +7,11 @@ import { Separator } from "@/components/ui/separator";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import React from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 export function SecondarySideBar() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { projectId, releaseID } = useParams<{
         projectId: string;
         releaseID: string;
@@ -74,7 +75,7 @@ export function SecondarySideBar() {
                             selected={releaseID != null && release.id === releaseID}
                             runtime={runtimes.find((rt) => rt.live_release?.id === release.id)}
                             onClick={() => {
-                                navigate(`/dashboard/projects/${projectId}/units-releases/${release.id}`);
+                                navigate(`/dashboard/projects/${projectId}/units-releases/${release.id}${location.search}`);
                             }}
                             className="cursor-pointer"
                         />

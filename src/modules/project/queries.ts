@@ -9,8 +9,12 @@ import {
     getProjectRuntimes,
     getProjects,
     getReleases,
+    getReleaseContexts,
     getReleaseUnits,
+    postListReleaseUnitsAll,
+    postModulesByContexts,
 } from "./api";
+import type { ListReleaseUnitsAllRequest } from "./types";
 import { pickProductionRuntime } from "./runtime-release";
 
 export function useProjectsQuery() {
@@ -69,11 +73,63 @@ export function useProjectReleasesQuery(projectId: string | undefined, options?:
     });
 }
 
-export function useProjectReleaseUnitsQuery(projectId: string | undefined, releaseId: string | undefined) {
+export function useProjectReleaseUnitsQuery(projectId: string | undefined, releaseId: string | undefined, options?: { enabled?: boolean }) {
+    const enabledByOption = options?.enabled ?? true;
     return useQuery({
         queryKey: QueryKeys.projectReleaseUnits(projectId!, releaseId!),
         queryFn: () => getReleaseUnits(projectId!, releaseId!),
-        enabled: !!projectId && !!releaseId,
+        enabled: !!projectId && !!releaseId && enabledByOption,
+    });
+}
+
+export function useProjectReleaseContextsQuery(projectId: string | undefined, releaseId: string | undefined, options?: { enabled?: boolean }) {
+    const enabled = (options?.enabled ?? true) && !!projectId && !!releaseId;
+    return useQuery({
+        queryKey: QueryKeys.projectReleaseContexts(projectId ?? "", releaseId ?? ""),
+        queryFn: () => getReleaseContexts(projectId!, releaseId!),
+        enabled,
+    });
+}
+
+export function useProjectModulesByContextsQuery(
+    projectId: string | undefined,
+    contextSlugs: string[],
+    options?: { enabled?: boolean },
+) {
+    const sortedKey = [...contextSlugs].sort().join("\u0000");
+    const hasSlug = contextSlugs.some((s) => s.trim().length > 0);
+    const enabled = (options?.enabled ?? true) && !!projectId && hasSlug;
+    return useQuery({
+        queryKey: QueryKeys.projectModulesByContexts(projectId ?? "", sortedKey),
+        queryFn: () => postModulesByContexts(projectId!, { context_slugs: contextSlugs }),
+        enabled,
+    });
+}
+
+function stableReleaseUnitsAllKey(body: ListReleaseUnitsAllRequest): string {
+    return JSON.stringify({
+        page: body.page,
+        page_size: body.page_size,
+        unit_types: [...body.unit_types].sort(),
+        context_slugs: [...body.context_slugs].sort(),
+        context_module_pairs: [...body.context_module_pairs]
+            .map((p) => ({ c: p.context_slug, m: p.module_slug }))
+            .sort((a, b) => a.c.localeCompare(b.c) || a.m.localeCompare(b.m)),
+    });
+}
+
+export function useProjectReleaseUnitsAllQuery(
+    projectId: string | undefined,
+    releaseId: string | undefined,
+    body: ListReleaseUnitsAllRequest | undefined,
+    options?: { enabled?: boolean },
+) {
+    const enabled = (options?.enabled ?? true) && !!projectId && !!releaseId && body != null;
+    const requestKey = body != null ? stableReleaseUnitsAllKey(body) : "";
+    return useQuery({
+        queryKey: QueryKeys.projectReleaseUnitsAll(projectId ?? "", releaseId ?? "", requestKey),
+        queryFn: () => postListReleaseUnitsAll(projectId!, releaseId!, body!),
+        enabled,
     });
 }
 
