@@ -128,8 +128,11 @@ export function SecondarySideBar() {
                         const undeployedProductionLeafMuted =
                             isUndeployedProductionLeaf(release, releases) && release.id !== liveProductionReleaseId;
 
+                        const isLiveOnProduction =
+                            liveProductionReleaseId != null && release.id === liveProductionReleaseId;
+
                         const deployButton =
-                            release.is_stage ? null : productionRuntime == null ? (
+                            release.is_stage || isLiveOnProduction ? null : productionRuntime == null ? (
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
