@@ -154,7 +154,12 @@ export function ReleaseControllerBoxMessage({
     });
 
     const productionReleaseMutation = useMutation({
-        mutationFn: () => postReleaseControllerProductionRelease(projectId!, chatSessionId!, message.id),
+        mutationFn: () => {
+            if (stageRelease?.id == null) throw new Error("Missing stage release id");
+            return postReleaseControllerProductionRelease(projectId!, chatSessionId!, message.id, {
+                stage_release_id: stageRelease.id,
+            });
+        },
         onSuccess: async () => {
             setProductionConfirmOpen(false);
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionMessages(projectId!, chatSessionId!) });

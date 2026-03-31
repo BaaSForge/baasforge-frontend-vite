@@ -37,6 +37,10 @@ export interface DeployReleaseBody {
     revision: number;
 }
 
+export interface ProductionReleaseControllerBody {
+    stage_release_id: string;
+}
+
 /** After detach: connect an existing stage release (same revision as deploy-stage-release). */
 export type DetachRuntimeLiveReleaseDeployBody = {
     revision: number;
@@ -139,9 +143,10 @@ export function postReleaseControllerProductionRelease(
     projectId: string,
     chatSessionId: string,
     messageId: string,
+    body: ProductionReleaseControllerBody,
 ): Promise<void> {
     return apiClient
-        .post<ApiResponse<unknown>>(projectReleaseControllerProductionReleaseEndpoint(projectId, chatSessionId, messageId))
+        .post<ApiResponse<unknown>>(projectReleaseControllerProductionReleaseEndpoint(projectId, chatSessionId, messageId), body)
         .then(() => undefined);
 }
 
