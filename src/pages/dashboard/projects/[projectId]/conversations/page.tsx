@@ -36,8 +36,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { ConversationReadOnlyProvider } from "./components/conversation-read-only-context";
-import { ConversationReadOnlyTitleBadge } from "./components/conversation-read-only-title-badge";
+import { ConversationStaleBaseReleaseProvider } from "./components/conversation-stale-base-release-context";
+import { ConversationStaleBaseReleaseTitleBadge } from "./components/conversation-stale-base-release-title-badge";
 import Controls from "./components/controls";
 import { Message, MessageBranch, partitionMessagesByInvokingParent } from "./components/message";
 import { StickyMessageBars, StickyMessageGroupsProvider } from "./components/sticky-messages";
@@ -121,7 +121,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }, [chatSessionIdOrUndefined]);
 
     const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdOrUndefined, chatSessionIdOrUndefined);
-    const conversationReadOnly = chatSession?.read_only === true;
+    const conversationStaleBaseRelease = chatSession?.stale_base_release === true;
     const { setSegmentLabel, clearSegmentLabel } = useBreadcrumbActions();
 
     useEffect(() => {
@@ -341,14 +341,14 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
     return (
         <NestedMainSidebarProvider mainSidebar={mainSidebar}>
-            <ConversationReadOnlyProvider readOnly={conversationReadOnly}>
+            <ConversationStaleBaseReleaseProvider staleBaseRelease={conversationStaleBaseRelease}>
                 <StickyMessageGroupsProvider>
                     <PageTitleBox
                         title={title}
                         mainSidebar={mainSidebar}
                         tools={
                             <div className="flex min-w-0 shrink-0 items-center gap-2">
-                                <ConversationReadOnlyTitleBadge />
+                                <ConversationStaleBaseReleaseTitleBadge />
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="secondary" size="sm" onClick={toggleSidebar}>
@@ -419,7 +419,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                         </Container>
                     </SidebarInset>
                 </StickyMessageGroupsProvider>
-            </ConversationReadOnlyProvider>
+            </ConversationStaleBaseReleaseProvider>
         </NestedMainSidebarProvider>
     );
 }

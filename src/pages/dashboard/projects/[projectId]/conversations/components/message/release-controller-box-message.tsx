@@ -39,7 +39,10 @@ import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
-import { READ_ONLY_CONVERSATION_MESSAGE, useConversationReadOnly } from "../conversation-read-only-context";
+import {
+    STALE_BASE_RELEASE_CONVERSATION_MESSAGE,
+    useConversationStaleBaseRelease,
+} from "../conversation-stale-base-release-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 import { DeployReleaseToRuntimeModal } from "./deploy-release-to-runtime-modal";
@@ -84,7 +87,7 @@ export function ReleaseControllerBoxMessage({
 }) {
     const { projectId, conversationId } = useParams<{ projectId: string; conversationId?: string }>();
     const chatSessionId = conversationId ?? undefined;
-    const readOnlyConversation = useConversationReadOnly();
+    const staleBaseRelease = useConversationStaleBaseRelease();
     const [diffViewMode] = usePersistedUnitDiffViewMode();
     const isMobile = useIsMobile();
     const bothSidebarsOpen = useAreBothSidebarsOpen();
@@ -302,7 +305,7 @@ export function ReleaseControllerBoxMessage({
                                                 type="button"
                                                 variant="outline"
                                                 size="xs"
-                                                disabled={stageRedeployMutation.isPending || readOnlyConversation}
+                                                disabled={stageRedeployMutation.isPending}
                                                 aria-busy={stageRedeployMutation.isPending}
                                                 onClick={() => void handleStageRedeploy()}
                                             >
@@ -320,8 +323,8 @@ export function ReleaseControllerBoxMessage({
                                             </Button>
                                         </span>
                                     </TooltipTrigger>
-                                    {readOnlyConversation ? (
-                                        <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                                    {staleBaseRelease ? (
+                                        <TooltipContent side="top">{STALE_BASE_RELEASE_CONVERSATION_MESSAGE}</TooltipContent>
                                     ) : null}
                                 </Tooltip>
                             ))
@@ -345,15 +348,14 @@ export function ReleaseControllerBoxMessage({
                                         type="button"
                                         variant="outline"
                                         size="xs"
-                                        disabled={readOnlyConversation}
                                         onClick={() => setStageReleaseModalOpen(true)}
                                     >
                                         Release Stage
                                     </Button>
                                 </span>
                             </TooltipTrigger>
-                            {readOnlyConversation ? (
-                                <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                            {staleBaseRelease ? (
+                                <TooltipContent side="top">{STALE_BASE_RELEASE_CONVERSATION_MESSAGE}</TooltipContent>
                             ) : null}
                         </Tooltip>
                     )}
@@ -384,7 +386,7 @@ export function ReleaseControllerBoxMessage({
                                                 type="button"
                                                 variant="outline"
                                                 size="xs"
-                                                disabled={prodRedeployMutation.isPending || readOnlyConversation}
+                                                disabled={prodRedeployMutation.isPending}
                                                 aria-busy={prodRedeployMutation.isPending}
                                                 onClick={() => void handleProdRedeployClick()}
                                             >
@@ -402,8 +404,8 @@ export function ReleaseControllerBoxMessage({
                                             </Button>
                                         </span>
                                     </TooltipTrigger>
-                                    {readOnlyConversation ? (
-                                        <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                                    {staleBaseRelease ? (
+                                        <TooltipContent side="top">{STALE_BASE_RELEASE_CONVERSATION_MESSAGE}</TooltipContent>
                                     ) : null}
                                 </Tooltip>
                             ))
@@ -438,7 +440,7 @@ export function ReleaseControllerBoxMessage({
                                         type="button"
                                         variant="outline"
                                         size="xs"
-                                        disabled={productionReleaseMutation.isPending || readOnlyConversation}
+                                        disabled={productionReleaseMutation.isPending}
                                         aria-busy={productionReleaseMutation.isPending}
                                         onClick={() => setProductionConfirmOpen(true)}
                                     >
@@ -446,8 +448,8 @@ export function ReleaseControllerBoxMessage({
                                     </Button>
                                 </span>
                             </TooltipTrigger>
-                            {readOnlyConversation ? (
-                                <TooltipContent side="top">{READ_ONLY_CONVERSATION_MESSAGE}</TooltipContent>
+                            {staleBaseRelease ? (
+                                <TooltipContent side="top">{STALE_BASE_RELEASE_CONVERSATION_MESSAGE}</TooltipContent>
                             ) : null}
                         </Tooltip>
                     )}
@@ -458,9 +460,18 @@ export function ReleaseControllerBoxMessage({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>I have tested, let&apos;s deploy</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This starts a production release for the scope up to this message. Confirm only when you have tested on
-                            stage and are ready for these changes to go live.
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-3 text-sm text-muted-foreground">
+                                <p>
+                                    This starts a production release for the scope up to this message. Confirm only when you have
+                                    tested on stage and are ready for these changes to go live.
+                                </p>
+                                {staleBaseRelease ? (
+                                    <p className="text-amber-900 dark:text-amber-100/95">
+                                        {STALE_BASE_RELEASE_CONVERSATION_MESSAGE}
+                                    </p>
+                                ) : null}
+                            </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -471,7 +482,7 @@ export function ReleaseControllerBoxMessage({
                                 e.preventDefault();
                                 productionReleaseMutation.mutate();
                             }}
-                            disabled={productionReleaseMutation.isPending || readOnlyConversation}
+                            disabled={productionReleaseMutation.isPending}
                         >
                             {productionReleaseMutation.isPending ? (
                                 <>
@@ -498,9 +509,18 @@ export function ReleaseControllerBoxMessage({
                         <AlertDialogTitle>
                             Deploy revision {prodRelease?.revision ?? ""} to production?
                         </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This deploys release revision {prodRelease?.revision ?? ""} to the production runtime.
-                            Confirm only when you have tested on stage and are ready for these changes to go live.
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-3 text-sm text-muted-foreground">
+                                <p>
+                                    This deploys release revision {prodRelease?.revision ?? ""} to the production runtime. Confirm
+                                    only when you have tested on stage and are ready for these changes to go live.
+                                </p>
+                                {staleBaseRelease ? (
+                                    <p className="text-amber-900 dark:text-amber-100/95">
+                                        {STALE_BASE_RELEASE_CONVERSATION_MESSAGE}
+                                    </p>
+                                ) : null}
+                            </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -512,7 +532,7 @@ export function ReleaseControllerBoxMessage({
                                 if (prodRedeployRuntimeId == null) return;
                                 prodRedeployMutation.mutate(prodRedeployRuntimeId);
                             }}
-                            disabled={prodRedeployMutation.isPending || prodRedeployRuntimeId == null || readOnlyConversation}
+                            disabled={prodRedeployMutation.isPending || prodRedeployRuntimeId == null}
                         >
                             {prodRedeployMutation.isPending ? (
                                 <>
