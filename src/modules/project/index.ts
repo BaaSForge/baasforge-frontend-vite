@@ -25,8 +25,6 @@ export {
 } from "./queries";
 export { getRuntimeLiveReleaseId, pickProductionRuntime } from "./runtime-release";
 export type {
-    FrameworkType,
-    LanguageType,
     ProjectPatchRequest,
     ProjectRequest,
     ProjectResponse,

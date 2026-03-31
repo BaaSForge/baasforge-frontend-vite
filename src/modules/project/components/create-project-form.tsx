@@ -4,18 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getApiErrorMessage } from "@/lib/errors";
 import { nameToSlug } from "@/utils";
 import { Lock, LockOpen } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useCreateProjectMutation } from "../mutations";
-import type { FrameworkType, LanguageType } from "../types";
-
-const FRAMEWORK_OPTIONS: { value: FrameworkType; label: string }[] = [{ value: "mvc", label: "MVC" }];
-
-const LANGUAGE_OPTIONS: { value: LanguageType; label: string }[] = [{ value: "rust", label: "Rust" }];
 
 export interface CreateProjectFormProps {
     className?: string;
@@ -27,8 +21,6 @@ export function CreateProjectForm({ className, redirectOnSuccess = true, onSucce
     const [name, setName] = useState("");
     const [slug, setSlug] = useState("");
     const [slugLocked, setSlugLocked] = useState(true); // locked = read-only + auto-generated
-    const [framework, setFramework] = useState<FrameworkType>("mvc");
-    const [language, setLanguage] = useState<LanguageType>("rust");
 
     const mutation = useCreateProjectMutation({
         redirect: redirectOnSuccess,
@@ -67,8 +59,6 @@ export function CreateProjectForm({ className, redirectOnSuccess = true, onSucce
         mutation.mutate({
             name: trimmedName,
             slug: trimmedSlug,
-            framework,
-            language,
         });
     };
 
@@ -125,40 +115,6 @@ export function CreateProjectForm({ className, redirectOnSuccess = true, onSucce
                                 </Tooltip>
                             </InputGroupAddon>
                         </InputGroup>
-                    </FieldContent>
-                </Field>
-                <Field>
-                    <FieldLabel htmlFor="create-project-framework">Framework</FieldLabel>
-                    <FieldContent>
-                        <NativeSelect
-                            id="create-project-framework"
-                            value={framework}
-                            onChange={(e) => setFramework(e.target.value as FrameworkType)}
-                            disabled={mutation.isPending}
-                        >
-                            {FRAMEWORK_OPTIONS.map((opt) => (
-                                <NativeSelectOption key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </NativeSelectOption>
-                            ))}
-                        </NativeSelect>
-                    </FieldContent>
-                </Field>
-                <Field>
-                    <FieldLabel htmlFor="create-project-language">Language</FieldLabel>
-                    <FieldContent>
-                        <NativeSelect
-                            id="create-project-language"
-                            value={language}
-                            onChange={(e) => setLanguage(e.target.value as LanguageType)}
-                            disabled={mutation.isPending}
-                        >
-                            {LANGUAGE_OPTIONS.map((opt) => (
-                                <NativeSelectOption key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </NativeSelectOption>
-                            ))}
-                        </NativeSelect>
                     </FieldContent>
                 </Field>
             </FieldGroup>

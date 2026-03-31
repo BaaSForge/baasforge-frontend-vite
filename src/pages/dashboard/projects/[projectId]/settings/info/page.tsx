@@ -51,8 +51,6 @@ export default function ProjectSettingsInfoPage() {
                         </FieldContent>
                     </Field>
                     <ReadOnlyField label="Slug" value={project.slug} />
-                    <ReadOnlyField label="Framework" value={project.framework} />
-                    <ReadOnlyField label="Language" value={project.language} />
                 </FieldGroup>
                 <div className="flex justify-end">
                     <Button type="submit" disabled={!isDirty || patchMutation.isPending}>
