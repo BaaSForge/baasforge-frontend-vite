@@ -77,7 +77,10 @@ export function SecondarySideBar() {
         onSuccess: async (_data, deployedRelease) => {
             if (projectIdOrUndefined == null) return;
             setDeployTarget(null);
-            navigate(`/dashboard/projects/${projectIdOrUndefined}/units-releases/${deployedRelease.id}${location.search}`);
+            navigate({
+                pathname: `/dashboard/projects/${projectIdOrUndefined}/units-releases/${deployedRelease.id}`,
+                search: location.search,
+            });
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectIdOrUndefined) });
             await queryClient.invalidateQueries({
                 queryKey: QueryKeys.projectReleases(projectIdOrUndefined, PlatformEnvironmentType.prod),
@@ -168,7 +171,10 @@ export function SecondarySideBar() {
                                     offProductionLine={hasProductionLine && !productionLineageIds.has(release.id)}
                                     cardOverflowMenu={overflowMenu}
                                     onClick={() => {
-                                        navigate(`/dashboard/projects/${projectId}/units-releases/${release.id}${location.search}`);
+                                        navigate({
+                                            pathname: `/dashboard/projects/${projectId}/units-releases/${release.id}`,
+                                            search: location.search,
+                                        });
                                     }}
                                     className="cursor-pointer"
                                 />

@@ -56,12 +56,26 @@ function parseModulePairKey(key: string): ContextModulePair | null {
 
 function modulePairKeyLabel(key: string): string {
     const p = parseModulePairKey(key);
-    return p != null ? `${p.context_slug}: ${p.module_slug}` : key;
+    return p != null ? `${p.module_slug} (${p.context_slug})` : key;
 }
 
 function sortPairs(a: ContextModulePair, b: ContextModulePair): number {
     const c = a.context_slug.localeCompare(b.context_slug);
     return c !== 0 ? c : a.module_slug.localeCompare(b.module_slug);
+}
+
+function sameSortedStrings(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false;
+    const sa = [...a].sort((x, y) => x.localeCompare(y));
+    const sb = [...b].sort((x, y) => x.localeCompare(y));
+    return sa.every((v, i) => v === sb[i]);
+}
+
+function sameContextModulePairs(a: ContextModulePair[], b: ContextModulePair[]): boolean {
+    if (a.length !== b.length) return false;
+    const ka = [...a].map(modulePairKey).sort((x, y) => x.localeCompare(y));
+    const kb = [...b].map(modulePairKey).sort((x, y) => x.localeCompare(y));
+    return ka.every((v, i) => v === kb[i]);
 }
 
 function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: ProjectUnitResponse[] }) {
@@ -125,6 +139,59 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
         }
     }, [tabActive, data, setSearchParams]);
 
+    /** Drop context / module filters that do not exist for this release; replace URL (no extra history). */
+    useEffect(() => {
+        if (!tabActive) return;
+        if (contextsLoading) return;
+
+        const ctxSet = new Set(contextSlugs);
+        const nextContexts = [...contexts].filter((c) => ctxSet.has(c)).sort((a, b) => a.localeCompare(b));
+
+        let nextPairs: ContextModulePair[];
+        if (nextContexts.length === 0) {
+            nextPairs = [];
+        } else {
+            if (modulesQuery.isLoading || modulesQuery.isFetching) return;
+            if (!modulesQuery.isSuccess || modulesQuery.data == null) return;
+
+            const allowedKeys = new Set<string>();
+            for (const ctx of nextContexts) {
+                const row = modulesQuery.data.find((r) => r.context_slug === ctx);
+                for (const m of row?.module_slugs ?? []) {
+                    allowedKeys.add(modulePairKey({ context_slug: ctx, module_slug: m }));
+                }
+            }
+            nextPairs = pairsCompatibleWithContexts(nextContexts, contextModulePairs)
+                .filter((p) => allowedKeys.has(modulePairKey(p)))
+                .sort(sortPairs);
+        }
+
+        const contextsMatch = sameSortedStrings(nextContexts, contexts);
+        const pairsMatch = sameContextModulePairs(nextPairs, contextModulePairs);
+        if (contextsMatch && pairsMatch) return;
+
+        setSearchParams(
+            (prev) =>
+                mergeAllUnitsSearchParams(new URLSearchParams(prev), {
+                    contexts: nextContexts,
+                    contextModulePairs: nextPairs,
+                }),
+            { replace: true },
+        );
+    }, [
+        tabActive,
+        contextsLoading,
+        contextSlugs,
+        contexts,
+        contextModulePairs,
+        modulesQuery.isLoading,
+        modulesQuery.isFetching,
+        modulesQuery.isSuccess,
+        modulesQuery.data,
+        releaseId,
+        setSearchParams,
+    ]);
+
     const patchUrl = (patch: Parameters<typeof mergeAllUnitsSearchParams>[1]) => {
         if (patch.groupMode != null) {
             try {
@@ -159,6 +226,8 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
 
     const hasActiveFilters =
         contexts.length > 0 || contextModulePairs.length > 0 || unitTypes.length > 0;
+
+    const modulesComboboxDisabled = contexts.length === 0;
 
     const clearFilters = () => {
         patchUrl({
@@ -235,7 +304,7 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                         autoHighlight
                         items={moduleItemKeys}
                         value={modulePairKeysValue}
-                        disabled={contexts.length === 0}
+                        disabled={modulesComboboxDisabled}
                         onValueChange={(next) => {
                             const keys = [...(next ?? [])] as string[];
                             const parsed: ContextModulePair[] = [];
@@ -247,7 +316,13 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                             patchUrl({ contextModulePairs: parsed, page: DEFAULT_ALL_UNITS_PAGE });
                         }}
                     >
-                        <ComboboxChips ref={modulesAnchor} className="h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1">
+                        <ComboboxChips
+                            ref={modulesAnchor}
+                            className={cn(
+                                "h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1",
+                                modulesComboboxDisabled && "opacity-50",
+                            )}
+                        >
                             <ComboboxValue>
                                 {(values: string[]) => (
                                     <Fragment>
@@ -326,17 +401,24 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                         </ComboboxContent>
                     </Combobox>
 
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="shrink-0 border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40"
-                        disabled={!hasActiveFilters}
-                        onClick={clearFilters}
-                    >
-                        <FilterXIcon className="size-4" />
-                        Clear filters
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-8 shrink-0 border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40"
+                                    disabled={!hasActiveFilters}
+                                    onClick={clearFilters}
+                                    aria-label="Clear filters"
+                                >
+                                    <FilterXIcon className="size-4" />
+                                </Button>
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">Clear filters</TooltipContent>
+                    </Tooltip>
                 </div>
 
                 <ToggleGroup

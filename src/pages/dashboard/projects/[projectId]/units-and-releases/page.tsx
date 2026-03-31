@@ -14,11 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
+import { useBreadcrumbActions } from "@/stores/breadcrumb";
 import { useProjectReleasesQuery, useProjectReleaseUnitsQuery } from "@/modules/project/queries";
 import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { SidebarIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { AllUnitsTab } from "./all-units-tab";
 import { NewUnitsTab } from "./new-units-tab";
 import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type UnitsTabValue } from "./release-units-search-params";
@@ -44,6 +45,7 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
     const { toggleSidebar } = useSecondarySidebar();
     useRegisterSecondarySidebarShortcut();
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
     const { unitsTab } = readReleaseUnitsSearchParams(searchParams);
 
@@ -62,15 +64,33 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
 
     useEffect(() => {
         if (releaseID == null && releases != null && releases.length > 0) {
-            navigate(`/dashboard/projects/${projectId}/units-releases/${releases[0].id}`, { replace: true });
+            navigate(
+                {
+                    pathname: `/dashboard/projects/${projectId}/units-releases/${releases[0].id}`,
+                    search: location.search,
+                },
+                { replace: true },
+            );
         }
-    }, [releaseID, navigate, projectId, releases]);
+    }, [releaseID, navigate, projectId, releases, location.search]);
 
     const selectedRelease: ReleaseResponse | undefined = useMemo(
         () => releases?.find((r) => r.id === releaseID),
         [releases, releaseID],
     );
     const releaseTitleLabel = selectedRelease != null ? String(selectedRelease.revision) : "…";
+
+    const { setSegmentLabel, clearSegmentLabel } = useBreadcrumbActions();
+    useEffect(() => {
+        if (releaseID == null) {
+            clearSegmentLabel("releaseID");
+            return;
+        }
+        if (selectedRelease != null) {
+            setSegmentLabel("releaseID", `Release ${String(selectedRelease.revision)}`);
+        }
+        return () => clearSegmentLabel("releaseID");
+    }, [releaseID, selectedRelease, setSegmentLabel, clearSegmentLabel]);
 
     const onUnitsTabChange = (v: string) => {
         if (v !== "new" && v !== "all") return;
