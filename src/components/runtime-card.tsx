@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
-import { DeploymentStatusBadge } from "./deployment-status-badge";
 import { LiveBadge } from "./live-badge";
 import { PlatformEnvironmentBadge } from "./platform-environment-badge";
 
@@ -40,8 +39,6 @@ export function RuntimeCard({ runtime }: RuntimeCardProps) {
             <CardContent className="py-4 px-4 space-y-3">
                 <InfoRow label="Live release revision" value={liveBadge} />
                 <InfoRow label="Environment" value={<PlatformEnvironmentBadge environment={runtime.environment} />} />
-                <InfoRow label="Server Status" value={<DeploymentStatusBadge status={runtime.server_cluster_deployment_status} />} />
-                <InfoRow label="Database Status" value={<DeploymentStatusBadge status={runtime.db_cluster_deployment_status} />} />
             </CardContent>
         </Card>
     );

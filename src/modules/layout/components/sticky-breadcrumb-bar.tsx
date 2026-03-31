@@ -24,7 +24,6 @@ const SEGMENT_LABELS: Record<string, string> = {
     info: "Info",
     delete: "Delete",
     runtimes: "Runtimes",
-    clusters: "Clusters",
 };
 
 const DEFAULT_BAR_HEIGHT = 56;

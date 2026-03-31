@@ -67,18 +67,12 @@ export enum PlatformEnvironmentType {
     prod = "prod",
 }
 
-export type DeploymentStatusType = "deploying" | "stopped" | "pruned" | "up" | "failed";
-
 export interface ProjectRuntimeResponse {
     id: string;
     project_id: string;
     name: string;
     slug: string;
     environment: PlatformEnvironmentType;
-    db_cluster_id: string | null;
-    db_cluster_deployment_status: DeploymentStatusType | null;
-    server_cluster_id: string | null;
-    server_cluster_deployment_status: DeploymentStatusType | null;
     /** Embedded release row when this runtime has a live release; omitted or null when idle. */
     live_release?: ReleaseResponse | null;
     live_release_id?: string | null;
