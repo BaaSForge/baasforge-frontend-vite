@@ -20,6 +20,8 @@ export interface ReleaseCardCompactProps {
     onClick?: () => void;
     /** Dims the card when this production revision is a leaf (not shipped to prod yet). */
     undeployedProductionLeafMuted?: boolean;
+    /** Off the live → ancestor production line; dimmed to distinguish branch revisions. */
+    offProductionLine?: boolean;
     /** Extra controls in the footer row (e.g. deploy); clicks must call stopPropagation if the card is clickable. */
     cardActionEnd?: ReactNode;
 }
@@ -31,12 +33,16 @@ export function ReleaseCardCompact({
     selected,
     onClick,
     undeployedProductionLeafMuted,
+    offProductionLine,
     cardActionEnd,
 }: ReleaseCardCompactProps) {
     const [modalOpen, setModalOpen] = useState(false);
 
     const isLive = !!runtime;
     const showNotShippedBadge = !!undeployedProductionLeafMuted && !isLive;
+
+    const dimClass =
+        selected ? undefined : offProductionLine ? "opacity-50 text-muted-foreground" : showNotShippedBadge ? "opacity-[0.72]" : undefined;
 
     const badges = (
         <>
@@ -68,7 +74,7 @@ export function ReleaseCardCompact({
         <div
             className={cn(
                 "relative inline-block w-full min-w-0",
-                showNotShippedBadge && "opacity-[0.72]",
+                dimClass,
                 selected && "border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 opacity-100",
                 className,
             )}

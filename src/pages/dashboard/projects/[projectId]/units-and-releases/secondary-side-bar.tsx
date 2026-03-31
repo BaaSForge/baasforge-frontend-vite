@@ -21,6 +21,7 @@ import { QueryKeys } from "@/constants/query-keys";
 import { detachRuntimeLiveRelease, postRuntimeDeployProductionRelease } from "@/modules/project/api";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
+import { listProductionReleasesSortedForSidebar } from "@/modules/project/production-release-lineage";
 import { getRuntimeLiveReleaseId, pickProductionRuntime } from "@/modules/project/runtime-release";
 import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { isUndeployedProductionLeaf } from "@/modules/project/undeployed-production-release";
@@ -46,6 +47,12 @@ export function SecondarySideBar() {
     const productionRuntime = useMemo(() => pickProductionRuntime(runtimes), [runtimes]);
     const liveProductionReleaseId = useMemo(() => getRuntimeLiveReleaseId(productionRuntime), [productionRuntime]);
 
+    const { orderedReleases, productionLineageIds } = useMemo(() => {
+        if (releases == null) return { orderedReleases: [] as ReleaseResponse[], productionLineageIds: new Set<string>() };
+        const { ordered, lineageIds } = listProductionReleasesSortedForSidebar(releases, liveProductionReleaseId);
+        return { orderedReleases: ordered, productionLineageIds: lineageIds };
+    }, [releases, liveProductionReleaseId]);
+
     const [deployTarget, setDeployTarget] = useState<ReleaseResponse | null>(null);
     const queryClient = useQueryClient();
 
@@ -65,9 +72,10 @@ export function SecondarySideBar() {
                 await postRuntimeDeployProductionRelease(projectIdOrUndefined, productionRuntime.id, body);
             }
         },
-        onSuccess: async () => {
+        onSuccess: async (_data, deployedRelease) => {
             if (projectIdOrUndefined == null) return;
             setDeployTarget(null);
+            navigate(`/dashboard/projects/${projectIdOrUndefined}/units-releases/${deployedRelease.id}${location.search}`);
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectIdOrUndefined) });
             await queryClient.invalidateQueries({
                 queryKey: QueryKeys.projectReleases(projectIdOrUndefined, PlatformEnvironmentType.prod),
@@ -103,13 +111,15 @@ export function SecondarySideBar() {
         );
     }
 
-    if (releases == null || releases.length === 0 || runtimes == null || runtimes.length === 0) {
+    if (releases == null || releases.length === 0 || orderedReleases.length === 0 || runtimes == null || runtimes.length === 0) {
         return (
             <SecondarySidebarContent>
                 <div className="text-sm text-muted-foreground">No releases yet.</div>
             </SecondarySidebarContent>
         );
     }
+
+    const hasProductionLine = productionLineageIds.size > 0;
 
     const replacesOtherRevision =
         deployTarget != null &&
@@ -126,9 +136,9 @@ export function SecondarySideBar() {
                 }
             >
                 <div className="flex flex-col gap-2">
-                    {releases.map((release, index) => {
+                    {orderedReleases.map((release, index) => {
                         const undeployedProductionLeafMuted =
-                            isUndeployedProductionLeaf(release, releases) && release.id !== liveProductionReleaseId;
+                            isUndeployedProductionLeaf(release, orderedReleases) && release.id !== liveProductionReleaseId;
 
                         const isLiveOnProduction =
                             liveProductionReleaseId != null && release.id === liveProductionReleaseId;
@@ -180,6 +190,7 @@ export function SecondarySideBar() {
                                     selected={releaseID != null && release.id === releaseID}
                                     runtime={runtimes.find((rt) => rt.live_release?.id === release.id)}
                                     undeployedProductionLeafMuted={undeployedProductionLeafMuted}
+                                    offProductionLine={hasProductionLine && !productionLineageIds.has(release.id)}
                                     cardActionEnd={deployButton}
                                     onClick={() => {
                                         navigate(`/dashboard/projects/${projectId}/units-releases/${release.id}${location.search}`);
