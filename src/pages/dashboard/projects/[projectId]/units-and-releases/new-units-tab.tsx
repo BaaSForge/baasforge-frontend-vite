@@ -22,7 +22,7 @@ function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: P
                     <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {grouped.get(unitType)?.map((unit) => (
-                            <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} />
+                            <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
                         ))}
                     </div>
                 </div>
@@ -103,7 +103,7 @@ export function NewUnitsTab({
             ) : groupMode === "ungrouped" ? (
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {releaseUnits?.map((unit) => (
-                        <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} />
+                        <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
                     ))}
                 </div>
             ) : (

@@ -82,7 +82,7 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
             <>
                 <Tabs value={unitsTab} onValueChange={onUnitsTabChange} className="gap-4">
                     <PageTitleBox
-                        title={`Units for release ${releaseTitleLabel}`}
+                        title={`Release ${releaseTitleLabel}`}
                         mainSidebar={mainSidebar}
                         tools={
                             <div className="flex items-center gap-2">

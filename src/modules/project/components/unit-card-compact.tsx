@@ -10,6 +10,7 @@ import type { ProjectUnitResponse } from "../types";
 import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
 import { UnitTypeBadge } from "./unit-type-badge";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
+import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
 import { UnitRevisionBadge } from "./unit-revision-badge";
 
 export interface UnitCardCompactProps {
@@ -18,13 +19,28 @@ export interface UnitCardCompactProps {
     chatSessionId?: string;
     className?: string;
     unitRefreshPending?: boolean;
+    /**
+     * When true (e.g. units & releases page), shows a ⋮ menu with a link to the chat session
+     * that created this unit when {@link ProjectUnitResponse.chat_session_id} is set.
+     */
+    showChatSessionOverflowMenu?: boolean;
 }
 
-export function UnitCardCompact({ unit, projectId, chatSessionId, className, unitRefreshPending }: UnitCardCompactProps) {
+export function UnitCardCompact({
+    unit,
+    projectId,
+    chatSessionId,
+    className,
+    unitRefreshPending,
+    showChatSessionOverflowMenu,
+}: UnitCardCompactProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
     const explanation = unit.explanation?.trim() ?? "No description";
     const [modalOpen, setModalOpen] = useState(false);
+    const sourceChatSessionId = unit.chat_session_id?.trim() ?? "";
+    const hasOverflowTools =
+        showChatSessionOverflowMenu === true && projectId != null && projectId !== "" && sourceChatSessionId !== "";
 
     const badges = (
         <>
@@ -81,7 +97,19 @@ export function UnitCardCompact({ unit, projectId, chatSessionId, className, uni
                     isDeleted={isDeleted}
                     badges={badges}
                 />
-                <CardAction className="bg-muted/30 w-full flex items-center justify-start p-2 gap-2 border-t">{badges}</CardAction>
+                <CardAction
+                    className={cn(
+                        "bg-muted/30 w-full flex flex-wrap items-center justify-start gap-2 border-t p-2",
+                        hasOverflowTools ? "justify-between" : "justify-start",
+                    )}
+                >
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{badges}</div>
+                    {hasOverflowTools && projectId ? (
+                        <div className="ml-auto flex shrink-0 items-center justify-end self-end">
+                            <UnitCardToolsDropdown projectId={projectId} sourceChatSessionId={sourceChatSessionId} enabled />
+                        </div>
+                    ) : null}
+                </CardAction>
             </Card>
         </div>
     );

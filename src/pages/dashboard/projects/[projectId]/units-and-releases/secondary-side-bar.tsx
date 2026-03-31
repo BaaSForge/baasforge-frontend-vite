@@ -13,20 +13,22 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryKeys } from "@/constants/query-keys";
 import { detachRuntimeLiveRelease, postRuntimeDeployProductionRelease } from "@/modules/project/api";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
+import {
+    ReleaseCardToolsDropdown,
+    releaseCardHasToolsActions,
+} from "@/modules/project/components/release-card-tools-dropdown";
 import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import { listProductionReleasesSortedForSidebar } from "@/modules/project/production-release-lineage";
 import { getRuntimeLiveReleaseId, pickProductionRuntime } from "@/modules/project/runtime-release";
 import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { isUndeployedProductionLeaf } from "@/modules/project/undeployed-production-release";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Rocket } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -140,43 +142,16 @@ export function SecondarySideBar() {
                         const undeployedProductionLeafMuted =
                             isUndeployedProductionLeaf(release, orderedReleases) && release.id !== liveProductionReleaseId;
 
-                        const isLiveOnProduction =
-                            liveProductionReleaseId != null && release.id === liveProductionReleaseId;
-
-                        const deployButton =
-                            release.is_stage || isLiveOnProduction ? null : productionRuntime == null ? (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
-                                            <Button type="button" variant="outline" size="xs" disabled className="shrink-0">
-                                                <Rocket className="size-3 shrink-0" aria-hidden />
-                                                Prod
-                                            </Button>
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="left">No production runtime configured.</TooltipContent>
-                                </Tooltip>
-                            ) : (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="xs"
-                                            className="shrink-0"
-                                            aria-label={`Deploy revision ${release.revision} to production`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setDeployTarget(release);
-                                            }}
-                                        >
-                                            <Rocket className="size-3 shrink-0" aria-hidden />
-                                            Deploy
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="left">Deploy this revision to production</TooltipContent>
-                                </Tooltip>
-                            );
+                        const overflowMenu = releaseCardHasToolsActions(release, liveProductionReleaseId) ? (
+                            <ReleaseCardToolsDropdown
+                                release={release}
+                                projectId={projectIdOrUndefined}
+                                search={location.search}
+                                productionRuntime={productionRuntime}
+                                liveProductionReleaseId={liveProductionReleaseId}
+                                onRequestDeploy={setDeployTarget}
+                            />
+                        ) : undefined;
 
                         return (
                             <React.Fragment key={release.id}>
@@ -191,7 +166,7 @@ export function SecondarySideBar() {
                                     runtime={runtimes.find((rt) => rt.live_release?.id === release.id)}
                                     undeployedProductionLeafMuted={undeployedProductionLeafMuted}
                                     offProductionLine={hasProductionLine && !productionLineageIds.has(release.id)}
-                                    cardActionEnd={deployButton}
+                                    cardOverflowMenu={overflowMenu}
                                     onClick={() => {
                                         navigate(`/dashboard/projects/${projectId}/units-releases/${release.id}${location.search}`);
                                     }}

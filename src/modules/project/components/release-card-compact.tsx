@@ -31,6 +31,11 @@ export interface ReleaseCardCompactProps {
     offProductionLine?: boolean;
     /** Extra controls in the footer row (e.g. deploy); clicks must call stopPropagation if the card is clickable. */
     cardActionEnd?: ReactNode;
+    /**
+     * Optional trailing control(s) in the footer’s bottom row, right side (e.g. overflow menu).
+     * Triggers should call `stopPropagation` so a clickable card does not also fire.
+     */
+    cardOverflowMenu?: ReactNode;
 }
 
 export function ReleaseCardCompact({
@@ -42,6 +47,7 @@ export function ReleaseCardCompact({
     undeployedProductionLeafMuted,
     offProductionLine,
     cardActionEnd,
+    cardOverflowMenu,
 }: ReleaseCardCompactProps) {
     const [modalOpen, setModalOpen] = useState(false);
     const { armOverlayOpenSuppression, shouldSuppressFollowUpClick } = useSuppressClicksAfterRadixOverlayOpen();
@@ -130,12 +136,21 @@ export function ReleaseCardCompact({
                 <CardAction
                     className={cn(
                         "bg-muted/30 w-full flex flex-wrap items-center justify-start gap-2 border-t p-2",
-                        cardActionEnd != null ? "justify-between" : "justify-start",
+                        cardActionEnd != null || cardOverflowMenu != null ? "justify-between" : "justify-start",
                         selected && "bg-emerald-200/40 dark:bg-emerald-900/40 border-emerald-500",
                     )}
                 >
                     <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">{badges}</div>
-                    {cardActionEnd != null ? <div className="flex shrink-0 items-center gap-2">{cardActionEnd}</div> : null}
+                    {cardActionEnd != null || cardOverflowMenu != null ? (
+                        <div className="ml-auto flex shrink-0 items-center justify-end gap-1 self-end">
+                            {cardActionEnd != null ? <div className="flex items-center gap-2">{cardActionEnd}</div> : null}
+                            {cardOverflowMenu != null ? (
+                                <div className="flex items-center" onClick={stopNotesRegionFromSelectingCard}>
+                                    {cardOverflowMenu}
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
                 </CardAction>
             </Card>
             {selected && (
