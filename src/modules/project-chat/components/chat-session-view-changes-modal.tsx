@@ -37,6 +37,8 @@ type ChatSessionViewChangesModalProps = {
     /** When set with `chatSessionId`, the “newer revision” chip can resolve latest revision for this session. */
     projectId?: string;
     chatSessionId?: string;
+    /** When false, hides the Published / Draft badge in the unit header strip. */
+    showDraftPublishedBadge?: boolean;
 };
 
 export function ChatSessionViewChangesModal({
@@ -46,6 +48,7 @@ export function ChatSessionViewChangesModal({
     activeUnitId,
     projectId,
     chatSessionId,
+    showDraftPublishedBadge = true,
 }: ChatSessionViewChangesModalProps) {
     const [tabUserOverride, setTabUserOverride] = useState<string | null>(null);
     const [diffLayoutMode, setDiffLayoutMode] = usePersistedUnitDiffViewMode();
@@ -189,13 +192,15 @@ export function ChatSessionViewChangesModal({
                                                     ) : null}
                                                 </div>
                                                 <UnitTypeBadge unitType={after.unit_type} />
-                                                <LiveBadge
-                                                    isOn={!after.is_draft}
-                                                    offLabel="Draft"
-                                                    offTitle="Draft, not ready"
-                                                    onLabel="Published"
-                                                    onTitle="Published, ready"
-                                                />
+                                                {showDraftPublishedBadge ? (
+                                                    <LiveBadge
+                                                        isOn={!after.is_draft}
+                                                        offLabel="Draft"
+                                                        offTitle="Draft, not ready"
+                                                        onLabel="Published"
+                                                        onTitle="Published, ready"
+                                                    />
+                                                ) : null}
                                             </div>
                                             {!isMobile ? (
                                                 <ToggleGroup

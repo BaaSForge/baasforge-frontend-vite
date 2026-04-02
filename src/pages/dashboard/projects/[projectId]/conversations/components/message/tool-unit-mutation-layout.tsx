@@ -71,6 +71,7 @@ export function ToolUnitMutationLayout({
                                 chatSessionId={chatSessionId}
                                 unit={displayUnit}
                                 unitRefreshPending={isRefreshing}
+                                showDraftPublishedBadge={false}
                             />
                         </div>
                     )}

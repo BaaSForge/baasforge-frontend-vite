@@ -140,6 +140,7 @@ export function SecondarySideBar() {
                             projectId={projectId}
                             chatSessionId={chatSessionId}
                             unit={unit}
+                            showDraftPublishedBadge={false}
                         />
                     ))}
                 </div>
@@ -150,6 +151,7 @@ export function SecondarySideBar() {
                 unitsChanged={viewChangesUnits}
                 projectId={projectId}
                 chatSessionId={chatSessionId}
+                showDraftPublishedBadge={false}
             />
         </SecondarySidebarContent>
     );

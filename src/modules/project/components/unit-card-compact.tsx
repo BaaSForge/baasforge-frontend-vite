@@ -24,6 +24,8 @@ export interface UnitCardCompactProps {
      * that created this unit when {@link ProjectUnitResponse.chat_session_id} is set.
      */
     showChatSessionOverflowMenu?: boolean;
+    /** When false, hides the Published / Draft badge (e.g. conversation sidebar and inline tool messages). */
+    showDraftPublishedBadge?: boolean;
 }
 
 export function UnitCardCompact({
@@ -33,6 +35,7 @@ export function UnitCardCompact({
     className,
     unitRefreshPending,
     showChatSessionOverflowMenu,
+    showDraftPublishedBadge = true,
 }: UnitCardCompactProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
@@ -51,7 +54,15 @@ export function UnitCardCompact({
                 refreshPending={unitRefreshPending}
             />
             <UnitTypeBadge unitType={unit.unit_type} />
-            <LiveBadge isOn={!unit.is_draft} offLabel="Draft" offTitle="Draft, not ready" onLabel="Published" onTitle="Published, ready" />
+            {showDraftPublishedBadge ? (
+                <LiveBadge
+                    isOn={!unit.is_draft}
+                    offLabel="Draft"
+                    offTitle="Draft, not ready"
+                    onLabel="Published"
+                    onTitle="Published, ready"
+                />
+            ) : null}
         </>
     );
 
