@@ -12,6 +12,8 @@ import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
+import type { UnitSubTask } from "./unit-sub-task-checklist";
+import { UnitSubTaskChecklist } from "./unit-sub-task-checklist";
 
 export type ToolUnitMutationLayoutProps = {
     message: ChatMessageWithDeliveryStatus;
@@ -20,6 +22,7 @@ export type ToolUnitMutationLayoutProps = {
     argsTooltip: string;
     unit: ProjectUnitResponse | null;
     payloadError?: string | null;
+    subTasks?: UnitSubTask[];
 };
 
 export function ToolUnitMutationLayout({
@@ -29,6 +32,7 @@ export function ToolUnitMutationLayout({
     argsTooltip,
     unit,
     payloadError,
+    subTasks,
 }: ToolUnitMutationLayoutProps) {
     const { projectId, conversationId: chatSessionId } = useParams<{ projectId: string; conversationId?: string }>();
     const initialUnits = useMemo(() => (unit != null ? [unit] : []), [unit]);
@@ -63,6 +67,9 @@ export function ToolUnitMutationLayout({
                             <ToolMessageArgsTooltipBlocks formattedArgs={argsTooltip} payloadRaw={message.payload_raw} />
                         </TooltipContent>
                     </Tooltip>
+                    {subTasks != null && subTasks.length > 0 && (
+                        <UnitSubTaskChecklist subTasks={subTasks} />
+                    )}
                     {hasUnit && displayUnit != null && (
                         <div className="w-fit max-w-full min-w-0 self-start">
                             <UnitCardCompact

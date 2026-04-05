@@ -9,6 +9,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { ToolUnitMutationLayout } from "./tool-unit-mutation-layout";
+import type { UnitSubTask } from "./unit-sub-task-checklist";
 
 function parseToolModifyUnitPayload(payload: unknown): ToolModifyUnitPayload | null {
     if (payload == null || typeof payload !== "object" || Array.isArray(payload)) return null;
@@ -35,6 +36,15 @@ function formatModifyUnitArgs(args: ToolModifyUnitPayload["args"] | undefined): 
     return parts.length ? parts.join(", ") : "—";
 }
 
+function buildModifyUnitSubTasks(payload: ToolModifyUnitPayload | null): UnitSubTask[] {
+    if (payload == null) return [];
+    const tasks: UnitSubTask[] = [];
+    if (payload.pre_check_sub_task != null) tasks.push({ label: "Pre-check", status: payload.pre_check_sub_task });
+    if (payload.compiler_check_sub_task != null) tasks.push({ label: "Compiler check", status: payload.compiler_check_sub_task });
+    if (payload.rule_check_sub_task != null) tasks.push({ label: "Rule check", status: payload.rule_check_sub_task });
+    return tasks;
+}
+
 export function ToolModifyUnitMessage({
     message,
     nestedMessages,
@@ -47,6 +57,7 @@ export function ToolModifyUnitMessage({
     const status = message.status ?? ChatMessageStatus.Generating;
     const statusLine = modifyStatusLine(status);
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const subTasks = buildModifyUnitSubTasks(payload);
 
     return (
         <ToolUnitMutationLayout
@@ -56,6 +67,7 @@ export function ToolModifyUnitMessage({
             argsTooltip={formatModifyUnitArgs(payload?.args)}
             unit={unit}
             payloadError={payloadError}
+            subTasks={subTasks}
         />
     );
 }

@@ -55,6 +55,7 @@ export type {
     ToolRemoveUnitPayload,
     ReleaseControllerBoxPayload,
     ToolMessagePayloadRaw,
+    UnitSubTaskStatus,
 } from "./payloads";
 export {
     getTextPayloadThinkingDisplay,

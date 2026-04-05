@@ -138,6 +138,8 @@ export interface FinishImplementationPayload {
     error?: string;
 }
 
+export type UnitSubTaskStatus = "succeeded" | "failed" | "waiting";
+
 export interface ToolCreateUnitPayload {
     args?: {
         code?: ProjectUnitResponse["code"];
@@ -148,6 +150,9 @@ export interface ToolCreateUnitPayload {
     tool_call_id?: string;
     tool_name?: string;
     error?: string;
+    pre_check_sub_task?: UnitSubTaskStatus;
+    compiler_check_sub_task?: UnitSubTaskStatus;
+    rule_check_sub_task?: UnitSubTaskStatus;
 }
 
 export interface ToolModifyUnitPayload {
@@ -161,6 +166,9 @@ export interface ToolModifyUnitPayload {
     tool_call_id?: string;
     tool_name?: string;
     error?: string;
+    pre_check_sub_task?: UnitSubTaskStatus;
+    compiler_check_sub_task?: UnitSubTaskStatus;
+    rule_check_sub_task?: UnitSubTaskStatus;
 }
 
 export interface ToolRemoveUnitArgs {
@@ -173,6 +181,8 @@ export interface ToolRemoveUnitPayload {
     error?: string;
     tool_call_id?: string;
     tool_name?: string;
+    pre_check_sub_task?: UnitSubTaskStatus;
+    rule_check_sub_task?: UnitSubTaskStatus;
 }
 
 export interface ReleaseControllerBoxPayload {
