@@ -13,32 +13,14 @@ export interface ProjectPatchRequest {
     name: string;
 }
 
-export type ProjectUnitType =
-    | "action"
-    | "api"
-    | "bootstrap"
-    | "command"
-    | "flow"
-    | "gateway"
-    | "projection"
-    | "query"
-    | "runtime"
-    | "schema"
-    | "timer";
+export type ProjectUnitType = "api" | "actor" | "workflow" | "queue_worker";
 
 /** Static ordering for filters and labels (matches backend `ProjectUnitType`). */
 export const STATIC_PROJECT_UNIT_TYPES: readonly ProjectUnitType[] = [
     "api",
-    "action",
-    "bootstrap",
-    "command",
-    "flow",
-    "gateway",
-    "projection",
-    "query",
-    "runtime",
-    "schema",
-    "timer",
+    "actor",
+    "workflow",
+    "queue_worker",
 ] as const;
 
 export interface ContextModulePair {
