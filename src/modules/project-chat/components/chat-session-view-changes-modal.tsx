@@ -116,9 +116,10 @@ export function ChatSessionViewChangesModal({
                                         hideScrollbar
                                         className="min-w-0 w-full max-w-full"
                                     >
-                                        <TabsList className="h-auto min-h-7 w-max flex-nowrap justify-start gap-0.5 bg-muted p-[3px]">
-                                            {unitsChanged.map((pair) => {
+                                        <TabsList className="h-auto min-h-10 w-max flex-nowrap justify-start gap-1.5 bg-muted p-[3px]">
+                                            {unitsChanged.map((pair, tabIndex) => {
                                                 const id = pair.afterUnit.id;
+                                                const positionLabel = `${tabIndex + 1}/${unitsChanged.length}`;
                                                 return (
                                                     <TabsTrigger
                                                         key={id}
@@ -127,17 +128,27 @@ export function ChatSessionViewChangesModal({
                                                             else tabTriggerRefs.current.delete(id);
                                                         }}
                                                         value={id}
+                                                        aria-label={`Unit ${tabIndex + 1} of ${unitsChanged.length}, ${id}`}
                                                         className={cn(
-                                                            "!h-auto min-h-0 w-max shrink-0 flex-none flex-col items-start gap-1 px-1.5 py-1 text-xs sm:flex-row sm:items-center",
-                                                            "data-[state=active]:shadow-sm",
+                                                            "group !h-auto min-h-0 w-max shrink-0 flex-none flex-col items-start gap-1.5 px-2 py-2 text-xs sm:flex-row sm:items-center",
+                                                            "text-muted-foreground",
+                                                            "data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md",
+                                                            "dark:data-[state=active]:bg-background dark:data-[state=active]:text-foreground",
                                                         )}
                                                     >
-                                                        <span
-                                                            className="max-w-full truncate text-left font-mono text-[10px] leading-tight text-muted-foreground"
-                                                            title={id}
-                                                        >
-                                                            {id}
-                                                        </span>
+                                                        <div className="flex min-w-0 max-w-full flex-row items-center">
+                                                            <span
+                                                                className="shrink-0 border-r border-border/70 pr-2 font-mono text-[10px] tabular-nums leading-none text-muted-foreground group-data-[state=active]:text-foreground"
+                                                            >
+                                                                {positionLabel}
+                                                            </span>
+                                                            <span
+                                                                className="min-w-0 max-w-[min(6rem,38vw)] overflow-hidden whitespace-nowrap text-ellipsis pl-2 text-left font-mono text-[10px] leading-tight [direction:rtl] text-muted-foreground group-data-[state=active]:text-foreground sm:max-w-[7.5rem]"
+                                                                title={id}
+                                                            >
+                                                                {id}
+                                                            </span>
+                                                        </div>
                                                         <UnitRevisionBadge
                                                             unit={pair.afterUnit}
                                                             beforeUnit={pair.beforeUnit}

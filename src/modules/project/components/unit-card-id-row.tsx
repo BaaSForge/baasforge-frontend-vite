@@ -34,7 +34,7 @@ export function UnitCardIdRow({ unitId, className, variant = "card" }: UnitCardI
             )}
             title="Click to copy ID"
         >
-            <span className="min-w-0 flex-1 truncate text-left tracking-tight">{unitId}</span>
+            <span className="min-w-0 flex-1 overflow-hidden whitespace-nowrap text-ellipsis text-left tracking-tight [direction:rtl]">{unitId}</span>
             {copiedThis ? (
                 <span className="shrink-0 text-[0.5625rem] text-muted-foreground/75">Copied</span>
             ) : null}
