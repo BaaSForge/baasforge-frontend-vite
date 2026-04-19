@@ -148,7 +148,7 @@ export function ReleaseCardCompact({
             </Card>
             {selected && (
                 <span
-                    className="absolute top-1.5 right-1.5 rounded-full bg-emerald-500 text-xs text-white px-2 py-0.5 font-semibold pointer-events-none select-none shadow"
+                    className="absolute top-0 right-2 z-20 -translate-y-1/2 rounded-full bg-emerald-500 text-xs text-white px-2 py-0.5 font-semibold pointer-events-none select-none shadow ring-2 ring-background"
                     aria-hidden="true"
                 >
                     Selected
