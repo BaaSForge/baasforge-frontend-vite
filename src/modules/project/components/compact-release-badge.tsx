@@ -28,7 +28,7 @@ export function CompactReleaseBadge({ release, projectId, className }: CompactRe
         <Badge
             variant="secondary"
             className={cn(
-                "inline-flex max-w-full shrink-0 items-center gap-1 rounded-md font-medium text-[0.625rem]",
+                "inline-flex h-6 max-w-full shrink-0 items-center gap-1 rounded-md py-0 font-medium leading-none text-[0.625rem]",
                 // Stage: muted, blends with chat copy
                 isStage &&
                     "border border-stone-200/80 bg-stone-50 text-stone-600 dark:border-stone-600/25 dark:bg-stone-500/8 dark:text-stone-300",
