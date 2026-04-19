@@ -12,6 +12,7 @@ import { formatDateTimeMedium } from "@/utils/time";
 import { type ReactNode, type SyntheticEvent, useState } from "react";
 import { EMPTY_RELEASE_NOTE_DISPLAY, type ProjectRuntimeResponse, type ReleaseResponse } from "../types";
 import { ReleaseNotesModal } from "./release-notes-modal";
+import { ReleaseRevisionBadge } from "./release-revision-badge";
 
 /** Release-notes block: stop bubbling so the row's `onClick` (select release) does not run. */
 function stopNotesRegionFromSelectingCard(e: SyntheticEvent) {
@@ -58,13 +59,7 @@ export function ReleaseCardCompact({
 
     const badges = (
         <>
-            <Badge
-                variant="secondary"
-                className="bg-emerald-500/15 text-emerald-700 border-emerald-500/30 text-[0.625rem]"
-                title={`revision ${release.revision} · id ${release.id}`}
-            >
-                revision {release.revision}
-            </Badge>
+            <ReleaseRevisionBadge revision={release.revision} releaseId={release.id} />
             {release.is_stage && (
                 <Badge variant="outline" className="text-[0.625rem]">
                     Stage

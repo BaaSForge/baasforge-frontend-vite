@@ -7,6 +7,7 @@ import { formatDateTimeMedium } from "@/utils/time";
 import { useState } from "react";
 import { EMPTY_RELEASE_NOTE_DISPLAY, type ReleaseResponse } from "../types";
 import { ReleaseNotesModal } from "./release-notes-modal";
+import { ReleaseRevisionBadge } from "./release-revision-badge";
 
 export interface ReleaseCardChipProps {
     release: ReleaseResponse;
@@ -25,13 +26,7 @@ export function ReleaseCardChip({ release, className }: ReleaseCardChipProps) {
 
     const badges = (
         <>
-            <Badge
-                variant="secondary"
-                className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[0.625rem]"
-                title={`revision ${release.revision}`}
-            >
-                revision {release.revision}
-            </Badge>
+            <ReleaseRevisionBadge revision={release.revision} />
             {release.is_stage && (
                 <Badge variant="outline" className="text-[0.625rem] text-muted-foreground font-normal">
                     Stage
