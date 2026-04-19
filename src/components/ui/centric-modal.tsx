@@ -11,6 +11,12 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 /** Shell max height for dialog + drawer (all sizing lives here, not on consumers). */
 export const CENTRIC_MODAL_SHELL_MAX_H = "max-h-[80dvh]";
 
+/** Fixed shell height for `fillViewport` desktop dialog (~80% of viewport). */
+const CENTRIC_MODAL_SHELL_VIEWPORT_FILL_DESKTOP = "h-[80dvh] max-h-[80dvh]";
+
+/** Fixed shell height for `fillViewport` mobile drawer (~90% of viewport). */
+const CENTRIC_MODAL_SHELL_VIEWPORT_FILL_MOBILE = "h-[90dvh] max-h-[90dvh]";
+
 /** Body scrollport cap (space for header, close, drawer handle). */
 export const CENTRIC_MODAL_BODY_SCROLL_MAX_H = "max-h-[calc(80dvh-7rem)]";
 
@@ -45,7 +51,15 @@ function getScrollFlagsVertical(el: HTMLDivElement) {
 }
 
 /** Native overflow-y + edge fades; lives only in this module (not {@link FadedScrollArea}). */
-function CentricModalBodyScroll({ children, isDesktop }: { children: React.ReactNode; isDesktop?: boolean }) {
+function CentricModalBodyScroll({
+    children,
+    isDesktop,
+    fillViewport,
+}: {
+    children: React.ReactNode;
+    isDesktop?: boolean;
+    fillViewport?: boolean;
+}) {
     const viewportRef = React.useRef<HTMLDivElement>(null);
     const startFadeRef = React.useRef<HTMLDivElement>(null);
     const endFadeRef = React.useRef<HTMLDivElement>(null);
@@ -98,7 +112,7 @@ function CentricModalBodyScroll({ children, isDesktop }: { children: React.React
     }, [flush, scrollToEndAndFlush]);
 
     return (
-        <div className="relative min-w-0">
+        <div className={cn("relative min-w-0", fillViewport && "flex min-h-0 min-w-0 flex-1 flex-col")}>
             <div
                 ref={viewportRef}
                 onScroll={onScroll}
@@ -110,7 +124,7 @@ function CentricModalBodyScroll({ children, isDesktop }: { children: React.React
                     isDesktop
                         ? "px-4 pb-4"
                         : "px-4 pb-4 sm:px-6 sm:pb-6",
-                    CENTRIC_MODAL_BODY_SCROLL_MAX_H,
+                    fillViewport ? "min-h-0 flex-1 max-h-none" : CENTRIC_MODAL_BODY_SCROLL_MAX_H,
                 )}
             >
                 {children}
@@ -161,18 +175,35 @@ function CentricModalClose(props: React.ComponentProps<typeof DialogClose>) {
     return <Component {...props} />;
 }
 
-function CentricModalContent({ className, children, showCloseButton = true, ...props }: React.ComponentProps<typeof DialogContent> & { showCloseButton?: boolean }) {
+function CentricModalContent({
+    className,
+    children,
+    showCloseButton = true,
+    fillViewport = false,
+    ...props
+}: React.ComponentProps<typeof DialogContent> & { showCloseButton?: boolean; fillViewport?: boolean }) {
     assertCentricModalContentClassName(className, "CentricModalContent");
 
     const isMobile = useIsMobile();
     const { header, footer, body } = splitCentricModalChildren(children);
 
-    const bodyRegion = <CentricModalBodyScroll isDesktop={!isMobile}>{body}</CentricModalBodyScroll>;
+    const bodyRegion = (
+        <CentricModalBodyScroll isDesktop={!isMobile} fillViewport={fillViewport}>
+            {body}
+        </CentricModalBodyScroll>
+    );
 
     if (isMobile) {
         return (
-            <DrawerContent className={cn("flex h-auto flex-col overflow-hidden", CENTRIC_MODAL_SHELL_MAX_H, className)} {...props}>
-                <div className="flex min-w-0 flex-col">
+            <DrawerContent
+                className={cn(
+                    "flex flex-col overflow-hidden",
+                    fillViewport ? CENTRIC_MODAL_SHELL_VIEWPORT_FILL_MOBILE : cn("h-auto", CENTRIC_MODAL_SHELL_MAX_H),
+                    className,
+                )}
+                {...props}
+            >
+                <div className={cn("flex min-w-0 flex-col", fillViewport && "min-h-0 flex-1")}>
                     {header}
                     {bodyRegion}
                     {footer}
@@ -189,7 +220,11 @@ function CentricModalContent({ className, children, showCloseButton = true, ...p
 
     return (
         <DialogContent
-            className={cn("flex flex-col gap-0 overflow-hidden p-0", CENTRIC_MODAL_SHELL_MAX_H, className)}
+            className={cn(
+                "flex flex-col gap-0 overflow-hidden p-0",
+                fillViewport ? cn(CENTRIC_MODAL_SHELL_VIEWPORT_FILL_DESKTOP, "min-h-0") : CENTRIC_MODAL_SHELL_MAX_H,
+                className,
+            )}
             showCloseButton={showCloseButton}
             {...props}
         >

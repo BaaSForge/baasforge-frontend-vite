@@ -98,7 +98,7 @@ export function ChatSessionViewChangesModal({
 
     return (
         <CentricModal open={open} onOpenChange={handleModalOpenChange}>
-            <CentricModalContent className={modalWidthClass} showCloseButton={false}>
+            <CentricModalContent fillViewport className={modalWidthClass} showCloseButton={false}>
                 {unitsChanged.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No units to compare.</p>
                 ) : (
