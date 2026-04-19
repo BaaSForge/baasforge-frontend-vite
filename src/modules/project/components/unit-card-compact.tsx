@@ -57,10 +57,10 @@ export function UnitCardCompact({
             {showDraftPublishedBadge ? (
                 <LiveBadge
                     isOn={!unit.is_draft}
-                    offLabel="Draft"
-                    offTitle="Draft, not ready"
-                    onLabel="Published"
-                    onTitle="Published, ready"
+                    offLabel="Not shipped"
+                    offTitle="Not shipped"
+                    onLabel="Live"
+                    onTitle="Live"
                 />
             ) : null}
         </>

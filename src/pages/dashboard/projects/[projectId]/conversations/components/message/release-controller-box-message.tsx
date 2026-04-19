@@ -564,7 +564,6 @@ export function ReleaseControllerBoxMessage({
                 unitsChanged={viewChangesUnits}
                 projectId={projectId}
                 chatSessionId={chatSessionId}
-                showDraftPublishedBadge={false}
             />
             {nestedMessages}
         </>

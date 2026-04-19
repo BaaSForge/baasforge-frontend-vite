@@ -206,10 +206,10 @@ export function ChatSessionViewChangesModal({
                                                 {showDraftPublishedBadge ? (
                                                     <LiveBadge
                                                         isOn={!after.is_draft}
-                                                        offLabel="Draft"
-                                                        offTitle="Draft, not ready"
-                                                        onLabel="Published"
-                                                        onTitle="Published, ready"
+                                                        offLabel="Not shipped"
+                                                        offTitle="Not shipped"
+                                                        onLabel="Live"
+                                                        onTitle="Live"
                                                     />
                                                 ) : null}
                                             </div>
