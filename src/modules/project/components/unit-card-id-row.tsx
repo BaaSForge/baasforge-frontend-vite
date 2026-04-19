@@ -26,7 +26,7 @@ export function UnitCardIdRow({ unitId, className, variant = "card" }: UnitCardI
             className={cn(
                 variant === "card" &&
                     "absolute right-2 top-0 z-1 -translate-y-1/2 max-w-[calc(100%-1rem)]",
-                variant === "inline" && "relative w-full max-w-full justify-start",
+                variant === "inline" && "relative max-w-full min-w-0 self-start justify-start",
                 "inline-flex min-h-[1.375rem] min-w-0 items-center gap-2 rounded-[4px] border border-border/45 bg-muted px-2 py-0.5",
                 "font-mono text-[0.625rem] leading-tight text-muted-foreground",
                 "dark:border-border/50",
