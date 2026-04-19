@@ -16,8 +16,8 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { QueryKeys } from "@/constants/query-keys";
 import { detachRuntimeLiveRelease, postRuntimeDeployProductionRelease } from "@/modules/project/api";
+import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-after-runtime-deploy";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 import {
     ReleaseCardToolsDropdown,
@@ -81,10 +81,11 @@ export function SecondarySideBar() {
                 pathname: `/dashboard/projects/${projectIdOrUndefined}/units-releases/${deployedRelease.id}`,
                 search: location.search,
             });
-            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectIdOrUndefined) });
-            await queryClient.invalidateQueries({
-                queryKey: QueryKeys.projectReleases(projectIdOrUndefined, PlatformEnvironmentType.prod),
-            });
+            await invalidateQueriesAfterRuntimeDeploy(
+                queryClient,
+                projectIdOrUndefined,
+                PlatformEnvironmentType.prod,
+            );
             toast.success("Production deploy has started.", { position: "top-center" });
         },
         onError: () => {

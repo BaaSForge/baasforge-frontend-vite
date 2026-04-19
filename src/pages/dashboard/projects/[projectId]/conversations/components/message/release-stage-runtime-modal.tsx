@@ -1,7 +1,8 @@
 "use client";
 
-import { QueryKeys } from "@/constants/query-keys";
 import { postReleaseControllerStageRelease } from "@/modules/project/api";
+import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-after-runtime-deploy";
+import { PlatformEnvironmentType } from "@/modules/project/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { StageRuntimePickerModal, useStageRuntimeDetachMutation } from "./stage-runtime-modal-shared";
@@ -28,7 +29,7 @@ export function ReleaseStageRuntimeModal({
                 stage_project_runtime_id: runtimeId,
             }),
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId!) });
+            await invalidateQueriesAfterRuntimeDeploy(queryClient, projectId!, PlatformEnvironmentType.stage);
             onOpenChange(false);
             toast.success("Deploying has started.", { position: "top-center" });
         },

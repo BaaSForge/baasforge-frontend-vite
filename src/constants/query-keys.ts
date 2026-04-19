@@ -19,6 +19,7 @@ export const QueryKeys = {
     PROJECTS_LIST: ["project", "list"] as const,
     projectChatSessionList: (projectId: string) => ["chat", "sessions", "list", projectId] as const,
     projectChatSessionDetail: (projectId: string, chatSessionId: string) => ["chat", "sessions", "detail", projectId, chatSessionId] as const,
+    projectAllChatSessionDetailByProject: (projectId: string) => ["chat", "sessions", "detail", projectId] as const,
     projectChatSessionMessages: (projectId: string, chatSessionId: string) => ["chat", "sessions", "messages", projectId, chatSessionId] as const,
     /** POST unit-latest-revisions-by-ids: `unit_paths` (no trailing `.<revision>`), sorted for key stability. */
     chatSessionUnitLatestRevisionsByIds: (projectId: string, chatSessionId: string, unitPaths: string[]) =>

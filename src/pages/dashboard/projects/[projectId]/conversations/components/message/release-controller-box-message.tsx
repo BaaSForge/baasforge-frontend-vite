@@ -15,13 +15,13 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { QueryKeys } from "@/constants/query-keys";
 import {
     detachRuntimeLiveRelease,
     postReleaseControllerProductionRelease,
     postRuntimeDeployProductionRelease,
     postRuntimeDeployStageRelease,
 } from "@/modules/project/api";
+import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-after-runtime-deploy";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
 import { CompactReleaseBadge, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
 import {
@@ -122,18 +122,13 @@ export function ReleaseControllerBoxMessage({
 
     const queryClient = useQueryClient();
 
-    const invalidateAfterRuntimeDeploy = useCallback(async (env: PlatformEnvironmentType) => {
-        if (projectId == null || chatSessionId == null) return;
-        await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId) });
-        await queryClient.invalidateQueries({
-            queryKey: QueryKeys.projectReleases(projectId, env),
-        });
-        if (env === PlatformEnvironmentType.prod) {
-            await queryClient.invalidateQueries({
-                queryKey: QueryKeys.projectChatSessionDetail(projectId, chatSessionId),
-            });
-        }
-    }, [projectId, chatSessionId, queryClient]);
+    const invalidateAfterRuntimeDeploy = useCallback(
+        async (env: PlatformEnvironmentType) => {
+            if (projectId == null) return;
+            await invalidateQueriesAfterRuntimeDeploy(queryClient, projectId, env);
+        },
+        [projectId, queryClient],
+    );
 
     const stageRedeployMutation = useMutation({
         mutationFn: async (runtimeId: string) => {
