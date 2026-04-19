@@ -12,5 +12,11 @@ export async function invalidateQueriesAfterRuntimeDeploy(
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleases(projectId, env) });
     if (env === PlatformEnvironmentType.prod) {
         await queryClient.invalidateQueries({ queryKey: QueryKeys.projectAllChatSessionDetailByProject(projectId) });
+        await queryClient.invalidateQueries({ queryKey: QueryKeys.projectDraftUnitsByProject(projectId) });
+        await queryClient.invalidateQueries({
+            queryKey: QueryKeys.projectDraftUnitsAsOfReleaseControllerMessageByProject(projectId),
+        });
+        await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleaseUnitsByProject(projectId) });
+        await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleaseUnitsAllByProject(projectId) });
     }
 }

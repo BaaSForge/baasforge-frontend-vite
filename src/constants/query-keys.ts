@@ -13,7 +13,10 @@ export const QueryKeys = {
     chatSessionUnitLatestRevisionsByUnitId: (projectId: string, chatSessionId: string) =>
         ["chat", "sessions", "unit-latest-revisions-by-unit-id", projectId, chatSessionId] as const,
     projectNonDraftUnits: (projectId: string) => ["project", "non-draft-units", projectId] as const,
+    projectDraftUnitsByProject: (projectId: string) => ["project", "draft-units", projectId] as const,
     projectDraftUnits: (projectId: string, chatSessionId: string) => ["project", "draft-units", projectId, chatSessionId] as const,
+    projectDraftUnitsAsOfReleaseControllerMessageByProject: (projectId: string) =>
+        ["project", "draft-units", "as-of-release-controller-message", projectId] as const,
     projectDraftUnitsAsOfReleaseControllerMessage: (projectId: string, chatSessionId: string, messageId: string) =>
         ["project", "draft-units", "as-of-release-controller-message", projectId, chatSessionId, messageId] as const,
     PROJECTS_LIST: ["project", "list"] as const,
@@ -30,10 +33,12 @@ export const QueryKeys = {
     projectReleases: (projectId: string, environment: string) => ["project", "releases", projectId, environment] as const,
     /** `releaseId` — release row id, not numeric revision (revision can repeat across sessions). */
     projectReleaseUnits: (projectId: string, releaseId: string) => ["project", "release", "units", projectId, releaseId] as const,
+    projectReleaseUnitsByProject: (projectId: string) => ["project", "release", "units", projectId] as const,
     projectReleaseContexts: (projectId: string, releaseId: string) => ["project", "release", "contexts", projectId, releaseId] as const,
     projectModulesByContexts: (projectId: string, contextSlugsKey: string) =>
         ["project", "modules-by-contexts", projectId, contextSlugsKey] as const,
     projectReleaseUnitsAll: (projectId: string, releaseId: string, requestKey: string) =>
         ["project", "release", "units", "all", projectId, releaseId, requestKey] as const,
+    projectReleaseUnitsAllByProject: (projectId: string) => ["project", "release", "units", "all", projectId] as const,
     projectRuntimes: (projectId: string) => ["project", "runtimes", projectId] as const,
 };
