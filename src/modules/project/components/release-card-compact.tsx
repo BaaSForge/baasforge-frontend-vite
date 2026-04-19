@@ -4,6 +4,7 @@ import { Expandable } from "@/components/expandable";
 import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
 import { LiveBadge } from "@/components/live-badge";
 import { Markdown } from "@/components/markdown";
+import { SelectionCornerPill } from "@/components/selection-corner-pill";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -146,14 +147,7 @@ export function ReleaseCardCompact({
                     ) : null}
                 </CardAction>
             </Card>
-            {selected && (
-                <span
-                    className="absolute top-0 right-2 z-20 -translate-y-1/2 rounded-full bg-emerald-500 text-xs text-white px-2 py-0.5 font-semibold pointer-events-none select-none shadow ring-2 ring-background"
-                    aria-hidden="true"
-                >
-                    Selected
-                </span>
-            )}
+            {selected ? <SelectionCornerPill>Selected</SelectionCornerPill> : null}
         </div>
     );
 }

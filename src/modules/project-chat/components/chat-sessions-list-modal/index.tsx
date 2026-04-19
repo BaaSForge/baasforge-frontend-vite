@@ -1,5 +1,6 @@
 "use client";
 
+import { SelectionCornerPill } from "@/components/selection-corner-pill";
 import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { Item, ItemGroup } from "@/components/ui/item";
 import { cn } from "@/lib/utils";
@@ -26,19 +27,25 @@ function SessionItem({
     const isCurrentChat = `${pathname}/`.startsWith(`${url}/`);
 
     return (
-        <Item size="sm" className="items-stretch rounded-none border-0 p-0 [&_a]:hover:bg-transparent">
+        <Item
+            size="sm"
+            className="items-stretch rounded-none border-0 p-0 [&_a:not([aria-current=page])]:hover:bg-transparent"
+        >
             <Link
                 to={url}
                 onClick={onNavigate}
                 aria-current={isCurrentChat ? "page" : undefined}
                 className={cn(
-                    "flex w-full min-w-0 flex-col gap-1.5 rounded-lg border px-3 py-2.5 text-sm outline-none hover:bg-transparent",
+                    "relative flex w-full min-w-0 flex-col gap-1.5 rounded-lg border px-3 py-2.5 text-sm outline-none hover:bg-transparent",
                     "focus-visible:ring-[3px] focus-visible:ring-ring/50",
                     isCurrentChat
-                        ? "border-solid border-blue-500/40 dark:border-blue-400/45"
+                        ? "overflow-visible border border-solid border-emerald-500 bg-emerald-50/60 shadow-lg hover:bg-emerald-50/60 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/40"
                         : "border-dashed border-border",
                 )}
             >
+                {isCurrentChat ? (
+                    <SelectionCornerPill side="left">Active session</SelectionCornerPill>
+                ) : null}
                 <div className="flex w-full min-w-0 justify-end">
                     <div
                         className={cn(
@@ -82,7 +89,7 @@ export function ChatSessionsListModal() {
                 ) : sessions.length === 0 ? (
                     <div className="text-muted-foreground flex items-center justify-center py-8 text-center text-sm">No chat sessions yet.</div>
                 ) : projectId != null ? (
-                    <ItemGroup className="gap-3">
+                    <ItemGroup className="gap-3 pt-3">
                         {sessions.map((session) => (
                             <SessionItem
                                 key={session.id}
