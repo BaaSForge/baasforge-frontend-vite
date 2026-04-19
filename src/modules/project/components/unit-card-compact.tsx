@@ -56,7 +56,7 @@ export function UnitCardCompact({
             <UnitTypeBadge unitType={unit.unit_type} />
             {showDraftPublishedBadge ? (
                 <LiveBadge
-                    isOn={!unit.is_draft}
+                    isOn={unit.is_draft === false}
                     offLabel="Not shipped"
                     offTitle="Not shipped"
                     onLabel="Live"

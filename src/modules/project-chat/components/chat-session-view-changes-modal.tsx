@@ -205,7 +205,7 @@ export function ChatSessionViewChangesModal({
                                                 <UnitTypeBadge unitType={after.unit_type} />
                                                 {showDraftPublishedBadge ? (
                                                     <LiveBadge
-                                                        isOn={!after.is_draft}
+                                                        isOn={after.is_draft === false}
                                                         offLabel="Not shipped"
                                                         offTitle="Not shipped"
                                                         onLabel="Live"
