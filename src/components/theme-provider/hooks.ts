@@ -22,19 +22,66 @@ export const useTheme = () => {
     return context;
 };
 
+const PREFERS_COLOR_SCHEME_DARK = "(prefers-color-scheme: dark)";
+
+function getPrefersColorSchemeDark(): boolean {
+    return typeof window !== "undefined" && window.matchMedia(PREFERS_COLOR_SCHEME_DARK).matches;
+}
+
+function subscribePrefersColorSchemeDark(onChange: (prefersDark: boolean) => void): () => void {
+    const media = window.matchMedia(PREFERS_COLOR_SCHEME_DARK);
+    const handler = () => onChange(media.matches);
+    queueMicrotask(() => onChange(media.matches));
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
+}
+
+function resolveThemeLightDark(theme: Theme): "light" | "dark" {
+    if (theme === "light") return "light";
+    if (theme === "dark-default" || theme === "dark-midnight") return "dark";
+    return getPrefersColorSchemeDark() ? "dark" : "light";
+}
+
 export function useResolvedTheme() {
     const { theme } = useTheme();
-    const [resolved, setResolved] = useState<"light" | "dark">("dark");
+    const [resolved, setResolved] = useState<"light" | "dark">(() => resolveThemeLightDark(theme));
 
     useEffect(() => {
         if (theme === "system") {
-            const media = window.matchMedia("(prefers-color-scheme: dark)");
-            const handler = () => setResolved(media.matches ? "dark" : "light");
-            queueMicrotask(() => setResolved(media.matches ? "dark" : "light"));
-            media.addEventListener("change", handler);
-            return () => media.removeEventListener("change", handler);
+            return subscribePrefersColorSchemeDark((prefersDark) => {
+                setResolved(prefersDark ? "dark" : "light");
+            });
         }
         queueMicrotask(() => setResolved(theme === "light" ? "light" : "dark"));
+    }, [theme]);
+
+    return resolved;
+}
+
+export type ResolvedAppTheme = "light" | "dark-default" | "dark-midnight";
+
+function resolveAppTheme(theme: Theme): ResolvedAppTheme {
+    if (theme === "light") return "light";
+    if (theme === "dark-default") return "dark-default";
+    if (theme === "dark-midnight") return "dark-midnight";
+    return getPrefersColorSchemeDark() ? "dark-midnight" : "light";
+}
+
+export function useResolvedAppTheme() {
+    const { theme } = useTheme();
+    const [resolved, setResolved] = useState<ResolvedAppTheme>(() => resolveAppTheme(theme));
+
+    useEffect(() => {
+        if (theme === "system") {
+            return subscribePrefersColorSchemeDark((prefersDark) => {
+                setResolved(prefersDark ? "dark-midnight" : "light");
+            });
+        }
+        queueMicrotask(() => {
+            if (theme === "light") setResolved("light");
+            else if (theme === "dark-default") setResolved("dark-default");
+            else if (theme === "dark-midnight") setResolved("dark-midnight");
+        });
     }, [theme]);
 
     return resolved;

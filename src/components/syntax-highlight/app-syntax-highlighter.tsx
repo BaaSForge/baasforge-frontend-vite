@@ -1,0 +1,88 @@
+"use client";
+
+import { useResolvedAppTheme } from "@/components/theme-provider/hooks";
+import { SyntaxHighlighter } from "./react-syntax-highlighter-prism";
+import { resolveSyntaxHighlighterStyle } from "./app-syntax-themes";
+
+type MarkdownBlockProps = {
+    variant: "markdownBlock";
+    code: string;
+    language: string;
+    markdownTheme?: "light" | "dark";
+    embeddedOnInverse?: boolean;
+};
+
+type DiffLineProps = {
+    variant: "diffLine";
+    code: string;
+    language: string;
+};
+
+export type AppSyntaxHighlighterProps = MarkdownBlockProps | DiffLineProps;
+
+export function AppSyntaxHighlighter(props: AppSyntaxHighlighterProps) {
+    const resolvedApp = useResolvedAppTheme();
+
+    const style = resolveSyntaxHighlighterStyle(
+        resolvedApp,
+        props.variant === "markdownBlock" ? props.markdownTheme : undefined,
+    );
+
+    if (props.variant === "diffLine") {
+        return (
+            <SyntaxHighlighter
+                PreTag="span"
+                style={style}
+                language={props.language}
+                customStyle={{
+                    margin: 0,
+                    padding: 0,
+                    background: "transparent",
+                    display: "inline",
+                    textShadow: "none",
+                    fontSize: "0.8125rem",
+                    lineHeight: 1.5,
+                }}
+                codeTagProps={{
+                    style: {
+                        background: "transparent",
+                        display: "inline",
+                        margin: 0,
+                        padding: 0,
+                        textShadow: "none",
+                        whiteSpace: "pre",
+                    },
+                }}
+                showLineNumbers={false}
+            >
+                {props.code}
+            </SyntaxHighlighter>
+        );
+    }
+
+    const inverted = props.markdownTheme !== undefined;
+    const surfaceBg =
+        props.embeddedOnInverse && inverted
+            ? "color-mix(in oklch, var(--foreground) 12%, transparent)"
+            : "var(--muted)";
+
+    return (
+        <SyntaxHighlighter
+            PreTag="div"
+            style={style}
+            language={props.language}
+            customStyle={{
+                margin: 0,
+                borderRadius: "var(--radius, 0.375rem)",
+                fontSize: "0.875rem",
+                minWidth: "100%",
+                width: "max-content",
+                background: surfaceBg,
+            }}
+            codeTagProps={{ style: { background: surfaceBg } }}
+            showLineNumbers={false}
+        >
+            {props.code}
+        </SyntaxHighlighter>
+    );
+}

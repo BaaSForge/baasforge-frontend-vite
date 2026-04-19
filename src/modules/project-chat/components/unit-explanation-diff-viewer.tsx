@@ -1,11 +1,12 @@
 "use client";
 
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
+import { AppSyntaxHighlighter } from "@/components/syntax-highlight/app-syntax-highlighter";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
+import type { ReactElement } from "react";
+import { useCallback, useMemo } from "react";
 import ReactDiffViewer, { DiffMethod, type ReactDiffViewerStylesOverride } from "@/components/react-diff-viewer";
 
-/** Semantic tokens + soft tints; `var(--*)` tracks light/dark theme automatically. */
 function shadcnDiffThemeVariables(): NonNullable<ReactDiffViewerStylesOverride["variables"]> {
     const shared = {
         diffViewerBackground: "var(--background)",
@@ -60,6 +61,11 @@ export function UnitExplanationDiffViewer({
     const oldValue = useMemo(() => explanationToDiffText(beforeExplanation), [beforeExplanation]);
     const newValue = useMemo(() => explanationToDiffText(afterExplanation), [afterExplanation]);
 
+    const renderContent = useCallback((source: string): ReactElement => {
+        const text = source ?? "";
+        return <AppSyntaxHighlighter variant="diffLine" code={text} language="typescript" />;
+    }, []);
+
     const styles = useMemo<ReactDiffViewerStylesOverride>(
         () => ({
             variables: shadcnDiffThemeVariables(),
@@ -71,7 +77,8 @@ export function UnitExplanationDiffViewer({
                 overflow: "hidden",
             },
             content: {
-                fontFamily: "inherit",
+                fontFamily:
+                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                 fontSize: "0.8125rem",
                 lineHeight: "1.5",
             },
@@ -94,9 +101,10 @@ export function UnitExplanationDiffViewer({
                 disableWordDiff={false}
                 useDarkTheme={useDarkTheme}
                 styles={styles}
-                leftTitle="Before (pre-chat)"
-                rightTitle="After (current draft)"
-                inlineTitle="Before (pre-chat) → After (current draft)"
+                renderContent={renderContent}
+                leftTitle="Before (before this chat)"
+                rightTitle="After (this revision)"
+                inlineTitle="Before (before this chat) → After (this revision)"
                 hideSummary
             />
         </div>

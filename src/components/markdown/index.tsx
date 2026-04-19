@@ -3,11 +3,9 @@
 import { useMemo } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import oneDark from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
-import oneLight from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
 import remarkGfm from "remark-gfm";
 
+import { AppSyntaxHighlighter } from "@/components/syntax-highlight/app-syntax-highlighter";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +26,6 @@ const remarkPlugins = [remarkGfm];
 export function Markdown({ children, className, theme: themeProp, embeddedOnInverse, components: componentsOverride }: MarkdownProps) {
     const resolvedTheme = useResolvedTheme();
     const effectiveTheme = themeProp ?? resolvedTheme;
-    const codeBlockStyle = effectiveTheme === "dark" ? oneDark : oneLight;
 
     const fullComponents: Partial<Components> = useMemo(() => {
         const inverted = themeProp !== undefined;
@@ -50,28 +47,13 @@ export function Markdown({ children, className, theme: themeProp, embeddedOnInve
                 const isBlock = codeClassName?.startsWith("language-");
                 return isBlock ? (
                     <div className={cn(embeddedOnInverse && inverted && "saturate-[0.88]")}>
-                        <SyntaxHighlighter
-                            PreTag="div"
-                            style={codeBlockStyle}
+                        <AppSyntaxHighlighter
+                            variant="markdownBlock"
+                            code={String(codeChildren).replace(/\n$/, "")}
                             language={language}
-                            customStyle={{
-                                margin: 0,
-                                borderRadius: "var(--radius, 0.375rem)",
-                                fontSize: "0.875rem",
-                                minWidth: "100%",
-                                width: "max-content",
-                                ...(embeddedOnInverse && inverted
-                                    ? {
-                                          backgroundColor:
-                                              effectiveTheme === "dark" ? "rgba(0, 0, 0, 0.14)" : "rgba(255, 255, 255, 0.14)",
-                                      }
-                                    : {}),
-                            }}
-                            codeTagProps={{ style: {} }}
-                            showLineNumbers={false}
-                        >
-                            {String(codeChildren).replace(/\n$/, "")}
-                        </SyntaxHighlighter>
+                            markdownTheme={themeProp}
+                            embeddedOnInverse={embeddedOnInverse}
+                        />
                     </div>
                 ) : (
                     <code className={cn("relative rounded px-[0.3rem] py-[0.2rem] font-mono font-semibold break-words", inlineCodeClass)} {...props}>
@@ -80,7 +62,7 @@ export function Markdown({ children, className, theme: themeProp, embeddedOnInve
                 );
             },
         };
-    }, [codeBlockStyle, effectiveTheme, themeProp, embeddedOnInverse]);
+    }, [effectiveTheme, themeProp, embeddedOnInverse]);
 
     const mergedComponents = useMemo(
         () => (componentsOverride ? { ...fullComponents, ...componentsOverride } : fullComponents),

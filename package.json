@@ -10,6 +10,7 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "preview": "vite preview",
     "get-api-ts-types": "swagger-typescript-api generate -p https://stage.api.baal.ai/swagger/v1/swagger.json -o ./src/types/ -n backend-api.ts",
+    "test": "tsc --noEmit",
     "prepare": "husky"
   },
   "dependencies": {
