@@ -247,7 +247,7 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
             <div className="space-y-1">
                 <SectionTitle className="mb-0">All units (combined)</SectionTitle>
                 <p className="text-muted-foreground max-w-prose text-sm">
-                    Paginated list of every unit in this release with server-side filters. Grouping only affects how the current page is displayed.
+                    Grouping only affects how the current page is displayed.
                 </p>
             </div>
 

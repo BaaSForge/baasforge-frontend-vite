@@ -60,10 +60,6 @@ export function NewUnitsTab({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-1">
                     <SectionTitle className="mb-0">New units in this release</SectionTitle>
-                    <p className="text-muted-foreground max-w-prose text-sm">
-                        Grouping and view mode apply only to the new units listed below (units introduced in this release), not the full combined
-                        inventory.
-                    </p>
                 </div>
                 <ToggleGroup
                     type="single"
