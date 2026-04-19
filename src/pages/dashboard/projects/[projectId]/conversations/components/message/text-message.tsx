@@ -94,7 +94,7 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
                         </div>
                     </InverseMessageCard>
                 ) : (
-                    <div className="relative min-w-0 max-w-full overflow-hidden rounded-2xl border border-transparent px-3 py-2">
+                    <div className="relative min-w-0 max-w-full overflow-hidden py-2">
                         <ScrollHighlightOverlay show={isScrollHighlight} className="rounded-2xl bg-muted/90" />
                         <div className="relative z-[1] min-w-0 text-sm">
                             <Markdown theme={markdownTheme}>{text}</Markdown>
