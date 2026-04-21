@@ -328,6 +328,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }, [lastUserMessageIndex, chatSessionMessages]);
     const isGeneratingFromWs = useIsSessionGenerating(projectIdOrUndefined, chatSessionIdOrUndefined);
     const isGeneratingFromMessages = lastAiMessages.some((m: ChatMessageWithDeliveryStatus) => m.status === ChatMessageStatus.Generating);
+    const isAnyMessageGenerating = useMemo(
+        () =>
+            isGeneratingFromWs ||
+            chatSessionMessages.some((m) => m.status === ChatMessageStatus.Generating),
+        [isGeneratingFromWs, chatSessionMessages],
+    );
     const isGenerating = isGeneratingFromWs || isGeneratingFromMessages;
 
     const lastAiEndStatus = useMemo((): "failed" | "stopped" | null => {
@@ -425,6 +431,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                             onRetry={handleRetryMessage}
                                             onSubmitMessageEdit={handleSubmitMessageEdit}
                                             submittingEditMessageId={submittingEditMessageId}
+                                            isAnyMessageGenerating={isAnyMessageGenerating}
                                         />
                                     ))}
                                     {shouldShowTemporaryMessageBeforeRedirecting && (

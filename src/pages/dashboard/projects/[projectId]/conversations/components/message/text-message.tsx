@@ -28,6 +28,7 @@ export type TextMessageProps = {
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
     onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
     isSubmittingEdit?: boolean;
+    isAnyMessageGenerating?: boolean;
 };
 
 function getTextMessageDisplay(payload: unknown): {
@@ -47,18 +48,20 @@ function getTextMessageDisplay(payload: unknown): {
     return { text: "", isExploringPlaceholder: false, toolCallCount: 0 };
 }
 
-export function TextMessage({ message, onRetry, onSubmitMessageEdit, isSubmittingEdit = false }: TextMessageProps) {
+export function TextMessage({
+    message,
+    onRetry,
+    onSubmitMessageEdit,
+    isSubmittingEdit = false,
+    isAnyMessageGenerating = false,
+}: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
     const { copy } = useClipboard();
     const { text, isExploringPlaceholder, toolCallCount } = getTextMessageDisplay(message.payload);
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
     const [isEditing, setIsEditing] = useState(false);
-    const [draft, setDraft] = useState(text);
+    const [draft, setDraft] = useState("");
     const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-    useEffect(() => {
-        if (!isEditing) setDraft(text);
-    }, [text, isEditing]);
 
     useEffect(() => {
         if (!isEditing) return;
@@ -95,6 +98,7 @@ export function TextMessage({ message, onRetry, onSubmitMessageEdit, isSubmittin
     const showCopyAction = hasText && !isAiGeneratingOrFailed && !isUserPendingOrFailed;
 
     const editBlockedByRelease = message.is_edit_disabled_due_to_production_release === true;
+    const editBlockedByGeneration = isAnyMessageGenerating;
     const showEditAction =
         isUser &&
         hasText &&
@@ -110,7 +114,7 @@ export function TextMessage({ message, onRetry, onSubmitMessageEdit, isSubmittin
 
     const handleSendEdit = async () => {
         const trimmed = draft.trim();
-        if (!trimmed || !onSubmitMessageEdit) return;
+        if (!trimmed || !onSubmitMessageEdit || editBlockedByGeneration) return;
         await onSubmitMessageEdit(message, trimmed);
         setIsEditing(false);
     };
@@ -121,7 +125,7 @@ export function TextMessage({ message, onRetry, onSubmitMessageEdit, isSubmittin
     const hasActions = showCopyAction || isFailed || showEditAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
 
-    if (isUser && isEditing) {
+    if (isUser && isEditing && !editBlockedByGeneration) {
         const canSendEdit = draft.trim().length > 0 && !isSubmittingEdit;
         return (
             <div className="flex w-full justify-end">
@@ -253,6 +257,26 @@ export function TextMessage({ message, onRetry, onSubmitMessageEdit, isSubmittin
                                             </TooltipTrigger>
                                             <TooltipContent side="top" className="max-w-[18rem]">
                                                 You cannot edit this message because there is a production release below it.
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    ) : editBlockedByGeneration ? (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="inline-flex">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="xs"
+                                                        className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-muted-foreground"
+                                                        disabled
+                                                    >
+                                                        <Pencil className="size-3" />
+                                                        Edit
+                                                    </Button>
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top" className="max-w-[18rem]">
+                                                You cannot edit while a response is generating.
                                             </TooltipContent>
                                         </Tooltip>
                                     ) : (
