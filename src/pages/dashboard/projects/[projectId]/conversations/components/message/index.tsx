@@ -30,6 +30,8 @@ import { getStickyMessageGroupForMessage, useStickyMessageRegistration } from ".
 type MessageProps = {
     message: ChatMessageWithDeliveryStatus;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+    onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
+    submittingEditMessageId?: string | null;
     nestedMessages?: ReactNode;
     isNested?: boolean;
 };
@@ -37,12 +39,19 @@ type MessageProps = {
 function MessageContent({
     message,
     onRetry,
+    onSubmitMessageEdit,
+    submittingEditMessageId,
     nestedMessages,
 }: Omit<MessageProps, "isNested">) {
     if (message.type === ChatMessageType.Text) {
         return (
             <>
-                <TextMessage message={message} onRetry={onRetry} />
+                <TextMessage
+                    message={message}
+                    onRetry={onRetry}
+                    onSubmitMessageEdit={onSubmitMessageEdit}
+                    isSubmittingEdit={submittingEditMessageId === message.id}
+                />
                 {nestedMessages}
             </>
         );
@@ -115,7 +124,7 @@ const toolMessageTypes = [
     ChatMessageType.RejectControllerBox,
 ];
 
-export function Message({ message, onRetry, nestedMessages, isNested }: MessageProps) {
+export function Message({ message, onRetry, onSubmitMessageEdit, submittingEditMessageId, nestedMessages, isNested }: MessageProps) {
     const isToolMessage = toolMessageTypes.includes(message.type);
     const isUser = message.role === ChatSessionRoleType.User;
     const thinkingText =
@@ -144,7 +153,13 @@ export function Message({ message, onRetry, nestedMessages, isNested }: MessageP
                     align="start"
                 />
             )}
-            <MessageContent message={message} onRetry={onRetry} nestedMessages={nestedMessages} />
+            <MessageContent
+                message={message}
+                onRetry={onRetry}
+                onSubmitMessageEdit={onSubmitMessageEdit}
+                submittingEditMessageId={submittingEditMessageId}
+                nestedMessages={nestedMessages}
+            />
         </div>
     );
 }
@@ -153,6 +168,8 @@ type MessageBranchProps = {
     message: ChatMessageWithDeliveryStatus;
     childrenByParentId: Map<string, ChatMessageWithDeliveryStatus[]>;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+    onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
+    submittingEditMessageId?: string | null;
     isNested?: boolean;
 };
 
@@ -160,6 +177,8 @@ export function MessageBranch({
     message,
     childrenByParentId,
     onRetry,
+    onSubmitMessageEdit,
+    submittingEditMessageId,
     isNested,
 }: MessageBranchProps) {
     const childMsgs = childrenByParentId.get(message.id) ?? [];
@@ -172,6 +191,8 @@ export function MessageBranch({
                         message={child}
                         childrenByParentId={childrenByParentId}
                         onRetry={onRetry}
+                        onSubmitMessageEdit={onSubmitMessageEdit}
+                        submittingEditMessageId={submittingEditMessageId}
                         isNested
                     />
                 ))}
@@ -182,6 +203,8 @@ export function MessageBranch({
         <Message
             message={message}
             onRetry={onRetry}
+            onSubmitMessageEdit={onSubmitMessageEdit}
+            submittingEditMessageId={submittingEditMessageId}
             nestedMessages={nested}
             isNested={isNested}
         />

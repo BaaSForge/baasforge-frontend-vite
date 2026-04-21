@@ -1,6 +1,8 @@
 import { Markdown, type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from "@/components/ui/input-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { cn } from "@/lib/utils";
 import {
@@ -10,9 +12,11 @@ import {
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
+import { Copy, Pencil } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Copy } from "lucide-react";
 
+import { ChatComposerSendButton } from "../chat-composer-send-button";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
@@ -22,6 +26,8 @@ import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 export type TextMessageProps = {
     message: ChatMessageWithDeliveryStatus;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+    onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
+    isSubmittingEdit?: boolean;
 };
 
 function getTextMessageDisplay(payload: unknown): {
@@ -41,11 +47,33 @@ function getTextMessageDisplay(payload: unknown): {
     return { text: "", isExploringPlaceholder: false, toolCallCount: 0 };
 }
 
-export function TextMessage({ message, onRetry }: TextMessageProps) {
+export function TextMessage({ message, onRetry, onSubmitMessageEdit, isSubmittingEdit = false }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
     const { copy } = useClipboard();
     const { text, isExploringPlaceholder, toolCallCount } = getTextMessageDisplay(message.payload);
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
+    const [isEditing, setIsEditing] = useState(false);
+    const [draft, setDraft] = useState(text);
+    const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    useEffect(() => {
+        if (!isEditing) setDraft(text);
+    }, [text, isEditing]);
+
+    useEffect(() => {
+        if (!isEditing) return;
+        const el = editTextareaRef.current;
+        if (!el) return;
+        const moveCaretToEnd = () => {
+            const len = el.value.length;
+            el.setSelectionRange(len, len);
+        };
+        el.focus();
+        moveCaretToEnd();
+        requestAnimationFrame(() => {
+            moveCaretToEnd();
+        });
+    }, [isEditing]);
 
     if (isExploringPlaceholder) {
         return <ExploringToolCallsMessage message={message} toolCallCount={toolCallCount} onRetry={onRetry} />;
@@ -66,21 +94,98 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
     const hasText = text.trim().length > 0;
     const showCopyAction = hasText && !isAiGeneratingOrFailed && !isUserPendingOrFailed;
 
+    const editBlockedByRelease = message.is_edit_disabled_due_to_production_release === true;
+    const showEditAction =
+        isUser &&
+        hasText &&
+        !isUserPendingOrFailed &&
+        onSubmitMessageEdit &&
+        message.is_optimistic !== true;
+
     const handleCopy = async () => {
         const { success } = await copy(text);
         if (success) toast.success("Copied to clipboard", { position: "top-center" });
         else toast.error("Failed to copy");
     };
 
+    const handleSendEdit = async () => {
+        const trimmed = draft.trim();
+        if (!trimmed || !onSubmitMessageEdit) return;
+        await onSubmitMessageEdit(message, trimmed);
+        setIsEditing(false);
+    };
+
     const showAiStatus = message.role === ChatSessionRoleType.Ai && message.status != null;
     const showUserDelivery = message.role === ChatSessionRoleType.User;
     const hasStatusStrip = showAiStatus || showUserDelivery;
-    const hasActions = showCopyAction || isFailed;
+    const hasActions = showCopyAction || isFailed || showEditAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
+
+    if (isUser && isEditing) {
+        const canSendEdit = draft.trim().length > 0 && !isSubmittingEdit;
+        return (
+            <div className="flex w-full justify-end">
+                <div className="flex w-full min-w-0 max-w-full flex-col items-end gap-1">
+                    <InputGroup className="w-full flex flex-col !bg-background shadow-2xl">
+                        <InputGroupTextarea
+                            ref={editTextareaRef}
+                            value={draft}
+                            onChange={(e) => setDraft(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Escape") {
+                                    e.preventDefault();
+                                    if (!isSubmittingEdit) setIsEditing(false);
+                                    return;
+                                }
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (!isSubmittingEdit && canSendEdit) void handleSendEdit();
+                                }
+                            }}
+                            placeholder="Edit message, Shift+Enter for new line"
+                            className="min-h-24 px-3 py-3 pb-0"
+                            rows={3}
+                            disabled={isSubmittingEdit}
+                        />
+                        <InputGroupAddon align="block-end" className="!flex !flex-row !items-center !justify-end !gap-2 !p-3 !pt-0">
+                            <div className="flex shrink-0 items-center gap-2">
+                                <InputGroupButton
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={isSubmittingEdit}
+                                    onClick={() => setIsEditing(false)}
+                                >
+                                    Cancel
+                                </InputGroupButton>
+                                <ChatComposerSendButton
+                                    isGenerating={false}
+                                    canSend={canSendEdit}
+                                    onSend={() => void handleSendEdit()}
+                                    isLoading={isSubmittingEdit}
+                                    className="!ml-0"
+                                />
+                            </div>
+                        </InputGroupAddon>
+                    </InputGroup>
+                    {showUserDelivery && (
+                        <div className="flex min-h-6 items-center gap-1.5">
+                            <DeliveryStatusIcon status={message.delivery_status} />
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
-            <div className={cn("flex min-w-0 flex-col gap-1", isUser ? "items-end max-w-[80%]" : "items-start max-w-full")}>
+            <div
+                className={cn(
+                    "flex min-w-0 flex-col gap-1",
+                    isUser ? "max-w-[80%] items-end" : "max-w-full items-start",
+                )}
+            >
                 {isUser ? (
                     <InverseMessageCard className="relative overflow-hidden">
                         <ScrollHighlightOverlay
@@ -127,6 +232,48 @@ export function TextMessage({ message, onRetry }: TextMessageProps) {
                                     <Copy className="size-3" />
                                     Copy
                                 </Button>
+                            )}
+                            {showEditAction && (
+                                <>
+                                    {editBlockedByRelease ? (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="inline-flex">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="xs"
+                                                        className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-muted-foreground"
+                                                        disabled
+                                                    >
+                                                        <Pencil className="size-3" />
+                                                        Edit
+                                                    </Button>
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top" className="max-w-[18rem]">
+                                                You cannot edit this message because there is a production release below it.
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    ) : (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="xs"
+                                            className={cn(
+                                                "h-6 shrink-0 gap-1 px-2 text-xs font-medium",
+                                                "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                                            )}
+                                            onClick={() => {
+                                                setDraft(text);
+                                                setIsEditing(true);
+                                            }}
+                                        >
+                                            <Pencil className="size-3" />
+                                            Edit
+                                        </Button>
+                                    )}
+                                </>
                             )}
                             {isFailed && (
                                 <Button

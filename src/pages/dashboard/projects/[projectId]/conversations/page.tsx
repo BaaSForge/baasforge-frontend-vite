@@ -19,21 +19,22 @@ import { scrollToBottom, scrollToTop, smoothScrollToElementTop } from "@/lib/dom
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { register, SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
-import { stopProjectChatSession } from "@/modules/project-chat/api";
+import { postUserMessageTruncateBelow, stopProjectChatSession } from "@/modules/project-chat/api";
 import { addSessionToGeneratingSet } from "@/modules/project-chat/ws-cache-handler";
+import { createOptimisticUserTextMessage } from "@/modules/project-chat/optimistic-user-text-message";
 import { useCreateProjectChatSessionMessageMutation, useCreateProjectChatSessionMutation } from "@/modules/project-chat/mutations";
+import { trimInfiniteMessagesCacheRemovingMessageAndAfter } from "@/modules/project-chat/trim-messages-cache";
 import { useIsSessionGenerating, useProjectChatSessionDetailQuery, useProjectChatSessionMessagesQuery } from "@/modules/project-chat/queries";
 import {
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
-    ChatMessageType,
-    ChatSessionRoleType,
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
+import { toast } from "sonner";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ConversationSessionMessagesProvider } from "./components/conversation-session-messages-context";
@@ -181,6 +182,43 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const createSessionMutation = useCreateProjectChatSessionMutation(projectId ?? "");
     const createMessageMutation = useCreateProjectChatSessionMessageMutation();
 
+    const [submittingEditMessageId, setSubmittingEditMessageId] = useState<string | null>(null);
+
+    const handleSubmitMessageEdit = useCallback(
+        async (message: ChatMessageWithDeliveryStatus, newText: string) => {
+            const trimmed = newText.trim();
+            if (!trimmed || projectId == null || chatSessionIdOrUndefined == null) return;
+
+            setSubmittingEditMessageId(message.id);
+            try {
+                await postUserMessageTruncateBelow(projectId, chatSessionIdOrUndefined, message.id);
+                queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
+                    QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined),
+                    (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,
+                );
+                const optimisticMessage = createOptimisticUserTextMessage(chatSessionIdOrUndefined, trimmed);
+                await createMessageMutation.mutateAsync({
+                    projectId,
+                    chatSessionId: chatSessionIdOrUndefined,
+                    optimisticMessage,
+                });
+                addSessionToGeneratingSet(queryClient, projectId, chatSessionIdOrUndefined);
+                const el = responsePlaceholderRef.current;
+                if (el) {
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => smoothScrollToElementTop(el));
+                    });
+                }
+            } catch (e) {
+                toast.error("Could not update message.", { position: "top-center" });
+                throw e;
+            } finally {
+                setSubmittingEditMessageId(null);
+            }
+        },
+        [projectId, chatSessionIdOrUndefined, queryClient, createMessageMutation],
+    );
+
     const responsePlaceholderRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -245,18 +283,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         const text = messageInput.trim();
         setMessageInput("");
 
-        const optimisticMessage: ChatMessageWithDeliveryStatus = {
-            id: `temp-${Date.now()}`,
-            chat_session_id: chatSessionIdOrUndefined ?? "",
-            role: ChatSessionRoleType.User,
-            type: ChatMessageType.Text,
-            payload: { text },
-            created_at: new Date().toISOString(),
-            delivery_status: ChatMessageDeliveryStatus.Pending,
-            status: ChatMessageStatus.Completed,
-            is_optimistic: true,
-            is_first: false,
-        };
+        const optimisticMessage = createOptimisticUserTextMessage(chatSessionIdOrUndefined ?? "", text);
 
         if (noConversation) {
             createSessionThenMessage(optimisticMessage);
@@ -396,6 +423,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                             message={message}
                                             childrenByParentId={displayChildrenByParentId}
                                             onRetry={handleRetryMessage}
+                                            onSubmitMessageEdit={handleSubmitMessageEdit}
+                                            submittingEditMessageId={submittingEditMessageId}
                                         />
                                     ))}
                                     {shouldShowTemporaryMessageBeforeRedirecting && (

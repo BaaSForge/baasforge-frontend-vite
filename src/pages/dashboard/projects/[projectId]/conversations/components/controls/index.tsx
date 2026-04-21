@@ -1,18 +1,15 @@
 import {
     InputGroup,
     InputGroupAddon,
-    InputGroupButton,
-    // InputGroupText,
     InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { useSidebar } from "@/components/ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
-import { ArrowUp, Square } from "lucide-react";
 import { useState } from "react";
 import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
+import { ChatComposerSendButton } from "../chat-composer-send-button";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -110,31 +107,12 @@ export default function Controls({
                             <span className="text-xs text-muted-foreground opacity-50">
                                 press {isInputFocused ? "Esc to release" : `${SHORTCUT_LABELS.FOCUS_CHAT} to focus`}
                             </span>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <InputGroupButton
-                                        size="sm"
-                                        className={cn("ml-auto", !isGenerating && canSend && "!bg-blue-500 hover:!bg-blue-600 !text-white")}
-                                        variant={isGenerating ? "destructive" : canSend ? "default" : "ghost"}
-                                        disabled={!isGenerating && !canSend}
-                                        onClick={() => (isGenerating ? handleStop?.() : canSend ? handleSend() : undefined)}
-                                        type="button"
-                                    >
-                                        {isGenerating ? (
-                                            <>
-                                                Stop <Square className="size-3.5" />
-                                            </>
-                                        ) : (
-                                            <>
-                                                Send <ArrowUp className="size-3.5" />
-                                            </>
-                                        )}
-                                    </InputGroupButton>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                    {isGenerating ? "Stop generating" : "Send message"}
-                                </TooltipContent>
-                            </Tooltip>
+                            <ChatComposerSendButton
+                                isGenerating={isGenerating}
+                                canSend={canSend}
+                                onSend={handleSend}
+                                onStop={handleStop}
+                            />
                         </InputGroupAddon>
                     </InputGroup>
                 </div>

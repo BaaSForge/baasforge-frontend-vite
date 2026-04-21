@@ -22,6 +22,8 @@ const chatSessionUnitLatestRevisionsByIdsEndpoint = (projectId: string, chatSess
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-latest-revisions-by-ids`;
 const chatSessionUnitPreChatBaseByPathsEndpoint = (projectId: string, chatSessionId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-pre-chat-base-by-paths`;
+const chatSessionUserMessageTruncateBelowEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/user-messages/${messageId}/truncate-below`;
 
 /** Matches backend `UnitPathsBody`: each string is the unit path (full id without the trailing `.<revision>` segment). */
 export type UnitPathsBody = {
@@ -79,6 +81,12 @@ export function getProjectChatSessionMessages(
 export type CreateProjectChatSessionMessageResult = {
     saved: ChatMessageWithDeliveryStatus;
 };
+
+export function postUserMessageTruncateBelow(projectId: string, chatSessionId: string, messageId: string): Promise<void> {
+    return apiClient
+        .post<ApiResponse<unknown>>(chatSessionUserMessageTruncateBelowEndpoint(projectId, chatSessionId, messageId))
+        .then(() => undefined);
+}
 
 export function createProjectChatSessionMessage(
     projectId: string,
