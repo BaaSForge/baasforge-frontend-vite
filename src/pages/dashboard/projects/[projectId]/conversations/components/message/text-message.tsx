@@ -275,7 +275,7 @@ export function TextMessage({
                                                     </Button>
                                                 </span>
                                             </TooltipTrigger>
-                                            <TooltipContent side="top" className="max-w-[18rem]">
+                                            <TooltipContent side="top">
                                                 You cannot edit while a response is generating.
                                             </TooltipContent>
                                         </Tooltip>
