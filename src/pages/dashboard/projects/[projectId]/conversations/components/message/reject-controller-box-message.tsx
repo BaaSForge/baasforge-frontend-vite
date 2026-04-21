@@ -19,9 +19,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { QueryKeys } from "@/constants/query-keys";
 import { cn } from "@/lib/utils";
 import { UnitCardChip } from "@/modules/project";
+import { invalidateQueriesAfterRejectControllerBox } from "@/modules/project/invalidate-after-runtime-deploy";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { postRejectControllerBoxReject } from "@/modules/project/api";
 import type { RejectControllerBoxPayload } from "@/modules/project-chat/payloads";
@@ -93,7 +93,8 @@ export function RejectControllerBoxMessage({
         },
         onSuccess: async () => {
             setConfirmOpen(false);
-            // TODO: invalidate the stage releases
+            if (projectId == null) return;
+            await invalidateQueriesAfterRejectControllerBox(queryClient, projectId);
             toast.success("Changes for this step were rejected.", { position: "top-center" });
         },
     });
