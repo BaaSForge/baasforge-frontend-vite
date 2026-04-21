@@ -10,10 +10,18 @@ export interface UnitFullExplanationModalProps {
     onOpenChange: (open: boolean) => void;
     explanation: string;
     isDeleted?: boolean;
+    isRejected?: boolean;
     badges: ReactNode;
 }
 
-export function UnitFullExplanationModal({ open, onOpenChange, explanation, isDeleted, badges }: UnitFullExplanationModalProps) {
+export function UnitFullExplanationModal({
+    open,
+    onOpenChange,
+    explanation,
+    isDeleted,
+    isRejected,
+    badges,
+}: UnitFullExplanationModalProps) {
     return (
         <CentricModal open={open} onOpenChange={onOpenChange}>
             <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
@@ -25,6 +33,7 @@ export function UnitFullExplanationModal({ open, onOpenChange, explanation, isDe
                     className={cn(
                         "prose prose-sm dark:prose-invert max-w-none",
                         isDeleted && "line-through",
+                        isRejected && "opacity-90",
                     )}
                 >
                     <Markdown>{explanation}</Markdown>

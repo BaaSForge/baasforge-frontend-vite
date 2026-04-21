@@ -24,6 +24,7 @@ import { ToolRemoveUnitMessage } from "./tool-remove-unit-message";
 import { ToolListUnitContextsMessage } from "./tool-list-unit-contexts-message";
 import { ToolListModulesForUnitContextsMessage } from "./tool-list-modules-for-unit-contexts-message";
 import { ReleaseControllerBoxMessage } from "./release-controller-box-message";
+import { RejectControllerBoxMessage } from "./reject-controller-box-message";
 import { getStickyMessageGroupForMessage, useStickyMessageRegistration } from "../sticky-messages";
 
 type MessageProps = {
@@ -33,7 +34,11 @@ type MessageProps = {
     isNested?: boolean;
 };
 
-function MessageContent({ message, onRetry, nestedMessages }: Omit<MessageProps, "isNested">) {
+function MessageContent({
+    message,
+    onRetry,
+    nestedMessages,
+}: Omit<MessageProps, "isNested">) {
     if (message.type === ChatMessageType.Text) {
         return (
             <>
@@ -84,6 +89,11 @@ function MessageContent({ message, onRetry, nestedMessages }: Omit<MessageProps,
     if (message.type === ChatMessageType.ReleaseControllerBox) {
         return <ReleaseControllerBoxMessage message={message} nestedMessages={nestedMessages} />;
     }
+    if (message.type === ChatMessageType.RejectControllerBox) {
+        return (
+            <RejectControllerBoxMessage message={message} nestedMessages={nestedMessages} />
+        );
+    }
     return nestedMessages != null ? <>{nestedMessages}</> : null;
 }
 
@@ -102,6 +112,7 @@ const toolMessageTypes = [
     ChatMessageType.ToolListUnitContexts,
     ChatMessageType.ToolListModulesForUnitContexts,
     ChatMessageType.ReleaseControllerBox,
+    ChatMessageType.RejectControllerBox,
 ];
 
 export function Message({ message, onRetry, nestedMessages, isNested }: MessageProps) {
@@ -145,7 +156,12 @@ type MessageBranchProps = {
     isNested?: boolean;
 };
 
-export function MessageBranch({ message, childrenByParentId, onRetry, isNested }: MessageBranchProps) {
+export function MessageBranch({
+    message,
+    childrenByParentId,
+    onRetry,
+    isNested,
+}: MessageBranchProps) {
     const childMsgs = childrenByParentId.get(message.id) ?? [];
     const nested =
         childMsgs.length > 0 ? (
@@ -162,5 +178,12 @@ export function MessageBranch({ message, childrenByParentId, onRetry, isNested }
             </>
         ) : undefined;
 
-    return <Message message={message} onRetry={onRetry} nestedMessages={nested} isNested={isNested} />;
+    return (
+        <Message
+            message={message}
+            onRetry={onRetry}
+            nestedMessages={nested}
+            isNested={isNested}
+        />
+    );
 }

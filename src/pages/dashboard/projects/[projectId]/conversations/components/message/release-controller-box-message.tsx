@@ -94,7 +94,12 @@ export function ReleaseControllerBoxMessage({
     const bothSidebarsOpen = useAreBothSidebarsOpen();
     const compactToolbar = isMobile || bothSidebarsOpen;
 
-    const { stage_release: stageRelease, prod_release: prodRelease } = getReleaseControllerPayload(message);
+    const {
+        stage_release: stageRelease,
+        prod_release: prodRelease,
+        is_disabled_due_to_reject: isDisabledDueToRejectRaw,
+    } = getReleaseControllerPayload(message);
+    const disabledDueToReject = isDisabledDueToRejectRaw === true;
 
     const {
         data: draftUnits,
@@ -196,7 +201,13 @@ export function ReleaseControllerBoxMessage({
 
     const hasDraftUnits = (draftUnits?.length ?? 0) > 0;
     const canViewChanges =
-        projectId != null && chatSessionId != null && !isLoading && !error && hasDraftUnits && !isPreparingViewChanges;
+        projectId != null &&
+        chatSessionId != null &&
+        !isLoading &&
+        !error &&
+        hasDraftUnits &&
+        !isPreparingViewChanges &&
+        !disabledDueToReject;
 
     const handleViewChanges = useCallback(async () => {
         if (projectId == null || chatSessionId == null) return;
@@ -246,30 +257,43 @@ export function ReleaseControllerBoxMessage({
 
     return (
         <>
-            <div
-                className={cn(
-                    "relative overflow-hidden flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-dashed border-emerald-400/25 bg-emerald-400/6 px-3 py-2.5 mb-4 dark:border-emerald-500/20 dark:bg-emerald-950/20",
-                    !compactToolbar && "sm:flex-row sm:items-center sm:justify-between sm:gap-3",
-                )}
-            >
-                <ScrollHighlightOverlay
-                    show={isScrollHighlight}
-                    className="rounded-xl bg-emerald-500/30 dark:bg-emerald-400/25"
-                />
-                <p
-                    className={cn(
-                        "relative z-[1] w-full min-w-0 text-center text-sm font-medium text-emerald-600 dark:text-emerald-400/90",
-                        !compactToolbar && "sm:flex-1 sm:text-left",
-                    )}
-                >
-                    Release scope up to here
-                </p>
+            <div className="mb-4 flex w-full min-w-0 max-w-full flex-col gap-2">
+                <div className={cn("flex min-w-0 flex-col gap-2", !compactToolbar && "sm:items-start")}>
+                    <p
+                        className={cn(
+                            "text-center text-sm text-muted-foreground",
+                            !compactToolbar && "sm:text-left",
+                        )}
+                    >
+                        Release scope up to here
+                    </p>
+                    {disabledDueToReject ? (
+                        <p
+                            className={cn(
+                                "text-center text-xs text-amber-800 dark:text-amber-200/90",
+                                !compactToolbar && "sm:text-left",
+                            )}
+                        >
+                            New releases are disabled for this scope because the step was rejected.
+                        </p>
+                    ) : null}
+                </div>
                 <div
                     className={cn(
-                        "relative z-[1] flex w-full min-w-0 flex-wrap items-center justify-center gap-2",
-                        !compactToolbar && "sm:w-auto sm:justify-end",
+                        "relative overflow-hidden flex w-full min-w-0 max-w-full flex-col items-center gap-3 rounded-xl border border-dashed border-emerald-400/25 bg-emerald-400/6 px-3 py-2.5 dark:border-emerald-500/20 dark:bg-emerald-950/20",
+                        !compactToolbar && "sm:flex-row sm:items-center sm:justify-end sm:gap-3",
                     )}
                 >
+                    <ScrollHighlightOverlay
+                        show={isScrollHighlight}
+                        className="rounded-xl bg-emerald-500/30 dark:bg-emerald-400/25"
+                    />
+                    <div
+                        className={cn(
+                            "relative z-[1] flex w-full min-w-0 flex-wrap items-center justify-center gap-2",
+                            !compactToolbar && "sm:w-auto sm:justify-end",
+                        )}
+                    >
                     <Button
                         type="button"
                         variant="outline"
@@ -314,15 +338,15 @@ export function ReleaseControllerBoxMessage({
                                     <TooltipContent side="top">No stage runtimes available.</TooltipContent>
                                 </Tooltip>
                             ) : (
-                                <span className="inline-flex">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="xs"
-                                        disabled={stageRedeployMutation.isPending}
-                                        aria-busy={stageRedeployMutation.isPending}
-                                        onClick={() => void handleStageRedeploy()}
-                                    >
+                                        <span className="inline-flex">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="xs"
+                                                disabled={stageRedeployMutation.isPending || disabledDueToReject}
+                                                aria-busy={stageRedeployMutation.isPending}
+                                                onClick={() => void handleStageRedeploy()}
+                                            >
                                         {stageRedeployMutation.isPending ? (
                                             <>
                                                 <Spinner className="size-3" />
@@ -348,6 +372,19 @@ export function ReleaseControllerBoxMessage({
                                 </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">Missing project or conversation context.</TooltipContent>
+                        </Tooltip>
+                    ) : disabledDueToReject ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                    <Button type="button" variant="outline" size="xs" disabled>
+                                        Release Stage
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                                New releases are disabled for this scope because the step was rejected.
+                            </TooltipContent>
                         </Tooltip>
                     ) : (
                         <span className="inline-flex">
@@ -386,7 +423,7 @@ export function ReleaseControllerBoxMessage({
                                         type="button"
                                         variant="outline"
                                         size="xs"
-                                        disabled={prodRedeployMutation.isPending}
+                                        disabled={prodRedeployMutation.isPending || disabledDueToReject}
                                         aria-busy={prodRedeployMutation.isPending}
                                         onClick={() => void handleProdRedeployClick()}
                                     >
@@ -416,6 +453,19 @@ export function ReleaseControllerBoxMessage({
                             </TooltipTrigger>
                             <TooltipContent side="top">Release to stage first.</TooltipContent>
                         </Tooltip>
+                    ) : disabledDueToReject ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                    <Button type="button" variant="outline" size="xs" disabled>
+                                        Release production
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                                New releases are disabled for this scope because the step was rejected.
+                            </TooltipContent>
+                        </Tooltip>
                     ) : !canCallProductionRelease ? (
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -441,6 +491,7 @@ export function ReleaseControllerBoxMessage({
                             </Button>
                         </span>
                     )}
+                </div>
                 </div>
             </div>
 

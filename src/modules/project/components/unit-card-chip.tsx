@@ -7,6 +7,7 @@ import type { ProjectUnitResponse } from "../types";
 import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-row";
 import { UnitTypeBadge } from "./unit-type-badge";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
+import { UnitRejectedBadge } from "./unit-rejected-badge";
 import { UnitRevisionBadge } from "./unit-revision-badge";
 
 export interface UnitCardChipProps {
@@ -20,6 +21,7 @@ export interface UnitCardChipProps {
 export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRefreshPending }: UnitCardChipProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
+    const isRejected = unit.is_rejected === true;
     const explanation = unit.explanation?.trim() ?? "No description";
     const summary = explanation.length > 60 ? explanation.slice(0, 60) + "..." : explanation;
     const [modalOpen, setModalOpen] = useState(false);
@@ -33,13 +35,14 @@ export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRe
                 refreshPending={unitRefreshPending}
             />
             <UnitTypeBadge unitType={unit.unit_type} label={unit.unit_type} />
+            {isRejected ? <UnitRejectedBadge /> : null}
         </>
     );
 
     return (
         <div
             className={cn(
-                "relative inline-block shrink-0 min-w-0 max-w-[min(100%,20rem)]",
+                "relative inline-block shrink-0 min-w-0 max-w-[20rem]",
                 UNIT_CARD_ID_BADGE_RESERVE_CLASS,
                 className,
             )}
@@ -55,6 +58,8 @@ export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRe
                     "relative z-[1] flex flex-col overflow-visible rounded-lg border bg-muted/30 min-w-0 w-full bg-card",
                     hasParent && "mb-1",
                     isDeleted && "border-destructive",
+                    !isDeleted && isRejected && "border-muted-foreground/40",
+                    isRejected && "opacity-[0.88]",
                 )}
                 title={unit.explanation ?? undefined}
             >
@@ -75,6 +80,7 @@ export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRe
                     onOpenChange={setModalOpen}
                     explanation={explanation}
                     isDeleted={isDeleted}
+                    isRejected={isRejected}
                     badges={badges}
                 />
             </div>

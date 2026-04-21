@@ -36,6 +36,8 @@ const projectReleaseControllerStageReleaseEndpoint = (projectId: string, chatSes
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/stage-release`;
 const projectReleaseControllerProductionReleaseEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/production-release`;
+const projectRejectControllerBoxRejectEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/reject-controller-messages/${messageId}/reject`;
 const projectRuntimeDeployStageReleaseEndpoint = (projectId: string, runtimeId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/deploy-stage-release`;
 const projectRuntimeDeployProductionReleaseEndpoint = (projectId: string, runtimeId: string) =>
@@ -179,6 +181,10 @@ export function postReleaseControllerProductionRelease(
     return apiClient
         .post<ApiResponse<unknown>>(projectReleaseControllerProductionReleaseEndpoint(projectId, chatSessionId, messageId), body)
         .then(() => undefined);
+}
+
+export function postRejectControllerBoxReject(projectId: string, chatSessionId: string, messageId: string): Promise<void> {
+    return apiClient.post<ApiResponse<unknown>>(projectRejectControllerBoxRejectEndpoint(projectId, chatSessionId, messageId), {}).then(() => undefined);
 }
 
 export function postRuntimeDeployStageRelease(projectId: string, runtimeId: string, body: DeployReleaseBody): Promise<void> {

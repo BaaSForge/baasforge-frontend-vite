@@ -61,6 +61,7 @@ export interface ProjectUnitResponse {
     unit_type: ProjectUnitType;
     is_draft: boolean;
     is_deleted?: boolean;
+    is_rejected?: boolean;
     chat_session_id: string | null;
 }
 

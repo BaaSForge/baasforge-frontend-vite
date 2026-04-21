@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { truncateToWords } from "@/utils/truncate-to-words";
 import {
     ChatMessageStatus,
     getToolPayloadErrorString,
@@ -23,9 +24,11 @@ function parseToolImplementSolutionPayload(message: ChatMessageWithDeliveryStatu
     return raw as ToolImplementSolutionPayload;
 }
 
+const DIRECTIVE_TOOLTIP_MAX_WORDS = 50;
+
 function formatArgsTooltip(args: ToolImplementSolutionPayload["args"] | undefined): string {
     const d = args?.directive;
-    if (d != null && d !== "") return `directive: ${String(d)}`;
+    if (d != null && d !== "") return `directive: ${truncateToWords(String(d), DIRECTIVE_TOOLTIP_MAX_WORDS)}`;
     return "—";
 }
 

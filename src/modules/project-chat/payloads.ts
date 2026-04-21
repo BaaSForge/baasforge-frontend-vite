@@ -188,6 +188,13 @@ export interface ToolRemoveUnitPayload {
 export interface ReleaseControllerBoxPayload {
     stage_release?: ReleaseResponse | null;
     prod_release?: ReleaseResponse | null;
+    is_disabled_due_to_reject?: boolean;
+}
+
+export interface RejectControllerBoxPayload {
+    is_rejected?: boolean;
+    is_disabled_due_to_production_release?: boolean;
+    unit_changes?: ProjectUnitResponse[];
 }
 
 /**

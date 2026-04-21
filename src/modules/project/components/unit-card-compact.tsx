@@ -11,6 +11,7 @@ import { UnitCardIdRow, UNIT_CARD_ID_BADGE_RESERVE_CLASS } from "./unit-card-id-
 import { UnitTypeBadge } from "./unit-type-badge";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
+import { UnitRejectedBadge } from "./unit-rejected-badge";
 import { UnitRevisionBadge } from "./unit-revision-badge";
 
 export interface UnitCardCompactProps {
@@ -39,6 +40,7 @@ export function UnitCardCompact({
 }: UnitCardCompactProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
+    const isRejected = unit.is_rejected === true;
     const explanation = unit.explanation?.trim() ?? "No description";
     const [modalOpen, setModalOpen] = useState(false);
     const sourceChatSessionId = unit.chat_session_id?.trim() ?? "";
@@ -54,6 +56,7 @@ export function UnitCardCompact({
                 refreshPending={unitRefreshPending}
             />
             <UnitTypeBadge unitType={unit.unit_type} />
+            {isRejected ? <UnitRejectedBadge /> : null}
             {showDraftPublishedBadge ? (
                 <LiveBadge
                     isOn={unit.is_draft === false}
@@ -79,6 +82,8 @@ export function UnitCardCompact({
                     "relative z-[1] gap-0 overflow-visible rounded-lg border p-0 shadow-none",
                     hasParent && "mb-1.5 mr-1.5",
                     isDeleted && "border-destructive",
+                    !isDeleted && isRejected && "border-muted-foreground/40",
+                    isRejected && "opacity-[0.88]",
                 )}
             >
                 <UnitCardIdRow unitId={unit.id} className="z-3" />
@@ -106,6 +111,7 @@ export function UnitCardCompact({
                     onOpenChange={setModalOpen}
                     explanation={explanation}
                     isDeleted={isDeleted}
+                    isRejected={isRejected}
                     badges={badges}
                 />
                 <CardAction

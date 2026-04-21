@@ -14,6 +14,7 @@ export { ReleaseRevisionBadge } from "./components/release-revision-badge";
 export { ReleaseCardChip } from "./components/release-card-chip";
 export { UnitCardChip } from "./components/unit-card-chip";
 export { UnitCardCompact } from "./components/unit-card-compact";
+export { UnitRejectedBadge } from "./components/unit-rejected-badge";
 export { useCreateProjectMutation, useDeleteProjectMutation, usePatchProjectMutation } from "./mutations";
 export {
     useProductionRuntimeQuery,

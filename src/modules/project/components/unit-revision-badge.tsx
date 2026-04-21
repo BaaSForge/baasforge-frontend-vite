@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle2, Loader2Icon, Sparkles, Trash2 } from "lucide-react";
+import { AlertTriangle, Ban, CheckCircle2, Loader2Icon, Sparkles, Trash2 } from "lucide-react";
 import type { ProjectUnitResponse } from "../types";
 import { isUnitRevisionStale } from "../unit-revision-stale";
 import { useChatSessionUnitLatestRevision } from "../use-chat-session-unit-latest-revision";
@@ -34,6 +34,20 @@ function diffRevisionLabel(beforeUnit: ProjectUnitResponse | null, after: Projec
         return (
             <>
                 revision {beforeUnit.revision} → Deleted
+            </>
+        );
+    }
+    if (after.is_rejected && beforeUnit == null) {
+        return (
+            <>
+                revision {after.revision} (New) → Rejected
+            </>
+        );
+    }
+    if (after.is_rejected && beforeUnit != null) {
+        return (
+            <>
+                revision {beforeUnit.revision} → Rejected
             </>
         );
     }
@@ -69,10 +83,11 @@ export function UnitRevisionBadge({
             : unit.latest_revision != null && unit.revision < unit.latest_revision);
     const latest = latestFromCache ?? unit.latest_revision;
     const isDeleted = unit.is_deleted === true;
+    const isRejected = unit.is_rejected === true;
     /** Aligns diff “new” with dashed first-revision styling; base mode uses live revision + stale. */
     const isFirstRevisionOnly = isDiff
-        ? beforeUnit == null && !isDeleted
-        : unit.revision === 1 && !stale;
+        ? beforeUnit == null && !isDeleted && !isRejected
+        : unit.revision === 1 && !stale && !isRejected;
     /** Deleted unit still on latest revision — solid destructive fill; outdated deleted — destructive outline only. */
     const deletedFullDestructiveBg = isDeleted && !stale;
 
@@ -82,6 +97,10 @@ export function UnitRevisionBadge({
             tooltipContent = "Just created, then deleted";
         } else if (isDeleted && beforeUnit != null) {
             tooltipContent = `Revision ${beforeUnit.revision} → deleted`;
+        } else if (isRejected && beforeUnit == null) {
+            tooltipContent = "Just created, then rejected";
+        } else if (isRejected && beforeUnit != null) {
+            tooltipContent = `Revision ${beforeUnit.revision} → rejected`;
         } else if (isFirstRevisionOnly) {
             tooltipContent = "Just created";
         } else if (beforeUnit != null) {
@@ -97,12 +116,26 @@ export function UnitRevisionBadge({
               : isFirstRevisionOnly
                 ? "Just created"
                 : "Latest";
-        tooltipContent = isDeleted ? `${baseTooltip} (deleted)` : baseTooltip;
+        tooltipContent = isDeleted
+            ? `${baseTooltip} (deleted)`
+            : isRejected
+              ? `${baseTooltip} (rejected)`
+              : baseTooltip;
     }
+
+    const rejectedOnly = isRejected && !isDeleted;
 
     const badge = (
         <Badge
-            variant={deletedFullDestructiveBg ? "destructive" : isDeleted && stale ? "outline" : "secondary"}
+            variant={
+                deletedFullDestructiveBg
+                    ? "destructive"
+                    : isDeleted && stale
+                      ? "outline"
+                      : rejectedOnly
+                        ? "outline"
+                        : "secondary"
+            }
             aria-busy={refreshPending || undefined}
             className={cn(
                 "text-[0.625rem]",
@@ -110,6 +143,10 @@ export function UnitRevisionBadge({
                     stale &&
                     "border-destructive/55 bg-transparent text-destructive shadow-none hover:bg-destructive/10 dark:bg-transparent dark:hover:bg-destructive/15 [&>svg]:text-destructive",
                 !isDeleted &&
+                    rejectedOnly &&
+                    "border-muted-foreground/40 bg-muted/45 text-muted-foreground shadow-none hover:bg-muted/55 [&>svg]:text-muted-foreground",
+                !isDeleted &&
+                    !rejectedOnly &&
                     (stale
                         ? "border-muted-foreground/35 border-dashed bg-muted/80 text-muted-foreground"
                         : isFirstRevisionOnly
@@ -122,7 +159,13 @@ export function UnitRevisionBadge({
                 <Loader2Icon
                     className={cn(
                         "size-2.5 shrink-0 animate-spin",
-                        deletedFullDestructiveBg ? "text-white" : isDeleted && stale ? "text-destructive" : "text-blue-600 dark:text-blue-400",
+                        deletedFullDestructiveBg
+                            ? "text-white"
+                            : isDeleted && stale
+                              ? "text-destructive"
+                              : rejectedOnly
+                                ? "text-muted-foreground"
+                                : "text-blue-600 dark:text-blue-400",
                     )}
                     aria-hidden
                 />
@@ -130,6 +173,8 @@ export function UnitRevisionBadge({
                 <AlertTriangle className="size-2.5 shrink-0" aria-hidden />
             ) : isDeleted ? (
                 <Trash2 className="size-2.5 shrink-0" aria-hidden />
+            ) : rejectedOnly ? (
+                <Ban className="size-2.5 shrink-0" aria-hidden />
             ) : isFirstRevisionOnly ? (
                 <Sparkles className="size-2.5 shrink-0" aria-hidden />
             ) : (
