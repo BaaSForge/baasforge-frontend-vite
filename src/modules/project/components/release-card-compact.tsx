@@ -14,8 +14,7 @@ import { EMPTY_RELEASE_NOTE_DISPLAY, type ProjectRuntimeResponse, type ReleaseRe
 import { ReleaseNotesModal } from "./release-notes-modal";
 import { ReleaseRevisionBadge } from "./release-revision-badge";
 
-/** Release-notes block: stop bubbling so the row's `onClick` (select release) does not run. */
-function stopNotesRegionFromSelectingCard(e: SyntheticEvent) {
+function stopNestedControlFromSelectingCard(e: SyntheticEvent) {
     e.stopPropagation();
 }
 
@@ -95,27 +94,23 @@ export function ReleaseCardCompact({
                     showNotShippedBadge && !selected && "border-muted-foreground/25",
                 )}
             >
-                <div className="relative" onClick={stopNotesRegionFromSelectingCard}>
-                    <Expandable
-                        className="group/expandable-read relative overflow-hidden rounded-t-xl rounded-b-none p-2 text-xs"
-                        maxLines={4}
-                        bottomEdgeFade
-                        bottomEdgeFadeFromClassName="from-card"
-                        trigger={() => (
-                            <ExpandableFullReadTrigger
-                                ariaLabel="Show full release notes"
-                                onClick={() => setModalOpen(true)}
-                                className="rounded-t-xl rounded-b-none"
-                            >
-                                Read full release notes
-                            </ExpandableFullReadTrigger>
-                        )}
-                    >
-                        <Markdown components={{ pre: () => null }}>
-                            {release.brief_note?.trim() || EMPTY_RELEASE_NOTE_DISPLAY}
-                        </Markdown>
-                    </Expandable>
-                </div>
+                <Expandable
+                    className="group/expandable-read relative overflow-hidden rounded-t-xl rounded-b-none p-2 text-xs"
+                    maxLines={4}
+                    bottomEdgeFade
+                    bottomEdgeFadeFromClassName="from-card"
+                    trigger={() => (
+                        <ExpandableFullReadTrigger
+                            variant="corner-icon"
+                            ariaLabel="Show full release notes"
+                            onClick={() => setModalOpen(true)}
+                        />
+                    )}
+                >
+                    <Markdown components={{ pre: () => null }}>
+                        {release.brief_note?.trim() || EMPTY_RELEASE_NOTE_DISPLAY}
+                    </Markdown>
+                </Expandable>
                 <ReleaseNotesModal
                     open={modalOpen}
                     onOpenChange={setModalOpen}
@@ -134,7 +129,7 @@ export function ReleaseCardCompact({
                         <div className="ml-auto flex shrink-0 items-center justify-end gap-1 self-end">
                             {cardActionEnd != null ? <div className="flex items-center gap-2">{cardActionEnd}</div> : null}
                             {cardOverflowMenu != null ? (
-                                <div className="flex items-center" onClick={stopNotesRegionFromSelectingCard}>
+                                <div className="flex items-center" onClick={stopNestedControlFromSelectingCard}>
                                     {cardOverflowMenu}
                                 </div>
                             ) : null}
