@@ -1,9 +1,12 @@
 import { QueryKeys } from "@/constants/query-keys";
+import { ChatMessageDeliveryStatus } from "@/modules/project-chat/types";
+import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import {
     getDraftUnits,
     getDraftUnitsAsOfReleaseControllerMessage,
+    getLastNotDisabledReleaseControllerMessage,
     getProject,
     getProjectNonDraftUnits,
     getProjectRuntimes,
@@ -61,6 +64,26 @@ export function useProjectDraftUnitsAsOfReleaseControllerMessageQuery(
         ),
         queryFn: () => getDraftUnitsAsOfReleaseControllerMessage(projectId!, chatSessionId!, releaseControllerMessageId!),
         enabled: !!projectId && !!chatSessionId && !!releaseControllerMessageId,
+    });
+}
+
+export function useLastNotDisabledReleaseControllerMessageQuery(
+    projectId: string | undefined,
+    chatSessionId: string | undefined,
+) {
+    return useQuery({
+        queryKey: QueryKeys.projectLastNotDisabledReleaseControllerMessage(projectId ?? "", chatSessionId ?? ""),
+        queryFn: async () => {
+            const raw = await getLastNotDisabledReleaseControllerMessage(projectId!, chatSessionId!);
+            if (raw == null) return null;
+            const m: ChatMessageWithDeliveryStatus = {
+                ...raw,
+                is_first: raw.is_first ?? false,
+                delivery_status: ChatMessageDeliveryStatus.Delivered,
+            };
+            return m;
+        },
+        enabled: !!projectId && !!chatSessionId,
     });
 }
 

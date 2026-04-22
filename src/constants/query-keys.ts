@@ -19,6 +19,10 @@ export const QueryKeys = {
         ["project", "draft-units", "as-of-release-controller-message", projectId] as const,
     projectDraftUnitsAsOfReleaseControllerMessage: (projectId: string, chatSessionId: string, messageId: string) =>
         ["project", "draft-units", "as-of-release-controller-message", projectId, chatSessionId, messageId] as const,
+    projectLastNotDisabledReleaseControllerMessageByProject: (projectId: string) =>
+        ["project", "release-controller-messages", "last-not-disabled", projectId] as const,
+    projectLastNotDisabledReleaseControllerMessage: (projectId: string, chatSessionId: string) =>
+        ["project", "release-controller-messages", "last-not-disabled", projectId, chatSessionId] as const,
     PROJECTS_LIST: ["project", "list"] as const,
     projectChatSessionList: (projectId: string) => ["chat", "sessions", "list", projectId] as const,
     projectChatSessionDetail: (projectId: string, chatSessionId: string) => ["chat", "sessions", "detail", projectId, chatSessionId] as const,

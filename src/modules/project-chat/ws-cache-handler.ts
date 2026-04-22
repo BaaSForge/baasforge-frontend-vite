@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "@/constants/query-keys";
+import { invalidateLastNotDisabledReleaseControllerMessageQueries } from "@/modules/project/invalidate-project-queries";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import {
     isChatSessionGenerationEndedEvent,
@@ -287,6 +288,9 @@ export function handleChatSessionWsEvent(
                 return appendMessageToPages(pages, newMessage);
             }),
         );
+        if (message.type === ChatMessageType.ReleaseControllerBox) {
+            void invalidateLastNotDisabledReleaseControllerMessageQueries(queryClient, project_id);
+        }
         return true;
     }
 
@@ -298,6 +302,9 @@ export function handleChatSessionWsEvent(
                 replaceMessageInPages(pages, message.id, message),
             ),
         );
+        if (message.type === ChatMessageType.ReleaseControllerBox) {
+            void invalidateLastNotDisabledReleaseControllerMessageQueries(queryClient, project_id);
+        }
         return true;
     }
 

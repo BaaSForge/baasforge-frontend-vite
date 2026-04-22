@@ -3,6 +3,7 @@ export {
     deleteProject,
     getDraftUnits,
     getDraftUnitsAsOfReleaseControllerMessage,
+    getLastNotDisabledReleaseControllerMessage,
     getProject,
     getProjectNonDraftUnits,
     getProjects,
@@ -18,6 +19,7 @@ export { UnitRejectedBadge } from "./components/unit-rejected-badge";
 export { useCreateProjectMutation, useDeleteProjectMutation, usePatchProjectMutation } from "./mutations";
 export {
     useProductionRuntimeQuery,
+    useLastNotDisabledReleaseControllerMessageQuery,
     useProjectDraftUnitsAsOfReleaseControllerMessageQuery,
     useProjectDraftUnitsQuery,
     useProjectNonDraftUnitsQuery,

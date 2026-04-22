@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
+import type { ChatMessageResponse } from "@/modules/project-chat/types";
 import {
     type ContextModulesByContextRow,
     type ListReleaseUnitsAllRequest,
@@ -36,6 +37,8 @@ const projectReleaseControllerStageReleaseEndpoint = (projectId: string, chatSes
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/stage-release`;
 const projectReleaseControllerProductionReleaseEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/${messageId}/production-release`;
+const projectLastNotDisabledReleaseControllerMessageEndpoint = (projectId: string, chatSessionId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/release-controller-messages/last-not-disabled`;
 const projectRejectControllerBoxRejectEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/chat-sessions/${chatSessionId}/reject-controller-messages/${messageId}/reject`;
 const projectRuntimeDeployStageReleaseEndpoint = (projectId: string, runtimeId: string) =>
@@ -114,6 +117,15 @@ export function getDraftUnitsAsOfReleaseControllerMessage(
     return apiClient
         .get<ApiResponse<ProjectUnitResponse[]>>(projectDraftUnitsAsOfReleaseControllerMessageEndpoint(projectId, chatSessionId, releaseControllerMessageId))
         .then((res) => res.data ?? []);
+}
+
+export function getLastNotDisabledReleaseControllerMessage(
+    projectId: string,
+    chatSessionId: string,
+): Promise<ChatMessageResponse | null> {
+    return apiClient
+        .get<ApiResponse<{ message: ChatMessageResponse | null }>>(projectLastNotDisabledReleaseControllerMessageEndpoint(projectId, chatSessionId))
+        .then((res) => res.data?.message ?? null);
 }
 
 export function getReleases(projectId: string, environment: PlatformEnvironmentType): Promise<ReleaseResponse[]> {

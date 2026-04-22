@@ -2,6 +2,7 @@ import {
     SecondarySidebarContent,
     SecondarySidebarStickyHeader,
 } from "@/components/secondary-sidebar/secondary-sidebar-content";
+import { SecondarySidebarReleaseControllerFooter } from "./secondary-sidebar-release-controller-footer";
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -56,7 +57,10 @@ export function SecondarySideBar() {
 
     const chatSessionId = conversationId ?? undefined;
 
-    const { data: draftUnits, isLoading, error, refetch: refetchDraftUnits } = useProjectDraftUnitsQuery(projectId ?? undefined, chatSessionId);
+    const { data: draftUnits, isLoading, error, refetch: refetchDraftUnits } = useProjectDraftUnitsQuery(
+        projectId ?? undefined,
+        chatSessionId,
+    );
     const [diffViewMode] = usePersistedUnitDiffViewMode();
     const [viewChangesOpen, setViewChangesOpen] = useState(false);
     const [viewChangesUnits, setViewChangesUnits] = useState<ChatSessionUnitChangePair[]>([]);
@@ -91,8 +95,14 @@ export function SecondarySideBar() {
         }
     }, [projectId, chatSessionId, refetchDraftUnits]);
 
+    const releaseFooter =
+        projectId != null && chatSessionId != null ? (
+            <SecondarySidebarReleaseControllerFooter projectId={projectId} chatSessionId={chatSessionId} />
+        ) : null;
+
     return (
         <SecondarySidebarContent
+            footer={releaseFooter}
             header={
                 <SecondarySidebarStickyHeader className="flex items-center justify-between gap-2 border-b border-sidebar-border pb-[calc(1rem+1px)]">
                     <SectionTitle className="mb-0">Draft units</SectionTitle>

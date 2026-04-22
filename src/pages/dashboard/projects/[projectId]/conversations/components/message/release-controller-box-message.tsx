@@ -2,28 +2,10 @@
 
 import type { ReactNode } from "react";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-    detachRuntimeLiveRelease,
-    postReleaseControllerProductionRelease,
-    postRuntimeDeployProductionRelease,
-    postRuntimeDeployStageRelease,
-} from "@/modules/project/api";
-import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-project-queries";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
-import { CompactReleaseBadge, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
+import { useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
 import {
     ChatSessionViewChangesModal,
     postChatSessionUnitPreChatBaseByPaths,
@@ -31,24 +13,20 @@ import {
 } from "@/modules/project-chat";
 import { usePersistedUnitDiffViewMode } from "@/modules/project-chat/hooks/use-persisted-unit-diff-view-mode";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
-import { type ProjectUnitResponse, PlatformEnvironmentType } from "@/modules/project/types";
+import { type ProjectUnitResponse } from "@/modules/project/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlignJustify, Columns2, FlaskConical, Rocket } from "lucide-react";
+import { AlignJustify, Columns2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
-import {
-    STALE_BASE_RELEASE_CONVERSATION_MESSAGE,
-    useConversationStaleBaseRelease,
-} from "../conversation-stale-base-release-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
-import { DeployReleaseToRuntimeModal } from "./deploy-release-to-runtime-modal";
-import { getReleaseControllerPayload, useReleaseControllerRuntimeLiveFlags } from "./release-controller-box-shared";
-import { ReleaseStageRuntimeModal } from "./release-stage-runtime-modal";
+import { ReleaseControllerDeployModals } from "./release-controller-deploy-modals";
+import { ReleaseControllerThreadProdRow } from "./release-controller-thread-prod-row";
+import { ReleaseControllerThreadStageRow } from "./release-controller-thread-stage-row";
+import { useReleaseControllerActions } from "./use-release-controller-actions";
 
 function uniqueUnitPathsFromDraftUnits(units: { id: string }[]): string[] {
     const seen = new Set<string>();
@@ -88,18 +66,10 @@ export function ReleaseControllerBoxMessage({
 }) {
     const { projectId, conversationId } = useParams<{ projectId: string; conversationId?: string }>();
     const chatSessionId = conversationId ?? undefined;
-    const staleBaseRelease = useConversationStaleBaseRelease();
     const [diffViewMode] = usePersistedUnitDiffViewMode();
     const isMobile = useIsMobile();
     const bothSidebarsOpen = useAreBothSidebarsOpen();
     const compactToolbar = isMobile || bothSidebarsOpen;
-
-    const {
-        stage_release: stageRelease,
-        prod_release: prodRelease,
-        is_disabled_due_to_reject: isDisabledDueToRejectRaw,
-    } = getReleaseControllerPayload(message);
-    const disabledDueToReject = isDisabledDueToRejectRaw === true;
 
     const {
         data: draftUnits,
@@ -111,93 +81,9 @@ export function ReleaseControllerBoxMessage({
     const [viewChangesOpen, setViewChangesOpen] = useState(false);
     const [viewChangesUnits, setViewChangesUnits] = useState<ChatSessionUnitChangePair[]>([]);
     const [isPreparingViewChanges, setIsPreparingViewChanges] = useState(false);
-    const [stageReleaseModalOpen, setStageReleaseModalOpen] = useState(false);
-    const [productionConfirmOpen, setProductionConfirmOpen] = useState(false);
-    const [stageDeployRuntimePickOpen, setStageDeployRuntimePickOpen] = useState(false);
-    const [productionRedeployConfirmOpen, setProductionRedeployConfirmOpen] = useState(false);
-    const [prodRedeployRuntimeId, setProdRedeployRuntimeId] = useState<string | null>(null);
 
-    const { stageRuntimes, prodRuntimes, isStageReleaseLiveOnRuntime, isProdReleaseLiveOnRuntime } =
-        useReleaseControllerRuntimeLiveFlags(projectId, stageRelease, prodRelease);
-
-    const stageRevisionNum = stageRelease?.revision ?? null;
-    const prodRevisionNum = prodRelease?.revision ?? null;
-    const stageReleaseId = stageRelease?.id ?? null;
-    const prodReleaseId = prodRelease?.id ?? null;
-
-    const queryClient = useQueryClient();
-
-    const invalidateAfterRuntimeDeploy = useCallback(
-        async (env: PlatformEnvironmentType) => {
-            if (projectId == null) return;
-            await invalidateQueriesAfterRuntimeDeploy(queryClient, projectId, env);
-        },
-        [projectId, queryClient],
-    );
-
-    const stageRedeployMutation = useMutation({
-        mutationFn: async (runtimeId: string) => {
-            if (projectId == null) throw new Error("Missing project");
-            if (chatSessionId == null) throw new Error("Missing chat session");
-            if (stageRevisionNum == null) throw new Error("Missing stage revision");
-            const sessionForDeploy = stageRelease?.chat_session_id ?? chatSessionId;
-            const body = { revision: stageRevisionNum, chat_session_id: sessionForDeploy };
-            await postRuntimeDeployStageRelease(projectId, runtimeId, body);
-        },
-        onSuccess: async () => {
-            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.stage);
-            setStageDeployRuntimePickOpen(false);
-            toast.success("Stage deploy has started.", { position: "top-center" });
-        },
-        onError: () => {
-            toast.error("Could not start stage deploy.", { position: "top-center" });
-        },
-    });
-
-    const prodRedeployMutation = useMutation({
-        mutationFn: async (runtimeId: string) => {
-            if (projectId == null) throw new Error("Missing project");
-            if (chatSessionId == null) throw new Error("Missing chat session");
-            if (prodRevisionNum == null) throw new Error("Missing production revision");
-            if (prodReleaseId == null) throw new Error("Missing production release id");
-            const sessionForDeploy = prodRelease?.chat_session_id ?? chatSessionId;
-            const body = { revision: prodRevisionNum, chat_session_id: sessionForDeploy };
-            const prodRt = prodRuntimes.find((r) => r.id === runtimeId);
-            const liveId = prodRt?.live_release?.id ?? null;
-            const swapOtherLive = liveId != null && liveId !== prodReleaseId;
-            if (swapOtherLive) {
-                await detachRuntimeLiveRelease(projectId, runtimeId, body);
-            } else {
-                await postRuntimeDeployProductionRelease(projectId, runtimeId, body);
-            }
-        },
-        onSuccess: async () => {
-            setProductionRedeployConfirmOpen(false);
-            setProdRedeployRuntimeId(null);
-            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
-            toast.success("Production deploy has started.", { position: "top-center" });
-        },
-        onError: () => {
-            toast.error("Could not start production deploy.", { position: "top-center" });
-        },
-    });
-
-    const productionReleaseMutation = useMutation({
-        mutationFn: () => {
-            if (stageRelease?.id == null) throw new Error("Missing stage release id");
-            return postReleaseControllerProductionRelease(projectId!, chatSessionId!, message.id, {
-                stage_release_id: stageRelease.id,
-            });
-        },
-        onSuccess: async () => {
-            setProductionConfirmOpen(false);
-            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
-            toast.success("Production release process has started.", { position: "top-center" });
-        },
-        onError: () => {
-            toast.error("Could not start production release.", { position: "top-center" });
-        },
-    });
+    const releaseActions = useReleaseControllerActions(message, projectId, chatSessionId);
+    const { disabledDueToReject } = releaseActions;
 
     const hasDraftUnits = (draftUnits?.length ?? 0) > 0;
     const canViewChanges =
@@ -234,26 +120,7 @@ export function ReleaseControllerBoxMessage({
         }
     }, [projectId, chatSessionId, refetchDraftUnits]);
 
-    const canOpenStageReleaseModal = projectId != null && chatSessionId != null && stageRelease == null;
-    const canCallProductionRelease =
-        stageRelease != null && prodRelease == null && projectId != null && chatSessionId != null;
-
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
-
-    const handleStageRedeploy = useCallback(() => {
-        if (stageReleaseId == null) return;
-        if (stageRuntimes.length === 0) return;
-
-        setStageDeployRuntimePickOpen(true);
-    }, [stageReleaseId, stageRuntimes]);
-
-    const handleProdRedeployClick = useCallback(() => {
-        if (prodReleaseId == null) return;
-        const prodRuntimeId = prodRuntimes[0]?.id;
-        if (prodRuntimeId == null) return;
-        setProdRedeployRuntimeId(prodRuntimeId);
-        setProductionRedeployConfirmOpen(true);
-    }, [prodReleaseId, prodRuntimes]);
 
     return (
         <>
@@ -294,320 +161,41 @@ export function ReleaseControllerBoxMessage({
                             !compactToolbar && "sm:w-auto sm:justify-end",
                         )}
                     >
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="xs"
-                        disabled={!canViewChanges}
-                        aria-busy={isPreparingViewChanges}
-                        onClick={() => void handleViewChanges()}
-                    >
-                        {isPreparingViewChanges ? (
-                            <>
-                                <Spinner className="size-3" />
-                                Loading…
-                            </>
-                        ) : (
-                            <>
-                                {diffViewMode === "split" ? (
-                                    <Columns2 className="size-3" aria-hidden />
-                                ) : (
-                                    <AlignJustify className="size-3" aria-hidden />
-                                )}
-                                View changes
-                            </>
-                        )}
-                    </Button>
-
-                    {stageRelease != null ? (
-                        isStageReleaseLiveOnRuntime ? (
-                            <CompactReleaseBadge release={stageRelease} projectId={projectId} />
-                        ) : (
-                            projectId != null &&
-                            stageRevisionNum != null &&
-                            (stageRuntimes.length === 0 ? (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span className="inline-flex">
-                                            <Button type="button" variant="outline" size="xs" disabled>
-                                                <FlaskConical className="size-3 shrink-0" aria-hidden />
-                                                Deploy revision {stageRelease.revision} to stage
-                                            </Button>
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">No stage runtimes available.</TooltipContent>
-                                </Tooltip>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="xs"
+                            disabled={!canViewChanges}
+                            aria-busy={isPreparingViewChanges}
+                            onClick={() => void handleViewChanges()}
+                        >
+                            {isPreparingViewChanges ? (
+                                <>
+                                    <Spinner className="size-3" />
+                                    Loading…
+                                </>
                             ) : (
-                                        <span className="inline-flex">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="xs"
-                                                disabled={stageRedeployMutation.isPending || disabledDueToReject}
-                                                aria-busy={stageRedeployMutation.isPending}
-                                                onClick={() => void handleStageRedeploy()}
-                                            >
-                                        {stageRedeployMutation.isPending ? (
-                                            <>
-                                                <Spinner className="size-3" />
-                                                Deploying…
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FlaskConical className="size-3 shrink-0" aria-hidden />
-                                                Deploy revision {stageRelease.revision} to stage
-                                            </>
-                                        )}
-                                    </Button>
-                                </span>
-                            ))
-                        )
-                    ) : !canOpenStageReleaseModal ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                    <Button type="button" variant="outline" size="xs" disabled>
-                                        Release Stage
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Missing project or conversation context.</TooltipContent>
-                        </Tooltip>
-                    ) : disabledDueToReject ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                    <Button type="button" variant="outline" size="xs" disabled>
-                                        Release Stage
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
-                                New releases are disabled for this scope because the step was rejected.
-                            </TooltipContent>
-                        </Tooltip>
-                    ) : (
-                        <span className="inline-flex">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="xs"
-                                onClick={() => setStageReleaseModalOpen(true)}
-                            >
-                                Release Stage
-                            </Button>
-                        </span>
-                    )}
-
-                    {prodRelease != null ? (
-                        isProdReleaseLiveOnRuntime ? (
-                            <CompactReleaseBadge release={prodRelease} projectId={projectId} />
-                        ) : (
-                            projectId != null &&
-                            prodRevisionNum != null &&
-                            (prodRuntimes.length === 0 ? (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span className="inline-flex">
-                                            <Button type="button" variant="outline" size="xs" disabled>
-                                                <Rocket className="size-3 shrink-0" aria-hidden />
-                                                Deploy revision {prodRelease.revision} to production
-                                            </Button>
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">No production runtimes available.</TooltipContent>
-                                </Tooltip>
-                            ) : (
-                                <span className="inline-flex">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="xs"
-                                        disabled={prodRedeployMutation.isPending || disabledDueToReject}
-                                        aria-busy={prodRedeployMutation.isPending}
-                                        onClick={() => void handleProdRedeployClick()}
-                                    >
-                                        {prodRedeployMutation.isPending ? (
-                                            <>
-                                                <Spinner className="size-3" />
-                                                Deploying…
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Rocket className="size-3 shrink-0" aria-hidden />
-                                                Deploy revision {prodRelease.revision} to production
-                                            </>
-                                        )}
-                                    </Button>
-                                </span>
-                            ))
-                        )
-                    ) : stageRelease == null ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                    <Button type="button" variant="outline" size="xs" disabled>
-                                        Release production
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Release to stage first.</TooltipContent>
-                        </Tooltip>
-                    ) : disabledDueToReject ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                    <Button type="button" variant="outline" size="xs" disabled>
-                                        Release production
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
-                                New releases are disabled for this scope because the step was rejected.
-                            </TooltipContent>
-                        </Tooltip>
-                    ) : !canCallProductionRelease ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                    <Button type="button" variant="outline" size="xs" disabled>
-                                        Release production
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">Missing project or conversation context.</TooltipContent>
-                        </Tooltip>
-                    ) : (
-                        <span className="inline-flex">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="xs"
-                                disabled={productionReleaseMutation.isPending}
-                                aria-busy={productionReleaseMutation.isPending}
-                                onClick={() => setProductionConfirmOpen(true)}
-                            >
-                                Release production
-                            </Button>
-                        </span>
-                    )}
-                </div>
+                                <>
+                                    {diffViewMode === "split" ? (
+                                        <Columns2 className="size-3" aria-hidden />
+                                    ) : (
+                                        <AlignJustify className="size-3" aria-hidden />
+                                    )}
+                                    View changes
+                                </>
+                            )}
+                        </Button>
+                        <ReleaseControllerThreadStageRow actions={releaseActions} projectId={projectId} />
+                        <ReleaseControllerThreadProdRow actions={releaseActions} projectId={projectId} />
+                    </div>
                 </div>
             </div>
 
-            <AlertDialog open={productionConfirmOpen} onOpenChange={setProductionConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>I have tested, let&apos;s deploy</AlertDialogTitle>
-                        <AlertDialogDescription asChild>
-                            <div className="space-y-3 text-sm text-muted-foreground">
-                                <p>
-                                    This starts a production release for the scope up to this message. Confirm only when you have
-                                    tested on stage and are ready for these changes to go live.
-                                </p>
-                                {staleBaseRelease ? (
-                                    <p className="text-amber-900 dark:text-amber-100/95">
-                                        {STALE_BASE_RELEASE_CONVERSATION_MESSAGE}
-                                    </p>
-                                ) : null}
-                            </div>
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={productionReleaseMutation.isPending}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            className={buttonVariants({ variant: "destructive" })}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                productionReleaseMutation.mutate();
-                            }}
-                            disabled={productionReleaseMutation.isPending}
-                        >
-                            {productionReleaseMutation.isPending ? (
-                                <>
-                                    <Spinner className="size-3" aria-hidden />
-                                    Releasing…
-                                </>
-                            ) : (
-                                "Deploy to production"
-                            )}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <AlertDialog
-                open={productionRedeployConfirmOpen}
-                onOpenChange={(open) => {
-                    setProductionRedeployConfirmOpen(open);
-                    if (!open) setProdRedeployRuntimeId(null);
-                }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            Deploy revision {prodRelease?.revision ?? ""} to production?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription asChild>
-                            <div className="space-y-3 text-sm text-muted-foreground">
-                                <p>
-                                    This deploys release revision {prodRelease?.revision ?? ""} to the production runtime. Confirm
-                                    only when you have tested on stage and are ready for these changes to go live.
-                                </p>
-                                {staleBaseRelease ? (
-                                    <p className="text-amber-900 dark:text-amber-100/95">
-                                        {STALE_BASE_RELEASE_CONVERSATION_MESSAGE}
-                                    </p>
-                                ) : null}
-                            </div>
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={prodRedeployMutation.isPending}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            className={buttonVariants({ variant: "destructive" })}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (prodRedeployRuntimeId == null) return;
-                                prodRedeployMutation.mutate(prodRedeployRuntimeId);
-                            }}
-                            disabled={prodRedeployMutation.isPending || prodRedeployRuntimeId == null}
-                        >
-                            {prodRedeployMutation.isPending ? (
-                                <>
-                                    <Spinner className="size-3" aria-hidden />
-                                    Deploying…
-                                </>
-                            ) : (
-                                <>
-                                    Deploy revision {prodRelease?.revision ?? ""}
-                                </>
-                            )}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {stageRevisionNum != null && stageReleaseId != null && chatSessionId != null && (
-                <DeployReleaseToRuntimeModal
-                    open={stageDeployRuntimePickOpen}
-                    onOpenChange={setStageDeployRuntimePickOpen}
-                    projectId={projectId}
-                    releaseId={stageReleaseId}
-                    chatSessionIdForDetach={stageRelease?.chat_session_id ?? chatSessionId}
-                    revision={stageRevisionNum}
-                    revisionLabel={stageRelease != null ? String(stageRelease.revision) : ""}
-                    onDeployRuntime={(runtimeId) => stageRedeployMutation.mutate(runtimeId)}
-                    deployingRuntimeId={stageRedeployMutation.isPending ? stageRedeployMutation.variables ?? null : null}
-                />
-            )}
-
-            <ReleaseStageRuntimeModal
-                open={stageReleaseModalOpen}
-                onOpenChange={setStageReleaseModalOpen}
+            <ReleaseControllerDeployModals
+                message={message}
                 projectId={projectId}
                 chatSessionId={chatSessionId}
-                messageId={message.id}
+                actions={releaseActions}
             />
             <ChatSessionViewChangesModal
                 open={viewChangesOpen}
