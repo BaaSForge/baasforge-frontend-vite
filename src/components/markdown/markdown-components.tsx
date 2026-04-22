@@ -13,6 +13,47 @@ function isExternalHref(href: string | undefined): boolean {
     return Boolean(href && EXTERNAL_LINK_RE.test(href));
 }
 
+export function markdownPreWithFader(faderFromClassName: string): NonNullable<Components["pre"]> {
+    return function MarkdownPre({ children, className, ...props }) {
+        return (
+            <FadedScrollArea
+                orientation="horizontal"
+                horizontalIntrinsicHeight
+                className="my-2 min-w-0 max-w-full"
+                faderFromClassName={faderFromClassName}
+            >
+                <pre
+                    className={cn(
+                        "m-0 min-w-full w-max max-w-none overflow-visible rounded-md font-mono text-sm leading-relaxed",
+                        "[&>div]:min-w-full [&>div]:w-max",
+                        className,
+                    )}
+                    {...props}
+                >
+                    {children}
+                </pre>
+            </FadedScrollArea>
+        );
+    };
+}
+
+export function markdownTableWithFader(faderFromClassName: string): NonNullable<Components["table"]> {
+    return function MarkdownTable({ children, className, ...props }) {
+        return (
+            <FadedScrollArea
+                orientation="horizontal"
+                horizontalIntrinsicHeight
+                className="my-4 min-w-0 max-w-full"
+                faderFromClassName={faderFromClassName}
+            >
+                <Table unwrapped className={cn("m-0 min-w-full w-max max-w-none", className)} {...props}>
+                    {children}
+                </Table>
+            </FadedScrollArea>
+        );
+    };
+}
+
 export const markdownComponents: Partial<Components> = {
     p: ({ children, ...props }) => (
         <p className="leading-7 [&:not(:first-child)]:mt-2 break-words" {...props}>
@@ -72,37 +113,8 @@ export const markdownComponents: Partial<Components> = {
         );
     },
     hr: (props) => <hr className="my-3 border-t border-border" {...props} />,
-    pre: ({ children, className, ...props }) => (
-        <FadedScrollArea
-            orientation="horizontal"
-            horizontalIntrinsicHeight
-            className="my-2 min-w-0 max-w-full"
-            faderFromClassName="from-background"
-        >
-            <pre
-                className={cn(
-                    "m-0 min-w-full w-max max-w-none overflow-visible rounded-md font-mono text-sm leading-relaxed",
-                    "[&>div]:min-w-full [&>div]:w-max",
-                    className,
-                )}
-                {...props}
-            >
-                {children}
-            </pre>
-        </FadedScrollArea>
-    ),
-    table: ({ children, className, ...props }) => (
-        <FadedScrollArea
-            orientation="horizontal"
-            horizontalIntrinsicHeight
-            className="my-4 min-w-0 max-w-full"
-            faderFromClassName="from-background"
-        >
-            <Table unwrapped className={cn("m-0 min-w-full w-max max-w-none", className)} {...props}>
-                {children}
-            </Table>
-        </FadedScrollArea>
-    ),
+    pre: markdownPreWithFader("from-background"),
+    table: markdownTableWithFader("from-background"),
     thead: ({ children, className, ...props }) => (
         <TableHeader className={cn(className)} {...props}>
             {children}
