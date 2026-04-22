@@ -16,7 +16,7 @@ import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types
 import { type ProjectUnitResponse } from "@/modules/project/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { AlignJustify, Columns2 } from "lucide-react";
+import { AlignJustify, Columns2, FileCode } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
@@ -178,6 +178,8 @@ export function ReleaseControllerBoxMessage({
                                 <>
                                     {diffViewMode === "split" ? (
                                         <Columns2 className="size-3" aria-hidden />
+                                    ) : diffViewMode === "current" ? (
+                                        <FileCode className="size-3" aria-hidden />
                                     ) : (
                                         <AlignJustify className="size-3" aria-hidden />
                                     )}

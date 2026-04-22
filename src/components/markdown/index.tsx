@@ -46,13 +46,19 @@ export function Markdown({ children, className, theme: themeProp, embeddedOnInve
                 const language = match ? match[1] : "text";
                 const isBlock = codeClassName?.startsWith("language-");
                 return isBlock ? (
-                    <div className={cn(embeddedOnInverse && inverted && "saturate-[0.88]")}>
+                    <div
+                        className={cn(
+                            "overflow-x-auto rounded-md p-2 sm:p-3",
+                            themeProp != null && embeddedOnInverse
+                                ? "bg-[color-mix(in_oklch,var(--foreground)_12%,transparent)] saturate-[0.88]"
+                                : "bg-muted",
+                        )}
+                    >
                         <AppSyntaxHighlighter
                             variant="markdownBlock"
                             code={String(codeChildren).replace(/\n$/, "")}
                             language={language}
                             markdownTheme={themeProp}
-                            embeddedOnInverse={embeddedOnInverse}
                         />
                     </div>
                 ) : (

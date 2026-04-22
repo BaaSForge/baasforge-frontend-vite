@@ -14,7 +14,7 @@ import {
     type ChatSessionUnitChangePair,
 } from "@/modules/project-chat";
 import { usePersistedUnitDiffViewMode } from "@/modules/project-chat/hooks/use-persisted-unit-diff-view-mode";
-import { AlignJustify, Columns2 } from "lucide-react";
+import { AlignJustify, Columns2, FileCode } from "lucide-react";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
@@ -123,6 +123,8 @@ export function SecondarySideBar() {
                             <>
                                 {diffViewMode === "split" ? (
                                     <Columns2 className="size-3" aria-hidden />
+                                ) : diffViewMode === "current" ? (
+                                    <FileCode className="size-3" aria-hidden />
                                 ) : (
                                     <AlignJustify className="size-3" aria-hidden />
                                 )}

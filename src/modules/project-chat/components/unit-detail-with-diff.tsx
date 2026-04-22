@@ -8,9 +8,10 @@ import { UnitCardIdRow } from "@/modules/project/components/unit-card-id-row";
 import { UnitRevisionBadge } from "@/modules/project/components/unit-revision-badge";
 import { UnitTypeBadge } from "@/modules/project/components/unit-type-badge";
 import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types";
-import { AlignJustify, Columns2 } from "lucide-react";
 import { usePersistedUnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
+import { AlignJustify, Columns2, FileCode } from "lucide-react";
 import { ChatSessionDiffNewerRevisionChip } from "./chat-session-diff-newer-revision-chip";
+import { UnitExplanationCurrentViewer } from "./unit-explanation-current-viewer";
 import { UnitExplanationDiffViewer } from "./unit-explanation-diff-viewer";
 
 export type UnitDetailWithDiffProps = {
@@ -33,6 +34,8 @@ export function UnitDetailWithDiff({
     const splitView = !isMobile && diffLayoutMode === "split";
     const projectId = currentUnit.project_id;
     const chatSessionId = currentUnit.chat_session_id ?? undefined;
+
+    const mobileToggleValue: "inline" | "current" = diffLayoutMode === "current" ? "current" : "inline";
 
     return (
         <div className={cn("min-h-0 space-y-3", className)}>
@@ -72,47 +75,89 @@ export function UnitDetailWithDiff({
                             />
                         ) : null}
                     </div>
-                    {!isMobile ? (
+                    {isMobile ? (
+                        <ToggleGroup
+                            type="single"
+                            value={mobileToggleValue}
+                            onValueChange={(v) => {
+                                if (v === "inline" || v === "current") setDiffLayoutMode(v);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            spacing={0}
+                            className="h-7 w-fit shrink-0"
+                            aria-label="Code view"
+                        >
+                            <ToggleGroupItem
+                                value="inline"
+                                aria-label="Inline diff"
+                                className="h-6 min-w-0 gap-0.5 px-2 py-0 text-[10px] leading-none"
+                            >
+                                <AlignJustify className="size-2.5 shrink-0" aria-hidden />
+                                Inline
+                            </ToggleGroupItem>
+                            <ToggleGroupItem
+                                value="current"
+                                aria-label="Current code"
+                                className="h-6 min-w-0 gap-0.5 px-2 py-0 text-[10px] leading-none"
+                            >
+                                <FileCode className="size-2.5 shrink-0" aria-hidden />
+                                Current
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                    ) : (
                         <ToggleGroup
                             type="single"
                             value={diffLayoutMode}
                             onValueChange={(v) => {
-                                if (v === "split" || v === "inline") setDiffLayoutMode(v);
+                                if (v === "split" || v === "inline" || v === "current") setDiffLayoutMode(v);
                             }}
                             variant="outline"
                             size="sm"
-                            spacing={2}
-                            className="h-7 shrink-0 gap-2"
-                            aria-label="Diff layout"
+                            spacing={0}
+                            className="h-7 w-fit shrink-0"
+                            aria-label="Code view"
                         >
                             <ToggleGroupItem
                                 value="split"
-                                aria-label="Split view"
-                                className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm"
+                                aria-label="Split diff"
+                                className="h-6 min-w-0 gap-0.5 px-2 py-0 text-[10px] leading-none sm:px-1.5"
                             >
                                 <Columns2 className="size-2.5 shrink-0" aria-hidden />
                                 <span className="hidden sm:inline">Split</span>
                             </ToggleGroupItem>
                             <ToggleGroupItem
                                 value="inline"
-                                aria-label="Inline view"
-                                className="h-6 min-w-0 gap-0.5 px-1.5 py-0 text-[10px] leading-none data-[spacing=0]:rounded-sm"
+                                aria-label="Inline diff"
+                                className="h-6 min-w-0 gap-0.5 px-2 py-0 text-[10px] leading-none sm:px-1.5"
                             >
                                 <AlignJustify className="size-2.5 shrink-0" aria-hidden />
                                 <span className="hidden sm:inline">Inline</span>
                             </ToggleGroupItem>
+                            <ToggleGroupItem
+                                value="current"
+                                aria-label="Current code"
+                                className="h-6 min-w-0 gap-0.5 px-2 py-0 text-[10px] leading-none sm:px-1.5"
+                            >
+                                <FileCode className="size-2.5 shrink-0" aria-hidden />
+                                <span className="hidden sm:inline">Current</span>
+                            </ToggleGroupItem>
                         </ToggleGroup>
-                    ) : null}
+                    )}
                 </div>
                 <UnitCardIdRow variant="inline" unitId={currentUnit.id} />
             </div>
-            <div className="rounded-lg border bg-muted/20 p-1">
-                <UnitExplanationDiffViewer
-                    beforeExplanation={oldUnit?.code ?? null}
-                    afterExplanation={currentUnit.code}
-                    splitView={splitView}
-                />
-            </div>
+            {diffLayoutMode === "current" ? (
+                <UnitExplanationCurrentViewer code={currentUnit.code} />
+            ) : (
+                <div className="rounded-lg border bg-muted/20 p-1">
+                    <UnitExplanationDiffViewer
+                        beforeExplanation={oldUnit?.code ?? null}
+                        afterExplanation={currentUnit.code}
+                        splitView={splitView}
+                    />
+                </div>
+            )}
         </div>
     );
 }

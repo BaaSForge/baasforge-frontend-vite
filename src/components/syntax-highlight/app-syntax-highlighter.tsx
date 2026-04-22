@@ -9,7 +9,6 @@ type MarkdownBlockProps = {
     code: string;
     language: string;
     markdownTheme?: "light" | "dark";
-    embeddedOnInverse?: boolean;
 };
 
 type DiffLineProps = {
@@ -60,29 +59,37 @@ export function AppSyntaxHighlighter(props: AppSyntaxHighlighterProps) {
         );
     }
 
-    const inverted = props.markdownTheme !== undefined;
-    const surfaceBg =
-        props.embeddedOnInverse && inverted
-            ? "color-mix(in oklch, var(--foreground) 12%, transparent)"
-            : "var(--muted)";
-
-    return (
+    const highlighter = (
         <SyntaxHighlighter
             PreTag="div"
             style={style}
             language={props.language}
             customStyle={{
                 margin: 0,
-                borderRadius: "var(--radius, 0.375rem)",
+                padding: 0,
+                borderRadius: 0,
                 fontSize: "0.875rem",
                 minWidth: "100%",
                 width: "max-content",
-                background: surfaceBg,
+                background: "transparent",
             }}
-            codeTagProps={{ style: { background: surfaceBg } }}
+            codeTagProps={{
+                style: {
+                    background: "transparent",
+                    display: "block",
+                    margin: 0,
+                    padding: 0,
+                },
+            }}
             showLineNumbers={false}
         >
             {props.code}
         </SyntaxHighlighter>
+    );
+
+    return (
+        <div className="min-h-0 min-w-0 [&_pre]:m-0 [&_pre]:min-w-0 [&_pre]:box-border [&_pre]:!p-0">
+            {highlighter}
+        </div>
     );
 }

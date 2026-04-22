@@ -5,13 +5,13 @@ export const UNIT_DIFF_VIEW_MODE_STORAGE_KEY = "baal-chat-session-unit-diff-view
 /** Same-window updates don't fire `storage`; we broadcast so all hook subscribers stay in sync. */
 const UNIT_DIFF_VIEW_MODE_CHANGED_EVENT = "baal-unit-diff-view-mode-changed";
 
-export type UnitDiffViewMode = "split" | "inline";
+export type UnitDiffViewMode = "split" | "inline" | "current";
 
 function readStoredDiffMode(): UnitDiffViewMode | null {
     if (typeof window === "undefined") return null;
     try {
         const raw = window.localStorage.getItem(UNIT_DIFF_VIEW_MODE_STORAGE_KEY);
-        if (raw === "split" || raw === "inline") return raw;
+        if (raw === "split" || raw === "inline" || raw === "current") return raw;
     } catch {
         /* ignore */
     }
@@ -39,7 +39,7 @@ function subscribe(onStoreChange: () => void) {
     };
 }
 
-/** Persists split vs inline layout for the unit JSON diff viewer (desktop). All callers share one persisted value. */
+/** Persists split / inline / current for the unit code viewer. All callers share one persisted value. */
 export function usePersistedUnitDiffViewMode(): [UnitDiffViewMode, (mode: UnitDiffViewMode) => void] {
     const mode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
