@@ -201,8 +201,6 @@ export function ReleaseControllerBoxMessage({
                 open={viewChangesOpen}
                 onOpenChange={setViewChangesOpen}
                 unitsChanged={viewChangesUnits}
-                projectId={projectId}
-                chatSessionId={chatSessionId}
             />
             {nestedMessages}
         </>

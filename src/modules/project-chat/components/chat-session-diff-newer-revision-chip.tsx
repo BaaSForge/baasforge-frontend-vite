@@ -15,7 +15,7 @@ export type ChatSessionDiffNewerRevisionChipProps = {
 };
 
 /**
- * Diff modal only: warns when the displayed unit revision is behind the latest known for this session.
+ * Chat-session unit diff: warns when the displayed unit revision is behind the latest known for this session.
  */
 export function ChatSessionDiffNewerRevisionChip({
     unit,
