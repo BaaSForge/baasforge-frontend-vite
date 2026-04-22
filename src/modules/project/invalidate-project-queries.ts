@@ -2,11 +2,15 @@ import { QueryKeys } from "@/constants/query-keys";
 import type { QueryClient } from "@tanstack/react-query";
 import { PlatformEnvironmentType } from "./types";
 
-export async function invalidateQueriesAfterRejectControllerBox(queryClient: QueryClient, projectId: string) {
+export async function invalidateDueToRejectOrEdit(queryClient: QueryClient, projectId: string) {
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId) });
     await queryClient.invalidateQueries({
         queryKey: QueryKeys.projectReleases(projectId, PlatformEnvironmentType.stage),
+    });
+    await queryClient.invalidateQueries({ queryKey: QueryKeys.projectDraftUnitsByProject(projectId) });
+    await queryClient.invalidateQueries({
+        queryKey: QueryKeys.projectDraftUnitsAsOfReleaseControllerMessageByProject(projectId),
     });
 }
 

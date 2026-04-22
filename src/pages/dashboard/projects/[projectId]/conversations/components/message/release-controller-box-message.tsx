@@ -21,7 +21,7 @@ import {
     postRuntimeDeployProductionRelease,
     postRuntimeDeployStageRelease,
 } from "@/modules/project/api";
-import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-after-runtime-deploy";
+import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-project-queries";
 import { stableUnitIdForRevisionCache } from "@/modules/project/chat-session-unit-latest-revisions-cache";
 import { CompactReleaseBadge, useProjectDraftUnitsAsOfReleaseControllerMessageQuery } from "@/modules/project";
 import {

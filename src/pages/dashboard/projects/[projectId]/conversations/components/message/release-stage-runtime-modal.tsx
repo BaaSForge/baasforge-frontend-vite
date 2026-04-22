@@ -1,7 +1,7 @@
 "use client";
 
 import { postReleaseControllerStageRelease } from "@/modules/project/api";
-import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-after-runtime-deploy";
+import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-project-queries";
 import { PlatformEnvironmentType } from "@/modules/project/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

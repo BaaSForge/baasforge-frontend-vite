@@ -19,6 +19,7 @@ import { scrollToBottom, scrollToTop, smoothScrollToElementTop } from "@/lib/dom
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { register, SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
+import { invalidateDueToRejectOrEdit } from "@/modules/project/invalidate-project-queries";
 import { postUserMessageTruncateBelow, stopProjectChatSession } from "@/modules/project-chat/api";
 import { addSessionToGeneratingSet } from "@/modules/project-chat/ws-cache-handler";
 import { createOptimisticUserTextMessage } from "@/modules/project-chat/optimistic-user-text-message";
@@ -192,6 +193,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             setSubmittingEditMessageId(message.id);
             try {
                 await postUserMessageTruncateBelow(projectId, chatSessionIdOrUndefined, message.id);
+                await invalidateDueToRejectOrEdit(queryClient, projectId);
                 queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
                     QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined),
                     (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,

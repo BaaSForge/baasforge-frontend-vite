@@ -17,7 +17,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { detachRuntimeLiveRelease, postRuntimeDeployProductionRelease } from "@/modules/project/api";
-import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-after-runtime-deploy";
+import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-project-queries";
 import { ReleaseCardCompact } from "@/modules/project/components/release-card-compact";
 import {
     ReleaseCardToolsDropdown,
