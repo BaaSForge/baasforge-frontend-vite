@@ -1,6 +1,6 @@
 "use client";
 
-import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
+import { ExpandableFullReadResponsiveControls } from "@/components/expandable-full-read-trigger";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
@@ -67,13 +67,11 @@ export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRe
                 <div className="group/expandable-read relative flex flex-col gap-1 overflow-hidden rounded-b-lg px-2.5 pt-4 pb-1.5">
                     <div className="flex flex-wrap items-center gap-1">{badges}</div>
                     <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
-                    <ExpandableFullReadTrigger
+                    <ExpandableFullReadResponsiveControls
                         ariaLabel="Expand full explanation"
-                        onClick={() => setModalOpen(true)}
-                        className="rounded-b-lg rounded-t-none"
-                    >
-                        Expand
-                    </ExpandableFullReadTrigger>
+                        onOpen={() => setModalOpen(true)}
+                        overlayTriggerClassName="rounded-b-lg rounded-t-none"
+                    />
                 </div>
                 <UnitFullExplanationModal
                     open={modalOpen}

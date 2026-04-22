@@ -1,7 +1,7 @@
 "use client";
 
 import { Expandable } from "@/components/expandable";
-import { ExpandableFullReadTrigger } from "@/components/expandable-full-read-trigger";
+import { ExpandableFullReadResponsiveControls } from "@/components/expandable-full-read-trigger";
 import { LiveBadge } from "@/components/live-badge";
 import { Card, CardAction } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -93,13 +93,12 @@ export function UnitCardCompact({
                     bottomEdgeFade
                     bottomEdgeFadeFromClassName="from-card"
                     trigger={() => (
-                        <ExpandableFullReadTrigger
+                        <ExpandableFullReadResponsiveControls
                             ariaLabel="Expand full explanation"
-                            onClick={() => setModalOpen(true)}
-                            className="rounded-lg"
-                        >
-                            Expand
-                        </ExpandableFullReadTrigger>
+                            onOpen={() => setModalOpen(true)}
+                            cornerTriggerClassName="rounded-lg"
+                            overlayTriggerClassName="rounded-lg"
+                        />
                     )}
                 >
                     <div className={cn(isDeleted && "line-through")}>

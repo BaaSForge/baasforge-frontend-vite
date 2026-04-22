@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Maximize2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 export type ExpandableFullReadTriggerProps = {
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
@@ -40,15 +41,15 @@ export function ExpandableFullReadTrigger({
                     ? "absolute bottom-1 right-1 z-[2] flex size-7 shrink-0 items-center justify-center border-0 p-0 shadow-none"
                     : "absolute inset-0 z-[2] flex flex-row items-center justify-center gap-1.5 border-0 p-0 text-xs font-medium shadow-none",
                 "pointer-events-auto cursor-pointer",
-                "transition-[opacity,background-color] duration-150 ease-out",
+                "transition-[opacity,background-color,border-color] duration-150 ease-out",
                 "rounded-md",
                 corner
                     ? [
-                          "text-muted-foreground opacity-100 bg-background/90",
-                          "md:opacity-0 md:bg-transparent",
-                          "md:group-hover/expandable-read:opacity-100 md:group-hover/expandable-read:bg-background/90",
-                          "md:group-focus-within/expandable-read:opacity-100 md:group-focus-within/expandable-read:bg-background/90",
-                          "md:focus-visible:opacity-100 md:focus-visible:bg-background/90",
+                          "text-foreground opacity-100 border border-border/80 bg-muted",
+                          "md:opacity-0 md:border-transparent md:bg-transparent",
+                          "md:group-hover/expandable-read:opacity-100 md:group-hover/expandable-read:border-border/80 md:group-hover/expandable-read:bg-muted",
+                          "md:group-focus-within/expandable-read:opacity-100 md:group-focus-within/expandable-read:border-border/80 md:group-focus-within/expandable-read:bg-muted",
+                          "md:focus-visible:opacity-100 md:focus-visible:border-border/80 md:focus-visible:bg-muted",
                       ]
                     : [
                           "bg-transparent text-muted-foreground opacity-0",
@@ -63,5 +64,67 @@ export function ExpandableFullReadTrigger({
             <Maximize2 className={cn("shrink-0", corner ? "size-3.5" : "size-2.5")} aria-hidden />
             {children}
         </button>
+    );
+}
+
+export function ExpandableReadMobileTapLayer({
+    onOpen,
+    className,
+}: {
+    onOpen: () => void;
+    className?: string;
+}) {
+    return (
+        <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden
+            className={cn(
+                "absolute inset-0 z-[1] cursor-pointer border-0 bg-transparent p-0 md:hidden",
+                className,
+            )}
+            onPointerDown={(e) => {
+                e.stopPropagation();
+            }}
+            onClick={(e) => {
+                e.stopPropagation();
+                onOpen();
+            }}
+        />
+    );
+}
+
+export type ExpandableFullReadResponsiveControlsProps = {
+    ariaLabel: string;
+    onOpen: () => void;
+    cornerTriggerClassName?: string;
+    overlayTriggerClassName?: string;
+    overlayChildren?: ReactNode;
+};
+
+export function ExpandableFullReadResponsiveControls({
+    ariaLabel,
+    onOpen,
+    cornerTriggerClassName,
+    overlayTriggerClassName,
+    overlayChildren = "Expand",
+}: ExpandableFullReadResponsiveControlsProps) {
+    return (
+        <>
+            <ExpandableReadMobileTapLayer onOpen={onOpen} />
+            <ExpandableFullReadTrigger
+                variant="corner-icon"
+                ariaLabel={ariaLabel}
+                className={cn("md:hidden", cornerTriggerClassName)}
+                onClick={() => onOpen()}
+            />
+            <ExpandableFullReadTrigger
+                ariaLabel={ariaLabel}
+                className={cn("hidden md:flex", overlayTriggerClassName)}
+                onClick={() => onOpen()}
+            >
+                {overlayChildren}
+            </ExpandableFullReadTrigger>
+        </>
     );
 }
