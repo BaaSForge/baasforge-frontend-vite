@@ -4,7 +4,7 @@ import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { AppSyntaxHighlighter } from "@/components/syntax-highlight/app-syntax-highlighter";
 import { cn } from "@/lib/utils";
 import type { MutableRefObject, ReactElement, ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import ReactDiffViewer, { DiffMethod, type ReactDiffViewerStylesOverride } from "@/components/react-diff-viewer";
 import { computeHiddenBlocks, type FoldBlock } from "react-diff-viewer-compute-hidden-blocks";
 import {
@@ -19,19 +19,22 @@ export const UNIT_EXPLANATION_DIFF_RIGHT_TITLE = "After (this revision)" as cons
 export const UNIT_EXPLANATION_DIFF_INLINE_TITLE =
     `${UNIT_EXPLANATION_DIFF_LEFT_TITLE} → ${UNIT_EXPLANATION_DIFF_RIGHT_TITLE}` as const;
 
+const INLINE_LINE_NUMBER_COL_PX = 40;
+const INLINE_MARKER_COL_PX = 28;
+const INLINE_FOLD_MSG_STICKY_LEFT_PX = INLINE_LINE_NUMBER_COL_PX * 2 + INLINE_MARKER_COL_PX;
+
 const INLINE_DIFF_STICKY_GUTTERS =
     "[&_tbody>tr:not([role=button])>td:nth-child(1)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(1)]:left-0 [&_tbody>tr:not([role=button])>td:nth-child(1)]:z-[1] [&_tbody>tr:not([role=button])>td:nth-child(1)]:shadow-[1px_0_0_0_var(--border)] " +
-    "[&_tbody>tr:not([role=button])>td:nth-child(2)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(2)]:left-[50px] [&_tbody>tr:not([role=button])>td:nth-child(2)]:z-[2] [&_tbody>tr:not([role=button])>td:nth-child(2)]:translate-x-[-1px] [&_tbody>tr:not([role=button])>td:nth-child(2)]:shadow-[1px_0_0_0_var(--border)] " +
-    "[&_tbody>tr:not([role=button])>td:nth-child(3)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(3)]:left-[100px] [&_tbody>tr:not([role=button])>td:nth-child(3)]:z-[3] [&_tbody>tr:not([role=button])>td:nth-child(3)]:translate-x-[-2px] [&_tbody>tr:not([role=button])>td:nth-child(3)]:shadow-[1px_0_0_0_var(--border)] " +
-    "[&_tbody>tr:not([role=button]):not(:has(ins)):not(:has(del))>td:nth-child(3)]:bg-[var(--diff-empty-line-bg)]";
+    "[&_tbody>tr:not([role=button])>td:nth-child(2)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(2)]:left-[40px] [&_tbody>tr:not([role=button])>td:nth-child(2)]:z-[2] [&_tbody>tr:not([role=button])>td:nth-child(2)]:translate-x-[-1px] [&_tbody>tr:not([role=button])>td:nth-child(2)]:shadow-[1px_0_0_0_var(--border)] " +
+    "[&_tbody>tr:not([role=button])>td:nth-child(3)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(3)]:left-[80px] [&_tbody>tr:not([role=button])>td:nth-child(3)]:z-[3] [&_tbody>tr:not([role=button])>td:nth-child(3)]:translate-x-[-2px] [&_tbody>tr:not([role=button])>td:nth-child(3)]:shadow-[1px_0_0_0_var(--border)] ";
 
 const INLINE_FOLD_ICON =
-    "[&_tbody>tr[role=button]_svg]:h-[17px] [&_tbody>tr[role=button]_svg]:w-[17px]";
+    "[&_tbody>tr[role=button]_svg]:h-[15px] [&_tbody>tr[role=button]_svg]:w-[15px]";
 
 const INLINE_FOLD_STICKY =
     "[&_tbody>tr[role=button]>td:nth-child(1)]:sticky [&_tbody>tr[role=button]>td:nth-child(1)]:left-0 [&_tbody>tr[role=button]>td:nth-child(1)]:z-[1] [&_tbody>tr[role=button]>td:nth-child(1)]:self-stretch [&_tbody>tr[role=button]>td:nth-child(1)]:pl-2 [&_tbody>tr[role=button]>td:nth-child(1)]:shadow-[1px_0_0_0_var(--border)] [&_tbody>tr[role=button]>td:nth-child(1)]:bg-[var(--diff-code-fold-bg)] " +
-    "[&_tbody>tr[role=button]>td:nth-child(2)]:sticky [&_tbody>tr[role=button]>td:nth-child(2)]:left-[50px] [&_tbody>tr[role=button]>td:nth-child(2)]:z-[2] [&_tbody>tr[role=button]>td:nth-child(2)]:translate-x-[-1px] [&_tbody>tr[role=button]>td:nth-child(2)]:self-stretch [&_tbody>tr[role=button]>td:nth-child(2)]:shadow-[1px_0_0_0_var(--border)] [&_tbody>tr[role=button]>td:nth-child(2)]:bg-[var(--diff-code-fold-bg)] " +
-    "[&_tbody>tr[role=button]>td:nth-child(3)]:sticky [&_tbody>tr[role=button]>td:nth-child(3)]:left-[100px] [&_tbody>tr[role=button]>td:nth-child(3)]:z-[3] [&_tbody>tr[role=button]>td:nth-child(3)]:translate-x-[-2px] [&_tbody>tr[role=button]>td:nth-child(3)]:self-stretch [&_tbody>tr[role=button]>td:nth-child(3)]:shadow-[1px_0_0_0_var(--border)] [&_tbody>tr[role=button]>td:nth-child(3)]:bg-[var(--diff-code-fold-bg)]";
+    "[&_tbody>tr[role=button]>td:nth-child(2)]:sticky [&_tbody>tr[role=button]>td:nth-child(2)]:left-[40px] [&_tbody>tr[role=button]>td:nth-child(2)]:z-[2] [&_tbody>tr[role=button]>td:nth-child(2)]:translate-x-[-1px] [&_tbody>tr[role=button]>td:nth-child(2)]:self-stretch [&_tbody>tr[role=button]>td:nth-child(2)]:shadow-[1px_0_0_0_var(--border)] [&_tbody>tr[role=button]>td:nth-child(2)]:bg-[var(--diff-code-fold-bg)] " +
+    "[&_tbody>tr[role=button]>td:nth-child(3)]:sticky [&_tbody>tr[role=button]>td:nth-child(3)]:left-[80px] [&_tbody>tr[role=button]>td:nth-child(3)]:z-[3] [&_tbody>tr[role=button]>td:nth-child(3)]:translate-x-[-2px] [&_tbody>tr[role=button]>td:nth-child(3)]:self-stretch [&_tbody>tr[role=button]>td:nth-child(3)]:shadow-[1px_0_0_0_var(--border)] [&_tbody>tr[role=button]>td:nth-child(3)]:bg-[var(--diff-code-fold-bg)]";
 
 function diffViewerVariables(): NonNullable<ReactDiffViewerStylesOverride["variables"]> {
     const palette = {
@@ -173,6 +176,14 @@ function gutterBackground(side: DiffInformation): string {
     return "var(--diff-gutter-bg)";
 }
 
+function markerColumnBackground(side: DiffInformation): string {
+    const t = side.type ?? DiffType.DEFAULT;
+    if (t === DiffType.REMOVED) return "var(--diff-gutter-removed-bg)";
+    if (t === DiffType.ADDED) return "var(--diff-gutter-added-bg)";
+    if (t === DiffType.CHANGED) return "var(--diff-line-changed-bg)";
+    return "var(--diff-gutter-bg)";
+}
+
 function markerChar(side: DiffInformation): string {
     const t = side.type ?? DiffType.DEFAULT;
     if (t === DiffType.ADDED) return "+";
@@ -241,7 +252,7 @@ function SplitDiffLineRow({
             </pre>
             <pre
                 className="sticky left-[50px] z-[1] m-0 w-7 shrink-0 self-stretch px-2.5 py-0 text-center shadow-[1px_0_0_0_var(--border)] select-none"
-                style={{ backgroundColor: sideLineBackground(side) }}
+                style={{ backgroundColor: markerColumnBackground(side) }}
             >
                 {markerChar(side)}
             </pre>
@@ -277,10 +288,6 @@ function UnitExplanationSplitDiff({
     rightTitle: string;
 }) {
     const [expandedBlocks, setExpandedBlocks] = useState<number[]>([]);
-
-    useEffect(() => {
-        setExpandedBlocks([]);
-    }, [lineInformation, lineBlocks, blocks]);
 
     const visibleRows = useMemo(
         () => buildSplitVisibleRows(lineInformation, lineBlocks, blocks, expandedBlocks),
@@ -451,7 +458,22 @@ export function UnitExplanationDiffViewer({
                     borderRadius: 0,
                     border: "none",
                     overflow: "visible",
+                    "& colgroup > col:nth-of-type(1), & colgroup > col:nth-of-type(2)": {
+                        width: `${INLINE_LINE_NUMBER_COL_PX}px`,
+                    },
                 },
+            gutter: {
+                minWidth: `${INLINE_LINE_NUMBER_COL_PX}px`,
+                width: `${INLINE_LINE_NUMBER_COL_PX}px`,
+                padding: "0 4px",
+                textAlign: "center",
+                verticalAlign: "middle",
+                "& pre": {
+                    margin: 0,
+                    width: "100%",
+                    textAlign: "center",
+                },
+            },
             content: {
                 overflow: "visible",
                 fontFamily:
@@ -468,10 +490,15 @@ export function UnitExplanationDiffViewer({
                 width: "28px",
                 minWidth: "28px",
                 maxWidth: "28px",
-                paddingLeft: 0,
-                paddingRight: 0,
+                padding: 0,
                 overflow: "hidden",
                 textAlign: "center",
+                verticalAlign: "middle",
+                "& pre": {
+                    margin: 0,
+                    width: "100%",
+                    textAlign: "center",
+                },
             },
             codeFoldGutter: {
                 verticalAlign: "middle",
@@ -481,11 +508,11 @@ export function UnitExplanationDiffViewer({
             codeFold: {
                 verticalAlign: "middle",
                 backgroundColor: "var(--diff-code-fold-bg)",
-                fontSize: "0.8125rem",
-                lineHeight: 1.5,
+                fontSize: "0.75rem",
+                lineHeight: 1.45,
                 "& > td": {
-                    paddingTop: "0.3125rem",
-                    paddingBottom: "0.3125rem",
+                    paddingTop: "0.25rem",
+                    paddingBottom: "0.25rem",
                 },
                 "& > td:nth-of-type(3)": {
                     boxSizing: "border-box",
@@ -498,8 +525,8 @@ export function UnitExplanationDiffViewer({
                 },
             },
             codeFoldContent: {
-                fontSize: "0.8125rem",
-                lineHeight: 1.5,
+                fontSize: "0.75rem",
+                lineHeight: 1.45,
             },
             codeFoldContentContainer: {
                 width: "max-content",
@@ -514,17 +541,17 @@ export function UnitExplanationDiffViewer({
             codeFoldExpandButton: {
                 display: "inline-flex",
                 position: "sticky",
-                left: "128px",
+                left: `${INLINE_FOLD_MSG_STICKY_LEFT_PX}px`,
                 zIndex: 5,
                 width: "max-content",
                 maxWidth: "none",
                 justifyContent: "flex-start",
                 alignItems: "center",
-                gap: "0.5rem",
+                gap: "0.375rem",
                 textAlign: "left",
                 whiteSpace: "nowrap",
-                fontSize: "0.8125rem",
-                lineHeight: 1.5,
+                fontSize: "0.75rem",
+                lineHeight: 1.45,
                 backgroundColor: "var(--diff-code-fold-bg)",
                 "& span": {
                     whiteSpace: "nowrap",
@@ -538,6 +565,7 @@ export function UnitExplanationDiffViewer({
         return (
             <div data-unit-code-diff data-scroll-group="unit-code-diff" className={cn("min-h-0 w-full min-w-0", className)}>
                 <UnitExplanationSplitDiff
+                    key={`${oldValue}\0${newValue}`}
                     lineInformation={splitDiffData.lineInformation}
                     lineBlocks={splitDiffData.lineBlocks}
                     blocks={splitDiffData.blocks}
