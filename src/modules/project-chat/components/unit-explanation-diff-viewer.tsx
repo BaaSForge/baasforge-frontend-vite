@@ -7,35 +7,40 @@ import type { ReactElement } from "react";
 import { useCallback, useMemo } from "react";
 import ReactDiffViewer, { DiffMethod, type ReactDiffViewerStylesOverride } from "@/components/react-diff-viewer";
 
-function shadcnDiffThemeVariables(): NonNullable<ReactDiffViewerStylesOverride["variables"]> {
-    const shared = {
-        diffViewerBackground: "var(--background)",
-        diffViewerColor: "var(--foreground)",
-        diffViewerTitleBackground: "var(--muted)",
-        diffViewerTitleColor: "var(--foreground)",
-        diffViewerTitleBorderColor: "var(--border)",
-        addedBackground: "color-mix(in oklch, oklch(0.72 0.14 155) 14%, var(--background))",
-        addedColor: "var(--foreground)",
-        removedBackground: "color-mix(in oklch, oklch(0.65 0.2 25) 12%, var(--background))",
-        removedColor: "var(--foreground)",
-        changedBackground: "color-mix(in oklch, oklch(0.85 0.12 85) 18%, var(--background))",
-        wordAddedBackground: "color-mix(in oklch, oklch(0.65 0.14 155) 28%, var(--background))",
-        wordRemovedBackground: "color-mix(in oklch, oklch(0.62 0.18 25) 26%, var(--background))",
-        addedGutterBackground: "color-mix(in oklch, oklch(0.78 0.12 155) 20%, var(--muted))",
-        removedGutterBackground: "color-mix(in oklch, oklch(0.72 0.16 25) 18%, var(--muted))",
-        gutterBackground: "var(--muted)",
-        gutterBackgroundDark: "color-mix(in oklch, var(--muted) 90%, var(--foreground))",
-        highlightBackground: "color-mix(in oklch, oklch(0.88 0.1 85) 22%, var(--background))",
-        highlightGutterBackground: "color-mix(in oklch, var(--muted) 85%, var(--foreground))",
-        codeFoldGutterBackground: "var(--muted)",
-        codeFoldBackground: "color-mix(in oklch, var(--muted) 96%, var(--foreground))",
-        emptyLineBackground: "color-mix(in oklch, var(--background) 97%, var(--foreground))",
-        gutterColor: "var(--muted-foreground)",
-        addedGutterColor: "var(--foreground)",
-        removedGutterColor: "var(--foreground)",
-        codeFoldContentColor: "var(--muted-foreground)",
+export const UNIT_EXPLANATION_DIFF_LEFT_TITLE = "Before (before this chat)" as const;
+export const UNIT_EXPLANATION_DIFF_RIGHT_TITLE = "After (this revision)" as const;
+export const UNIT_EXPLANATION_DIFF_INLINE_TITLE =
+    `${UNIT_EXPLANATION_DIFF_LEFT_TITLE} → ${UNIT_EXPLANATION_DIFF_RIGHT_TITLE}` as const;
+
+function diffViewerVariables(): NonNullable<ReactDiffViewerStylesOverride["variables"]> {
+    const palette = {
+        diffViewerBackground: "var(--diff-viewer-bg)",
+        diffViewerColor: "var(--diff-viewer-fg)",
+        diffViewerTitleBackground: "var(--diff-viewer-title-bg)",
+        diffViewerTitleColor: "var(--diff-viewer-title-fg)",
+        diffViewerTitleBorderColor: "var(--diff-viewer-title-border)",
+        addedBackground: "var(--diff-line-added-bg)",
+        addedColor: "var(--diff-line-added-fg)",
+        removedBackground: "var(--diff-line-removed-bg)",
+        removedColor: "var(--diff-line-removed-fg)",
+        changedBackground: "var(--diff-line-changed-bg)",
+        wordAddedBackground: "var(--diff-word-added-bg)",
+        wordRemovedBackground: "var(--diff-word-removed-bg)",
+        addedGutterBackground: "var(--diff-gutter-added-bg)",
+        removedGutterBackground: "var(--diff-gutter-removed-bg)",
+        gutterBackground: "var(--diff-gutter-bg)",
+        gutterBackgroundDark: "var(--diff-gutter-bg-dark)",
+        gutterColor: "var(--diff-gutter-fg)",
+        addedGutterColor: "var(--diff-gutter-added-fg)",
+        removedGutterColor: "var(--diff-gutter-removed-fg)",
+        highlightBackground: "var(--diff-highlight-line-bg)",
+        highlightGutterBackground: "var(--diff-highlight-gutter-bg)",
+        emptyLineBackground: "var(--diff-empty-line-bg)",
+        codeFoldGutterBackground: "var(--diff-code-fold-gutter-bg)",
+        codeFoldBackground: "var(--diff-code-fold-bg)",
+        codeFoldContentColor: "var(--diff-code-fold-fg)",
     };
-    return { light: shared, dark: shared };
+    return { light: palette, dark: palette };
 }
 
 function explanationToDiffText(value: string | null | undefined): string {
@@ -62,19 +67,20 @@ export function UnitExplanationDiffViewer({
     const newValue = useMemo(() => explanationToDiffText(afterExplanation), [afterExplanation]);
 
     const renderContent = useCallback((source: string): ReactElement => {
-        const text = source ?? "";
-        return <AppSyntaxHighlighter variant="diffLine" code={text} language="typescript" />;
+        return <AppSyntaxHighlighter variant="diffLine" code={source ?? ""} language="typescript" />;
     }, []);
 
     const styles = useMemo<ReactDiffViewerStylesOverride>(
         () => ({
-            variables: shadcnDiffThemeVariables(),
+            variables: diffViewerVariables(),
             diffContainer: {
                 width: "100%",
-                minWidth: "100%",
+                minWidth: 0,
+                maxWidth: "100%",
+                tableLayout: "fixed",
                 borderRadius: "var(--radius-md)",
                 border: "1px solid var(--border)",
-                overflow: "hidden",
+                overflow: "visible",
             },
             content: {
                 fontFamily:
@@ -82,16 +88,18 @@ export function UnitExplanationDiffViewer({
                 fontSize: "0.8125rem",
                 lineHeight: "1.5",
             },
+            contentText: {
+                whiteSpace: "pre",
+            },
         }),
         [],
     );
 
     return (
         <div
-            className={cn(
-                "min-h-0 w-full min-w-[min(100%,18rem)] overflow-x-auto [&_table]:w-full",
-                className,
-            )}
+            data-unit-code-diff
+            data-scroll-group="unit-code-diff"
+            className={cn("min-h-0 w-full min-w-0 overflow-x-auto [&_table]:w-full [&_table]:max-w-none", className)}
         >
             <ReactDiffViewer
                 oldValue={oldValue}
@@ -102,9 +110,9 @@ export function UnitExplanationDiffViewer({
                 useDarkTheme={useDarkTheme}
                 styles={styles}
                 renderContent={renderContent}
-                leftTitle="Before (before this chat)"
-                rightTitle="After (this revision)"
-                inlineTitle="Before (before this chat) → After (this revision)"
+                leftTitle={UNIT_EXPLANATION_DIFF_LEFT_TITLE}
+                rightTitle={UNIT_EXPLANATION_DIFF_RIGHT_TITLE}
+                inlineTitle={UNIT_EXPLANATION_DIFF_INLINE_TITLE}
                 hideSummary
             />
         </div>

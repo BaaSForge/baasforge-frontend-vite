@@ -171,6 +171,32 @@ input[type="search"]::-webkit-search-cancel-button {
     --sidebar-accent-foreground: hsl(240 5.9% 10%);
     --sidebar-border: hsl(220 13% 86%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+    --diff-viewer-bg: var(--background);
+    --diff-viewer-fg: var(--foreground);
+    --diff-viewer-title-bg: var(--muted);
+    --diff-viewer-title-fg: var(--foreground);
+    --diff-viewer-title-border: var(--border);
+    --diff-line-added-bg: oklch(0.94 0.07 152);
+    --diff-line-added-fg: var(--foreground);
+    --diff-line-removed-bg: oklch(0.95 0.06 25);
+    --diff-line-removed-fg: var(--foreground);
+    --diff-line-changed-bg: oklch(0.97 0.06 95);
+    --diff-word-added-bg: oklch(0.86 0.11 152);
+    --diff-word-removed-bg: oklch(0.88 0.11 25);
+    --diff-gutter-bg: var(--muted);
+    --diff-gutter-bg-dark: color-mix(in oklch, var(--muted) 88%, var(--foreground));
+    --diff-gutter-added-bg: oklch(0.91 0.055 152);
+    --diff-gutter-removed-bg: oklch(0.92 0.05 25);
+    --diff-gutter-fg: var(--muted-foreground);
+    --diff-gutter-added-fg: var(--foreground);
+    --diff-gutter-removed-fg: var(--foreground);
+    --diff-highlight-line-bg: oklch(0.96 0.055 95);
+    --diff-highlight-gutter-bg: color-mix(in oklch, var(--muted) 82%, var(--foreground));
+    --diff-empty-line-bg: color-mix(in oklch, var(--background) 96%, var(--foreground));
+    --diff-code-fold-gutter-bg: var(--muted);
+    --diff-code-fold-bg: color-mix(in oklch, var(--muted) 94%, var(--foreground));
+    --diff-code-fold-fg: var(--muted-foreground);
 }
 
 /* Previous single dark palette (unchanged values), kept as "Default dark". */
@@ -208,6 +234,32 @@ input[type="search"]::-webkit-search-cancel-button {
     --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
     --sidebar-border: hsl(240 3.7% 15.9%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+    --diff-viewer-bg: var(--background);
+    --diff-viewer-fg: var(--foreground);
+    --diff-viewer-title-bg: oklch(0.19 0.01 260);
+    --diff-viewer-title-fg: var(--foreground);
+    --diff-viewer-title-border: oklch(1 0 0 / 8%);
+    --diff-line-added-bg: oklch(0.2 0.045 155);
+    --diff-line-added-fg: var(--foreground);
+    --diff-line-removed-bg: oklch(0.2 0.05 25);
+    --diff-line-removed-fg: var(--foreground);
+    --diff-line-changed-bg: oklch(0.22 0.04 95);
+    --diff-word-added-bg: oklch(0.28 0.08 155);
+    --diff-word-removed-bg: oklch(0.28 0.09 25);
+    --diff-gutter-bg: oklch(0.18 0.008 260);
+    --diff-gutter-bg-dark: oklch(0.22 0.01 260);
+    --diff-gutter-added-bg: oklch(0.21 0.04 155);
+    --diff-gutter-removed-bg: oklch(0.21 0.045 25);
+    --diff-gutter-fg: var(--muted-foreground);
+    --diff-gutter-added-fg: var(--foreground);
+    --diff-gutter-removed-fg: var(--foreground);
+    --diff-highlight-line-bg: oklch(0.24 0.04 95);
+    --diff-highlight-gutter-bg: oklch(0.26 0.035 95);
+    --diff-empty-line-bg: oklch(0.17 0.006 260);
+    --diff-code-fold-gutter-bg: oklch(0.18 0.01 260);
+    --diff-code-fold-bg: oklch(0.19 0.012 260);
+    --diff-code-fold-fg: var(--muted-foreground);
 }
 
 /* Lighter blue-gray dark (Cursor-style "Midnight"); elevated surfaces, softer contrast. */
@@ -245,6 +297,32 @@ input[type="search"]::-webkit-search-cancel-button {
     --sidebar-accent-foreground: hsl(210 15% 94%);
     --sidebar-border: hsl(222 12% 26%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
+
+    --diff-viewer-bg: var(--background);
+    --diff-viewer-fg: var(--foreground);
+    --diff-viewer-title-bg: oklch(0.27 0.022 260);
+    --diff-viewer-title-fg: var(--foreground);
+    --diff-viewer-title-border: oklch(0.93 0.02 260 / 12%);
+    --diff-line-added-bg: oklch(0.28 0.032 152);
+    --diff-line-added-fg: var(--foreground);
+    --diff-line-removed-bg: oklch(0.28 0.034 25);
+    --diff-line-removed-fg: var(--foreground);
+    --diff-line-changed-bg: oklch(0.288 0.03 95);
+    --diff-word-added-bg: oklch(0.31 0.045 152);
+    --diff-word-removed-bg: oklch(0.31 0.047 25);
+    --diff-gutter-bg: oklch(0.28 0.02 260);
+    --diff-gutter-bg-dark: oklch(0.33 0.024 260);
+    --diff-gutter-added-bg: oklch(0.285 0.03 152);
+    --diff-gutter-removed-bg: oklch(0.285 0.032 25);
+    --diff-gutter-fg: var(--muted-foreground);
+    --diff-gutter-added-fg: var(--foreground);
+    --diff-gutter-removed-fg: var(--foreground);
+    --diff-highlight-line-bg: oklch(0.295 0.032 95);
+    --diff-highlight-gutter-bg: oklch(0.31 0.03 95);
+    --diff-empty-line-bg: oklch(0.275 0.018 260);
+    --diff-code-fold-gutter-bg: oklch(0.28 0.02 260);
+    --diff-code-fold-bg: oklch(0.3 0.022 260);
+    --diff-code-fold-fg: var(--muted-foreground);
 }
 
 @keyframes status-pulse-ring {
