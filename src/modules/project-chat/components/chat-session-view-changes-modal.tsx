@@ -84,7 +84,7 @@ export function ChatSessionViewChangesModal({
     const splitView = !isMobile && diffLayoutMode === "split";
     const modalWidthClass = splitView
         ? "sm:max-w-[80vw]"
-        : "sm:min-w-[min(100%,36rem)] sm:max-w-[max(40vw,36rem)]";
+        : "sm:min-w-[min(100%,54rem)] sm:max-w-[max(60vw,54rem)]";
 
     return (
         <CentricModal open={open} onOpenChange={handleModalOpenChange}>
