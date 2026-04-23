@@ -3,6 +3,7 @@ import { PageTitleBox } from "@/components/page-title-box";
 import { RuntimeCard } from "@/components/runtime-card";
 import { SectionTitle } from "@/components/section-title";
 import { useProjectRuntimesQuery } from "@/modules/project/queries";
+import { PlatformEnvironmentType } from "@/modules/project/types";
 import { useMemo } from "react";
 import { useParams } from "react-router";
 
@@ -15,11 +16,14 @@ export default function ProjectRuntimesPage() {
     const projectIdForLinks = projectId ?? "";
     const { data: runtimes, isLoading, error } = useProjectRuntimesQuery(projectIdOrUndefined);
 
-    const { busyRuntimes, idleRuntimes } = useMemo(() => {
+    const { productionRuntimes, busyStageRuntimes, idleStageRuntimes } = useMemo(() => {
         const list = runtimes ?? [];
+        const production = list.filter((r) => r.environment === PlatformEnvironmentType.prod);
+        const stage = list.filter((r) => r.environment === PlatformEnvironmentType.stage);
         return {
-            busyRuntimes: list.filter((r) => r.live_release != null),
-            idleRuntimes: list.filter((r) => r.live_release == null),
+            productionRuntimes: production,
+            busyStageRuntimes: stage.filter((r) => r.live_release != null),
+            idleStageRuntimes: stage.filter((r) => r.live_release == null),
         };
     }, [runtimes]);
 
@@ -33,27 +37,39 @@ export default function ProjectRuntimesPage() {
                     <div className="p-4 text-destructive text-center text-sm">Failed to load runtimes.</div>
                 ) : (
                     <>
-                        {busyRuntimes.length > 0 && (
+                        {productionRuntimes.length > 0 && (
                             <>
-                                <SectionTitle>Busy runtimes</SectionTitle>
+                                <SectionTitle>Production runtimes</SectionTitle>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-                                    {busyRuntimes.map((runtime) => (
+                                    {productionRuntimes.map((runtime) => (
                                         <RuntimeCard key={runtime.id} projectId={projectIdForLinks} runtime={runtime} />
                                     ))}
                                 </div>
                             </>
                         )}
-                        {idleRuntimes.length > 0 && (
+                        {busyStageRuntimes.length > 0 && (
                             <>
-                                <SectionTitle>Idle runtimes</SectionTitle>
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                    {idleRuntimes.map((runtime) => (
+                                <SectionTitle>Busy stage runtimes</SectionTitle>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                                    {busyStageRuntimes.map((runtime) => (
                                         <RuntimeCard key={runtime.id} projectId={projectIdForLinks} runtime={runtime} />
                                     ))}
                                 </div>
                             </>
                         )}
-                        {busyRuntimes.length === 0 && idleRuntimes.length === 0 && (
+                        {idleStageRuntimes.length > 0 && (
+                            <>
+                                <SectionTitle>Idle stage runtimes</SectionTitle>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {idleStageRuntimes.map((runtime) => (
+                                        <RuntimeCard key={runtime.id} projectId={projectIdForLinks} runtime={runtime} />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                        {productionRuntimes.length === 0 &&
+                            busyStageRuntimes.length === 0 &&
+                            idleStageRuntimes.length === 0 && (
                             <div className="p-4 text-muted-foreground text-center text-sm">No runtimes found.</div>
                         )}
                     </>
