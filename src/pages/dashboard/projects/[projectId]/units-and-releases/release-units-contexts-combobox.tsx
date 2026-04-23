@@ -40,7 +40,7 @@ export function ReleaseUnitsContextsCombobox({
                 onContextsChange(nextContexts);
             }}
         >
-            <ComboboxChips ref={contextsAnchor} className="h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1">
+            <ComboboxChips ref={contextsAnchor} className="h-auto min-h-8 w-full min-w-0 max-w-[14rem] py-1">
                 <ComboboxValue>
                     {(values: string[]) => (
                         <Fragment>

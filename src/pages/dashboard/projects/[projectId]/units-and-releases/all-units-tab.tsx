@@ -220,92 +220,91 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
 
     return (
         <div className="space-y-4">
-            <div className="space-y-1">
-                <SectionTitle className="mb-0">All units (combined)</SectionTitle>
-                <p className="text-muted-foreground max-w-prose text-sm">
-                    Grouping only affects how the current page is displayed.
-                </p>
-            </div>
+            <div className="flex flex-col gap-3">
+                <div className="flex min-h-9 min-w-0 flex-wrap items-start gap-2">
+                    <div className="min-w-40 max-w-56 flex-[1_1_10rem]">
+                        <ReleaseUnitsContextsCombobox
+                            releaseId={releaseId}
+                            sortedContextOptions={sortedContextOptions}
+                            contextsLoading={contextsLoading}
+                            contexts={contexts}
+                            onContextsChange={(nextContexts) => {
+                                const nextPairs = pairsCompatibleWithContexts(nextContexts, contextModulePairs);
+                                patchUrl({ contexts: nextContexts, contextModulePairs: nextPairs, page: DEFAULT_ALL_UNITS_PAGE });
+                            }}
+                        />
+                    </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
-                <div className="flex flex-wrap items-center gap-2">
-                    <ReleaseUnitsContextsCombobox
-                        releaseId={releaseId}
-                        sortedContextOptions={sortedContextOptions}
-                        contextsLoading={contextsLoading}
-                        contexts={contexts}
-                        onContextsChange={(nextContexts) => {
-                            const nextPairs = pairsCompatibleWithContexts(nextContexts, contextModulePairs);
-                            patchUrl({ contexts: nextContexts, contextModulePairs: nextPairs, page: DEFAULT_ALL_UNITS_PAGE });
-                        }}
-                    />
+                    <div className="min-w-40 max-w-56 flex-[1_1_10rem]">
+                        <ReleaseUnitsModulesCombobox
+                            releaseId={releaseId}
+                            moduleItemKeys={moduleItemKeys}
+                            modulesLoading={modulesQuery.isLoading}
+                            modulesFetching={modulesQuery.isFetching}
+                            disabled={modulesComboboxDisabled}
+                            modulePairKeysValue={modulePairKeysValue}
+                            onModulePairsChange={(keys) => {
+                                const parsed: ContextModulePair[] = [];
+                                for (const k of keys) {
+                                    const p = parseModulePairKey(k);
+                                    if (p != null) parsed.push(p);
+                                }
+                                parsed.sort(sortPairs);
+                                patchUrl({ contextModulePairs: parsed, page: DEFAULT_ALL_UNITS_PAGE });
+                            }}
+                        />
+                    </div>
 
-                    <ReleaseUnitsModulesCombobox
-                        releaseId={releaseId}
-                        moduleItemKeys={moduleItemKeys}
-                        modulesLoading={modulesQuery.isLoading}
-                        modulesFetching={modulesQuery.isFetching}
-                        disabled={modulesComboboxDisabled}
-                        modulePairKeysValue={modulePairKeysValue}
-                        onModulePairsChange={(keys) => {
-                            const parsed: ContextModulePair[] = [];
-                            for (const k of keys) {
-                                const p = parseModulePairKey(k);
-                                if (p != null) parsed.push(p);
-                            }
-                            parsed.sort(sortPairs);
-                            patchUrl({ contextModulePairs: parsed, page: DEFAULT_ALL_UNITS_PAGE });
-                        }}
-                    />
-
-                    <Combobox
-                        multiple
-                        autoHighlight
-                        items={STATIC_PROJECT_UNIT_TYPES.slice()}
-                        value={unitTypes}
-                        onValueChange={(next) => {
-                            const nextTypes = [...(next ?? [])] as ProjectUnitType[];
-                            nextTypes.sort((a, b) => a.localeCompare(b));
-                            patchUrl({ unitTypes: nextTypes, page: DEFAULT_ALL_UNITS_PAGE });
-                        }}
-                    >
-                        <ComboboxChips ref={unitTypesAnchor} className="h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1">
-                            <ComboboxValue>
-                                {(values: ProjectUnitType[]) => (
-                                    <Fragment>
-                                        {values.map((t) => {
-                                            const Icon = UNIT_TYPE_ICONS[t];
-                                            return (
-                                                <ComboboxChip key={t} title={capitalizeFirstLetter(t)}>
-                                                    <Icon className="text-muted-foreground size-3 shrink-0" aria-hidden />
-                                                    {capitalizeFirstLetter(t)}
-                                                </ComboboxChip>
-                                            );
-                                        })}
-                                        <ComboboxChipsInput placeholder="Unit types" className="text-sm placeholder:text-muted-foreground" />
-                                    </Fragment>
-                                )}
-                            </ComboboxValue>
-                        </ComboboxChips>
-                        <ComboboxContent anchor={unitTypesAnchor} className="w-[var(--anchor-width)]">
-                            <ComboboxEmpty>No unit types.</ComboboxEmpty>
-                            <ComboboxList>
-                                {(t: ProjectUnitType) => {
-                                    const Icon = UNIT_TYPE_ICONS[t];
-                                    return (
-                                        <ComboboxItem key={t} value={t}>
-                                            <Icon className="text-muted-foreground size-4 shrink-0" aria-hidden />
-                                            <span className="truncate">{capitalizeFirstLetter(t)}</span>
-                                        </ComboboxItem>
-                                    );
-                                }}
-                            </ComboboxList>
-                        </ComboboxContent>
-                    </Combobox>
+                    <div className="min-w-40 max-w-56 flex-[1_1_10rem]">
+                        <Combobox
+                            multiple
+                            autoHighlight
+                            items={STATIC_PROJECT_UNIT_TYPES.slice()}
+                            value={unitTypes}
+                            onValueChange={(next) => {
+                                const nextTypes = [...(next ?? [])] as ProjectUnitType[];
+                                nextTypes.sort((a, b) => a.localeCompare(b));
+                                patchUrl({ unitTypes: nextTypes, page: DEFAULT_ALL_UNITS_PAGE });
+                            }}
+                        >
+                            <ComboboxChips ref={unitTypesAnchor} className="h-auto min-h-8 w-full min-w-0 max-w-none py-1">
+                                <ComboboxValue>
+                                    {(values: ProjectUnitType[]) => (
+                                        <Fragment>
+                                            {values.map((t) => {
+                                                const Icon = UNIT_TYPE_ICONS[t];
+                                                return (
+                                                    <ComboboxChip key={t} title={capitalizeFirstLetter(t)}>
+                                                        <Icon className="text-muted-foreground size-3 shrink-0" aria-hidden />
+                                                        {capitalizeFirstLetter(t)}
+                                                    </ComboboxChip>
+                                                );
+                                            })}
+                                            <ComboboxChipsInput placeholder="Unit types" className="text-sm placeholder:text-muted-foreground" />
+                                        </Fragment>
+                                    )}
+                                </ComboboxValue>
+                            </ComboboxChips>
+                            <ComboboxContent anchor={unitTypesAnchor} className="w-[var(--anchor-width)]">
+                                <ComboboxEmpty>No unit types.</ComboboxEmpty>
+                                <ComboboxList>
+                                    {(t: ProjectUnitType) => {
+                                        const Icon = UNIT_TYPE_ICONS[t];
+                                        return (
+                                            <ComboboxItem key={t} value={t}>
+                                                <Icon className="text-muted-foreground size-4 shrink-0" aria-hidden />
+                                                <span className="truncate">{capitalizeFirstLetter(t)}</span>
+                                            </ComboboxItem>
+                                        );
+                                    }}
+                                </ComboboxList>
+                            </ComboboxContent>
+                        </Combobox>
+                    </div>
 
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="inline-flex">
+                            <span className="inline-flex shrink-0">
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -323,35 +322,37 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                     </Tooltip>
                 </div>
 
-                <ToggleGroup
-                    type="single"
-                    value={groupMode}
-                    onValueChange={(v) => v != null && v !== "" && patchUrl({ groupMode: v as AllUnitsGroupMode })}
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                >
-                    <ToggleGroupItem value="ungrouped">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <TextAlignJustifyIcon />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">Ungrouped view</TooltipContent>
-                        </Tooltip>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="grouped">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <LayersIcon />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">Group by type</TooltipContent>
-                        </Tooltip>
-                    </ToggleGroupItem>
-                </ToggleGroup>
+                <div className="flex w-full min-w-0 justify-end">
+                    <ToggleGroup
+                        type="single"
+                        value={groupMode}
+                        onValueChange={(v) => v != null && v !== "" && patchUrl({ groupMode: v as AllUnitsGroupMode })}
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                    >
+                        <ToggleGroupItem value="ungrouped">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span>
+                                        <TextAlignJustifyIcon />
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">Ungrouped view</TooltipContent>
+                            </Tooltip>
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="grouped">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span>
+                                        <LayersIcon />
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">Group by type</TooltipContent>
+                            </Tooltip>
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
             </div>
 
             {isLoading ? (

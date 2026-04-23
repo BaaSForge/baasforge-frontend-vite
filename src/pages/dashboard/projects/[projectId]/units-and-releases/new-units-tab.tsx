@@ -122,10 +122,7 @@ export function NewUnitsTab({
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-1">
-                    <SectionTitle className="mb-0">New units in this release</SectionTitle>
-                </div>
+            <div className="flex justify-end">
                 <ToggleGroup
                     type="single"
                     value={groupMode}
