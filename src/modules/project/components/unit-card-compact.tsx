@@ -122,6 +122,7 @@ export function UnitCardCompact({
                         open={modalOpen}
                         onOpenChange={setModalOpen}
                         explanation={explanation}
+                        code={unit.code}
                         isDeleted={isDeleted}
                         isRejected={isRejected}
                         badges={badges}
