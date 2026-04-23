@@ -1,0 +1,100 @@
+/* Loaded after @scalar/api-reference-react/style.css — maps Scalar surfaces to app tokens from html.
+   Includes html.* rules so portaled `.scalar-app` / mode roots (e.g. language dropdown) still resolve tokens. */
+
+.scalar-http-operation-client.scalar-app,
+.scalar-http-operation-client.scalar-app :where(.dark-mode, .light-mode),
+html.light .scalar-app,
+html.light .scalar-app .light-mode,
+html.light .light-mode,
+html.dark-default .scalar-app,
+html.dark-default .scalar-app .dark-mode,
+html.dark-default .dark-mode,
+html.dark-midnight .scalar-app,
+html.dark-midnight .scalar-app .dark-mode,
+html.dark-midnight .dark-mode {
+    --scalar-font: inherit;
+    --scalar-font-code: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    --scalar-background-1: var(--card);
+    --scalar-background-2: var(--muted);
+    --scalar-background-3: color-mix(in oklch, var(--muted) 88%, var(--foreground));
+    --scalar-background-accent: color-mix(in oklch, var(--primary) 14%, transparent);
+
+    --scalar-color-1: var(--foreground);
+    --scalar-color-2: var(--muted-foreground);
+    --scalar-color-3: color-mix(in oklch, var(--muted-foreground) 85%, transparent);
+
+    --scalar-border-color: var(--border);
+    --scalar-color-accent: var(--primary);
+
+    --scalar-button-1: var(--primary);
+    --scalar-button-1-hover: color-mix(in oklch, var(--primary) 88%, var(--foreground));
+    --scalar-button-1-color: var(--primary-foreground);
+
+    --scalar-tooltip-background: var(--popover);
+    --scalar-tooltip-color: var(--popover-foreground);
+
+    --scalar-shadow-1: 0 1px 2px color-mix(in oklch, var(--foreground) 6%, transparent);
+    --scalar-shadow-2:
+        0 0 0 0.5px var(--border),
+        0 4px 12px color-mix(in oklch, var(--foreground) 8%, transparent);
+
+    --scalar-scrollbar-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent);
+    --scalar-scrollbar-color-active: color-mix(in oklch, var(--muted-foreground) 55%, transparent);
+
+    --scalar-link-color: var(--foreground);
+    --scalar-link-color-hover: var(--primary);
+
+    --scalar-color-green: oklch(0.55 0.14 155);
+    --scalar-color-red: oklch(0.55 0.2 25);
+    --scalar-color-yellow: oklch(0.75 0.14 95);
+    --scalar-color-blue: oklch(0.55 0.14 250);
+    --scalar-color-orange: oklch(0.65 0.16 55);
+    --scalar-color-purple: oklch(0.55 0.18 290);
+}
+
+[data-slot="collapsible-content"]:has(.scalar-http-operation-client) {
+    background-color: transparent;
+}
+
+.scalar-http-operation-client.scalar-app {
+    border-radius: var(--radius-md);
+    background: var(--card);
+    color: var(--foreground);
+}
+
+html.light .scalar-http-operation-client.scalar-app {
+    color-scheme: light;
+}
+
+html.dark-default .scalar-http-operation-client.scalar-app,
+html.dark-midnight .scalar-http-operation-client.scalar-app {
+    color-scheme: dark;
+}
+
+.scalar-http-operation-client .section-container {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.scalar-http-operation-client .section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.scalar-http-operation-client .scalar-app.scalar-api-reference.references-layout.scalar-scrollbars-obtrusive {
+    min-height: unset !important;
+}
+
+.scalar-http-operation-client [class*="scalar-header-height"] {
+    display: none !important;
+}
+
+/* Hide document intro (version / OAS / title / server); keep client language selector visible. */
+.scalar-http-operation-client .section-container:has([class*="introduction-section"]),
+.scalar-http-operation-client [class*="introduction-section"],
+.scalar-http-operation-client [class*="introduction-card"] {
+    display: none !important;
+}

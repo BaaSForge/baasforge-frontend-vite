@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { useProjectReleaseUnitsQuery } from "@/modules/project/queries";
+import type { ProjectUnitResponse } from "@/modules/project/types";
 import { SidebarIcon } from "lucide-react";
 import { useSearchParams } from "react-router";
 import { AllUnitsTab } from "./all-units-tab";
@@ -27,6 +28,10 @@ export type ProjectUnitsAndReleasesViewProps = {
     releaseId?: string;
     releaseTitleLabel: string;
     runtimeName?: string;
+    /** Stage trigger path needs the runtime id; only set on the runtime-scoped units route. */
+    stageRuntimeId?: string;
+    /** From the open release row (`is_stage`); selects stage vs production trigger base path. */
+    releaseIsStage?: boolean;
     /** Passed through nested secondary `SidebarProvider` so the title bar tracks the app sidebar. Omitted on the runtime-scoped route. */
     mainSidebar?: Sidebar;
     showSecondaryReleaseSidebar: boolean;
@@ -37,6 +42,8 @@ export function ProjectUnitsAndReleasesView({
     releaseId,
     releaseTitleLabel,
     runtimeName,
+    stageRuntimeId,
+    releaseIsStage,
     mainSidebar,
     showSecondaryReleaseSidebar,
 }: ProjectUnitsAndReleasesViewProps) {
@@ -77,6 +84,8 @@ export function ProjectUnitsAndReleasesView({
         <ProjectUnitsAndReleasesTabPanels
             projectId={projectId}
             releaseId={releaseId}
+            stageRuntimeId={stageRuntimeId}
+            releaseIsStage={releaseIsStage}
             newUnitsReleaseUnits={newUnitsReleaseUnits}
             newUnitsIsLoading={newUnitsIsLoading}
             newUnitsError={newUnitsError}
@@ -135,12 +144,16 @@ function SecondaryReleaseSidebarToggleDecorator({ tabsControls }: { tabsControls
 function ProjectUnitsAndReleasesTabPanels({
     projectId,
     releaseId,
+    stageRuntimeId,
+    releaseIsStage,
     newUnitsReleaseUnits,
     newUnitsIsLoading,
     newUnitsError,
 }: {
     projectId?: string;
     releaseId?: string;
+    stageRuntimeId?: string;
+    releaseIsStage?: boolean;
     newUnitsReleaseUnits: ProjectUnitResponse[] | undefined;
     newUnitsIsLoading: boolean;
     newUnitsError: unknown;
@@ -158,7 +171,12 @@ function ProjectUnitsAndReleasesTabPanels({
             </TabsContent>
             <TabsContent value="all" className="mt-0">
                 {projectId != null && releaseId != null ? (
-                    <AllUnitsTab projectId={projectId} releaseId={releaseId} />
+                    <AllUnitsTab
+                        projectId={projectId}
+                        releaseId={releaseId}
+                        stageRuntimeId={stageRuntimeId}
+                        releaseIsStage={releaseIsStage}
+                    />
                 ) : (
                     <div className="text-muted-foreground text-sm">Select a release to view all units.</div>
                 )}

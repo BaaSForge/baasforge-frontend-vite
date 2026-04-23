@@ -13,8 +13,9 @@ import { cn } from "@/lib/utils";
 import { Maximize2 } from "lucide-react";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
-import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
+import { ApiUnitLiveInteraction } from "./api-unit-live-interaction";
 import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
+import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 import { UnitRejectedBadge } from "./unit-rejected-badge";
 import { UnitRevisionBadge } from "./unit-revision-badge";
 import { UnitTypeBadge } from "./unit-type-badge";
@@ -28,6 +29,10 @@ export type DetailedUnitCardProps = {
     showChatSessionOverflowMenu?: boolean;
     showDraftPublishedBadge?: boolean;
     preparePending?: boolean;
+    /** Runtime id for stage trigger path; set on the runtime-scoped units route. */
+    stageRuntimeId?: string;
+    /** From the open release (`is_stage`); picks stage vs production trigger URL. */
+    releaseIsStage?: boolean;
 };
 
 export function DetailedUnitCard({
@@ -39,6 +44,8 @@ export function DetailedUnitCard({
     showChatSessionOverflowMenu,
     showDraftPublishedBadge = true,
     preparePending,
+    stageRuntimeId,
+    releaseIsStage,
 }: DetailedUnitCardProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
@@ -154,7 +161,19 @@ export function DetailedUnitCard({
                     <Collapsible open={interactionOpen} onOpenChange={setInteractionOpen}>
                         <CollapsiblePanelTitle className="w-full">Live interaction</CollapsiblePanelTitle>
                         <CollapsibleContent className="min-h-0">
-                            <div className="bg-muted/20 border-border mt-2 min-h-[7.5rem] rounded-lg border" />
+                            <div className="mt-2">
+                                {unit.unit_type === "api" ? (
+                                    <ApiUnitLiveInteraction
+                                        unit={unit}
+                                        stageRuntimeId={stageRuntimeId}
+                                        releaseIsStage={releaseIsStage}
+                                    />
+                                ) : (
+                                    <div className="text-muted-foreground flex min-h-[6rem] items-center justify-center px-2 text-center text-xs">
+                                        Live interaction for this unit type is not wired yet.
+                                    </div>
+                                )}
+                            </div>
                         </CollapsibleContent>
                     </Collapsible>
                 </div>
@@ -166,7 +185,6 @@ export function DetailedUnitCard({
                     isDeleted={isDeleted}
                     isRejected={isRejected}
                     badges={badges}
-                    persistDetailPanels={false}
                 />
             </Card>
         </div>

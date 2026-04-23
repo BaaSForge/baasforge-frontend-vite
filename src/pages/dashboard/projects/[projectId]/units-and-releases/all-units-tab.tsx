@@ -56,7 +56,17 @@ function sameContextModulePairs(a: ContextModulePair[], b: ContextModulePair[]):
     return ka.every((v, i) => v === kb[i]);
 }
 
-function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: ProjectUnitResponse[] }) {
+function UnitsGroupedByType({
+    projectId,
+    units,
+    stageRuntimeId,
+    releaseIsStage,
+}: {
+    projectId?: string;
+    units: ProjectUnitResponse[];
+    stageRuntimeId?: string;
+    releaseIsStage?: boolean;
+}) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
     const sortedTypes = useMemo(() => [...grouped.keys()].sort((a, b) => a.localeCompare(b)), [grouped]);
 
@@ -67,7 +77,14 @@ function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: P
                     <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
                     <div className="flex flex-col gap-4">
                         {grouped.get(unitType)?.map((unit) => (
-                            <DetailedUnitCard key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
+                            <DetailedUnitCard
+                                key={unit.id}
+                                projectId={projectId}
+                                unit={unit}
+                                showChatSessionOverflowMenu
+                                stageRuntimeId={stageRuntimeId}
+                                releaseIsStage={releaseIsStage}
+                            />
                         ))}
                     </div>
                 </div>
@@ -76,7 +93,17 @@ function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: P
     );
 }
 
-export function AllUnitsTab({ projectId, releaseId }: { projectId: string; releaseId: string }) {
+export function AllUnitsTab({
+    projectId,
+    releaseId,
+    stageRuntimeId,
+    releaseIsStage,
+}: {
+    projectId: string;
+    releaseId: string;
+    stageRuntimeId?: string;
+    releaseIsStage?: boolean;
+}) {
     const [searchParams, setSearchParams] = useSearchParams();
     const { unitsTab, allUnits } = readReleaseUnitsSearchParams(searchParams);
     const tabActive = unitsTab === "all";
@@ -366,12 +393,24 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
             ) : groupMode === "ungrouped" ? (
                 <div className={cn("flex flex-col gap-4", isFetching && "opacity-70")}>
                     {units.map((unit) => (
-                        <DetailedUnitCard key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
+                        <DetailedUnitCard
+                            key={unit.id}
+                            projectId={projectId}
+                            unit={unit}
+                            showChatSessionOverflowMenu
+                            stageRuntimeId={stageRuntimeId}
+                            releaseIsStage={releaseIsStage}
+                        />
                     ))}
                 </div>
             ) : (
                 <div className={cn(isFetching && "opacity-70")}>
-                    <UnitsGroupedByType projectId={projectId} units={units} />
+                    <UnitsGroupedByType
+                        projectId={projectId}
+                        units={units}
+                        stageRuntimeId={stageRuntimeId}
+                        releaseIsStage={releaseIsStage}
+                    />
                 </div>
             )}
 

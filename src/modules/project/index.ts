@@ -30,6 +30,7 @@ export {
 } from "./queries";
 export { getRuntimeLiveReleaseId, pickProductionRuntime, releaseIsLiveOnProjectRuntimes } from "./runtime-release";
 export type {
+    ApiUnitMetadata,
     ProjectPatchRequest,
     ProjectRequest,
     ProjectResponse,
@@ -38,4 +39,5 @@ export type {
     ProjectUnitType,
     ReleaseResponse,
     StageReleaseRequest,
+    TypeScriptJsonSchemaPair,
 } from "./types";

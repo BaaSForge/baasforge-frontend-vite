@@ -93,12 +93,17 @@ export default function ProjectRuntimeUnitsAndReleasesPage() {
         );
     }
 
+    const releaseIsStage =
+        selectedRelease != null ? selectedRelease.is_stage === true : runtime.environment === PlatformEnvironmentType.stage;
+
     return (
         <ProjectUnitsAndReleasesView
             projectId={projectId}
             releaseId={liveReleaseId}
             releaseTitleLabel={releaseTitleLabel}
             runtimeName={runtime.name}
+            stageRuntimeId={runtimeId}
+            releaseIsStage={releaseIsStage}
             showSecondaryReleaseSidebar={false}
         />
     );

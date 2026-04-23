@@ -78,6 +78,7 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
             releaseId={releaseID}
             releaseTitleLabel={releaseTitleLabel}
             runtimeName={productionRuntime?.name}
+            releaseIsStage={selectedRelease?.is_stage === true}
             mainSidebar={mainSidebar}
             showSecondaryReleaseSidebar
         />

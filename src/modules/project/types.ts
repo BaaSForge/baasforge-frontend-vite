@@ -48,6 +48,17 @@ export interface ContextModulesByContextRow {
     module_slugs: string[];
 }
 
+export interface TypeScriptJsonSchemaPair {
+    typescript?: string | null;
+}
+
+export interface ApiUnitMetadata {
+    method?: string | null;
+    request_body?: TypeScriptJsonSchemaPair;
+    request_params?: TypeScriptJsonSchemaPair;
+    response_body?: TypeScriptJsonSchemaPair;
+}
+
 export interface ProjectUnitResponse {
     id: string;
     project_id: string;
@@ -63,6 +74,7 @@ export interface ProjectUnitResponse {
     is_deleted?: boolean;
     is_rejected?: boolean;
     chat_session_id: string | null;
+    metadata?: unknown;
 }
 
 /** Shown when `brief_note` or `notes` are null or blank. */
