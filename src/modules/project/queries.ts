@@ -120,15 +120,16 @@ export function useProjectReleaseContextsQuery(projectId: string | undefined, re
 
 export function useProjectModulesByContextsQuery(
     projectId: string | undefined,
+    releaseId: string | undefined,
     contextSlugs: string[],
     options?: { enabled?: boolean },
 ) {
     const sortedKey = [...contextSlugs].sort().join("\u0000");
     const hasSlug = contextSlugs.some((s) => s.trim().length > 0);
-    const enabled = (options?.enabled ?? true) && !!projectId && hasSlug;
+    const enabled = (options?.enabled ?? true) && !!projectId && !!releaseId && hasSlug;
     return useQuery({
-        queryKey: QueryKeys.projectModulesByContexts(projectId ?? "", sortedKey),
-        queryFn: () => postModulesByContexts(projectId!, { context_slugs: contextSlugs }),
+        queryKey: QueryKeys.projectModulesByContexts(projectId ?? "", releaseId ?? "", sortedKey),
+        queryFn: () => postModulesByContexts(projectId!, releaseId!, { context_slugs: contextSlugs }),
         enabled,
     });
 }

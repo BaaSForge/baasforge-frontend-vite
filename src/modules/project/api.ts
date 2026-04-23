@@ -30,7 +30,8 @@ const projectReleaseUnitsEndpoint = (projectId: string, releaseId: string) => `$
 const projectReleaseUnitPreviousByFullIdsEndpoint = (projectId: string, releaseId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/unit-previous-by-full-ids`;
 const projectReleaseContextsEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/contexts`;
-const projectModulesByContextsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/modules-by-contexts`;
+const projectReleaseModulesByContextsEndpoint = (projectId: string, releaseId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/modules-by-contexts`;
 const projectReleaseUnitsAllEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units/all`;
 const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
 const projectRuntimeDetachLiveReleaseEndpoint = (projectId: string, runtimeId: string) =>
@@ -167,9 +168,13 @@ export function getReleaseContexts(projectId: string, releaseId: string): Promis
         .then((res) => res.data?.context_slugs ?? []);
 }
 
-export function postModulesByContexts(projectId: string, body: { context_slugs: string[] }): Promise<ContextModulesByContextRow[]> {
+export function postModulesByContexts(
+    projectId: string,
+    releaseId: string,
+    body: { context_slugs: string[] },
+): Promise<ContextModulesByContextRow[]> {
     return apiClient
-        .post<ApiResponse<{ by_context?: ContextModulesByContextRow[] }>>(projectModulesByContextsEndpoint(projectId), body)
+        .post<ApiResponse<{ by_context?: ContextModulesByContextRow[] }>>(projectReleaseModulesByContextsEndpoint(projectId, releaseId), body)
         .then((res) => res.data?.by_context ?? []);
 }
 

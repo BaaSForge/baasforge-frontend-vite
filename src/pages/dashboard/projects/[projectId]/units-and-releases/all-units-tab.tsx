@@ -26,7 +26,7 @@ import {
 } from "@/modules/project/queries";
 import type { ContextModulePair, ListReleaseUnitsAllRequest, ProjectUnitResponse, ProjectUnitType } from "@/modules/project/types";
 import { STATIC_PROJECT_UNIT_TYPES } from "@/modules/project/types";
-import { ChevronLeftIcon, ChevronRightIcon, FilterXIcon, LayersIcon, Loader2Icon, TextAlignJustifyIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, FilterXIcon, LayersIcon, TextAlignJustifyIcon } from "lucide-react";
 import { Fragment, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { groupUnitsByType } from "./group-units-by-type";
@@ -38,31 +38,9 @@ import {
     isAllowedPageSize,
     type AllUnitsGroupMode,
 } from "./release-units-search-params";
-
-const MODULE_PAIR_SEP = "\u0000";
-
-function modulePairKey(p: ContextModulePair): string {
-    return `${p.context_slug}${MODULE_PAIR_SEP}${p.module_slug}`;
-}
-
-function parseModulePairKey(key: string): ContextModulePair | null {
-    const i = key.indexOf(MODULE_PAIR_SEP);
-    if (i <= 0) return null;
-    const context_slug = key.slice(0, i);
-    const module_slug = key.slice(i + MODULE_PAIR_SEP.length);
-    if (context_slug.length === 0 || module_slug.length === 0) return null;
-    return { context_slug, module_slug };
-}
-
-function modulePairKeyLabel(key: string): string {
-    const p = parseModulePairKey(key);
-    return p != null ? `${p.module_slug} (${p.context_slug})` : key;
-}
-
-function sortPairs(a: ContextModulePair, b: ContextModulePair): number {
-    const c = a.context_slug.localeCompare(b.context_slug);
-    return c !== 0 ? c : a.module_slug.localeCompare(b.module_slug);
-}
+import { ReleaseUnitsContextsCombobox } from "./release-units-contexts-combobox";
+import { modulePairKey, parseModulePairKey, sortPairs } from "./release-units-module-pair-keys";
+import { ReleaseUnitsModulesCombobox } from "./release-units-modules-combobox";
 
 function sameSortedStrings(a: string[], b: string[]): boolean {
     if (a.length !== b.length) return false;
@@ -112,7 +90,7 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
 
     const sortedContextOptions = useMemo(() => [...contextSlugs].sort((a, b) => a.localeCompare(b)), [contextSlugs]);
 
-    const modulesQuery = useProjectModulesByContextsQuery(projectId, contexts, {
+    const modulesQuery = useProjectModulesByContextsQuery(projectId, releaseId, contexts, {
         enabled: tabActive && contexts.length > 0,
     });
 
@@ -203,8 +181,6 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
         setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), patch));
     };
 
-    const contextsAnchor = useComboboxAnchor();
-    const modulesAnchor = useComboboxAnchor();
     const unitTypesAnchor = useComboboxAnchor();
 
     const moduleItemKeys = useMemo(() => {
@@ -253,60 +229,25 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
 
             <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
                 <div className="flex flex-wrap items-center gap-2">
-                    <Combobox
-                        multiple
-                        autoHighlight
-                        items={sortedContextOptions}
-                        value={contexts}
-                        onValueChange={(next) => {
-                            const nextContexts = [...(next ?? [])].sort((a, b) => a.localeCompare(b));
+                    <ReleaseUnitsContextsCombobox
+                        releaseId={releaseId}
+                        sortedContextOptions={sortedContextOptions}
+                        contextsLoading={contextsLoading}
+                        contexts={contexts}
+                        onContextsChange={(nextContexts) => {
                             const nextPairs = pairsCompatibleWithContexts(nextContexts, contextModulePairs);
                             patchUrl({ contexts: nextContexts, contextModulePairs: nextPairs, page: DEFAULT_ALL_UNITS_PAGE });
                         }}
-                    >
-                        <ComboboxChips ref={contextsAnchor} className="h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1">
-                            <ComboboxValue>
-                                {(values: string[]) => (
-                                    <Fragment>
-                                        {values.map((slug) => (
-                                            <ComboboxChip key={slug} title={slug}>
-                                                {slug}
-                                            </ComboboxChip>
-                                        ))}
-                                        <ComboboxChipsInput placeholder="Contexts" className="text-sm placeholder:text-muted-foreground" />
-                                    </Fragment>
-                                )}
-                            </ComboboxValue>
-                        </ComboboxChips>
-                        <ComboboxContent anchor={contextsAnchor} className="w-[var(--anchor-width)]">
-                            <ComboboxEmpty>
-                                {contextsLoading ? (
-                                    <span className="inline-flex items-center gap-2">
-                                        <Loader2Icon className="size-4 shrink-0 animate-spin" />
-                                        Loading contexts…
-                                    </span>
-                                ) : (
-                                    "No contexts for this release."
-                                )}
-                            </ComboboxEmpty>
-                            <ComboboxList>
-                                {(slug: string) => (
-                                    <ComboboxItem key={slug} value={slug}>
-                                        <span className="truncate">{slug}</span>
-                                    </ComboboxItem>
-                                )}
-                            </ComboboxList>
-                        </ComboboxContent>
-                    </Combobox>
+                    />
 
-                    <Combobox
-                        multiple
-                        autoHighlight
-                        items={moduleItemKeys}
-                        value={modulePairKeysValue}
+                    <ReleaseUnitsModulesCombobox
+                        releaseId={releaseId}
+                        moduleItemKeys={moduleItemKeys}
+                        modulesLoading={modulesQuery.isLoading}
+                        modulesFetching={modulesQuery.isFetching}
                         disabled={modulesComboboxDisabled}
-                        onValueChange={(next) => {
-                            const keys = [...(next ?? [])] as string[];
+                        modulePairKeysValue={modulePairKeysValue}
+                        onModulePairsChange={(keys) => {
                             const parsed: ContextModulePair[] = [];
                             for (const k of keys) {
                                 const p = parseModulePairKey(k);
@@ -315,46 +256,7 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                             parsed.sort(sortPairs);
                             patchUrl({ contextModulePairs: parsed, page: DEFAULT_ALL_UNITS_PAGE });
                         }}
-                    >
-                        <ComboboxChips
-                            ref={modulesAnchor}
-                            className={cn(
-                                "h-auto min-h-8 w-full min-w-[10rem] max-w-[14rem] py-1",
-                                modulesComboboxDisabled && "opacity-50",
-                            )}
-                        >
-                            <ComboboxValue>
-                                {(values: string[]) => (
-                                    <Fragment>
-                                        {values.map((key) => (
-                                            <ComboboxChip key={key} title={modulePairKeyLabel(key)}>
-                                                {modulePairKeyLabel(key)}
-                                            </ComboboxChip>
-                                        ))}
-                                        <ComboboxChipsInput placeholder="Modules" className="text-sm placeholder:text-muted-foreground" />
-                                    </Fragment>
-                                )}
-                            </ComboboxValue>
-                        </ComboboxChips>
-                        <ComboboxContent anchor={modulesAnchor} className="w-[var(--anchor-width)]">
-                            <ComboboxEmpty>
-                                {contexts.length === 0
-                                    ? "Select one or more contexts."
-                                    : modulesQuery.isLoading || modulesQuery.isFetching
-                                      ? "Loading modules…"
-                                      : moduleItemKeys.length === 0
-                                        ? "No modules for selected contexts."
-                                        : "No matching modules."}
-                            </ComboboxEmpty>
-                            <ComboboxList>
-                                {(key: string) => (
-                                    <ComboboxItem key={key} value={key}>
-                                        <span className="truncate">{modulePairKeyLabel(key)}</span>
-                                    </ComboboxItem>
-                                )}
-                            </ComboboxList>
-                        </ComboboxContent>
-                    </Combobox>
+                    />
 
                     <Combobox
                         multiple

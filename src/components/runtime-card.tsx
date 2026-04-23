@@ -2,6 +2,7 @@ import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getRuntimeLiveReleaseId } from "@/modules/project/runtime-release";
 import { PlatformEnvironmentType, type ProjectRuntimeResponse } from "@/modules/project/types";
 import { MessageSquare, Package } from "lucide-react";
 import { Link, useLocation } from "react-router";
@@ -25,10 +26,13 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function RuntimeCard({ projectId, runtime }: RuntimeCardProps) {
     const location = useLocation();
+    const liveReleaseId = getRuntimeLiveReleaseId(runtime);
+    const canOpenUnits = liveReleaseId != null;
     const unitsReleasesHref =
         (runtime.environment === PlatformEnvironmentType.prod
             ? `/dashboard/projects/${projectId}/units-releases`
             : `/dashboard/projects/${projectId}/runtimes/${runtime.id}/units-releases`) + location.search;
+    const unitsLinkLabel = runtime.environment === PlatformEnvironmentType.stage ? "Units" : "Units & releases";
     const revision = runtime.live_release?.revision;
     const hasLiveRelease = runtime.live_release != null;
     const chatSessionId = runtime.live_release?.chat_session_id?.trim() ?? "";
@@ -83,14 +87,21 @@ export function RuntimeCard({ projectId, runtime }: RuntimeCardProps) {
                     }
                 />
                 <InfoRow
-                    label="Units & releases"
+                    label={unitsLinkLabel}
                     value={
-                        <Button asChild variant="outline" size="xs" className="min-w-0 max-w-full shrink">
-                            <Link to={unitsReleasesHref} className="min-w-0">
+                        canOpenUnits ? (
+                            <Button asChild variant="outline" size="xs" className="min-w-0 max-w-full shrink">
+                                <Link to={unitsReleasesHref} className="min-w-0">
+                                    <Package className="size-3.5 shrink-0" aria-hidden />
+                                    <span className="truncate">Open Units</span>
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button type="button" variant="outline" size="xs" className="min-w-0 max-w-full shrink" disabled>
                                 <Package className="size-3.5 shrink-0" aria-hidden />
-                                <span className="truncate">Open</span>
-                            </Link>
-                        </Button>
+                                <span className="truncate">No live release</span>
+                            </Button>
+                        )
                     }
                 />
             </CardContent>

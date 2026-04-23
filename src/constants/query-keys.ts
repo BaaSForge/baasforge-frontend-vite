@@ -39,8 +39,8 @@ export const QueryKeys = {
     projectReleaseUnits: (projectId: string, releaseId: string) => ["project", "release", "units", projectId, releaseId] as const,
     projectReleaseUnitsByProject: (projectId: string) => ["project", "release", "units", projectId] as const,
     projectReleaseContexts: (projectId: string, releaseId: string) => ["project", "release", "contexts", projectId, releaseId] as const,
-    projectModulesByContexts: (projectId: string, contextSlugsKey: string) =>
-        ["project", "modules-by-contexts", projectId, contextSlugsKey] as const,
+    projectModulesByContexts: (projectId: string, releaseId: string, contextSlugsKey: string) =>
+        ["project", "modules-by-contexts", projectId, releaseId, contextSlugsKey] as const,
     projectReleaseUnitsAll: (projectId: string, releaseId: string, requestKey: string) =>
         ["project", "release", "units", "all", projectId, releaseId, requestKey] as const,
     projectReleaseUnitsAllByProject: (projectId: string) => ["project", "release", "units", "all", projectId] as const,
