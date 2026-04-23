@@ -25,6 +25,10 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function RuntimeCard({ projectId, runtime }: RuntimeCardProps) {
     const location = useLocation();
+    const unitsReleasesHref =
+        (runtime.environment === PlatformEnvironmentType.prod
+            ? `/dashboard/projects/${projectId}/units-releases`
+            : `/dashboard/projects/${projectId}/runtimes/${runtime.id}/units-releases`) + location.search;
     const revision = runtime.live_release?.revision;
     const hasLiveRelease = runtime.live_release != null;
     const chatSessionId = runtime.live_release?.chat_session_id?.trim() ?? "";
@@ -78,19 +82,17 @@ export function RuntimeCard({ projectId, runtime }: RuntimeCardProps) {
                         )
                     }
                 />
-                {runtime.environment === PlatformEnvironmentType.prod ? (
-                    <InfoRow
-                        label="Units & releases"
-                        value={
-                            <Button asChild variant="outline" size="xs" className="min-w-0 max-w-full shrink">
-                                <Link to={`/dashboard/projects/${projectId}/units-releases`} className="min-w-0">
-                                    <Package className="size-3.5 shrink-0" aria-hidden />
-                                    <span className="truncate">Open</span>
-                                </Link>
-                            </Button>
-                        }
-                    />
-                ) : null}
+                <InfoRow
+                    label="Units & releases"
+                    value={
+                        <Button asChild variant="outline" size="xs" className="min-w-0 max-w-full shrink">
+                            <Link to={unitsReleasesHref} className="min-w-0">
+                                <Package className="size-3.5 shrink-0" aria-hidden />
+                                <span className="truncate">Open</span>
+                            </Link>
+                        </Button>
+                    }
+                />
             </CardContent>
         </Card>
     );

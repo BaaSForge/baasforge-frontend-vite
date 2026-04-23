@@ -5,6 +5,7 @@ import { AppShell } from "@/modules/layout";
 import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router";
 import ProjectRuntimesPage from "./dashboard/projects/[projectId]/runtimes/page";
+import ProjectRuntimeUnitsAndReleasesPage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/units-releases/page";
 import ProjectUnitsAndReleasesPage from "./dashboard/projects/[projectId]/units-and-releases/page";
 import { RootLayout } from "./root-layout";
 
@@ -134,6 +135,10 @@ export const router = createBrowserRouter([
                                                                     {
                                                                         path: "runtimes",
                                                                         element: <ProjectRuntimesPage />,
+                                                                    },
+                                                                    {
+                                                                        path: "runtimes/:runtimeId/units-releases",
+                                                                        element: <ProjectRuntimeUnitsAndReleasesPage />,
                                                                     },
                                                                 ],
                                                             },
