@@ -64,36 +64,49 @@ export function SecondarySideBar() {
     const [diffViewMode] = usePersistedUnitDiffViewMode();
     const [viewChangesOpen, setViewChangesOpen] = useState(false);
     const [viewChangesUnits, setViewChangesUnits] = useState<ChatSessionUnitChangePair[]>([]);
+    const [viewChangesActiveUnitId, setViewChangesActiveUnitId] = useState<string | undefined>(undefined);
     const [isPreparingViewChanges, setIsPreparingViewChanges] = useState(false);
+    const [preparingExpandUnitId, setPreparingExpandUnitId] = useState<string | null>(null);
 
     const hasDraftUnits = (draftUnits?.length ?? 0) > 0;
     const canViewChanges =
         projectId != null && chatSessionId != null && !isLoading && !error && hasDraftUnits && !isPreparingViewChanges;
 
-    const handleViewChanges = useCallback(async () => {
-        if (projectId == null || chatSessionId == null) return;
-        setIsPreparingViewChanges(true);
-        try {
-            const refetchResult = await refetchDraftUnits();
-            if (refetchResult.isError) {
-                toast.error("Could not refresh draft units.");
-                return;
+    const openViewChangesModal = useCallback(
+        async (initialAfterUnitId?: string) => {
+            if (projectId == null || chatSessionId == null || isPreparingViewChanges) return;
+            setIsPreparingViewChanges(true);
+            setPreparingExpandUnitId(initialAfterUnitId ?? null);
+            try {
+                const refetchResult = await refetchDraftUnits();
+                if (refetchResult.isError) {
+                    toast.error("Could not refresh draft units.");
+                    return;
+                }
+                const fresh = refetchResult.data ?? [];
+                if (fresh.length === 0) {
+                    toast.message("No draft units in this conversation anymore.");
+                    return;
+                }
+                const unitPaths = uniqueUnitPathsFromDraftUnits(fresh);
+                const preChat = await postChatSessionUnitPreChatBaseByPaths(projectId, chatSessionId, unitPaths);
+                const pairs = viewChangesPairsFromPreChat(fresh, unitPaths, preChat.units);
+                setViewChangesUnits(pairs);
+                setViewChangesActiveUnitId(
+                    initialAfterUnitId != null && pairs.some((p) => p.afterUnit.id === initialAfterUnitId)
+                        ? initialAfterUnitId
+                        : undefined,
+                );
+                setViewChangesOpen(true);
+            } catch {
+                toast.error("Could not load pre-chat unit versions.");
+            } finally {
+                setIsPreparingViewChanges(false);
+                setPreparingExpandUnitId(null);
             }
-            const fresh = refetchResult.data ?? [];
-            if (fresh.length === 0) {
-                toast.message("No draft units in this conversation anymore.");
-                return;
-            }
-            const unitPaths = uniqueUnitPathsFromDraftUnits(fresh);
-            const preChat = await postChatSessionUnitPreChatBaseByPaths(projectId, chatSessionId, unitPaths);
-            setViewChangesUnits(viewChangesPairsFromPreChat(fresh, unitPaths, preChat.units));
-            setViewChangesOpen(true);
-        } catch {
-            toast.error("Could not load pre-chat unit versions.");
-        } finally {
-            setIsPreparingViewChanges(false);
-        }
-    }, [projectId, chatSessionId, refetchDraftUnits]);
+        },
+        [projectId, chatSessionId, refetchDraftUnits, isPreparingViewChanges],
+    );
 
     const releaseFooter =
         projectId != null && chatSessionId != null ? (
@@ -112,7 +125,7 @@ export function SecondarySideBar() {
                         size="xs"
                         disabled={!canViewChanges}
                         aria-busy={isPreparingViewChanges}
-                        onClick={handleViewChanges}
+                        onClick={() => void openViewChangesModal()}
                     >
                         {isPreparingViewChanges ? (
                             <>
@@ -138,7 +151,17 @@ export function SecondarySideBar() {
             {projectId == null || chatSessionId == null ? (
                 <div className="text-sm text-muted-foreground">Start the conversation to generate draft units by using AI.</div>
             ) : isLoading ? (
-                <div className="text-sm text-muted-foreground">Loading draft units…</div>
+                <div className="flex flex-col gap-2" aria-busy="true">
+                    <p className="sr-only">Loading draft units</p>
+                    {[0, 1, 2].map((i) => (
+                        <div
+                            key={i}
+                            className="flex min-h-[5.5rem] items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 bg-muted/20"
+                        >
+                            <Spinner className="size-4 text-muted-foreground" aria-hidden />
+                        </div>
+                    ))}
+                </div>
             ) : error ? (
                 <div className="text-sm text-destructive">Failed to load draft units.</div>
             ) : draftUnits == null || draftUnits.length === 0 ? (
@@ -152,14 +175,20 @@ export function SecondarySideBar() {
                             projectId={projectId}
                             chatSessionId={chatSessionId}
                             unit={unit}
+                            onExpandFullRead={() => void openViewChangesModal(unit.id)}
+                            preparePending={isPreparingViewChanges && preparingExpandUnitId === unit.id}
                         />
                     ))}
                 </div>
             )}
             <ChatSessionViewChangesModal
                 open={viewChangesOpen}
-                onOpenChange={setViewChangesOpen}
+                onOpenChange={(open) => {
+                    if (!open) setViewChangesActiveUnitId(undefined);
+                    setViewChangesOpen(open);
+                }}
                 unitsChanged={viewChangesUnits}
+                activeUnitId={viewChangesActiveUnitId}
             />
         </SecondarySidebarContent>
     );

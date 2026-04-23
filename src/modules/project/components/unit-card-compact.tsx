@@ -4,6 +4,7 @@ import { Expandable } from "@/components/expandable";
 import { ExpandableFullReadResponsiveControls } from "@/components/expandable-full-read-trigger";
 import { LiveBadge } from "@/components/live-badge";
 import { Card, CardAction } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import type { ProjectUnitResponse } from "../types";
@@ -27,6 +28,8 @@ export interface UnitCardCompactProps {
     showChatSessionOverflowMenu?: boolean;
     /** When false, hides the Published / Draft badge (e.g. conversation sidebar and inline tool messages). */
     showDraftPublishedBadge?: boolean;
+    onExpandFullRead?: () => void;
+    preparePending?: boolean;
 }
 
 export function UnitCardCompact({
@@ -37,12 +40,15 @@ export function UnitCardCompact({
     unitRefreshPending,
     showChatSessionOverflowMenu,
     showDraftPublishedBadge = true,
+    onExpandFullRead,
+    preparePending,
 }: UnitCardCompactProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
     const isRejected = unit.is_rejected === true;
     const explanation = unit.explanation?.trim() ?? "No description";
     const [modalOpen, setModalOpen] = useState(false);
+    const useExplanationModal = onExpandFullRead == null;
     const sourceChatSessionId = unit.chat_session_id?.trim() ?? "";
     const hasOverflowTools =
         showChatSessionOverflowMenu === true && projectId != null && projectId !== "" && sourceChatSessionId !== "";
@@ -85,8 +91,14 @@ export function UnitCardCompact({
                     !isDeleted && isRejected && "border-muted-foreground/40",
                     isRejected && "opacity-[0.88]",
                 )}
+                aria-busy={preparePending === true}
             >
-                <UnitCardIdRow unitId={unit.id} className="z-3" />
+                {preparePending ? (
+                    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-background/55 backdrop-blur-[1px]">
+                        <Spinner className="size-4 text-muted-foreground" />
+                    </div>
+                ) : null}
+                <UnitCardIdRow unitId={unit.id} className="z-30" />
                 <Expandable
                     className="group/expandable-read relative overflow-hidden rounded-lg p-2 pt-3 text-xs"
                     maxLines={4}
@@ -95,7 +107,7 @@ export function UnitCardCompact({
                     trigger={() => (
                         <ExpandableFullReadResponsiveControls
                             ariaLabel="Expand full explanation"
-                            onOpen={() => setModalOpen(true)}
+                            onOpen={() => (useExplanationModal ? setModalOpen(true) : onExpandFullRead())}
                             cornerTriggerClassName="rounded-lg"
                             overlayTriggerClassName="rounded-lg"
                         />
@@ -105,14 +117,16 @@ export function UnitCardCompact({
                         {explanation}
                     </div>
                 </Expandable>
-                <UnitFullExplanationModal
-                    open={modalOpen}
-                    onOpenChange={setModalOpen}
-                    explanation={explanation}
-                    isDeleted={isDeleted}
-                    isRejected={isRejected}
-                    badges={badges}
-                />
+                {useExplanationModal ? (
+                    <UnitFullExplanationModal
+                        open={modalOpen}
+                        onOpenChange={setModalOpen}
+                        explanation={explanation}
+                        isDeleted={isDeleted}
+                        isRejected={isRejected}
+                        badges={badges}
+                    />
+                ) : null}
                 <CardAction
                     className={cn(
                         "bg-muted/30 w-full flex flex-wrap items-center justify-start gap-2 border-t p-2",
