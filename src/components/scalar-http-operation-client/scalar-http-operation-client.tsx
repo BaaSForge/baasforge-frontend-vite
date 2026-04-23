@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 import "./scalar-http-operation-embed.css";
-import { useMemo } from "react";
-import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
+import { useMemo, useRef } from "react";
+import type { AnyApiReferenceConfiguration, ApiReferenceConfigurationRaw } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
 import { SCALAR_HTTP_OPERATION_WORKSPACE_SLUG, useScalarHttpOperationPreferenceStore } from "./scalar-http-operation-preference-store";
 import { resolveOperationUrl } from "./resolve-operation-url";
+import { useScalarExampleResponsesShowSchemaDefault } from "./use-scalar-example-responses-show-schema-default";
 
 export type ScalarHttpOperationClientProps = {
     className?: string;
@@ -43,6 +44,7 @@ export function ScalarHttpOperationClient({
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
     const defaultHttpClient = useScalarHttpOperationPreferenceStore((s) => s.defaultHttpClient);
+    const embedRootRef = useRef<HTMLDivElement>(null);
 
     const configuration = useMemo((): AnyApiReferenceConfiguration => {
         const { serverBaseUrl: server, path } = resolveOperationUrl(url, serverBaseUrl);
@@ -58,7 +60,7 @@ export function ScalarHttpOperationClient({
         return {
             content: spec,
             slug: SCALAR_HTTP_OPERATION_WORKSPACE_SLUG,
-            defaultHttpClient,
+            defaultHttpClient: defaultHttpClient as NonNullable<ApiReferenceConfigurationRaw["defaultHttpClient"]>,
             showSidebar: false,
             hideSearch: true,
             hideDarkModeToggle: true,
@@ -70,6 +72,7 @@ export function ScalarHttpOperationClient({
             hideModels: false,
             layout: "modern",
             showDeveloperTools: "never",
+            expandAllResponses: true,
             darkMode: resolvedAppTheme !== "light",
             fetch: scalarFetch,
         };
@@ -87,8 +90,11 @@ export function ScalarHttpOperationClient({
 
     const embedKey = `${defaultHttpClient.targetKey}\u0001${defaultHttpClient.clientKey}\u0001${url}\u0001${method}\u0001${operationSummary ?? ""}`;
 
+    useScalarExampleResponsesShowSchemaDefault(embedRootRef, embedKey);
+
     return (
         <div
+            ref={embedRootRef}
             className={cn(
                 "scalar-http-operation-client scalar-app isolate w-full overflow-hidden rounded-md",
                 className,
