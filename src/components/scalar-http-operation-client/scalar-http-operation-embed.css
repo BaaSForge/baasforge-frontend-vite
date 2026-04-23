@@ -103,6 +103,19 @@ body .scalar.scalar-app.z-overlay {
     z-index: 100;
 }
 
+/* v2 client modal always mounts operations sidebar + toggle; ignore showSidebar. */
+.scalar-http-operation-client .scalar.scalar-app.z-overlay button.scalar-sidebar-toggle,
+.scalar-http-operation-client .scalar.scalar-app.z-overlay aside.sidebar {
+    display: none !important;
+}
+
+/* Operation header: empty spacer row; hide on small screens only (Tailwind lg = 1024px). */
+@media (max-width: 1000px) {
+    .scalar-http-operation-client .t-app__top-container > div.mb-2.flex.w-1\/2.flex-row.items-center.gap-1:not(.justify-end) {
+        display: none !important;
+    }
+}
+
 body .scalar.scalar-app.z-overlay .scalar-container {
     top: var(--baal-scalar-modal-inset-top, 0px);
     right: var(--baal-scalar-modal-inset-right, 0px);
@@ -163,6 +176,12 @@ body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client main {
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1023px) {
+    body .scalar.scalar-app.z-overlay .address-bar-bg-states {
+        max-width: calc(100dvw - 68px) !important;
+    }
 }
 
 [data-unit-card-stack][data-scalar-client-modal-open] {
