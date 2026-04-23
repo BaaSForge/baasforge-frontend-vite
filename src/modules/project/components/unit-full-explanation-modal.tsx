@@ -42,7 +42,7 @@ export function UnitFullExplanationModal({
                         open={panels.explanationNote}
                         onOpenChange={(next) => setPanelOpen("explanationNote", next)}
                     >
-                        <CollapsiblePanelTitle className="w-full">Explanation note</CollapsiblePanelTitle>
+                        <CollapsiblePanelTitle>Explanation note</CollapsiblePanelTitle>
                         <CollapsibleContent className="min-h-0">
                             <div
                                 className={cn(
@@ -56,7 +56,7 @@ export function UnitFullExplanationModal({
                         </CollapsibleContent>
                     </Collapsible>
                     <Collapsible open={panels.code} onOpenChange={(next) => setPanelOpen("code", next)}>
-                        <CollapsiblePanelTitle className="w-full">Code</CollapsiblePanelTitle>
+                        <CollapsiblePanelTitle>Code</CollapsiblePanelTitle>
                         <CollapsibleContent className="min-h-0">
                             <div className={cn("pt-2", isDeleted && "line-through", isRejected && "opacity-90")}>
                                 <UnitExplanationCurrentViewer code={code} language="typescript" plainText={false} />

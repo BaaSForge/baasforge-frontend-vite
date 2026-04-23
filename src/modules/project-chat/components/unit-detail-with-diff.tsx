@@ -200,7 +200,7 @@ export function UnitDetailWithDiff({
                     open={panels.explanationNote}
                     onOpenChange={(open) => setPanelOpen("explanationNote", open)}
                 >
-                    <CollapsiblePanelTitle className="w-full">Explanation note</CollapsiblePanelTitle>
+                    <CollapsiblePanelTitle>Explanation note</CollapsiblePanelTitle>
                     <CollapsibleContent className="min-h-0">
                         <div className="pt-2">
                             {renderDiffBody(diffLayoutMode, oldUnit?.explanation ?? null, currentUnit.explanation, {
@@ -211,7 +211,7 @@ export function UnitDetailWithDiff({
                 </Collapsible>
 
                 <Collapsible open={panels.code} onOpenChange={(open) => setPanelOpen("code", open)}>
-                    <CollapsiblePanelTitle className="w-full">Code</CollapsiblePanelTitle>
+                    <CollapsiblePanelTitle>Code</CollapsiblePanelTitle>
                     <CollapsibleContent className="min-h-0">
                         <div className="pt-2">
                             {renderDiffBody(diffLayoutMode, oldUnit?.code ?? null, currentUnit.code, {

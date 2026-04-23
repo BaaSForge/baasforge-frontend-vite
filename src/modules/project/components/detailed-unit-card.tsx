@@ -150,7 +150,7 @@ export function DetailedUnitCard({
                 </div>
                 <div className="space-y-4 border-t px-3 py-3">
                     <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
-                        <CollapsiblePanelTitle className="w-full">Explanation note</CollapsiblePanelTitle>
+                        <CollapsiblePanelTitle>Explanation note</CollapsiblePanelTitle>
                         <CollapsibleContent className="min-h-0">
                             <div className={cn(isDeleted && "line-through", isRejected && "opacity-90")}>
                                 <Markdown
@@ -163,7 +163,7 @@ export function DetailedUnitCard({
                         </CollapsibleContent>
                     </Collapsible>
                     <Collapsible open={interactionOpen} onOpenChange={setInteractionOpen}>
-                        <CollapsiblePanelTitle className="w-full">Live interaction</CollapsiblePanelTitle>
+                        <CollapsiblePanelTitle>Live interaction</CollapsiblePanelTitle>
                         <CollapsibleContent className="min-h-0">
                             <div className="mt-2">
                                 {unit.unit_type === "api" ? (
