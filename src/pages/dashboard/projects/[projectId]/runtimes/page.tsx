@@ -12,6 +12,7 @@ export default function ProjectRuntimesPage() {
     }>();
 
     const projectIdOrUndefined = projectId ?? undefined;
+    const projectIdForLinks = projectId ?? "";
     const { data: runtimes, isLoading, error } = useProjectRuntimesQuery(projectIdOrUndefined);
 
     const { busyRuntimes, idleRuntimes } = useMemo(() => {
@@ -37,7 +38,7 @@ export default function ProjectRuntimesPage() {
                                 <SectionTitle>Busy runtimes</SectionTitle>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
                                     {busyRuntimes.map((runtime) => (
-                                        <RuntimeCard key={runtime.id} runtime={runtime} />
+                                        <RuntimeCard key={runtime.id} projectId={projectIdForLinks} runtime={runtime} />
                                     ))}
                                 </div>
                             </>
@@ -47,7 +48,7 @@ export default function ProjectRuntimesPage() {
                                 <SectionTitle>Idle runtimes</SectionTitle>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     {idleRuntimes.map((runtime) => (
-                                        <RuntimeCard key={runtime.id} runtime={runtime} />
+                                        <RuntimeCard key={runtime.id} projectId={projectIdForLinks} runtime={runtime} />
                                     ))}
                                 </div>
                             </>

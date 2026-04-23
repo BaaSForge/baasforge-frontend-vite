@@ -1,10 +1,15 @@
+import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ProjectRuntimeResponse } from "@/modules/project/types";
+import { PlatformEnvironmentType, type ProjectRuntimeResponse } from "@/modules/project/types";
+import { MessageSquare, Package } from "lucide-react";
+import { Link, useLocation } from "react-router";
 import { LiveBadge } from "./live-badge";
 import { PlatformEnvironmentBadge } from "./platform-environment-badge";
 
 export interface RuntimeCardProps {
+    projectId: string;
     runtime: ProjectRuntimeResponse;
 }
 
@@ -18,9 +23,12 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     );
 }
 
-export function RuntimeCard({ runtime }: RuntimeCardProps) {
+export function RuntimeCard({ projectId, runtime }: RuntimeCardProps) {
+    const location = useLocation();
     const revision = runtime.live_release?.revision;
     const hasLiveRelease = runtime.live_release != null;
+    const chatSessionId = runtime.live_release?.chat_session_id?.trim() ?? "";
+    const hasIntroChat = chatSessionId !== "";
     const liveBadge = (
         <LiveBadge
             isOn={hasLiveRelease}
@@ -39,6 +47,50 @@ export function RuntimeCard({ runtime }: RuntimeCardProps) {
             <CardContent className="py-4 px-4 space-y-3">
                 <InfoRow label="Live release revision" value={liveBadge} />
                 <InfoRow label="Environment" value={<PlatformEnvironmentBadge environment={runtime.environment} />} />
+                <InfoRow
+                    label="Runtime id"
+                    value={
+                        <div className="min-w-0 max-w-full shrink">
+                            <CopyableEntityIdBadge
+                                id={runtime.id}
+                                className="relative max-w-full min-w-0 self-start justify-start"
+                            />
+                        </div>
+                    }
+                />
+                <InfoRow
+                    label="Release intro chat"
+                    value={
+                        hasIntroChat ? (
+                            <Button asChild variant="outline" size="xs" className="min-w-0 max-w-full shrink">
+                                <Link
+                                    to={`/dashboard/projects/${projectId}/conversations/${chatSessionId}${location.search}`}
+                                    className="min-w-0"
+                                >
+                                    <MessageSquare className="size-3.5 shrink-0" aria-hidden />
+                                    <span className="truncate">Open chat</span>
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button type="button" size="xs" variant="outline" disabled>
+                                No session
+                            </Button>
+                        )
+                    }
+                />
+                {runtime.environment === PlatformEnvironmentType.prod ? (
+                    <InfoRow
+                        label="Units & releases"
+                        value={
+                            <Button asChild variant="outline" size="xs" className="min-w-0 max-w-full shrink">
+                                <Link to={`/dashboard/projects/${projectId}/units-releases`} className="min-w-0">
+                                    <Package className="size-3.5 shrink-0" aria-hidden />
+                                    <span className="truncate">Open</span>
+                                </Link>
+                            </Button>
+                        }
+                    />
+                ) : null}
             </CardContent>
         </Card>
     );
