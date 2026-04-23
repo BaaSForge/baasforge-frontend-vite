@@ -11,6 +11,8 @@ import { MessageSquare, MoreVertical } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router";
 
+import { cn } from "@/lib/utils";
+
 export type UnitCardToolsDropdownProps = {
     projectId: string;
     /** Trimmed `ProjectUnitResponse.chat_session_id`. */
@@ -19,6 +21,7 @@ export type UnitCardToolsDropdownProps = {
     enabled?: boolean;
     /** Shown after the chat link when present; can be the only items when `sourceChatSessionId` is empty. */
     extraMenuItems?: ReactNode;
+    triggerClassName?: string;
 };
 
 /** ⋮ menu for unit cards with a link to the chat session that created the unit. */
@@ -27,6 +30,7 @@ export function UnitCardToolsDropdown({
     sourceChatSessionId,
     enabled = true,
     extraMenuItems,
+    triggerClassName,
 }: UnitCardToolsDropdownProps) {
     const location = useLocation();
     const hasChatLink = sourceChatSessionId !== "";
@@ -45,7 +49,7 @@ export function UnitCardToolsDropdown({
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    className="text-muted-foreground shrink-0"
+                    className={cn("text-muted-foreground shrink-0", triggerClassName)}
                     aria-label="Unit actions"
                     onClick={(e) => e.stopPropagation()}
                 >

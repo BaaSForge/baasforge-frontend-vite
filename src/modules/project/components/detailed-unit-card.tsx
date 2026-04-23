@@ -59,6 +59,9 @@ export function DetailedUnitCard({
     const showHeaderMenu =
         showChatSessionOverflowMenu === true && projectId != null && projectId !== "";
 
+    const headerActionIconButtonClassName =
+        "bg-muted/45 hover:bg-muted/65 dark:bg-muted/35 dark:hover:bg-muted/55";
+
     const badges = (
         <>
             <UnitRevisionBadge
@@ -114,7 +117,7 @@ export function DetailedUnitCard({
                             type="button"
                             variant="ghost"
                             size="icon-xs"
-                            className="text-muted-foreground shrink-0"
+                            className={cn("text-muted-foreground shrink-0", headerActionIconButtonClassName)}
                             aria-label="Full explanation"
                             disabled={preparePending === true}
                             onClick={(e) => {
@@ -128,6 +131,7 @@ export function DetailedUnitCard({
                             <UnitCardToolsDropdown
                                 projectId={projectId}
                                 sourceChatSessionId={sourceChatSessionId}
+                                triggerClassName={headerActionIconButtonClassName}
                                 extraMenuItems={
                                     sourceChatSessionId === "" ? (
                                         <DropdownMenuItem
