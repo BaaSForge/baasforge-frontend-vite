@@ -1,0 +1,174 @@
+"use client";
+
+import { Markdown } from "@/components/markdown";
+import { LiveBadge } from "@/components/live-badge";
+import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { CollapsiblePanelTitle } from "@/components/ui/collapsible-panel-title";
+import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
+import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
+import { Maximize2 } from "lucide-react";
+import { useState } from "react";
+import type { ProjectUnitResponse } from "../types";
+import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
+import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
+import { UnitRejectedBadge } from "./unit-rejected-badge";
+import { UnitRevisionBadge } from "./unit-revision-badge";
+import { UnitTypeBadge } from "./unit-type-badge";
+
+export type DetailedUnitCardProps = {
+    unit: ProjectUnitResponse;
+    projectId?: string;
+    chatSessionId?: string;
+    className?: string;
+    unitRefreshPending?: boolean;
+    showChatSessionOverflowMenu?: boolean;
+    showDraftPublishedBadge?: boolean;
+    preparePending?: boolean;
+};
+
+export function DetailedUnitCard({
+    unit,
+    projectId,
+    chatSessionId,
+    className,
+    unitRefreshPending,
+    showChatSessionOverflowMenu,
+    showDraftPublishedBadge = true,
+    preparePending,
+}: DetailedUnitCardProps) {
+    const hasParent = unit.revision > 1;
+    const isDeleted = unit.is_deleted === true;
+    const isRejected = unit.is_rejected === true;
+    const trimmedExplanation = unit.explanation?.trim() ?? "";
+    const explanationMarkdown = trimmedExplanation.length > 0 ? trimmedExplanation : "No description";
+    const [modalOpen, setModalOpen] = useState(false);
+    const [explanationOpen, setExplanationOpen] = useState(true);
+    const [interactionOpen, setInteractionOpen] = useState(false);
+    const sourceChatSessionId = unit.chat_session_id?.trim() ?? "";
+    const showHeaderMenu =
+        showChatSessionOverflowMenu === true && projectId != null && projectId !== "";
+
+    const badges = (
+        <>
+            <UnitRevisionBadge
+                unit={unit}
+                projectId={projectId}
+                chatSessionId={chatSessionId}
+                refreshPending={unitRefreshPending}
+            />
+            <UnitTypeBadge unitType={unit.unit_type} />
+            {isRejected ? <UnitRejectedBadge /> : null}
+            {showDraftPublishedBadge ? (
+                <LiveBadge
+                    isOn={unit.is_draft === false}
+                    offLabel="Not shipped"
+                    offTitle="Not shipped"
+                    onLabel="Live"
+                    onTitle="Live"
+                />
+            ) : null}
+        </>
+    );
+
+    return (
+        <div className={cn("relative w-full min-w-0", className)}>
+            {hasParent && (
+                <Card
+                    className="pointer-events-none absolute top-1.5 left-1.5 right-0 bottom-0 z-0 rounded-lg border bg-card p-0 shadow-none"
+                    aria-hidden
+                />
+            )}
+            <Card
+                className={cn(
+                    "relative z-[1] gap-0 overflow-hidden rounded-lg border p-0 shadow-none",
+                    hasParent && "mb-1.5 mr-1.5",
+                    isDeleted && "border-destructive",
+                    !isDeleted && isRejected && "border-muted-foreground/40",
+                    isRejected && "opacity-[0.88]",
+                )}
+                aria-busy={preparePending === true}
+            >
+                {preparePending ? (
+                    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-lg bg-background/55 backdrop-blur-[1px]">
+                        <Spinner className="size-4 text-muted-foreground" />
+                    </div>
+                ) : null}
+                <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        <CopyableEntityIdBadge id={unit.id} className="max-w-full self-start" />
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">{badges}</div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-0.5 self-end sm:self-auto">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            className="text-muted-foreground shrink-0"
+                            aria-label="Full explanation"
+                            disabled={preparePending === true}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setModalOpen(true);
+                            }}
+                        >
+                            <Maximize2 className="size-3" aria-hidden />
+                        </Button>
+                        {showHeaderMenu ? (
+                            <UnitCardToolsDropdown
+                                projectId={projectId}
+                                sourceChatSessionId={sourceChatSessionId}
+                                extraMenuItems={
+                                    sourceChatSessionId === "" ? (
+                                        <DropdownMenuItem
+                                            className="flex items-center gap-2 py-1.5 text-xs"
+                                            disabled={preparePending === true}
+                                            onClick={() => setModalOpen(true)}
+                                        >
+                                            <Maximize2 className="text-muted-foreground size-3 shrink-0" aria-hidden />
+                                            Full explanation
+                                        </DropdownMenuItem>
+                                    ) : undefined
+                                }
+                            />
+                        ) : null}
+                    </div>
+                </div>
+                <div className="space-y-4 border-t px-3 py-3">
+                    <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
+                        <CollapsiblePanelTitle className="w-full">Explanation note</CollapsiblePanelTitle>
+                        <CollapsibleContent className="min-h-0">
+                            <div className={cn(isDeleted && "line-through", isRejected && "opacity-90")}>
+                                <Markdown
+                                    key={unit.id}
+                                    className={cn("prose prose-sm dark:prose-invert max-w-none pt-2")}
+                                >
+                                    {explanationMarkdown}
+                                </Markdown>
+                            </div>
+                        </CollapsibleContent>
+                    </Collapsible>
+                    <Collapsible open={interactionOpen} onOpenChange={setInteractionOpen}>
+                        <CollapsiblePanelTitle className="w-full">Live interaction</CollapsiblePanelTitle>
+                        <CollapsibleContent className="min-h-0">
+                            <div className="bg-muted/20 border-border mt-2 min-h-[7.5rem] rounded-lg border" />
+                        </CollapsibleContent>
+                    </Collapsible>
+                </div>
+                <UnitFullExplanationModal
+                    open={modalOpen}
+                    onOpenChange={setModalOpen}
+                    explanation={explanationMarkdown}
+                    code={unit.code}
+                    isDeleted={isDeleted}
+                    isRejected={isRejected}
+                    badges={badges}
+                    persistDetailPanels={false}
+                />
+            </Card>
+        </div>
+    );
+}

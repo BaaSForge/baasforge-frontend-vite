@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { UNIT_TYPE_ICONS } from "@/modules/project/components/unit-type-badge";
-import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
+import { DetailedUnitCard } from "@/modules/project/components/detailed-unit-card";
 import {
     useProjectModulesByContextsQuery,
     useProjectReleaseContextsQuery,
@@ -65,9 +65,9 @@ function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: P
             {sortedTypes.map((unitType) => (
                 <div key={unitType}>
                     <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div className="flex flex-col gap-4">
                         {grouped.get(unitType)?.map((unit) => (
-                            <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
+                            <DetailedUnitCard key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
                         ))}
                     </div>
                 </div>
@@ -364,9 +364,9 @@ export function AllUnitsTab({ projectId, releaseId }: { projectId: string; relea
                     No units match the current filters for this page.
                 </div>
             ) : groupMode === "ungrouped" ? (
-                <div className={cn("grid grid-cols-1 gap-4 lg:grid-cols-2", isFetching && "opacity-70")}>
+                <div className={cn("flex flex-col gap-4", isFetching && "opacity-70")}>
                     {units.map((unit) => (
-                        <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
+                        <DetailedUnitCard key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
                     ))}
                 </div>
             ) : (
