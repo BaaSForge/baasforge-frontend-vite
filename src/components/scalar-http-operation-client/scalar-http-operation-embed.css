@@ -98,3 +98,35 @@ html.dark-midnight .scalar-http-operation-client.scalar-app {
 .scalar-http-operation-client [class*="introduction-card"] {
     display: none !important;
 }
+
+body .scalar.scalar-app.z-overlay {
+    z-index: 100;
+}
+
+body .scalar.scalar-app.z-overlay .scalar-container {
+    top: var(--baal-scalar-modal-inset-top, 0px);
+    right: var(--baal-scalar-modal-inset-right, 0px);
+    bottom: 0;
+    left: var(--baal-scalar-modal-inset-left, 0px);
+    width: auto;
+    height: auto;
+}
+
+body .scalar.scalar-app.z-overlay .scalar-app-exit {
+    top: var(--baal-scalar-modal-inset-top, 0px);
+    right: var(--baal-scalar-modal-inset-right, 0px);
+    bottom: 0;
+    left: var(--baal-scalar-modal-inset-left, 0px);
+    width: auto !important;
+    height: auto !important;
+}
+
+body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client {
+    max-width: min(1100px, calc(100vw - var(--baal-scalar-modal-inset-left, 0px) - var(--baal-scalar-modal-inset-right, 0px) - 32px));
+    max-height: min(85svh, calc(100dvh - var(--baal-scalar-modal-inset-top, 0px) - 32px));
+    height: auto;
+}
+
+[data-unit-card-stack][data-scalar-client-modal-open] {
+    z-index: 200;
+}

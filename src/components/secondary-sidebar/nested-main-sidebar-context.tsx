@@ -5,6 +5,10 @@ type MainSidebar = ReturnType<typeof useSidebar>;
 
 const NestedMainSidebarContext = createContext<MainSidebar | null>(null);
 
+export function useOptionalNestedMainSidebar(): MainSidebar | null {
+    return useContext(NestedMainSidebarContext);
+}
+
 /**
  * Routes that wrap content in `SecondarySidebarProvider` add a nested `SidebarProvider`.
  * The inner `useSidebar()` only reflects the secondary (e.g. right) sidebar. Pass the

@@ -85,7 +85,7 @@ export function DetailedUnitCard({
     );
 
     return (
-        <div className={cn("relative w-full min-w-0", className)}>
+        <div className={cn("relative w-full min-w-0", className)} data-unit-card-stack>
             {hasParent && (
                 <Card
                     className="pointer-events-none absolute top-1.5 left-1.5 right-0 bottom-0 z-0 rounded-lg border bg-card p-0 shadow-none"

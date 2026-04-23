@@ -11,6 +11,8 @@ import { buildOpenApiDocument } from "./build-openapi-document";
 import { SCALAR_HTTP_OPERATION_WORKSPACE_SLUG, useScalarHttpOperationPreferenceStore } from "./scalar-http-operation-preference-store";
 import { resolveOperationUrl } from "./resolve-operation-url";
 import { useScalarExampleResponsesShowSchemaDefault } from "./use-scalar-example-responses-show-schema-default";
+import { useScalarClientModalHostStack } from "./use-scalar-client-modal-host-stack";
+import { useScalarModalLayoutCssVars } from "./use-scalar-modal-layout-css-vars";
 
 export type ScalarHttpOperationClientProps = {
     className?: string;
@@ -91,6 +93,8 @@ export function ScalarHttpOperationClient({
     const embedKey = `${defaultHttpClient.targetKey}\u0001${defaultHttpClient.clientKey}\u0001${url}\u0001${method}\u0001${operationSummary ?? ""}`;
 
     useScalarExampleResponsesShowSchemaDefault(embedRootRef, embedKey);
+    useScalarModalLayoutCssVars();
+    useScalarClientModalHostStack(embedRootRef);
 
     return (
         <div
