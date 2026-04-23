@@ -23,6 +23,9 @@ const INLINE_LINE_NUMBER_COL_PX = 40;
 const INLINE_MARKER_COL_PX = 28;
 const INLINE_FOLD_MSG_STICKY_LEFT_PX = INLINE_LINE_NUMBER_COL_PX * 2 + INLINE_MARKER_COL_PX;
 
+const PLAIN_EXPLANATION_DIFF_FONT_SIZE = "1rem";
+const PLAIN_EXPLANATION_DIFF_LINE_HEIGHT = "1.625";
+
 const INLINE_DIFF_STICKY_GUTTERS =
     "[&_tbody>tr:not([role=button])>td:nth-child(1)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(1)]:left-0 [&_tbody>tr:not([role=button])>td:nth-child(1)]:z-[1] [&_tbody>tr:not([role=button])>td:nth-child(1)]:shadow-[1px_0_0_0_var(--border)] " +
     "[&_tbody>tr:not([role=button])>td:nth-child(2)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(2)]:left-[40px] [&_tbody>tr:not([role=button])>td:nth-child(2)]:z-[2] [&_tbody>tr:not([role=button])>td:nth-child(2)]:translate-x-[-1px] [&_tbody>tr:not([role=button])>td:nth-child(2)]:shadow-[1px_0_0_0_var(--border)] " +
@@ -122,17 +125,24 @@ function SplitFoldRow({
     leftLine,
     rightLine,
     onToggle,
+    plainText,
 }: {
     foldedLines: number;
     leftLine: number;
     rightLine: number;
     onToggle: () => void;
+    plainText?: boolean;
 }) {
     const msg = `@@ -${leftLine - foldedLines},${foldedLines} +${rightLine - foldedLines},${foldedLines} @@`;
     return (
         <button
             type="button"
-            className="group grid w-full cursor-pointer grid-cols-[50px_28px_max-content] border-0 bg-transparent p-0 text-left font-mono text-[0.8125rem] leading-[1.5] text-[var(--diff-code-fold-fg)] [contain:paint]"
+            className={cn(
+                "group grid w-full cursor-pointer grid-cols-[50px_28px_max-content] border-0 bg-transparent p-0 text-left text-[var(--diff-code-fold-fg)] [contain:paint]",
+                plainText
+                    ? "font-sans text-base leading-relaxed"
+                    : "font-mono text-[0.8125rem] leading-[1.5]",
+            )}
             style={{ backgroundColor: "var(--diff-code-fold-bg)" }}
             onClick={onToggle}
         >
@@ -232,13 +242,18 @@ function renderDiffFragments(
 function SplitDiffLineRow({
     side,
     renderContent,
+    plainText,
 }: {
     side: DiffInformation;
     renderContent: (source: string) => ReactElement;
+    plainText?: boolean;
 }) {
     return (
         <div
-            className="grid w-full grid-cols-[50px_28px_max-content] font-mono text-[0.8125rem] leading-[1.5] text-[var(--diff-viewer-fg)] [contain:paint]"
+            className={cn(
+                "grid w-full grid-cols-[50px_28px_max-content] text-[var(--diff-viewer-fg)] [contain:paint]",
+                plainText ? "font-sans text-base leading-relaxed" : "font-mono text-[0.8125rem] leading-[1.5]",
+            )}
             style={{ backgroundColor: sideLineBackground(side) }}
         >
             <pre
@@ -279,6 +294,7 @@ function UnitExplanationSplitDiff({
     renderContent,
     leftTitle,
     rightTitle,
+    plainText,
 }: {
     lineInformation: LineInformation[];
     lineBlocks: Record<number, number>;
@@ -286,6 +302,7 @@ function UnitExplanationSplitDiff({
     renderContent: (source: string) => ReactElement;
     leftTitle: string;
     rightTitle: string;
+    plainText?: boolean;
 }) {
     const [expandedBlocks, setExpandedBlocks] = useState<number[]>([]);
 
@@ -363,6 +380,7 @@ function UnitExplanationSplitDiff({
                                         leftLine={leftLn}
                                         rightLine={rightLn}
                                         onToggle={() => toggleBlock(row.blockIndex)}
+                                        plainText={plainText}
                                     />
                                 </div>
                             );
@@ -370,7 +388,11 @@ function UnitExplanationSplitDiff({
                         const line = lineInformation[row.lineIndex];
                         return (
                             <div key={`L-${row.lineIndex}`} className="w-max min-w-full" style={{ gridRow }}>
-                                <SplitDiffLineRow side={line.left ?? {}} renderContent={renderContent} />
+                                <SplitDiffLineRow
+                                    side={line.left ?? {}}
+                                    renderContent={renderContent}
+                                    plainText={plainText}
+                                />
                             </div>
                         );
                     })}
@@ -400,6 +422,7 @@ function UnitExplanationSplitDiff({
                                         leftLine={leftLn}
                                         rightLine={rightLn}
                                         onToggle={() => toggleBlock(row.blockIndex)}
+                                        plainText={plainText}
                                     />
                                 </div>
                             );
@@ -407,7 +430,11 @@ function UnitExplanationSplitDiff({
                         const line = lineInformation[row.lineIndex];
                         return (
                             <div key={`R-${row.lineIndex}`} className="w-max min-w-full" style={{ gridRow }}>
-                                <SplitDiffLineRow side={line.right ?? {}} renderContent={renderContent} />
+                                <SplitDiffLineRow
+                                    side={line.right ?? {}}
+                                    renderContent={renderContent}
+                                    plainText={plainText}
+                                />
                             </div>
                         );
                     })}
@@ -422,6 +449,8 @@ export type UnitExplanationDiffViewerProps = {
     afterExplanation: string | null;
     splitView: boolean;
     className?: string;
+    syntaxLanguage?: string;
+    plainText?: boolean;
 };
 
 export function UnitExplanationDiffViewer({
@@ -429,6 +458,8 @@ export function UnitExplanationDiffViewer({
     afterExplanation,
     splitView,
     className,
+    syntaxLanguage = "typescript",
+    plainText = false,
 }: UnitExplanationDiffViewerProps) {
     const resolved = useResolvedTheme();
     const useDarkTheme = resolved === "dark";
@@ -436,9 +467,22 @@ export function UnitExplanationDiffViewer({
     const oldValue = useMemo(() => explanationToDiffText(beforeExplanation), [beforeExplanation]);
     const newValue = useMemo(() => explanationToDiffText(afterExplanation), [afterExplanation]);
 
-    const renderContent = useCallback((source: string): ReactElement => {
-        return <AppSyntaxHighlighter variant="diffLine" code={source ?? ""} language="typescript" />;
-    }, []);
+    const renderContent = useCallback(
+        (source: string): ReactElement => {
+            if (plainText) {
+                return (
+                    <span
+                        className="block font-sans text-base leading-relaxed text-[var(--diff-viewer-fg)]"
+                        style={{ whiteSpace: "pre" }}
+                    >
+                        {source === "" ? "\u00a0" : source}
+                    </span>
+                );
+            }
+            return <AppSyntaxHighlighter variant="diffLine" code={source ?? ""} language={syntaxLanguage} />;
+        },
+        [plainText, syntaxLanguage],
+    );
 
     const splitDiffData = useMemo(() => {
         if (!splitView) return null;
@@ -476,10 +520,19 @@ export function UnitExplanationDiffViewer({
             },
             content: {
                 overflow: "visible",
-                fontFamily:
-                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                fontSize: "0.8125rem",
-                lineHeight: "1.5",
+                ...(plainText
+                    ? {
+                          fontFamily:
+                              'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+                          fontSize: PLAIN_EXPLANATION_DIFF_FONT_SIZE,
+                          lineHeight: PLAIN_EXPLANATION_DIFF_LINE_HEIGHT,
+                      }
+                    : {
+                          fontFamily:
+                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                          fontSize: "0.8125rem",
+                          lineHeight: "1.5",
+                      }),
             },
             contentText: {
                 whiteSpace: "pre",
@@ -558,7 +611,7 @@ export function UnitExplanationDiffViewer({
                 },
             },
             }) as ReactDiffViewerStylesOverride,
-        [],
+        [plainText],
     );
 
     if (splitView && splitDiffData) {
@@ -572,6 +625,7 @@ export function UnitExplanationDiffViewer({
                     renderContent={renderContent}
                     leftTitle={UNIT_EXPLANATION_DIFF_LEFT_TITLE}
                     rightTitle={UNIT_EXPLANATION_DIFF_RIGHT_TITLE}
+                    plainText={plainText}
                 />
             </div>
         );

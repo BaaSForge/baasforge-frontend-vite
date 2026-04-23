@@ -6,9 +6,16 @@ import { cn } from "@/lib/utils";
 export type UnitExplanationCurrentViewerProps = {
     code: string | null;
     className?: string;
+    language?: string;
+    plainText?: boolean;
 };
 
-export function UnitExplanationCurrentViewer({ code, className }: UnitExplanationCurrentViewerProps) {
+export function UnitExplanationCurrentViewer({
+    code,
+    className,
+    language = "typescript",
+    plainText = false,
+}: UnitExplanationCurrentViewerProps) {
     const text = code?.trim() ?? "";
 
     return (
@@ -18,7 +25,11 @@ export function UnitExplanationCurrentViewer({ code, className }: UnitExplanatio
                 className,
             )}
         >
-            <AppSyntaxHighlighter variant="markdownBlock" code={text} language="typescript" />
+            {plainText ? (
+                <div className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">{text || "\u00a0"}</div>
+            ) : (
+                <AppSyntaxHighlighter variant="markdownBlock" code={text} language={language} />
+            )}
         </div>
     );
 }
