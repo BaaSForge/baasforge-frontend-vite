@@ -58,7 +58,9 @@ export function Markdown({ children, className, theme: themeProp, embeddedOnInve
                             "overflow-x-auto rounded-md p-2 sm:p-3",
                             themeProp != null && embeddedOnInverse && resolvedAppTheme === "dark-midnight"
                                 ? "bg-secondary"
-                                : "bg-muted",
+                                : themeProp != null && embeddedOnInverse && resolvedAppTheme === "dark-default"
+                                  ? "bg-[color-mix(in_oklch,var(--muted),oklch(1_0_0)_4%)]"
+                                  : "bg-muted",
                         )}
                     >
                         <AppSyntaxHighlighter

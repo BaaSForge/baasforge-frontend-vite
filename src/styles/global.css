@@ -185,11 +185,11 @@ input[type="search"]::-webkit-search-cancel-button {
     --primary-foreground: oklch(0.2 0.015 260);
     --inverse: oklch(0.20 0.012 260);
     --inverse-foreground: oklch(0.86 0.014 260);
-    --secondary: oklch(0.269 0 0);
+    --secondary: oklch(0.20 0 0);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
+    --muted: oklch(0.20 0 0);
+    --muted-foreground: oklch(0.62 0 0);
+    --accent: oklch(0.20 0 0);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 6%);
