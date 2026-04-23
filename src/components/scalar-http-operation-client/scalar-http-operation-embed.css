@@ -178,6 +178,11 @@ body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client main {
     -webkit-overflow-scrolling: touch;
 }
 
+.scalar-app .request-response-header {
+    z-index: 1;
+    background-color: var(--card);
+}
+
 @media (max-width: 1023px) {
     body .scalar.scalar-app.z-overlay .address-bar-bg-states {
         max-width: calc(100dvw - 68px) !important;
