@@ -6,9 +6,8 @@ import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 import "./scalar-http-operation-embed.css";
 import { useMemo, useRef } from "react";
-import type { AnyApiReferenceConfiguration, ApiReferenceConfigurationRaw } from "@scalar/types/api-reference";
+import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
-import { SCALAR_HTTP_OPERATION_WORKSPACE_SLUG, useScalarHttpOperationPreferenceStore } from "./scalar-http-operation-preference-store";
 import { resolveOperationUrl } from "./resolve-operation-url";
 import { useScalarExampleResponsesShowSchemaDefault } from "./use-scalar-example-responses-show-schema-default";
 import { useScalarClientModalHostStack } from "./use-scalar-client-modal-host-stack";
@@ -34,6 +33,8 @@ const scalarFetch: typeof fetch = (input, init) =>
         credentials: "include",
     });
 
+export const SCALAR_HTTP_OPERATION_WORKSPACE_SLUG = "baal-scalar-http-operation-embed-v1";
+
 export function ScalarHttpOperationClient({
     className,
     url,
@@ -45,7 +46,6 @@ export function ScalarHttpOperationClient({
     operationSummary,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
-    const defaultHttpClient = useScalarHttpOperationPreferenceStore((s) => s.defaultHttpClient);
     const embedRootRef = useRef<HTMLDivElement>(null);
 
     const configuration = useMemo((): AnyApiReferenceConfiguration => {
@@ -62,11 +62,10 @@ export function ScalarHttpOperationClient({
         return {
             content: spec,
             slug: SCALAR_HTTP_OPERATION_WORKSPACE_SLUG,
-            defaultHttpClient: defaultHttpClient as NonNullable<ApiReferenceConfigurationRaw["defaultHttpClient"]>,
             showSidebar: false,
             hideSearch: true,
             hideDarkModeToggle: true,
-            showOperationId: true,
+            showOperationId: false,
             agent: { disabled: true },
             hideDownloadButton: true,
             hideClientButton: true,
@@ -87,10 +86,9 @@ export function ScalarHttpOperationClient({
         responseTypescript,
         operationSummary,
         resolvedAppTheme,
-        defaultHttpClient,
     ]);
 
-    const embedKey = `${defaultHttpClient.targetKey}\u0001${defaultHttpClient.clientKey}\u0001${url}\u0001${method}\u0001${operationSummary ?? ""}`;
+    const embedKey = `${url}\u0001${method}\u0001${operationSummary ?? ""}`;
 
     useScalarExampleResponsesShowSchemaDefault(embedRootRef, embedKey);
     useScalarModalLayoutCssVars();
