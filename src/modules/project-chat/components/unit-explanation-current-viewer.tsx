@@ -26,7 +26,7 @@ export function UnitExplanationCurrentViewer({
             )}
         >
             {plainText ? (
-                <div className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground">{text || "\u00a0"}</div>
+                <div className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{text || "\u00a0"}</div>
             ) : (
                 <AppSyntaxHighlighter variant="markdownBlock" code={text} language={language} />
             )}

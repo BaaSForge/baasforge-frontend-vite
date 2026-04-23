@@ -24,6 +24,11 @@ import { UnitCardChip } from "@/modules/project";
 import { invalidateDueToRejectOrEdit } from "@/modules/project/invalidate-project-queries";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { postRejectControllerBoxReject } from "@/modules/project/api";
+import {
+    ChatSessionViewChangesModal,
+    postChatSessionUnitPreviousByFullIds,
+    type ChatSessionUnitChangePair,
+} from "@/modules/project-chat";
 import type { RejectControllerBoxPayload } from "@/modules/project-chat/payloads";
 import { ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { useConversationSessionMessages } from "../conversation-session-messages-context";
@@ -34,6 +39,17 @@ function getRejectControllerBoxPayload(message: ChatMessageWithDeliveryStatus): 
     const p = message.payload as RejectControllerBoxPayload | undefined | null;
     if (p == null || typeof p !== "object") return {};
     return p;
+}
+
+function rejectControllerUnitChangePairs(
+    afterUnits: ProjectUnitResponse[],
+    beforeUnits: (ProjectUnitResponse | null)[],
+): ChatSessionUnitChangePair[] {
+    const pairs: ChatSessionUnitChangePair[] = [];
+    for (let i = 0; i < afterUnits.length; i++) {
+        pairs.push({ beforeUnit: beforeUnits[i] ?? null, afterUnit: afterUnits[i]! });
+    }
+    return pairs;
 }
 
 function readUnitChanges(payload: RejectControllerBoxPayload): ProjectUnitResponse[] {
@@ -82,6 +98,32 @@ export function RejectControllerBoxMessage({
     const unitChanges = useMemo(() => readUnitChanges(payload), [payload]);
 
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [viewChangesOpen, setViewChangesOpen] = useState(false);
+    const [viewChangesPairs, setViewChangesPairs] = useState<ChatSessionUnitChangePair[]>([]);
+    const [viewChangesActiveUnitId, setViewChangesActiveUnitId] = useState<string | undefined>(undefined);
+    const [preparingViewChanges, setPreparingViewChanges] = useState(false);
+
+    const rejectDiffEligible = projectId != null && chatSessionId != null && unitChanges.length > 0;
+
+    const openRejectUnitDiff = useCallback(
+        async (clickedUnitId: string) => {
+            if (projectId == null || chatSessionId == null) return;
+            const unitIds = unitChanges.map((u) => u.id);
+            if (unitIds.length === 0) return;
+            setPreparingViewChanges(true);
+            try {
+                const { units } = await postChatSessionUnitPreviousByFullIds(projectId, chatSessionId, unitIds);
+                setViewChangesPairs(rejectControllerUnitChangePairs(unitChanges, units));
+                setViewChangesActiveUnitId(clickedUnitId);
+                setViewChangesOpen(true);
+            } catch {
+                toast.error("Could not load previous unit versions.");
+            } finally {
+                setPreparingViewChanges(false);
+            }
+        },
+        [projectId, chatSessionId, unitChanges],
+    );
 
     const queryClient = useQueryClient();
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
@@ -123,6 +165,11 @@ export function RejectControllerBoxMessage({
                             projectId={projectId}
                             chatSessionId={chatSessionId}
                             className="w-[11rem] shrink-0"
+                            onExpandOverride={
+                                rejectDiffEligible ? () => void openRejectUnitDiff(unit.id) : undefined
+                            }
+                            expandDisabled={rejectDiffEligible && preparingViewChanges}
+                            expandAriaLabel="View changes vs previous revision"
                         />
                     ))}
                 </div>
@@ -204,6 +251,13 @@ export function RejectControllerBoxMessage({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <ChatSessionViewChangesModal
+                open={viewChangesOpen}
+                onOpenChange={setViewChangesOpen}
+                unitsChanged={viewChangesPairs}
+                activeUnitId={viewChangesActiveUnitId}
+            />
 
             {nestedMessages}
         </>

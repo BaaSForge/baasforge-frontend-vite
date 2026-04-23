@@ -30,6 +30,7 @@ export interface UnitCardCompactProps {
     showDraftPublishedBadge?: boolean;
     onExpandFullRead?: () => void;
     preparePending?: boolean;
+    expandAriaLabel?: string;
 }
 
 export function UnitCardCompact({
@@ -42,6 +43,7 @@ export function UnitCardCompact({
     showDraftPublishedBadge = true,
     onExpandFullRead,
     preparePending,
+    expandAriaLabel,
 }: UnitCardCompactProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
@@ -106,10 +108,11 @@ export function UnitCardCompact({
                     bottomEdgeFadeFromClassName="from-card"
                     trigger={() => (
                         <ExpandableFullReadResponsiveControls
-                            ariaLabel="Expand full explanation"
+                            ariaLabel={expandAriaLabel ?? "Expand full explanation"}
                             onOpen={() => (useExplanationModal ? setModalOpen(true) : onExpandFullRead())}
                             cornerTriggerClassName="rounded-lg"
                             overlayTriggerClassName="rounded-lg"
+                            disabled={preparePending === true}
                         />
                     )}
                 >

@@ -23,8 +23,8 @@ const INLINE_LINE_NUMBER_COL_PX = 40;
 const INLINE_MARKER_COL_PX = 28;
 const INLINE_FOLD_MSG_STICKY_LEFT_PX = INLINE_LINE_NUMBER_COL_PX * 2 + INLINE_MARKER_COL_PX;
 
-const PLAIN_EXPLANATION_DIFF_FONT_SIZE = "1rem";
-const PLAIN_EXPLANATION_DIFF_LINE_HEIGHT = "1.625";
+const PLAIN_EXPLANATION_DIFF_FONT_SIZE = "0.875rem";
+const PLAIN_EXPLANATION_DIFF_LINE_HEIGHT = "1.5";
 
 const INLINE_DIFF_STICKY_GUTTERS =
     "[&_tbody>tr:not([role=button])>td:nth-child(1)]:sticky [&_tbody>tr:not([role=button])>td:nth-child(1)]:left-0 [&_tbody>tr:not([role=button])>td:nth-child(1)]:z-[1] [&_tbody>tr:not([role=button])>td:nth-child(1)]:shadow-[1px_0_0_0_var(--border)] " +
@@ -140,7 +140,7 @@ function SplitFoldRow({
             className={cn(
                 "group grid w-full cursor-pointer grid-cols-[50px_28px_max-content] border-0 bg-transparent p-0 text-left text-[var(--diff-code-fold-fg)] [contain:paint]",
                 plainText
-                    ? "font-sans text-base leading-relaxed"
+                    ? "font-sans text-sm leading-relaxed"
                     : "font-mono text-[0.8125rem] leading-[1.5]",
             )}
             style={{ backgroundColor: "var(--diff-code-fold-bg)" }}
@@ -252,7 +252,7 @@ function SplitDiffLineRow({
         <div
             className={cn(
                 "grid w-full grid-cols-[50px_28px_max-content] text-[var(--diff-viewer-fg)] [contain:paint]",
-                plainText ? "font-sans text-base leading-relaxed" : "font-mono text-[0.8125rem] leading-[1.5]",
+                plainText ? "font-sans text-sm leading-relaxed" : "font-mono text-[0.8125rem] leading-[1.5]",
             )}
             style={{ backgroundColor: sideLineBackground(side) }}
         >
@@ -472,7 +472,7 @@ export function UnitExplanationDiffViewer({
             if (plainText) {
                 return (
                     <span
-                        className="block font-sans text-base leading-relaxed text-[var(--diff-viewer-fg)]"
+                        className="block font-sans text-sm leading-relaxed text-[var(--diff-viewer-fg)]"
                         style={{ whiteSpace: "pre" }}
                     >
                         {source === "" ? "\u00a0" : source}

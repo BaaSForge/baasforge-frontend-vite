@@ -10,6 +10,7 @@ export type ExpandableFullReadTriggerProps = {
     children?: React.ReactNode;
     className?: string;
     variant?: "overlay" | "corner-icon";
+    disabled?: boolean;
 };
 
 /**
@@ -22,6 +23,7 @@ export function ExpandableFullReadTrigger({
     children,
     className,
     variant = "overlay",
+    disabled = false,
 }: ExpandableFullReadTriggerProps) {
     const corner = variant === "corner-icon";
 
@@ -29,11 +31,13 @@ export function ExpandableFullReadTrigger({
         <button
             type="button"
             aria-label={ariaLabel}
+            disabled={disabled}
             onPointerDown={(e) => {
                 e.stopPropagation();
             }}
             onClick={(e) => {
                 e.stopPropagation();
+                if (disabled) return;
                 onClick(e);
             }}
             className={cn(
@@ -57,6 +61,7 @@ export function ExpandableFullReadTrigger({
                           "group-focus-within/expandable-read:opacity-100 group-focus-within/expandable-read:bg-background/90",
                           "focus-visible:opacity-100 focus-visible:bg-background/90",
                       ],
+                disabled && "pointer-events-none cursor-not-allowed opacity-40",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 className,
             )}
@@ -70,17 +75,21 @@ export function ExpandableFullReadTrigger({
 export function ExpandableReadMobileTapLayer({
     onOpen,
     className,
+    disabled = false,
 }: {
     onOpen: () => void;
     className?: string;
+    disabled?: boolean;
 }) {
     return (
         <button
             type="button"
             tabIndex={-1}
             aria-hidden
+            disabled={disabled}
             className={cn(
                 "absolute inset-0 z-[1] cursor-pointer border-0 bg-transparent p-0 md:hidden",
+                disabled && "pointer-events-none cursor-not-allowed opacity-40",
                 className,
             )}
             onPointerDown={(e) => {
@@ -88,6 +97,7 @@ export function ExpandableReadMobileTapLayer({
             }}
             onClick={(e) => {
                 e.stopPropagation();
+                if (disabled) return;
                 onOpen();
             }}
         />
@@ -100,6 +110,7 @@ export type ExpandableFullReadResponsiveControlsProps = {
     cornerTriggerClassName?: string;
     overlayTriggerClassName?: string;
     overlayChildren?: ReactNode;
+    disabled?: boolean;
 };
 
 export function ExpandableFullReadResponsiveControls({
@@ -108,20 +119,23 @@ export function ExpandableFullReadResponsiveControls({
     cornerTriggerClassName,
     overlayTriggerClassName,
     overlayChildren = "Expand",
+    disabled = false,
 }: ExpandableFullReadResponsiveControlsProps) {
     return (
         <>
-            <ExpandableReadMobileTapLayer onOpen={onOpen} />
+            <ExpandableReadMobileTapLayer onOpen={onOpen} disabled={disabled} />
             <ExpandableFullReadTrigger
                 variant="corner-icon"
                 ariaLabel={ariaLabel}
                 className={cn("md:hidden", cornerTriggerClassName)}
                 onClick={() => onOpen()}
+                disabled={disabled}
             />
             <ExpandableFullReadTrigger
                 ariaLabel={ariaLabel}
                 className={cn("hidden md:flex", overlayTriggerClassName)}
                 onClick={() => onOpen()}
+                disabled={disabled}
             >
                 {overlayChildren}
             </ExpandableFullReadTrigger>

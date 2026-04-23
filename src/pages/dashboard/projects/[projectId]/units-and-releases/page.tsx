@@ -135,7 +135,13 @@ function ProjectUnitsAndReleasesContent({ mainSidebar }: ProjectUnitsAndReleases
                     <SidebarInset className="here-is-the-content">
                         <Container>
                             <TabsContent value="new" className="mt-0">
-                                <NewUnitsTab projectId={projectId} releaseUnits={releaseUnits} isLoading={isLoading} error={error} />
+                                <NewUnitsTab
+                                    projectId={projectId}
+                                    releaseId={releaseID ?? undefined}
+                                    releaseUnits={releaseUnits}
+                                    isLoading={isLoading}
+                                    error={error}
+                                />
                             </TabsContent>
                             <TabsContent value="all" className="mt-0">
                                 {projectId != null && releaseID != null ? (

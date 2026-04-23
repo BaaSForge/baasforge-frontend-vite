@@ -22,6 +22,8 @@ const chatSessionUnitLatestRevisionsByIdsEndpoint = (projectId: string, chatSess
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-latest-revisions-by-ids`;
 const chatSessionUnitPreChatBaseByPathsEndpoint = (projectId: string, chatSessionId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-pre-chat-base-by-paths`;
+const chatSessionUnitPreviousByFullIdsEndpoint = (projectId: string, chatSessionId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-previous-by-full-ids`;
 const chatSessionUserMessageTruncateBelowEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/user-messages/${messageId}/truncate-below`;
 
@@ -37,6 +39,15 @@ export type UnitLatestRevisionsResponse = {
 
 /** Same length and order as request `unit_paths`; `null` when there is no pre-chat base revision for that path. */
 export type UnitPreChatBaseByPathsResponse = {
+    units: (ProjectUnitResponse | null)[];
+};
+
+export type UnitPreviousByFullIdsBody = {
+    unit_ids: string[];
+};
+
+/** Same length and order as request `unit_ids`; `null` when there is no resolvable previous revision. */
+export type UnitPreviousByFullIdsResponse = {
     units: (ProjectUnitResponse | null)[];
 };
 
@@ -146,5 +157,22 @@ export function postChatSessionUnitPreChatBaseByPaths(
     const body: UnitPathsBody = { unit_paths: unitPaths };
     return apiClient
         .post<ApiResponse<UnitPreChatBaseByPathsResponse>>(chatSessionUnitPreChatBaseByPathsEndpoint(projectId, chatSessionId), body)
+        .then((res) => res.data ?? { units: [] });
+}
+
+export function postChatSessionUnitPreviousByFullIds(
+    projectId: string,
+    chatSessionId: string,
+    unitIds: string[],
+): Promise<UnitPreviousByFullIdsResponse> {
+    if (unitIds.length === 0) {
+        return Promise.resolve({ units: [] });
+    }
+    const body: UnitPreviousByFullIdsBody = { unit_ids: unitIds };
+    return apiClient
+        .post<ApiResponse<UnitPreviousByFullIdsResponse>>(
+            chatSessionUnitPreviousByFullIdsEndpoint(projectId, chatSessionId),
+            body,
+        )
         .then((res) => res.data ?? { units: [] });
 }

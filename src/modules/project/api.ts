@@ -27,6 +27,8 @@ const projectDraftUnitsAsOfReleaseControllerMessageEndpoint = (
 const projectReleasesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases`;
 /** `releaseId` is the release row id (UUID), not the numeric revision — revision can repeat across chat sessions. */
 const projectReleaseUnitsEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units`;
+const projectReleaseUnitPreviousByFullIdsEndpoint = (projectId: string, releaseId: string) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/unit-previous-by-full-ids`;
 const projectReleaseContextsEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/contexts`;
 const projectModulesByContextsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/modules-by-contexts`;
 const projectReleaseUnitsAllEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units/all`;
@@ -133,8 +135,30 @@ export function getReleases(projectId: string, environment: PlatformEnvironmentT
     return apiClient.get<ApiResponse<ReleaseResponse[]>>(url).then((res) => res.data ?? []);
 }
 
+export type ReleaseUnitPreviousByFullIdsBody = {
+    unit_ids: string[];
+};
+
+export type ReleaseUnitPreviousByFullIdsResponse = {
+    units: (ProjectUnitResponse | null)[];
+};
+
 export function getReleaseUnits(projectId: string, releaseId: string): Promise<ProjectUnitResponse[]> {
     return apiClient.get<ApiResponse<ProjectUnitResponse[]>>(projectReleaseUnitsEndpoint(projectId, releaseId)).then((res) => res.data ?? []);
+}
+
+export function postReleaseUnitPreviousByFullIds(
+    projectId: string,
+    releaseId: string,
+    unitIds: string[],
+): Promise<ReleaseUnitPreviousByFullIdsResponse> {
+    if (unitIds.length === 0) {
+        return Promise.resolve({ units: [] });
+    }
+    const body: ReleaseUnitPreviousByFullIdsBody = { unit_ids: unitIds };
+    return apiClient
+        .post<ApiResponse<ReleaseUnitPreviousByFullIdsResponse>>(projectReleaseUnitPreviousByFullIdsEndpoint(projectId, releaseId), body)
+        .then((res) => res.data ?? { units: [] });
 }
 
 export function getReleaseContexts(projectId: string, releaseId: string): Promise<string[]> {

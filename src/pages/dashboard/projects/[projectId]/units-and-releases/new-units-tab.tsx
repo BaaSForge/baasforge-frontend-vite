@@ -3,15 +3,39 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { capitalizeFirstLetter } from "@/lib/utils";
+import { postReleaseUnitPreviousByFullIds } from "@/modules/project/api";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
 import type { ProjectUnitResponse } from "@/modules/project/types";
+import { ChatSessionViewChangesModal, type ChatSessionUnitChangePair } from "@/modules/project-chat";
 import { LayersIcon, TextAlignJustifyIcon } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
+import { toast } from "sonner";
 import { groupUnitsByType } from "./group-units-by-type";
 import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type AllUnitsGroupMode } from "./release-units-search-params";
 
-function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: ProjectUnitResponse[] }) {
+function releaseNewUnitChangePairs(
+    afterUnits: ProjectUnitResponse[],
+    beforeUnits: (ProjectUnitResponse | null)[],
+): ChatSessionUnitChangePair[] {
+    const pairs: ChatSessionUnitChangePair[] = [];
+    for (let i = 0; i < afterUnits.length; i++) {
+        pairs.push({ beforeUnit: beforeUnits[i] ?? null, afterUnit: afterUnits[i]! });
+    }
+    return pairs;
+}
+
+function UnitsGroupedByType({
+    projectId,
+    units,
+    expandDiff,
+    preparingDiff,
+}: {
+    projectId?: string;
+    units: ProjectUnitResponse[];
+    expandDiff?: (unitId: string) => void;
+    preparingDiff: boolean;
+}) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
     const sortedTypes = useMemo(() => [...grouped.keys()].sort((a, b) => a.localeCompare(b)), [grouped]);
 
@@ -22,7 +46,15 @@ function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: P
                     <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {grouped.get(unitType)?.map((unit) => (
-                            <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
+                            <UnitCardCompact
+                                key={unit.id}
+                                projectId={projectId}
+                                unit={unit}
+                                showChatSessionOverflowMenu
+                                onExpandFullRead={expandDiff != null ? () => expandDiff(unit.id) : undefined}
+                                preparePending={preparingDiff}
+                                expandAriaLabel={expandDiff != null ? "View changes vs previous revision" : undefined}
+                            />
                         ))}
                     </div>
                 </div>
@@ -33,11 +65,13 @@ function UnitsGroupedByType({ projectId, units }: { projectId?: string; units: P
 
 export function NewUnitsTab({
     projectId,
+    releaseId,
     releaseUnits,
     isLoading,
     error,
 }: {
     projectId?: string;
+    releaseId?: string;
     releaseUnits: ProjectUnitResponse[] | undefined;
     isLoading: boolean;
     error: unknown;
@@ -45,6 +79,37 @@ export function NewUnitsTab({
     const [searchParams, setSearchParams] = useSearchParams();
     const { allUnits } = readReleaseUnitsSearchParams(searchParams);
     const groupMode = allUnits.groupMode;
+
+    const [viewChangesOpen, setViewChangesOpen] = useState(false);
+    const [viewChangesPairs, setViewChangesPairs] = useState<ChatSessionUnitChangePair[]>([]);
+    const [viewChangesActiveUnitId, setViewChangesActiveUnitId] = useState<string | undefined>(undefined);
+    const [preparingViewChanges, setPreparingViewChanges] = useState(false);
+
+    const orderedAfterUnits = useMemo(() => releaseUnits ?? [], [releaseUnits]);
+    const expandDiffEligible =
+        projectId != null && projectId !== "" && releaseId != null && releaseId !== "" && orderedAfterUnits.length > 0;
+
+    const openReleaseNewUnitsDiff = useCallback(
+        async (clickedUnitId: string) => {
+            if (projectId == null || releaseId == null) return;
+            const unitIds = orderedAfterUnits.map((u) => u.id);
+            if (unitIds.length === 0) return;
+            setPreparingViewChanges(true);
+            try {
+                const { units } = await postReleaseUnitPreviousByFullIds(projectId, releaseId, unitIds);
+                setViewChangesPairs(releaseNewUnitChangePairs(orderedAfterUnits, units));
+                setViewChangesActiveUnitId(clickedUnitId);
+                setViewChangesOpen(true);
+            } catch {
+                toast.error("Could not load previous unit versions for this release.");
+            } finally {
+                setPreparingViewChanges(false);
+            }
+        },
+        [projectId, releaseId, orderedAfterUnits],
+    );
+
+    const expandDiff = expandDiffEligible ? openReleaseNewUnitsDiff : undefined;
 
     const setGroupMode = (v: AllUnitsGroupMode) => {
         try {
@@ -99,12 +164,32 @@ export function NewUnitsTab({
             ) : groupMode === "ungrouped" ? (
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {releaseUnits?.map((unit) => (
-                        <UnitCardCompact key={unit.id} projectId={projectId} unit={unit} showChatSessionOverflowMenu />
+                        <UnitCardCompact
+                            key={unit.id}
+                            projectId={projectId}
+                            unit={unit}
+                            showChatSessionOverflowMenu
+                            onExpandFullRead={expandDiff != null ? () => expandDiff(unit.id) : undefined}
+                            preparePending={preparingViewChanges}
+                            expandAriaLabel={expandDiff != null ? "View changes vs previous revision" : undefined}
+                        />
                     ))}
                 </div>
             ) : (
-                <UnitsGroupedByType projectId={projectId} units={releaseUnits ?? []} />
+                <UnitsGroupedByType
+                    projectId={projectId}
+                    units={releaseUnits ?? []}
+                    expandDiff={expandDiff}
+                    preparingDiff={preparingViewChanges}
+                />
             )}
+
+            <ChatSessionViewChangesModal
+                open={viewChangesOpen}
+                onOpenChange={setViewChangesOpen}
+                unitsChanged={viewChangesPairs}
+                activeUnitId={viewChangesActiveUnitId}
+            />
         </div>
     );
 }

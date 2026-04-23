@@ -16,9 +16,21 @@ export interface UnitCardChipProps {
     chatSessionId?: string;
     className?: string;
     unitRefreshPending?: boolean;
+    onExpandOverride?: () => void;
+    expandDisabled?: boolean;
+    expandAriaLabel?: string;
 }
 
-export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRefreshPending }: UnitCardChipProps) {
+export function UnitCardChip({
+    unit,
+    projectId,
+    chatSessionId,
+    className,
+    unitRefreshPending,
+    onExpandOverride,
+    expandDisabled,
+    expandAriaLabel,
+}: UnitCardChipProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
     const isRejected = unit.is_rejected === true;
@@ -68,20 +80,23 @@ export function UnitCardChip({ unit, projectId, chatSessionId, className, unitRe
                     <div className="flex flex-wrap items-center gap-1">{badges}</div>
                     <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
                     <ExpandableFullReadResponsiveControls
-                        ariaLabel="Expand full explanation"
-                        onOpen={() => setModalOpen(true)}
+                        ariaLabel={expandAriaLabel ?? "Expand full explanation"}
+                        onOpen={() => (onExpandOverride != null ? onExpandOverride() : setModalOpen(true))}
                         overlayTriggerClassName="rounded-b-lg rounded-t-none"
+                        disabled={expandDisabled === true}
                     />
                 </div>
-                <UnitFullExplanationModal
-                    open={modalOpen}
-                    onOpenChange={setModalOpen}
-                    explanation={explanation}
-                    code={unit.code}
-                    isDeleted={isDeleted}
-                    isRejected={isRejected}
-                    badges={badges}
-                />
+                {onExpandOverride == null ? (
+                    <UnitFullExplanationModal
+                        open={modalOpen}
+                        onOpenChange={setModalOpen}
+                        explanation={explanation}
+                        code={unit.code}
+                        isDeleted={isDeleted}
+                        isRejected={isRejected}
+                        badges={badges}
+                    />
+                ) : null}
             </div>
         </div>
     );
