@@ -5,6 +5,7 @@ import * as React from "react";
 import { Outlet } from "react-router";
 import { AppSidebar } from "./app-sidebar";
 import { ShortcutsModal } from "./shortcuts-modal";
+import { StickyHeaderInsetDocumentVars } from "./sticky-header-inset-document-vars";
 import { StickyBreadcrumbBar, StickyBreadcrumbBarPlaceholder } from "./sticky-breadcrumb-bar";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
@@ -49,6 +50,7 @@ export function AppShell() {
             <MainSidebarShortcutListener />
             <AppSidebar onOpenShortcuts={handleOpenShortcuts} />
             <SidebarInset>
+                <StickyHeaderInsetDocumentVars />
                 <StickyBreadcrumbBarPlaceholder />
                 <StickyBreadcrumbBar />
                 <Outlet />

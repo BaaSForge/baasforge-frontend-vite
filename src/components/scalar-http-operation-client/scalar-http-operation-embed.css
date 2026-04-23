@@ -117,10 +117,10 @@ body .scalar.scalar-app.z-overlay {
 }
 
 body .scalar.scalar-app.z-overlay .scalar-container {
-    top: var(--baal-scalar-modal-inset-top, 0px);
-    right: var(--baal-scalar-modal-inset-right, 0px);
-    bottom: 0;
-    left: var(--baal-scalar-modal-inset-left, 0px);
+    top: var(--baal-sticky-headers-offset-top, 0px) !important;
+    right: var(--baal-scalar-modal-inset-right, 0px) !important;
+    bottom: 0 !important;
+    left: var(--baal-scalar-modal-inset-left, 0px) !important;
     width: auto;
     box-sizing: border-box;
     min-height: 0;
@@ -133,10 +133,10 @@ body .scalar.scalar-app.z-overlay .scalar-container {
 }
 
 body .scalar.scalar-app.z-overlay .scalar-app-exit {
-    top: var(--baal-scalar-modal-inset-top, 0px);
-    right: var(--baal-scalar-modal-inset-right, 0px);
-    bottom: 0;
-    left: var(--baal-scalar-modal-inset-left, 0px);
+    top: var(--baal-sticky-headers-offset-top, 0px) !important;
+    right: var(--baal-scalar-modal-inset-right, 0px) !important;
+    bottom: 0 !important;
+    left: var(--baal-scalar-modal-inset-left, 0px) !important;
     width: auto !important;
     height: auto !important;
 }
@@ -145,8 +145,8 @@ body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client {
     box-sizing: border-box;
     width: min(1100px, calc(100vw - var(--baal-scalar-modal-inset-left, 0px) - var(--baal-scalar-modal-inset-right, 0px) - 32px));
     max-width: min(1100px, calc(100vw - var(--baal-scalar-modal-inset-left, 0px) - var(--baal-scalar-modal-inset-right, 0px) - 32px));
-    height: min(85svh, calc(100dvh - var(--baal-scalar-modal-inset-top, 0px) - 48px));
-    max-height: min(85svh, calc(100dvh - var(--baal-scalar-modal-inset-top, 0px) - 48px));
+    height: min(85svh, calc(100dvh - var(--baal-sticky-headers-offset-top, 0px) - 48px));
+    max-height: min(85svh, calc(100dvh - var(--baal-sticky-headers-offset-top, 0px) - 48px));
     min-height: 0;
     margin: 0 auto 16px;
     display: flex;
@@ -194,5 +194,13 @@ body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client main {
 }
 
 [data-unit-card-stack][data-scalar-client-modal-open] {
-    z-index: 2;
+    z-index: 30;
+}
+
+html:has([data-unit-card-stack][data-scalar-client-modal-open]) [data-slot="sticky-breadcrumb-bar"] {
+    z-index: 110;
+}
+
+html:has([data-unit-card-stack][data-scalar-client-modal-open]) [data-slot="page-title-box"] {
+    z-index: 105;
 }

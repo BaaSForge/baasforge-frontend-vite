@@ -148,6 +148,10 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 :root {
+    --baal-sticky-breadcrumb-bar-offset: 0px;
+    --baal-sticky-page-title-bar-offset: 0px;
+    --baal-sticky-headers-offset-top: 0px;
+
     --radius: 0.625rem;
     --background: oklch(0.991 0.002 260);
     --foreground: oklch(0.145 0 0);

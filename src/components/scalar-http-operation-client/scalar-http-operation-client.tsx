@@ -98,7 +98,7 @@ export function ScalarHttpOperationClient({
         <div
             ref={embedRootRef}
             className={cn(
-                "scalar-http-operation-client scalar-app isolate w-full overflow-hidden rounded-md",
+                "scalar-http-operation-client scalar-app w-full overflow-hidden rounded-md",
                 className,
             )}
         >
