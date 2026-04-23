@@ -109,7 +109,14 @@ body .scalar.scalar-app.z-overlay .scalar-container {
     bottom: 0;
     left: var(--baal-scalar-modal-inset-left, 0px);
     width: auto;
-    height: auto;
+    box-sizing: border-box;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    align-items: flex-start;
+    justify-content: center;
+    padding-block: 16px;
 }
 
 body .scalar.scalar-app.z-overlay .scalar-app-exit {
@@ -122,11 +129,42 @@ body .scalar.scalar-app.z-overlay .scalar-app-exit {
 }
 
 body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client {
+    box-sizing: border-box;
+    width: min(1100px, calc(100vw - var(--baal-scalar-modal-inset-left, 0px) - var(--baal-scalar-modal-inset-right, 0px) - 32px));
     max-width: min(1100px, calc(100vw - var(--baal-scalar-modal-inset-left, 0px) - var(--baal-scalar-modal-inset-right, 0px) - 32px));
-    max-height: min(85svh, calc(100dvh - var(--baal-scalar-modal-inset-top, 0px) - 32px));
-    height: auto;
+    height: min(85svh, calc(100dvh - var(--baal-scalar-modal-inset-top, 0px) - 48px));
+    max-height: min(85svh, calc(100dvh - var(--baal-scalar-modal-inset-top, 0px) - 48px));
+    min-height: 0;
+    margin: 0 auto 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+body .scalar.scalar-app.z-overlay .scroll-timeline-x {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body .scalar.scalar-app.z-overlay .scroll-timeline-x::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+body .scalar.scalar-app.z-overlay .scroll-timeline-x.scroll-timeline-x-hidden {
+    overflow-y: hidden;
+}
+
+body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client main {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 [data-unit-card-stack][data-scalar-client-modal-open] {
-    z-index: 200;
+    z-index: 2;
 }
