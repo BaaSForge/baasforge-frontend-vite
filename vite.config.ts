@@ -22,6 +22,14 @@ export default defineConfig(({ mode }) => {
         resolve: {
             alias: {
                 "@": path.resolve(__dirname, "./src"),
+                "react-diff-viewer-compute-lines": path.resolve(
+                    __dirname,
+                    "./node_modules/react-diff-viewer-continued/lib/cjs/src/compute-lines.js",
+                ),
+                "react-diff-viewer-compute-hidden-blocks": path.resolve(
+                    __dirname,
+                    "./node_modules/react-diff-viewer-continued/lib/cjs/src/compute-hidden-blocks.js",
+                ),
             },
         },
         server: {

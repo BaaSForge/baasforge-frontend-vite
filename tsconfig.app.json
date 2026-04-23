@@ -26,7 +26,13 @@
     // Paths
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "react-diff-viewer-compute-lines": [
+        "./node_modules/react-diff-viewer-continued/lib/cjs/src/compute-lines.js"
+      ],
+      "react-diff-viewer-compute-hidden-blocks": [
+        "./node_modules/react-diff-viewer-continued/lib/cjs/src/compute-hidden-blocks.js"
+      ]
     }
   },
   "include": ["src"]
