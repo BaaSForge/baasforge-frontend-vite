@@ -68,15 +68,21 @@ export interface ContextModulesByContextRow {
     module_slugs: string[];
 }
 
-export interface ApiUnitJsonSchemaPart {
+export interface UnitJsonSchemaPart {
     jsonSchema?: string | null;
 }
 
 export interface ApiUnitMetadata {
     method?: string | null;
-    requestBody?: ApiUnitJsonSchemaPart;
-    requestParams?: ApiUnitJsonSchemaPart;
-    responseBody?: ApiUnitJsonSchemaPart;
+    requestBody?: UnitJsonSchemaPart;
+    requestParams?: UnitJsonSchemaPart;
+    responseBody?: UnitJsonSchemaPart;
+}
+
+export interface ActorUnitMetadata {
+    state?: UnitJsonSchemaPart | null;
+    handlerInputs?: Record<string, UnitJsonSchemaPart> | null;
+    handlerOutputs?: Record<string, UnitJsonSchemaPart> | null;
 }
 
 export interface ProjectUnitResponse {

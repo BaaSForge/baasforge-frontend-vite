@@ -1,6 +1,6 @@
 import { jsonSchemaDocumentOrPlaceholder, queryParametersFromJsonSchema } from "./openapi-json-schema";
 
-const METHODS_WITH_BODY = new Set(["post", "put", "patch", "delete"]);
+const METHODS_WITH_BODY = new Set(["post", "put", "patch"]);
 
 export function buildOpenApiDocument(input: {
     serverBaseUrl: string;
@@ -40,7 +40,16 @@ export function buildOpenApiDocument(input: {
         operation.parameters = queryParameters;
     }
 
+    const requestBodyTrimmed = input.requestBodyJsonSchema?.trim() ?? "";
     if (METHODS_WITH_BODY.has(method)) {
+        operation.requestBody = {
+            content: {
+                "application/json": {
+                    schema: requestBodySchema,
+                },
+            },
+        };
+    } else if (method === "delete" && requestBodyTrimmed.length > 0) {
         operation.requestBody = {
             content: {
                 "application/json": {

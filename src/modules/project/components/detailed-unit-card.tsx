@@ -17,6 +17,7 @@ import { useMemo, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
 import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
+import { ActorUnitLiveInteraction } from "./actor-unit-live-interaction";
 import { ApiUnitLiveInteraction } from "./api-unit-live-interaction";
 import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
 import { hasUnitDependsOn, UnitDependenciesChips } from "./unit-dependencies-chips";
@@ -247,6 +248,13 @@ export function DetailedUnitCard({
                                 <div>
                                     {unit.unit_type === "api" ? (
                                         <ApiUnitLiveInteraction
+                                            unit={unit}
+                                            stageRuntimeId={stageRuntimeId}
+                                            releaseIsStage={releaseIsStage}
+                                            projectRuntimeBaseUrl={unitRuntimeBaseUrl}
+                                        />
+                                    ) : unit.unit_type === "actor" ? (
+                                        <ActorUnitLiveInteraction
                                             unit={unit}
                                             stageRuntimeId={stageRuntimeId}
                                             releaseIsStage={releaseIsStage}
