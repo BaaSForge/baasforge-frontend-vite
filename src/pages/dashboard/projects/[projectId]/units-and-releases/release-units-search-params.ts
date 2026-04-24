@@ -9,7 +9,7 @@ export type UnitsTabValue = "new" | "all";
 export type AllUnitsGroupMode = "ungrouped" | "grouped";
 
 export const DEFAULT_ALL_UNITS_PAGE = 1;
-export const DEFAULT_ALL_UNITS_PAGE_SIZE = 20;
+export const DEFAULT_ALL_UNITS_PAGE_SIZE = 10;
 
 const PAGE_SIZES = [10, 20, 50] as const;
 
