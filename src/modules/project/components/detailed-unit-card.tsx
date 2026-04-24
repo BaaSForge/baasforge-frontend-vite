@@ -5,13 +5,15 @@ import { LiveBadge } from "@/components/live-badge";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { CollapsiblePanelTitle } from "@/components/ui/collapsible-panel-title";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { Maximize2 } from "lucide-react";
+import { ChevronDown, Maximize2, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
+import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
 import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
 import { ApiUnitLiveInteraction } from "./api-unit-live-interaction";
@@ -20,6 +22,27 @@ import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 import { UnitRejectedBadge } from "./unit-rejected-badge";
 import { UnitRevisionBadge } from "./unit-revision-badge";
 import { UnitTypeBadge } from "./unit-type-badge";
+
+function LiveInteractionNotLiveWarningPopover() {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    className="shrink-0 text-amber-700 hover:bg-amber-500/12 hover:text-amber-900 dark:text-amber-400 dark:hover:bg-amber-500/15 dark:hover:text-amber-50"
+                    aria-label="Why live interaction is unavailable"
+                >
+                    <TriangleAlert className="size-3.5" aria-hidden />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" side="bottom" className="max-w-sm text-sm leading-snug">
+                {LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE}
+            </PopoverContent>
+        </Popover>
+    );
+}
 
 export type DetailedUnitCardProps = {
     unit: ProjectUnitResponse;
@@ -34,6 +57,7 @@ export type DetailedUnitCardProps = {
     stageRuntimeId?: string;
     /** From the open release (`is_stage`); picks stage vs production trigger URL. */
     releaseIsStage?: boolean;
+    releaseIsLive?: boolean;
 };
 
 export function DetailedUnitCard({
@@ -47,6 +71,7 @@ export function DetailedUnitCard({
     preparePending,
     stageRuntimeId,
     releaseIsStage,
+    releaseIsLive = true,
 }: DetailedUnitCardProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
@@ -170,25 +195,41 @@ export function DetailedUnitCard({
                             </div>
                         </CollapsibleContent>
                     </Collapsible>
-                    <Collapsible open={interactionOpen} onOpenChange={setInteractionOpen}>
-                        <CollapsiblePanelTitle>Live interaction</CollapsiblePanelTitle>
-                        <CollapsibleContent className="min-h-0">
-                            <div className="mt-2">
-                                {unit.unit_type === "api" ? (
-                                    <ApiUnitLiveInteraction
-                                        unit={unit}
-                                        stageRuntimeId={stageRuntimeId}
-                                        releaseIsStage={releaseIsStage}
-                                        projectRuntimeBaseUrl={unitRuntimeBaseUrl}
-                                    />
-                                ) : (
-                                    <div className="text-muted-foreground flex min-h-[6rem] items-center justify-center px-2 text-center text-xs">
-                                        Live interaction for this unit type is not wired yet.
-                                    </div>
+                    {releaseIsLive ? (
+                        <Collapsible open={interactionOpen} onOpenChange={setInteractionOpen}>
+                            <CollapsiblePanelTitle>Live interaction</CollapsiblePanelTitle>
+                            <CollapsibleContent className="min-h-0">
+                                <div className="mt-2">
+                                    {unit.unit_type === "api" ? (
+                                        <ApiUnitLiveInteraction
+                                            unit={unit}
+                                            stageRuntimeId={stageRuntimeId}
+                                            releaseIsStage={releaseIsStage}
+                                            projectRuntimeBaseUrl={unitRuntimeBaseUrl}
+                                        />
+                                    ) : (
+                                        <div className="text-muted-foreground flex min-h-[6rem] items-center justify-center px-2 text-center text-xs">
+                                            Live interaction for this unit type is not wired yet.
+                                        </div>
+                                    )}
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    ) : (
+                        <div className="flex flex-wrap items-center gap-x-1 gap-y-0">
+                            <div
+                                className={cn(
+                                    buttonVariants({ variant: "ghost", size: "sm" }),
+                                    "pointer-events-none w-fit max-w-full cursor-not-allowed justify-start gap-1.5 bg-muted/40 text-left text-xs font-normal text-muted-foreground opacity-60",
                                 )}
+                                aria-disabled
+                            >
+                                <ChevronDown className="size-3.5 shrink-0 opacity-50" aria-hidden />
+                                <span className="min-w-0 truncate">Live interaction</span>
                             </div>
-                        </CollapsibleContent>
-                    </Collapsible>
+                            <LiveInteractionNotLiveWarningPopover />
+                        </div>
+                    )}
                 </div>
                 <UnitFullExplanationModal
                     open={modalOpen}

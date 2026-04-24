@@ -16,6 +16,7 @@ import { useProjectReleaseUnitsQuery } from "@/modules/project/queries";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { SidebarIcon } from "lucide-react";
 import { useSearchParams } from "react-router";
+import { AllUnitsNonLiveReleaseTitleBadge } from "./all-units-non-live-release-title-badge";
 import { AllUnitsTab } from "./all-units-tab";
 import { NewUnitsTab } from "./new-units-tab";
 import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type UnitsTabValue } from "./release-units-search-params";
@@ -32,6 +33,8 @@ export type ProjectUnitsAndReleasesViewProps = {
     stageRuntimeId?: string;
     /** From the open release row (`is_stage`); selects stage vs production trigger base path. */
     releaseIsStage?: boolean;
+    /** False when the open release is not the runtime’s live release. */
+    releaseIsLive?: boolean;
     /** Passed through nested secondary `SidebarProvider` so the title bar tracks the app sidebar. Omitted on the runtime-scoped route. */
     mainSidebar?: Sidebar;
     showSecondaryReleaseSidebar: boolean;
@@ -44,6 +47,7 @@ export function ProjectUnitsAndReleasesView({
     runtimeName,
     stageRuntimeId,
     releaseIsStage,
+    releaseIsLive = true,
     mainSidebar,
     showSecondaryReleaseSidebar,
 }: ProjectUnitsAndReleasesViewProps) {
@@ -86,6 +90,7 @@ export function ProjectUnitsAndReleasesView({
             releaseId={releaseId}
             stageRuntimeId={stageRuntimeId}
             releaseIsStage={releaseIsStage}
+            releaseIsLive={releaseIsLive}
             newUnitsReleaseUnits={newUnitsReleaseUnits}
             newUnitsIsLoading={newUnitsIsLoading}
             newUnitsError={newUnitsError}
@@ -97,7 +102,12 @@ export function ProjectUnitsAndReleasesView({
             <PageTitleBox
                 title={pageTitle}
                 {...(mainSidebar != null ? { mainSidebar } : {})}
-                tools={<div className="flex items-center gap-2">{titleTools}</div>}
+                tools={
+                    <div className="flex min-w-0 shrink-0 items-center gap-2">
+                        {!releaseIsLive && unitsTab === "all" ? <AllUnitsNonLiveReleaseTitleBadge /> : null}
+                        {titleTools}
+                    </div>
+                }
             />
             {showSecondaryReleaseSidebar ? (
                 <>
@@ -146,6 +156,7 @@ function ProjectUnitsAndReleasesTabPanels({
     releaseId,
     stageRuntimeId,
     releaseIsStage,
+    releaseIsLive,
     newUnitsReleaseUnits,
     newUnitsIsLoading,
     newUnitsError,
@@ -154,6 +165,7 @@ function ProjectUnitsAndReleasesTabPanels({
     releaseId?: string;
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
+    releaseIsLive?: boolean;
     newUnitsReleaseUnits: ProjectUnitResponse[] | undefined;
     newUnitsIsLoading: boolean;
     newUnitsError: unknown;
@@ -176,6 +188,7 @@ function ProjectUnitsAndReleasesTabPanels({
                         releaseId={releaseId}
                         stageRuntimeId={stageRuntimeId}
                         releaseIsStage={releaseIsStage}
+                        releaseIsLive={releaseIsLive}
                     />
                 ) : (
                     <div className="text-muted-foreground text-sm">Select a release to view all units.</div>

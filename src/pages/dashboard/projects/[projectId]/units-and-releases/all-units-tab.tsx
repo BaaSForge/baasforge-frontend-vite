@@ -61,11 +61,13 @@ function UnitsGroupedByType({
     units,
     stageRuntimeId,
     releaseIsStage,
+    releaseIsLive,
 }: {
     projectId?: string;
     units: ProjectUnitResponse[];
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
+    releaseIsLive?: boolean;
 }) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
     const sortedTypes = useMemo(() => [...grouped.keys()].sort((a, b) => a.localeCompare(b)), [grouped]);
@@ -84,6 +86,7 @@ function UnitsGroupedByType({
                                 showChatSessionOverflowMenu
                                 stageRuntimeId={stageRuntimeId}
                                 releaseIsStage={releaseIsStage}
+                                releaseIsLive={releaseIsLive}
                             />
                         ))}
                     </div>
@@ -98,11 +101,13 @@ export function AllUnitsTab({
     releaseId,
     stageRuntimeId,
     releaseIsStage,
+    releaseIsLive = true,
 }: {
     projectId: string;
     releaseId: string;
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
+    releaseIsLive?: boolean;
 }) {
     const [searchParams, setSearchParams] = useSearchParams();
     const { unitsTab, allUnits } = readReleaseUnitsSearchParams(searchParams);
@@ -400,6 +405,7 @@ export function AllUnitsTab({
                             showChatSessionOverflowMenu
                             stageRuntimeId={stageRuntimeId}
                             releaseIsStage={releaseIsStage}
+                            releaseIsLive={releaseIsLive}
                         />
                     ))}
                 </div>
@@ -410,6 +416,7 @@ export function AllUnitsTab({
                         units={units}
                         stageRuntimeId={stageRuntimeId}
                         releaseIsStage={releaseIsStage}
+                        releaseIsLive={releaseIsLive}
                     />
                 </div>
             )}

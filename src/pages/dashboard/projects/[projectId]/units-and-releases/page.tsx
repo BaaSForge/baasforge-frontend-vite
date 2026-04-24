@@ -42,8 +42,7 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
         if (isProductionRuntimeLoading) return;
 
         const liveId = getRuntimeLiveReleaseId(productionRuntime);
-        const targetId =
-            liveId != null && releases.some((r) => r.id === liveId) ? liveId : releases[0].id;
+        const targetId = liveId != null && releases.some((r) => r.id === liveId) ? liveId : releases[0].id;
 
         navigate(
             {
@@ -59,6 +58,10 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
         [releases, releaseID],
     );
     const releaseTitleLabel = selectedRelease != null ? String(selectedRelease.revision) : "…";
+
+    const liveReleaseId = getRuntimeLiveReleaseId(productionRuntime);
+    const releaseIsLive =
+        releaseID != null && liveReleaseId != null && releaseID === liveReleaseId;
 
     const { setSegmentLabel, clearSegmentLabel } = useBreadcrumbActions();
     useEffect(() => {
@@ -79,6 +82,7 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
             releaseTitleLabel={releaseTitleLabel}
             runtimeName={productionRuntime?.name}
             releaseIsStage={selectedRelease?.is_stage === true}
+            releaseIsLive={releaseIsLive}
             mainSidebar={mainSidebar}
             showSecondaryReleaseSidebar
         />
