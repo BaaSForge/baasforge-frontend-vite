@@ -9,6 +9,9 @@ import { useMemo } from "react";
 import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
 import { resolveOperationUrl } from "./resolve-operation-url";
+import { scalarSiteEmbedConfiguration } from "./scalar-site-embed";
+
+export { SCALAR_HTTP_OPERATION_WORKSPACE_SLUG } from "./scalar-site-embed";
 export type ScalarHttpOperationClientProps = {
     className?: string;
     /**
@@ -22,14 +25,6 @@ export type ScalarHttpOperationClientProps = {
     responseBodyJsonSchema?: string | null;
     operationSummary?: string;
 };
-
-const scalarFetch: typeof fetch = (input, init) =>
-    fetch(input, {
-        ...init,
-        credentials: "include",
-    });
-
-export const SCALAR_HTTP_OPERATION_WORKSPACE_SLUG = "baal-scalar-http-operation-embed-v1";
 
 export function ScalarHttpOperationClient({
     className,
@@ -55,22 +50,8 @@ export function ScalarHttpOperationClient({
             operationSummary,
         });
         return {
+            ...scalarSiteEmbedConfiguration(resolvedAppTheme !== "light"),
             content: spec,
-            slug: SCALAR_HTTP_OPERATION_WORKSPACE_SLUG,
-            showSidebar: false,
-            hideSearch: true,
-            hideDarkModeToggle: true,
-            showOperationId: false,
-            agent: { disabled: true },
-            hideDownloadButton: true,
-            hideClientButton: true,
-            documentDownloadType: "none",
-            hideModels: false,
-            layout: "modern",
-            showDeveloperTools: "never",
-            expandAllResponses: true,
-            darkMode: resolvedAppTheme !== "light",
-            fetch: scalarFetch,
         };
     }, [
         url,
