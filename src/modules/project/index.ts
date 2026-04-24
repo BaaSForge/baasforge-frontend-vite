@@ -31,9 +31,11 @@ export {
 export { getRuntimeLiveReleaseId, pickProductionRuntime, releaseIsLiveOnProjectRuntimes } from "./runtime-release";
 export type {
     ApiUnitMetadata,
+    ProjectDetailResponse,
     ProjectPatchRequest,
     ProjectRequest,
     ProjectResponse,
+    ProjectRuntimesBaseUrls,
     ProjectRuntimeResponse,
     ProjectUnitResponse,
     ProjectUnitType,

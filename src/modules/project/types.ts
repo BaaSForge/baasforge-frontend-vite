@@ -4,6 +4,17 @@ export interface ProjectResponse {
     slug: string;
 }
 
+export interface ProjectRuntimesBaseUrls {
+    api: string;
+    workflow: string;
+    actor: string;
+    queue_worker: string;
+}
+
+export type ProjectDetailResponse = ProjectResponse & {
+    runtimes: ProjectRuntimesBaseUrls;
+};
+
 export interface ProjectRequest {
     name: string;
     slug: string;
@@ -22,6 +33,15 @@ export const STATIC_PROJECT_UNIT_TYPES: readonly ProjectUnitType[] = [
     "workflow",
     "queue_worker",
 ] as const;
+
+export function runtimeBaseUrlForUnitType(
+    runtimes: ProjectRuntimesBaseUrls,
+    unitType: ProjectUnitType,
+): string | undefined {
+    const raw = runtimes[unitType]?.trim() ?? "";
+    if (raw.length === 0) return undefined;
+    return raw.replace(/\/$/, "");
+}
 
 export interface ContextModulePair {
     context_slug: string;

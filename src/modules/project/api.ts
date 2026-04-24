@@ -5,6 +5,7 @@ import {
     type ContextModulesByContextRow,
     type ListReleaseUnitsAllRequest,
     type ListReleaseUnitsAllResponse,
+    type ProjectDetailResponse,
     type ProjectPatchRequest,
     type ProjectRequest,
     type ProjectResponse,
@@ -82,8 +83,8 @@ export function getProjects(): Promise<ProjectResponse[]> {
     return apiClient.get<ApiResponse<ProjectResponse[]>>(PROJECTS_ENDPOINT).then((res) => res.data ?? []);
 }
 
-export function getProject(id: string): Promise<ProjectResponse> {
-    return apiClient.get<ApiResponse<ProjectResponse>>(`${PROJECTS_ENDPOINT}/${id}`).then((res) => {
+export function getProject(id: string): Promise<ProjectDetailResponse> {
+    return apiClient.get<ApiResponse<ProjectDetailResponse>>(`${PROJECTS_ENDPOINT}/${id}`).then((res) => {
         if (!res.data) {
             throw new Error("Project response missing data");
         }

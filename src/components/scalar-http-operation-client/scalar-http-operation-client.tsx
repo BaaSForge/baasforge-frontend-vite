@@ -10,8 +10,6 @@ import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
 import { resolveOperationUrl } from "./resolve-operation-url";
 import { useScalarExampleResponsesShowSchemaDefault } from "./use-scalar-example-responses-show-schema-default";
-import { useScalarClientModalHostStack } from "./use-scalar-client-modal-host-stack";
-import { useScalarModalLayoutCssVars } from "./use-scalar-modal-layout-css-vars";
 
 export type ScalarHttpOperationClientProps = {
     className?: string;
@@ -91,14 +89,12 @@ export function ScalarHttpOperationClient({
     const embedKey = `${url}\u0001${method}\u0001${operationSummary ?? ""}`;
 
     useScalarExampleResponsesShowSchemaDefault(embedRootRef, embedKey);
-    useScalarModalLayoutCssVars();
-    useScalarClientModalHostStack(embedRootRef);
 
     return (
         <div
             ref={embedRootRef}
             className={cn(
-                "scalar-http-operation-client scalar-app w-full overflow-hidden rounded-md",
+                "scalar-http-operation-client scalar-app w-full min-h-0 overflow-visible rounded-md",
                 className,
             )}
         >

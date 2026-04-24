@@ -11,8 +11,9 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { Maximize2 } from "lucide-react";
-import { useState } from "react";
-import type { ProjectUnitResponse } from "../types";
+import { useMemo, useState } from "react";
+import { useProjectQuery } from "../queries";
+import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
 import { ApiUnitLiveInteraction } from "./api-unit-live-interaction";
 import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
@@ -59,6 +60,13 @@ export function DetailedUnitCard({
     const showHeaderMenu =
         showChatSessionOverflowMenu === true && projectId != null && projectId !== "";
 
+    const { data: projectDetail } = useProjectQuery(projectId);
+    const unitRuntimeBaseUrl = useMemo(() => {
+        const r = projectDetail?.runtimes;
+        if (r == null) return undefined;
+        return runtimeBaseUrlForUnitType(r, unit.unit_type);
+    }, [projectDetail, unit.unit_type]);
+
     const headerActionIconButtonClassName =
         "bg-muted/45 hover:bg-muted/65 dark:bg-muted/35 dark:hover:bg-muted/55";
 
@@ -94,7 +102,7 @@ export function DetailedUnitCard({
             )}
             <Card
                 className={cn(
-                    "relative z-[1] gap-0 overflow-hidden rounded-lg border p-0 shadow-none",
+                    "relative gap-0 overflow-visible rounded-lg border p-0 shadow-none",
                     hasParent && "mb-1.5 mr-1.5",
                     isDeleted && "border-destructive",
                     !isDeleted && isRejected && "border-muted-foreground/40",
@@ -171,6 +179,7 @@ export function DetailedUnitCard({
                                         unit={unit}
                                         stageRuntimeId={stageRuntimeId}
                                         releaseIsStage={releaseIsStage}
+                                        projectRuntimeBaseUrl={unitRuntimeBaseUrl}
                                     />
                                 ) : (
                                     <div className="text-muted-foreground flex min-h-[6rem] items-center justify-center px-2 text-center text-xs">

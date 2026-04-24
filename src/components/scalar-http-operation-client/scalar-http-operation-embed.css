@@ -34,10 +34,8 @@ html.dark-midnight .dark-mode {
     --scalar-tooltip-background: var(--popover);
     --scalar-tooltip-color: var(--popover-foreground);
 
-    --scalar-shadow-1: 0 1px 2px color-mix(in oklch, var(--foreground) 6%, transparent);
-    --scalar-shadow-2:
-        0 0 0 0.5px var(--border),
-        0 4px 12px color-mix(in oklch, var(--foreground) 8%, transparent);
+    --scalar-shadow-1: 0 0 0 1px var(--border);
+    --scalar-shadow-2: 0 0 0 1px var(--border);
 
     --scalar-scrollbar-color: color-mix(in oklch, var(--muted-foreground) 35%, transparent);
     --scalar-scrollbar-color-active: color-mix(in oklch, var(--muted-foreground) 55%, transparent);
@@ -100,7 +98,42 @@ html.dark-midnight .scalar-http-operation-client.scalar-app {
 }
 
 body .scalar.scalar-app.z-overlay {
-    z-index: 100;
+    z-index: 50;
+}
+
+body .scalar.scalar-app.z-overlay .scalar-app-exit {
+    background: color-mix(
+        in oklch,
+        color-mix(in oklch, var(--foreground) 22%, var(--background)) 62%,
+        transparent
+    );
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+html.dark-default body .scalar.scalar-app.z-overlay .scalar-app-exit,
+html.dark-midnight body .scalar.scalar-app.z-overlay .scalar-app-exit {
+    background: color-mix(
+        in oklch,
+        color-mix(in oklch, oklch(0 0 0) 38%, var(--background)) 70%,
+        transparent
+    );
+}
+
+body .scalar.scalar-app.z-overlay button.app-exit-button {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    box-shadow: var(--scalar-shadow-1);
+}
+
+body .scalar.scalar-app.z-overlay button.app-exit-button:hover {
+    background-color: var(--muted);
+}
+
+body .scalar.scalar-app.z-overlay button.app-exit-button svg {
+    stroke: currentColor;
+    stroke-width: 2.25;
 }
 
 /* v2 client modal always mounts operations sidebar + toggle; ignore showSidebar. */
@@ -115,92 +148,22 @@ body .scalar.scalar-app.z-overlay {
         display: none !important;
     }
 }
-
-body .scalar.scalar-app.z-overlay .scalar-container {
-    top: var(--baal-sticky-headers-offset-top, 0px) !important;
-    right: var(--baal-scalar-modal-inset-right, 0px) !important;
-    bottom: 0 !important;
-    left: var(--baal-scalar-modal-inset-left, 0px) !important;
-    width: auto;
-    box-sizing: border-box;
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    align-items: flex-start;
-    justify-content: center;
-    padding-block: 16px;
-}
-
-body .scalar.scalar-app.z-overlay .scalar-app-exit {
-    top: var(--baal-sticky-headers-offset-top, 0px) !important;
-    right: var(--baal-scalar-modal-inset-right, 0px) !important;
-    bottom: 0 !important;
-    left: var(--baal-scalar-modal-inset-left, 0px) !important;
-    width: auto !important;
-    height: auto !important;
-}
-
-body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client {
-    box-sizing: border-box;
-    width: min(1100px, calc(100vw - var(--baal-scalar-modal-inset-left, 0px) - var(--baal-scalar-modal-inset-right, 0px) - 32px));
-    max-width: min(1100px, calc(100vw - var(--baal-scalar-modal-inset-left, 0px) - var(--baal-scalar-modal-inset-right, 0px) - 32px));
-    height: min(85svh, calc(100dvh - var(--baal-sticky-headers-offset-top, 0px) - 48px));
-    max-height: min(85svh, calc(100dvh - var(--baal-sticky-headers-offset-top, 0px) - 48px));
-    min-height: 0;
-    margin: 0 auto 16px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    -webkit-overflow-scrolling: touch;
-}
-
 body .scalar.scalar-app.z-overlay .scroll-timeline-x {
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-body .scalar.scalar-app.z-overlay .scroll-timeline-x::-webkit-scrollbar {
+/* body .scalar.scalar-app.z-overlay .scroll-timeline-x::-webkit-scrollbar {
     width: 0;
     height: 0;
     display: none;
-}
-
+} 
 body .scalar.scalar-app.z-overlay .scroll-timeline-x.scroll-timeline-x-hidden {
     overflow-y: hidden;
-}
-
-body .scalar.scalar-app.z-overlay .scalar-app-layout.scalar-client main {
-    min-height: 0;
-    flex: 1 1 auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
+}    
+*/
 
 .scalar-app .request-response-header {
     z-index: 1;
     background-color: var(--card);
-}
-
-@media (max-width: 1023px) {
-    .scalar.scalar-app.z-overlay .address-bar-bg-states {
-        max-width: calc(100dvw - 68px) !important;
-    }
-
-    .scalar-address-bar + div {
-        display: none !important;
-    }
-}
-
-[data-unit-card-stack][data-scalar-client-modal-open] {
-    z-index: 30;
-}
-
-html:has([data-unit-card-stack][data-scalar-client-modal-open]) [data-slot="sticky-breadcrumb-bar"] {
-    z-index: 110;
-}
-
-html:has([data-unit-card-stack][data-scalar-client-modal-open]) [data-slot="page-title-box"] {
-    z-index: 105;
 }

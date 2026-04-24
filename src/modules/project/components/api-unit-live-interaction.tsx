@@ -1,7 +1,6 @@
 "use client";
 
 import { ScalarHttpOperationClient } from "@/components/scalar-http-operation-client/scalar-http-operation-client";
-import { envConfig } from "@/lib/env";
 import type { ApiUnitMetadata, ProjectUnitResponse } from "../types";
 
 function readApiUnitMetadata(unit: ProjectUnitResponse): ApiUnitMetadata | null {
@@ -25,13 +24,19 @@ export type ApiUnitLiveInteractionProps = {
     unit: ProjectUnitResponse;
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
+    projectRuntimeBaseUrl?: string;
 };
 
-export function ApiUnitLiveInteraction({ unit, stageRuntimeId, releaseIsStage }: ApiUnitLiveInteractionProps) {
+export function ApiUnitLiveInteraction({
+    unit,
+    stageRuntimeId,
+    releaseIsStage,
+    projectRuntimeBaseUrl,
+}: ApiUnitLiveInteractionProps) {
     const meta = readApiUnitMetadata(unit);
-    const apiBase = (envConfig.apiBaseUrl ?? "").trim().replace(/\/$/, "");
+    const apiBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
     if (apiBase === "") {
-        return <div className="text-muted-foreground p-3 text-xs">API host is not configured.</div>;
+        return <div className="text-muted-foreground p-3 text-xs">No API runtime base URL for this project.</div>;
     }
     if (meta == null) {
         return <div className="text-muted-foreground p-3 text-xs">No API metadata for this unit.</div>;
