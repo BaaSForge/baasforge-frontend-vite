@@ -85,6 +85,13 @@ export interface ActorUnitMetadata {
     handlerOutputs?: Record<string, UnitJsonSchemaPart> | null;
 }
 
+export interface WorkflowUnitMetadata {
+    input?: UnitJsonSchemaPart | null;
+    output?: UnitJsonSchemaPart | null;
+    handlerInputs?: Record<string, UnitJsonSchemaPart> | null;
+    handlerOutputs?: Record<string, UnitJsonSchemaPart> | null;
+}
+
 export interface ProjectUnitResponse {
     id: string;
     project_id: string;

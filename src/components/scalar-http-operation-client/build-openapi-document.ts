@@ -10,6 +10,7 @@ export function buildOpenApiDocument(input: {
     queryParamsJsonSchema?: string | null;
     responseBodyJsonSchema?: string | null;
     operationSummary?: string;
+    omitRequestBody?: boolean;
 }): Record<string, unknown> {
     const method = input.method.trim().toLowerCase();
     if (!/^[a-z]+$/.test(method)) {
@@ -41,7 +42,7 @@ export function buildOpenApiDocument(input: {
     }
 
     const requestBodyTrimmed = input.requestBodyJsonSchema?.trim() ?? "";
-    if (METHODS_WITH_BODY.has(method)) {
+    if (METHODS_WITH_BODY.has(method) && input.omitRequestBody !== true) {
         operation.requestBody = {
             content: {
                 "application/json": {

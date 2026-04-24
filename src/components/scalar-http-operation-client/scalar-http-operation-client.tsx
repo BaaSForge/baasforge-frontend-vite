@@ -24,6 +24,7 @@ export type ScalarHttpOperationClientProps = {
     queryParamsJsonSchema?: string | null;
     responseBodyJsonSchema?: string | null;
     operationSummary?: string;
+    omitRequestBody?: boolean;
 };
 
 export function ScalarHttpOperationClient({
@@ -35,6 +36,7 @@ export function ScalarHttpOperationClient({
     queryParamsJsonSchema,
     responseBodyJsonSchema,
     operationSummary,
+    omitRequestBody,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
 
@@ -48,6 +50,7 @@ export function ScalarHttpOperationClient({
             queryParamsJsonSchema,
             responseBodyJsonSchema,
             operationSummary,
+            omitRequestBody,
         });
         return {
             ...scalarSiteEmbedConfiguration(resolvedAppTheme !== "light"),
@@ -61,10 +64,11 @@ export function ScalarHttpOperationClient({
         queryParamsJsonSchema,
         responseBodyJsonSchema,
         operationSummary,
+        omitRequestBody,
         resolvedAppTheme,
     ]);
 
-    const embedKey = `${url}\u0001${method}\u0001${operationSummary ?? ""}`;
+    const embedKey = `${url}\u0001${method}\u0001${operationSummary ?? ""}\u0001${omitRequestBody === true ? "1" : "0"}`;
 
     return (
         <div

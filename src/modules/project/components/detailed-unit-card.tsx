@@ -19,6 +19,7 @@ import { useProjectQuery } from "../queries";
 import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
 import { ActorUnitLiveInteraction } from "./actor-unit-live-interaction";
 import { ApiUnitLiveInteraction } from "./api-unit-live-interaction";
+import { WorkflowUnitLiveInteraction } from "./workflow-unit-live-interaction";
 import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
 import { hasUnitDependsOn, UnitDependenciesChips } from "./unit-dependencies-chips";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
@@ -255,6 +256,13 @@ export function DetailedUnitCard({
                                         />
                                     ) : unit.unit_type === "actor" ? (
                                         <ActorUnitLiveInteraction
+                                            unit={unit}
+                                            stageRuntimeId={stageRuntimeId}
+                                            releaseIsStage={releaseIsStage}
+                                            projectRuntimeBaseUrl={unitRuntimeBaseUrl}
+                                        />
+                                    ) : unit.unit_type === "workflow" ? (
+                                        <WorkflowUnitLiveInteraction
                                             unit={unit}
                                             stageRuntimeId={stageRuntimeId}
                                             releaseIsStage={releaseIsStage}

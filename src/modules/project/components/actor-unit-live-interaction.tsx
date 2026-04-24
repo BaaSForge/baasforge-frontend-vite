@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ActorUnitMetadata, ProjectUnitResponse } from "../types";
 
 const ACTOR_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
@@ -81,6 +81,121 @@ export type ActorUnitLiveInteractionProps = {
     projectRuntimeBaseUrl?: string;
 };
 
+type ActorTabsProps = {
+    pathPrefix: string;
+    actorBase: string;
+    meta: ActorUnitMetadata;
+    handlerNames: string[];
+    defaultTab: string;
+    stageSuffix: string;
+};
+
+function ActorUnitLiveInteractionTabs({
+    pathPrefix,
+    actorBase,
+    meta,
+    handlerNames,
+    defaultTab,
+    stageSuffix,
+}: ActorTabsProps) {
+    const [activeTab, setActiveTab] = useState(defaultTab);
+
+    return (
+        <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            orientation="vertical"
+            className="flex min-h-[18rem] flex-row gap-0 rounded-md border !flex-row"
+        >
+            <TabsList
+                className={cn(
+                    "bg-muted text-muted-foreground inline-flex h-auto w-44 shrink-0 flex-col items-stretch justify-start gap-0.5 rounded-none rounded-l-md border-0 border-r p-1.5",
+                )}
+            >
+                {handlerNames.map((name) => (
+                    <TabsTrigger
+                        key={name}
+                        value={`handler:${name}`}
+                        className="h-auto min-h-8 w-full flex-initial justify-start whitespace-normal px-2 py-1.5 text-left text-xs leading-snug break-words"
+                    >
+                        {name}
+                    </TabsTrigger>
+                ))}
+                <TabsTrigger
+                    value="state"
+                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
+                >
+                    Read state
+                </TabsTrigger>
+                <TabsTrigger
+                    value="passivate"
+                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
+                >
+                    Passivate
+                </TabsTrigger>
+                <TabsTrigger
+                    value="delete"
+                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
+                >
+                    Delete instance
+                </TabsTrigger>
+            </TabsList>
+            <div className="min-h-0 min-w-0 flex-1 p-2">
+                {handlerNames.map((name) => (
+                    <TabsContent key={name} value={`handler:${name}`} className="m-0 min-h-0 outline-none">
+                        {activeTab === `handler:${name}` ? (
+                            <ScalarHttpOperationClient
+                                url={`${pathPrefix}/${encodeURIComponent(name)}`}
+                                serverBaseUrl={actorBase}
+                                method="POST"
+                                requestBodyJsonSchema={meta.handlerInputs?.[name]?.jsonSchema ?? null}
+                                queryParamsJsonSchema={HANDLER_QUERY_PARAMS_JSON_SCHEMA}
+                                responseBodyJsonSchema={envelopeResultResponse(
+                                    meta.handlerOutputs?.[name]?.jsonSchema ?? null,
+                                )}
+                                operationSummary={`Handler ${name}${stageSuffix}`}
+                            />
+                        ) : null}
+                    </TabsContent>
+                ))}
+                <TabsContent value="state" className="m-0 min-h-0 outline-none">
+                    {activeTab === "state" ? (
+                        <ScalarHttpOperationClient
+                            url={`${pathPrefix}/state`}
+                            serverBaseUrl={actorBase}
+                            method="GET"
+                            responseBodyJsonSchema={envelopeStateResponse(meta.state?.jsonSchema ?? null)}
+                            operationSummary={`Read persisted state${stageSuffix}`}
+                        />
+                    ) : null}
+                </TabsContent>
+                <TabsContent value="passivate" className="m-0 min-h-0 outline-none">
+                    {activeTab === "passivate" ? (
+                        <ScalarHttpOperationClient
+                            url={`${pathPrefix}/passivate`}
+                            serverBaseUrl={actorBase}
+                            method="POST"
+                            responseBodyJsonSchema='{"type":"object","properties":{"passivated":{"type":"boolean"}},"required":["passivated"]}'
+                            operationSummary={`Passivate (flush / evict)${stageSuffix}`}
+                        />
+                    ) : null}
+                </TabsContent>
+                <TabsContent value="delete" className="m-0 min-h-0 outline-none">
+                    {activeTab === "delete" ? (
+                        <ScalarHttpOperationClient
+                            url={pathPrefix}
+                            serverBaseUrl={actorBase}
+                            method="DELETE"
+                            responseBodyJsonSchema='{"type":"object","properties":{"deleted":{"type":"boolean"}},"required":["deleted"]}'
+                            operationSummary={`Delete actor instance${stageSuffix}`}
+                        />
+                    ) : null}
+                </TabsContent>
+            </div>
+        </Tabs>
+    );
+}
+
 export function ActorUnitLiveInteraction({
     unit,
     stageRuntimeId,
@@ -105,11 +220,6 @@ export function ActorUnitLiveInteraction({
         if (handlerNames.length > 0) return `handler:${handlerNames[0]}`;
         return "state";
     }, [handlerNames]);
-
-    const [activeTab, setActiveTab] = useState(defaultTab);
-    useEffect(() => {
-        setActiveTab(defaultTab);
-    }, [defaultTab, unit.id]);
 
     const pathPrefix = useMemo(() => {
         if (!ACTOR_ID_PATTERN.test(actorId)) return null;
@@ -155,98 +265,15 @@ export function ActorUnitLiveInteraction({
                     Enter a valid actor instance id to load request clients.
                 </div>
             ) : (
-                <Tabs
-                    value={activeTab}
-                    onValueChange={setActiveTab}
-                    orientation="vertical"
-                    className="flex min-h-[18rem] flex-row gap-0 rounded-md border !flex-row"
-                >
-                    <TabsList
-                        className={cn(
-                            "bg-muted text-muted-foreground inline-flex h-auto w-44 shrink-0 flex-col items-stretch justify-start gap-0.5 rounded-none rounded-l-md border-0 border-r p-1.5",
-                        )}
-                    >
-                        {handlerNames.map((name) => (
-                            <TabsTrigger
-                                key={name}
-                                value={`handler:${name}`}
-                                className="h-auto min-h-8 w-full flex-initial justify-start whitespace-normal px-2 py-1.5 text-left text-xs leading-snug break-words"
-                            >
-                                {name}
-                            </TabsTrigger>
-                        ))}
-                        <TabsTrigger
-                            value="state"
-                            className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                        >
-                            Read state
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="passivate"
-                            className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                        >
-                            Passivate
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="delete"
-                            className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                        >
-                            Delete instance
-                        </TabsTrigger>
-                    </TabsList>
-                    <div className="min-h-0 min-w-0 flex-1 p-2">
-                        {handlerNames.map((name) => (
-                            <TabsContent key={name} value={`handler:${name}`} className="m-0 min-h-0 outline-none">
-                                {activeTab === `handler:${name}` ? (
-                                    <ScalarHttpOperationClient
-                                        url={`${pathPrefix}/${encodeURIComponent(name)}`}
-                                        serverBaseUrl={actorBase}
-                                        method="POST"
-                                        requestBodyJsonSchema={meta.handlerInputs?.[name]?.jsonSchema ?? null}
-                                        queryParamsJsonSchema={HANDLER_QUERY_PARAMS_JSON_SCHEMA}
-                                        responseBodyJsonSchema={envelopeResultResponse(
-                                            meta.handlerOutputs?.[name]?.jsonSchema ?? null,
-                                        )}
-                                        operationSummary={`Handler ${name}${stageSuffix}`}
-                                    />
-                                ) : null}
-                            </TabsContent>
-                        ))}
-                        <TabsContent value="state" className="m-0 min-h-0 outline-none">
-                            {activeTab === "state" ? (
-                                <ScalarHttpOperationClient
-                                    url={`${pathPrefix}/state`}
-                                    serverBaseUrl={actorBase}
-                                    method="GET"
-                                    responseBodyJsonSchema={envelopeStateResponse(meta.state?.jsonSchema ?? null)}
-                                    operationSummary={`Read persisted state${stageSuffix}`}
-                                />
-                            ) : null}
-                        </TabsContent>
-                        <TabsContent value="passivate" className="m-0 min-h-0 outline-none">
-                            {activeTab === "passivate" ? (
-                                <ScalarHttpOperationClient
-                                    url={`${pathPrefix}/passivate`}
-                                    serverBaseUrl={actorBase}
-                                    method="POST"
-                                    responseBodyJsonSchema='{"type":"object","properties":{"passivated":{"type":"boolean"}},"required":["passivated"]}'
-                                    operationSummary={`Passivate (flush / evict)${stageSuffix}`}
-                                />
-                            ) : null}
-                        </TabsContent>
-                        <TabsContent value="delete" className="m-0 min-h-0 outline-none">
-                            {activeTab === "delete" ? (
-                                <ScalarHttpOperationClient
-                                    url={pathPrefix}
-                                    serverBaseUrl={actorBase}
-                                    method="DELETE"
-                                    responseBodyJsonSchema='{"type":"object","properties":{"deleted":{"type":"boolean"}},"required":["deleted"]}'
-                                    operationSummary={`Delete actor instance${stageSuffix}`}
-                                />
-                            ) : null}
-                        </TabsContent>
-                    </div>
-                </Tabs>
+                <ActorUnitLiveInteractionTabs
+                    key={`${unit.id}\u0000${defaultTab}`}
+                    pathPrefix={pathPrefix}
+                    actorBase={actorBase}
+                    meta={meta}
+                    handlerNames={handlerNames}
+                    defaultTab={defaultTab}
+                    stageSuffix={stageSuffix}
+                />
             )}
         </div>
     );
