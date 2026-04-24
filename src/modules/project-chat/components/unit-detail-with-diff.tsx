@@ -1,8 +1,8 @@
 "use client";
 
+import { SectionTitle } from "@/components/section-title";
 import { LiveBadge } from "@/components/live-badge";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { CollapsiblePanelTitle } from "@/components/ui/collapsible-panel-title";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types
 import { usePersistedUnitDetailPanels } from "../hooks/use-persisted-unit-detail-panels";
 import { usePersistedUnitDiffViewMode, type UnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
 import { AlignJustify, Columns2, FileCode } from "lucide-react";
+import { useMemo } from "react";
 import { ChatSessionDiffNewerRevisionChip } from "./chat-session-diff-newer-revision-chip";
 import { UnitExplanationCurrentViewer } from "./unit-explanation-current-viewer";
 import { UnitExplanationDiffViewer } from "./unit-explanation-diff-viewer";
@@ -120,6 +121,12 @@ export function UnitDetailWithDiff({
 }: UnitDetailWithDiffProps) {
     const [diffLayoutMode, setDiffLayoutMode] = usePersistedUnitDiffViewMode();
     const [panels, setPanelOpen] = usePersistedUnitDetailPanels();
+    const panelToggleValue = useMemo(() => {
+        const v: string[] = [];
+        if (panels.explanationNote) v.push("explanationNote");
+        if (panels.code) v.push("code");
+        return v;
+    }, [panels]);
     const isMobile = useIsMobile();
     const splitView = !isMobile && diffLayoutMode === "split";
     const projectId = currentUnit.project_id;
@@ -196,13 +203,35 @@ export function UnitDetailWithDiff({
             </div>
 
             <div className="space-y-4">
-                <Collapsible
-                    open={panels.explanationNote}
-                    onOpenChange={(open) => setPanelOpen("explanationNote", open)}
-                >
-                    <CollapsiblePanelTitle>Explanation note</CollapsiblePanelTitle>
+                <div className="flex justify-start">
+                    <ToggleGroup
+                        type="multiple"
+                        variant="outline"
+                        size="sm"
+                        spacing={0}
+                        className="h-8 w-fit shrink-0"
+                        value={panelToggleValue}
+                        onValueChange={(next) => {
+                            setPanelOpen("explanationNote", next.includes("explanationNote"));
+                            setPanelOpen("code", next.includes("code"));
+                        }}
+                        aria-label="Diff sections"
+                    >
+                        <ToggleGroupItem
+                            value="explanationNote"
+                            className="h-7 min-w-0 px-2.5 py-0 text-xs"
+                        >
+                            Explanation note
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="code" className="h-7 min-w-0 px-2.5 py-0 text-xs">
+                            Code
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
+                <Collapsible open={panels.explanationNote}>
                     <CollapsibleContent className="min-h-0">
-                        <div className="pt-2">
+                        <SectionTitle className="mb-2">Explanation note</SectionTitle>
+                        <div>
                             {renderDiffBody(diffLayoutMode, oldUnit?.explanation ?? null, currentUnit.explanation, {
                                 plainText: true,
                             })}
@@ -210,10 +239,10 @@ export function UnitDetailWithDiff({
                     </CollapsibleContent>
                 </Collapsible>
 
-                <Collapsible open={panels.code} onOpenChange={(open) => setPanelOpen("code", open)}>
-                    <CollapsiblePanelTitle>Code</CollapsiblePanelTitle>
+                <Collapsible open={panels.code}>
                     <CollapsibleContent className="min-h-0">
-                        <div className="pt-2">
+                        <SectionTitle className="mb-2">Code</SectionTitle>
+                        <div>
                             {renderDiffBody(diffLayoutMode, oldUnit?.code ?? null, currentUnit.code, {
                                 plainText: false,
                                 syntaxLanguage: "typescript",

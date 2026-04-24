@@ -1,17 +1,18 @@
 "use client";
 
 import { Markdown } from "@/components/markdown";
+import { SectionTitle } from "@/components/section-title";
 import { LiveBadge } from "@/components/live-badge";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { CollapsiblePanelTitle } from "@/components/ui/collapsible-panel-title";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Maximize2, TriangleAlert } from "lucide-react";
+import { Maximize2, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
@@ -81,6 +82,12 @@ export function DetailedUnitCard({
     const [modalOpen, setModalOpen] = useState(false);
     const [explanationOpen, setExplanationOpen] = useState(true);
     const [interactionOpen, setInteractionOpen] = useState(false);
+    const panelToggleValue = useMemo(() => {
+        const v: string[] = [];
+        if (explanationOpen) v.push("explanation");
+        if (releaseIsLive && interactionOpen) v.push("interaction");
+        return v;
+    }, [explanationOpen, interactionOpen, releaseIsLive]);
     const sourceChatSessionId = unit.chat_session_id?.trim() ?? "";
     const showHeaderMenu =
         showChatSessionOverflowMenu === true && projectId != null && projectId !== "";
@@ -182,13 +189,41 @@ export function DetailedUnitCard({
                     </div>
                 </div>
                 <div className="space-y-4 border-t px-3 py-3">
-                    <Collapsible open={explanationOpen} onOpenChange={setExplanationOpen}>
-                        <CollapsiblePanelTitle>Explanation note</CollapsiblePanelTitle>
+                    <div className="flex flex-wrap items-center justify-start gap-x-1 gap-y-2">
+                        <ToggleGroup
+                            type="multiple"
+                            variant="outline"
+                            size="sm"
+                            spacing={0}
+                            className="h-8 w-fit shrink-0"
+                            value={panelToggleValue}
+                            onValueChange={(next) => {
+                                setExplanationOpen(next.includes("explanation"));
+                                if (releaseIsLive) setInteractionOpen(next.includes("interaction"));
+                            }}
+                            aria-label="Unit detail sections"
+                        >
+                            <ToggleGroupItem value="explanation" className="h-7 min-w-0 px-2.5 py-0 text-xs">
+                                Explanation note
+                            </ToggleGroupItem>
+                            <ToggleGroupItem
+                                value="interaction"
+                                disabled={!releaseIsLive}
+                                className="h-7 min-w-0 px-2.5 py-0 text-xs"
+                                aria-label="Live interaction"
+                            >
+                                Live interaction
+                            </ToggleGroupItem>
+                        </ToggleGroup>
+                        {!releaseIsLive ? <LiveInteractionNotLiveWarningPopover /> : null}
+                    </div>
+                    <Collapsible open={explanationOpen}>
                         <CollapsibleContent className="min-h-0">
+                            <SectionTitle className="mb-2">Explanation note</SectionTitle>
                             <div className={cn(isDeleted && "line-through", isRejected && "opacity-90")}>
                                 <Markdown
                                     key={unit.id}
-                                    className={cn("prose prose-sm dark:prose-invert max-w-none pt-2")}
+                                    className={cn("prose prose-sm dark:prose-invert max-w-none")}
                                 >
                                     {explanationMarkdown}
                                 </Markdown>
@@ -196,10 +231,10 @@ export function DetailedUnitCard({
                         </CollapsibleContent>
                     </Collapsible>
                     {releaseIsLive ? (
-                        <Collapsible open={interactionOpen} onOpenChange={setInteractionOpen}>
-                            <CollapsiblePanelTitle>Live interaction</CollapsiblePanelTitle>
+                        <Collapsible open={interactionOpen}>
                             <CollapsibleContent className="min-h-0">
-                                <div className="mt-2">
+                                <SectionTitle className="mb-2">Live interaction</SectionTitle>
+                                <div>
                                     {unit.unit_type === "api" ? (
                                         <ApiUnitLiveInteraction
                                             unit={unit}
@@ -215,21 +250,7 @@ export function DetailedUnitCard({
                                 </div>
                             </CollapsibleContent>
                         </Collapsible>
-                    ) : (
-                        <div className="flex flex-wrap items-center gap-x-1 gap-y-0">
-                            <div
-                                className={cn(
-                                    buttonVariants({ variant: "ghost", size: "sm" }),
-                                    "pointer-events-none w-fit max-w-full cursor-not-allowed justify-start gap-1.5 bg-muted/40 text-left text-xs font-normal text-muted-foreground opacity-60",
-                                )}
-                                aria-disabled
-                            >
-                                <ChevronDown className="size-3.5 shrink-0 opacity-50" aria-hidden />
-                                <span className="min-w-0 truncate">Live interaction</span>
-                            </div>
-                            <LiveInteractionNotLiveWarningPopover />
-                        </div>
-                    )}
+                    ) : null}
                 </div>
                 <UnitFullExplanationModal
                     open={modalOpen}
