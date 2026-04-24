@@ -1,0 +1,263 @@
+"use client";
+
+import { ScalarHttpOperationClient } from "@/components/scalar-http-operation-client/scalar-http-operation-client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { useMemo, useState } from "react";
+import type { ProjectUnitResponse, QueueWorkerUnitMetadata } from "../types";
+
+const RUN_ID_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const ENQUEUE_RESPONSE_JSON_SCHEMA = JSON.stringify({
+    type: "object",
+    properties: {
+        runId: { type: "string", format: "uuid" },
+        status: { type: "string", enum: ["queued"] },
+    },
+    required: ["runId", "status"],
+});
+
+const RUN_STATUS_RESPONSE_JSON_SCHEMA = JSON.stringify({
+    type: "object",
+    properties: {
+        status: { type: "string" },
+        attempt: { type: "integer", minimum: 0 },
+        enqueuedAt: { type: "integer" },
+        runId: { type: "string" },
+    },
+    required: ["status", "attempt", "enqueuedAt", "runId"],
+});
+
+const CANCEL_RESPONSE_JSON_SCHEMA = JSON.stringify({
+    type: "object",
+    properties: { status: { type: "string", enum: ["cancelled"] } },
+    required: ["status"],
+});
+
+function readQueueWorkerUnitMetadata(unit: ProjectUnitResponse): QueueWorkerUnitMetadata | null {
+    if (unit.unit_type !== "queue_worker") return null;
+    const m = unit.metadata;
+    if (m == null || typeof m !== "object") return null;
+    return m as QueueWorkerUnitMetadata;
+}
+
+function parseJsonObjectRecord(json: string | null | undefined): Record<string, unknown> | null {
+    const t = json?.trim();
+    if (t == null || t === "") return null;
+    try {
+        const v: unknown = JSON.parse(t);
+        if (v !== null && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
+    } catch {
+        return null;
+    }
+    return null;
+}
+
+function queueWorkerResultEnvelopeSchema(outputJsonSchema: string | null | undefined): string {
+    const inner = parseJsonObjectRecord(outputJsonSchema);
+    const resultSchema = inner ?? { nullable: true, description: "Worker result JSON when available" };
+    return JSON.stringify({
+        type: "object",
+        properties: {
+            status: { type: "string" },
+            result: resultSchema,
+        },
+        required: ["status", "result"],
+    });
+}
+
+function buildQueueWorkerBasePath(unit: ProjectUnitResponse): string {
+    const { project_id, context_slug, module_slug, unit_name_slug } = unit;
+    const enc = encodeURIComponent;
+    return `/api/v1/trigger/workerQueue/${enc(project_id)}/${enc(context_slug)}/${enc(module_slug)}/${enc(unit_name_slug)}`;
+}
+
+export type QueueWorkerUnitLiveInteractionProps = {
+    unit: ProjectUnitResponse;
+    projectRuntimeBaseUrl?: string;
+};
+
+type QueueWorkerTabsProps = {
+    basePath: string;
+    workerBase: string;
+    meta: QueueWorkerUnitMetadata;
+    runIdTrimmed: string;
+    runIdValid: boolean;
+    defaultTab: string;
+};
+
+function runScopedPlaceholder() {
+    return (
+        <div className="text-muted-foreground flex min-h-[12rem] items-center justify-center rounded-md border border-dashed px-3 text-center text-xs">
+            Enter a valid run UUID above to call this endpoint.
+        </div>
+    );
+}
+
+function QueueWorkerUnitLiveInteractionTabs({
+    basePath,
+    workerBase,
+    meta,
+    runIdTrimmed,
+    runIdValid,
+    defaultTab,
+}: QueueWorkerTabsProps) {
+    const [activeTab, setActiveTab] = useState(defaultTab);
+    const runPathPrefix = runIdValid ? `${basePath}/${encodeURIComponent(runIdTrimmed)}` : "";
+
+    return (
+        <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            orientation="vertical"
+            className="flex min-h-[18rem] flex-row gap-0 rounded-md border !flex-row"
+        >
+            <TabsList
+                className={cn(
+                    "bg-muted text-muted-foreground inline-flex h-auto w-44 shrink-0 flex-col items-stretch justify-start gap-0.5 rounded-none rounded-l-md border-0 border-r p-1.5",
+                )}
+            >
+                <TabsTrigger
+                    value="enqueue"
+                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
+                >
+                    Enqueue run
+                </TabsTrigger>
+                <TabsTrigger
+                    value="status"
+                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
+                >
+                    Run status
+                </TabsTrigger>
+                <TabsTrigger
+                    value="result"
+                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
+                >
+                    Run result
+                </TabsTrigger>
+                <TabsTrigger
+                    value="cancel"
+                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
+                >
+                    Cancel run
+                </TabsTrigger>
+            </TabsList>
+            <div className="min-h-0 min-w-0 flex-1 p-2">
+                <TabsContent value="enqueue" className="m-0 min-h-0 outline-none">
+                    {activeTab === "enqueue" ? (
+                        <ScalarHttpOperationClient
+                            url={basePath}
+                            serverBaseUrl={workerBase}
+                            method="POST"
+                            requestBodyJsonSchema={meta.input?.jsonSchema ?? null}
+                            responseBodyJsonSchema={ENQUEUE_RESPONSE_JSON_SCHEMA}
+                            operationSummary="Enqueue queue worker run"
+                        />
+                    ) : null}
+                </TabsContent>
+                <TabsContent value="status" className="m-0 min-h-0 outline-none">
+                    {activeTab === "status" ? (
+                        runIdValid && runPathPrefix !== "" ? (
+                            <ScalarHttpOperationClient
+                                url={`${runPathPrefix}/status`}
+                                serverBaseUrl={workerBase}
+                                method="GET"
+                                responseBodyJsonSchema={RUN_STATUS_RESPONSE_JSON_SCHEMA}
+                                operationSummary="Queue worker run status"
+                            />
+                        ) : (
+                            runScopedPlaceholder()
+                        )
+                    ) : null}
+                </TabsContent>
+                <TabsContent value="result" className="m-0 min-h-0 outline-none">
+                    {activeTab === "result" ? (
+                        runIdValid && runPathPrefix !== "" ? (
+                            <ScalarHttpOperationClient
+                                url={`${runPathPrefix}/result`}
+                                serverBaseUrl={workerBase}
+                                method="GET"
+                                responseBodyJsonSchema={queueWorkerResultEnvelopeSchema(meta.output?.jsonSchema ?? null)}
+                                operationSummary="Queue worker run result"
+                            />
+                        ) : (
+                            runScopedPlaceholder()
+                        )
+                    ) : null}
+                </TabsContent>
+                <TabsContent value="cancel" className="m-0 min-h-0 outline-none">
+                    {activeTab === "cancel" ? (
+                        runIdValid && runPathPrefix !== "" ? (
+                            <ScalarHttpOperationClient
+                                url={`${runPathPrefix}/cancel`}
+                                serverBaseUrl={workerBase}
+                                method="POST"
+                                responseBodyJsonSchema={CANCEL_RESPONSE_JSON_SCHEMA}
+                                operationSummary="Cancel queue worker run"
+                            />
+                        ) : (
+                            runScopedPlaceholder()
+                        )
+                    ) : null}
+                </TabsContent>
+            </div>
+        </Tabs>
+    );
+}
+
+export function QueueWorkerUnitLiveInteraction({ unit, projectRuntimeBaseUrl }: QueueWorkerUnitLiveInteractionProps) {
+    const meta = readQueueWorkerUnitMetadata(unit);
+    const workerBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
+    const [runId, setRunId] = useState("");
+    const basePath = useMemo(() => buildQueueWorkerBasePath(unit), [unit]);
+
+    const runIdTrimmed = runId.trim();
+    const runIdValid = RUN_ID_UUID.test(runIdTrimmed);
+    const runIdInvalid = runIdTrimmed.length > 0 && !runIdValid;
+
+    if (workerBase === "") {
+        return <div className="text-muted-foreground p-3 text-xs">No queue worker runtime base URL for this project.</div>;
+    }
+    if (meta == null) {
+        return <div className="text-muted-foreground p-3 text-xs">No queue worker metadata for this unit.</div>;
+    }
+
+    return (
+        <div className="flex flex-col gap-3">
+            <div className="space-y-1.5">
+                <Label htmlFor={`queue-run-id-${unit.id}`} className="text-xs">
+                    Run id (UUID)
+                </Label>
+                <Input
+                    id={`queue-run-id-${unit.id}`}
+                    value={runId}
+                    onChange={(e) => setRunId(e.target.value)}
+                    placeholder="Paste runId from enqueue response"
+                    className="h-8 text-xs"
+                    autoComplete="off"
+                    spellCheck={false}
+                />
+                <p className="text-muted-foreground text-[11px] leading-snug">
+                    Used for status, result, and cancel. Enqueue does not require a run id.
+                </p>
+                {runIdInvalid ? (
+                    <p className="text-destructive text-xs" role="alert">
+                        Enter a valid UUID run id for run-scoped operations.
+                    </p>
+                ) : null}
+            </div>
+
+            <QueueWorkerUnitLiveInteractionTabs
+                key={unit.id}
+                basePath={basePath}
+                workerBase={workerBase}
+                meta={meta}
+                runIdTrimmed={runIdTrimmed}
+                runIdValid={runIdValid}
+                defaultTab="enqueue"
+            />
+        </div>
+    );
+}

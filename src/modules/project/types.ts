@@ -92,6 +92,12 @@ export interface WorkflowUnitMetadata {
     handlerOutputs?: Record<string, UnitJsonSchemaPart> | null;
 }
 
+export interface QueueWorkerUnitMetadata {
+    input?: UnitJsonSchemaPart | null;
+    output?: UnitJsonSchemaPart | null;
+    batchOutput?: UnitJsonSchemaPart | null;
+}
+
 export interface ProjectUnitResponse {
     id: string;
     project_id: string;
