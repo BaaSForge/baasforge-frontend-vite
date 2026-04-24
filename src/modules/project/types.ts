@@ -68,15 +68,15 @@ export interface ContextModulesByContextRow {
     module_slugs: string[];
 }
 
-export interface TypeScriptJsonSchemaPair {
-    typescript?: string | null;
+export interface ApiUnitJsonSchemaPart {
+    jsonSchema?: string | null;
 }
 
 export interface ApiUnitMetadata {
     method?: string | null;
-    request_body?: TypeScriptJsonSchemaPair;
-    request_params?: TypeScriptJsonSchemaPair;
-    response_body?: TypeScriptJsonSchemaPair;
+    requestBody?: ApiUnitJsonSchemaPart;
+    requestParams?: ApiUnitJsonSchemaPart;
+    responseBody?: ApiUnitJsonSchemaPart;
 }
 
 export interface ProjectUnitResponse {

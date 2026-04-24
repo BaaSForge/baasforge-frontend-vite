@@ -19,9 +19,9 @@ export type ScalarHttpOperationClientProps = {
     url: string;
     serverBaseUrl?: string;
     method: string;
-    requestBodyTypescript?: string | null;
-    queryParamsTypescript?: string | null;
-    responseTypescript?: string | null;
+    requestBodyJsonSchema?: string | null;
+    queryParamsJsonSchema?: string | null;
+    responseBodyJsonSchema?: string | null;
     operationSummary?: string;
 };
 
@@ -38,9 +38,9 @@ export function ScalarHttpOperationClient({
     url,
     serverBaseUrl,
     method,
-    requestBodyTypescript,
-    queryParamsTypescript,
-    responseTypescript,
+    requestBodyJsonSchema,
+    queryParamsJsonSchema,
+    responseBodyJsonSchema,
     operationSummary,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
@@ -52,9 +52,9 @@ export function ScalarHttpOperationClient({
             serverBaseUrl: server,
             path,
             method,
-            requestBodyTypescript,
-            queryParamsTypescript,
-            responseTypescript,
+            requestBodyJsonSchema,
+            queryParamsJsonSchema,
+            responseBodyJsonSchema,
             operationSummary,
         });
         return {
@@ -79,9 +79,9 @@ export function ScalarHttpOperationClient({
         url,
         serverBaseUrl,
         method,
-        requestBodyTypescript,
-        queryParamsTypescript,
-        responseTypescript,
+        requestBodyJsonSchema,
+        queryParamsJsonSchema,
+        responseBodyJsonSchema,
         operationSummary,
         resolvedAppTheme,
     ]);

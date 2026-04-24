@@ -43,9 +43,9 @@ export function ApiUnitLiveInteraction({
     }
 
     const method = (meta.method ?? "POST").toString();
-    const requestBodyTypescript = meta.request_body?.typescript;
-    const queryParamsTypescript = meta.request_params?.typescript;
-    const responseTypescript = meta.response_body?.typescript;
+    const requestBodyJsonSchema = meta.requestBody?.jsonSchema;
+    const queryParamsJsonSchema = meta.requestParams?.jsonSchema;
+    const responseBodyJsonSchema = meta.responseBody?.jsonSchema;
 
     const runtimeId = stageRuntimeId?.trim() ?? "";
     const useStageTrigger = releaseIsStage === true && runtimeId !== "";
@@ -57,9 +57,9 @@ export function ApiUnitLiveInteraction({
             url={path}
             serverBaseUrl={apiBase}
             method={method}
-            requestBodyTypescript={requestBodyTypescript}
-            queryParamsTypescript={queryParamsTypescript}
-            responseTypescript={responseTypescript}
+            requestBodyJsonSchema={requestBodyJsonSchema}
+            queryParamsJsonSchema={queryParamsJsonSchema}
+            responseBodyJsonSchema={responseBodyJsonSchema}
             operationSummary={operationSummary}
         />
     );

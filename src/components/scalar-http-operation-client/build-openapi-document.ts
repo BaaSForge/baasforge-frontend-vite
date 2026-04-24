@@ -1,4 +1,4 @@
-import { queryParametersFromJsonSchema, schemaFromStoredTypeString } from "./schema-from-stored-type-string";
+import { jsonSchemaDocumentOrPlaceholder, queryParametersFromJsonSchema } from "./openapi-json-schema";
 
 const METHODS_WITH_BODY = new Set(["post", "put", "patch", "delete"]);
 
@@ -6,9 +6,9 @@ export function buildOpenApiDocument(input: {
     serverBaseUrl: string;
     path: string;
     method: string;
-    requestBodyTypescript?: string | null;
-    queryParamsTypescript?: string | null;
-    responseTypescript?: string | null;
+    requestBodyJsonSchema?: string | null;
+    queryParamsJsonSchema?: string | null;
+    responseBodyJsonSchema?: string | null;
     operationSummary?: string;
 }): Record<string, unknown> {
     const method = input.method.trim().toLowerCase();
@@ -16,10 +16,10 @@ export function buildOpenApiDocument(input: {
         throw new Error(`Invalid HTTP method: ${input.method}`);
     }
     const pathKey = input.path.startsWith("/") ? input.path : `/${input.path}`;
-    const querySchema = schemaFromStoredTypeString("Query parameters", input.queryParamsTypescript);
+    const querySchema = jsonSchemaDocumentOrPlaceholder("Query parameters", input.queryParamsJsonSchema);
     const queryParameters = queryParametersFromJsonSchema(querySchema);
-    const requestBodySchema = schemaFromStoredTypeString("Request body", input.requestBodyTypescript);
-    const responseSchema = schemaFromStoredTypeString("Response body", input.responseTypescript);
+    const requestBodySchema = jsonSchemaDocumentOrPlaceholder("Request body", input.requestBodyJsonSchema);
+    const responseSchema = jsonSchemaDocumentOrPlaceholder("Response body", input.responseBodyJsonSchema);
 
     const operation: Record<string, unknown> = {
         operationId: "operation",

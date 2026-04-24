@@ -41,5 +41,5 @@ export type {
     ProjectUnitType,
     ReleaseResponse,
     StageReleaseRequest,
-    TypeScriptJsonSchemaPair,
+    ApiUnitJsonSchemaPart,
 } from "./types";
