@@ -5,12 +5,10 @@ import { cn } from "@/lib/utils";
 import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 import "./scalar-http-operation-embed.css";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
 import { resolveOperationUrl } from "./resolve-operation-url";
-import { useScalarExampleResponsesShowSchemaDefault } from "./use-scalar-example-responses-show-schema-default";
-
 export type ScalarHttpOperationClientProps = {
     className?: string;
     /**
@@ -44,7 +42,6 @@ export function ScalarHttpOperationClient({
     operationSummary,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
-    const embedRootRef = useRef<HTMLDivElement>(null);
 
     const configuration = useMemo((): AnyApiReferenceConfiguration => {
         const { serverBaseUrl: server, path } = resolveOperationUrl(url, serverBaseUrl);
@@ -88,11 +85,8 @@ export function ScalarHttpOperationClient({
 
     const embedKey = `${url}\u0001${method}\u0001${operationSummary ?? ""}`;
 
-    useScalarExampleResponsesShowSchemaDefault(embedRootRef, embedKey);
-
     return (
         <div
-            ref={embedRootRef}
             className={cn(
                 "scalar-http-operation-client scalar-app w-full min-h-0 overflow-visible rounded-md",
                 className,
