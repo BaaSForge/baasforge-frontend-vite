@@ -167,3 +167,31 @@ body .scalar.scalar-app.z-overlay .scroll-timeline-x.scroll-timeline-x-hidden {
     z-index: 1;
     background-color: var(--card);
 }
+
+/* Scalar ResponseEmpty uses computer ASCII; swap for app icon (embed + portaled client modal). */
+.scalar-http-operation-client .ascii-art,
+body .scalar.scalar-app.z-overlay .ascii-art {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 7rem;
+    width: 100%;
+    max-width: 100%;
+    font-size: inherit !important;
+    line-height: normal !important;
+}
+
+.scalar-http-operation-client .ascii-art > span,
+body .scalar.scalar-app.z-overlay .ascii-art > span {
+    display: none !important;
+}
+
+.scalar-http-operation-client .ascii-art::after,
+body .scalar.scalar-app.z-overlay .ascii-art::after {
+    content: "";
+    display: block;
+    width: 4.5rem;
+    height: 4.5rem;
+    background: url("/icon.png") center / contain no-repeat;
+    opacity: 0.55;
+}
