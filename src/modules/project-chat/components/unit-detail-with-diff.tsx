@@ -7,6 +7,11 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { UnitCardIdRow } from "@/modules/project/components/unit-card-id-row";
+import {
+    hasUnitDependsOn,
+    UnitDependenciesChips,
+    unitDependsOnForDiffText,
+} from "@/modules/project/components/unit-dependencies-chips";
 import { UnitRevisionBadge } from "@/modules/project/components/unit-revision-badge";
 import { UnitTypeBadge } from "@/modules/project/components/unit-type-badge";
 import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types";
@@ -121,12 +126,15 @@ export function UnitDetailWithDiff({
 }: UnitDetailWithDiffProps) {
     const [diffLayoutMode, setDiffLayoutMode] = usePersistedUnitDiffViewMode();
     const [panels, setPanelOpen] = usePersistedUnitDetailPanels();
+    const showDependenciesTab =
+        hasUnitDependsOn(oldUnit?.depends_on) || hasUnitDependsOn(currentUnit.depends_on);
     const panelToggleValue = useMemo(() => {
         const v: string[] = [];
         if (panels.explanationNote) v.push("explanationNote");
         if (panels.code) v.push("code");
+        if (showDependenciesTab && panels.dependencies) v.push("dependencies");
         return v;
-    }, [panels]);
+    }, [panels, showDependenciesTab]);
     const isMobile = useIsMobile();
     const splitView = !isMobile && diffLayoutMode === "split";
     const projectId = currentUnit.project_id;
@@ -214,6 +222,7 @@ export function UnitDetailWithDiff({
                         onValueChange={(next) => {
                             setPanelOpen("explanationNote", next.includes("explanationNote"));
                             setPanelOpen("code", next.includes("code"));
+                            setPanelOpen("dependencies", next.includes("dependencies"));
                         }}
                         aria-label="Diff sections"
                     >
@@ -226,6 +235,11 @@ export function UnitDetailWithDiff({
                         <ToggleGroupItem value="code" className="h-7 min-w-0 px-2.5 py-0 text-xs">
                             Code
                         </ToggleGroupItem>
+                        {showDependenciesTab ? (
+                            <ToggleGroupItem value="dependencies" className="h-7 min-w-0 px-2.5 py-0 text-xs">
+                                Dependencies
+                            </ToggleGroupItem>
+                        ) : null}
                     </ToggleGroup>
                 </div>
                 <Collapsible open={panels.explanationNote}>
@@ -250,6 +264,25 @@ export function UnitDetailWithDiff({
                         </div>
                     </CollapsibleContent>
                 </Collapsible>
+                {showDependenciesTab ? (
+                    <Collapsible open={panels.dependencies}>
+                        <CollapsibleContent className="min-h-0">
+                            <SectionTitle className="mb-2">Dependencies</SectionTitle>
+                            <div>
+                                {diffLayoutMode === "current" ? (
+                                    <UnitDependenciesChips dependsOn={currentUnit.depends_on} />
+                                ) : (
+                                    renderDiffBody(
+                                        diffLayoutMode,
+                                        unitDependsOnForDiffText(oldUnit?.depends_on),
+                                        unitDependsOnForDiffText(currentUnit.depends_on),
+                                        { plainText: true },
+                                    )
+                                )}
+                            </div>
+                        </CollapsibleContent>
+                    </Collapsible>
+                ) : null}
             </div>
         </div>
     );

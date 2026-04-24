@@ -5,13 +5,14 @@ export const UNIT_DETAIL_PANELS_STORAGE_KEY = "baal-unit-detail-panels";
 
 const UNIT_DETAIL_PANELS_CHANGED_EVENT = "baal-unit-detail-panels-changed";
 
-export type UnitDetailPanelKey = "code" | "explanationNote";
+export type UnitDetailPanelKey = "code" | "dependencies" | "explanationNote";
 
 export type UnitDetailPanelsState = Record<UnitDetailPanelKey, boolean>;
 
 const DEFAULTS: UnitDetailPanelsState = {
     explanationNote: true,
     code: false,
+    dependencies: false,
 };
 
 function readStored(): UnitDetailPanelsState {
@@ -26,6 +27,8 @@ function readStored(): UnitDetailPanelsState {
             explanationNote:
                 typeof partial.explanationNote === "boolean" ? partial.explanationNote : DEFAULTS.explanationNote,
             code: typeof partial.code === "boolean" ? partial.code : DEFAULTS.code,
+            dependencies:
+                typeof partial.dependencies === "boolean" ? partial.dependencies : DEFAULTS.dependencies,
         };
     } catch {
         return DEFAULTS;
@@ -37,7 +40,8 @@ const unitDetailPanelsStore = createSyncedJsonLocalStorageStore<UnitDetailPanels
     changedEventName: UNIT_DETAIL_PANELS_CHANGED_EVENT,
     getServerSnapshot: () => DEFAULTS,
     read: readStored,
-    equal: (a, b) => a.code === b.code && a.explanationNote === b.explanationNote,
+    equal: (a, b) =>
+        a.code === b.code && a.explanationNote === b.explanationNote && a.dependencies === b.dependencies,
 });
 
 export function usePersistedUnitDetailPanels(): [UnitDetailPanelsState, (key: UnitDetailPanelKey, open: boolean) => void] {

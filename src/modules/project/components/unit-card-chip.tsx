@@ -93,6 +93,7 @@ export function UnitCardChip({
                         unitId={unit.id}
                         explanation={explanation}
                         code={unit.code}
+                        dependsOn={unit.depends_on}
                         isDeleted={isDeleted}
                         isRejected={isRejected}
                         badges={badges}

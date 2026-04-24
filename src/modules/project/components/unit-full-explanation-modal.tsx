@@ -10,6 +10,7 @@ import { UnitExplanationCurrentViewer } from "@/modules/project-chat/components/
 import { usePersistedUnitDetailPanels } from "@/modules/project-chat/hooks/use-persisted-unit-detail-panels";
 import { type ReactNode, useMemo } from "react";
 import { UnitCardIdRow } from "./unit-card-id-row";
+import { hasUnitDependsOn, UnitDependenciesChips } from "./unit-dependencies-chips";
 
 export interface UnitFullExplanationModalProps {
     open: boolean;
@@ -17,6 +18,7 @@ export interface UnitFullExplanationModalProps {
     unitId: string;
     explanation: string;
     code: string | null;
+    dependsOn?: string | null;
     isDeleted?: boolean;
     isRejected?: boolean;
     badges: ReactNode;
@@ -28,17 +30,20 @@ export function UnitFullExplanationModal({
     unitId,
     explanation,
     code,
+    dependsOn,
     isDeleted,
     isRejected,
     badges,
 }: UnitFullExplanationModalProps) {
     const [panels, setPanelOpen] = usePersistedUnitDetailPanels();
+    const showDependenciesTab = hasUnitDependsOn(dependsOn);
     const toggleValue = useMemo(() => {
         const v: string[] = [];
         if (panels.explanationNote) v.push("explanationNote");
         if (panels.code) v.push("code");
+        if (showDependenciesTab && panels.dependencies) v.push("dependencies");
         return v;
-    }, [panels]);
+    }, [panels, showDependenciesTab]);
 
     return (
         <CentricModal open={open} onOpenChange={onOpenChange}>
@@ -62,6 +67,7 @@ export function UnitFullExplanationModal({
                             onValueChange={(next) => {
                                 setPanelOpen("explanationNote", next.includes("explanationNote"));
                                 setPanelOpen("code", next.includes("code"));
+                                setPanelOpen("dependencies", next.includes("dependencies"));
                             }}
                             aria-label="Explanation sections"
                         >
@@ -74,6 +80,11 @@ export function UnitFullExplanationModal({
                             <ToggleGroupItem value="code" className="h-7 min-w-0 px-2.5 py-0 text-xs">
                                 Code
                             </ToggleGroupItem>
+                            {showDependenciesTab ? (
+                                <ToggleGroupItem value="dependencies" className="h-7 min-w-0 px-2.5 py-0 text-xs">
+                                    Dependencies
+                                </ToggleGroupItem>
+                            ) : null}
                         </ToggleGroup>
                     </div>
                     <Collapsible open={panels.explanationNote}>
@@ -98,6 +109,16 @@ export function UnitFullExplanationModal({
                             </div>
                         </CollapsibleContent>
                     </Collapsible>
+                    {showDependenciesTab ? (
+                        <Collapsible open={panels.dependencies}>
+                            <CollapsibleContent className="min-h-0">
+                                <SectionTitle className="mb-2">Dependencies</SectionTitle>
+                                <div className={cn(isDeleted && "line-through", isRejected && "opacity-90")}>
+                                    <UnitDependenciesChips dependsOn={dependsOn} />
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    ) : null}
                 </div>
             </CentricModalContent>
         </CentricModal>

@@ -19,6 +19,7 @@ import { useProjectQuery } from "../queries";
 import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
 import { ApiUnitLiveInteraction } from "./api-unit-live-interaction";
 import { UnitCardToolsDropdown } from "./unit-card-tools-dropdown";
+import { hasUnitDependsOn, UnitDependenciesChips } from "./unit-dependencies-chips";
 import { UnitFullExplanationModal } from "./unit-full-explanation-modal";
 import { UnitRejectedBadge } from "./unit-rejected-badge";
 import { UnitRevisionBadge } from "./unit-revision-badge";
@@ -82,12 +83,15 @@ export function DetailedUnitCard({
     const [modalOpen, setModalOpen] = useState(false);
     const [explanationOpen, setExplanationOpen] = useState(true);
     const [interactionOpen, setInteractionOpen] = useState(false);
+    const [dependenciesOpen, setDependenciesOpen] = useState(false);
+    const hasDependencies = useMemo(() => hasUnitDependsOn(unit.depends_on), [unit.depends_on]);
     const panelToggleValue = useMemo(() => {
         const v: string[] = [];
         if (explanationOpen) v.push("explanation");
         if (releaseIsLive && interactionOpen) v.push("interaction");
+        if (hasDependencies && dependenciesOpen) v.push("dependencies");
         return v;
-    }, [explanationOpen, interactionOpen, releaseIsLive]);
+    }, [explanationOpen, interactionOpen, releaseIsLive, hasDependencies, dependenciesOpen]);
     const sourceChatSessionId = unit.chat_session_id?.trim() ?? "";
     const showHeaderMenu =
         showChatSessionOverflowMenu === true && projectId != null && projectId !== "";
@@ -200,6 +204,7 @@ export function DetailedUnitCard({
                             onValueChange={(next) => {
                                 setExplanationOpen(next.includes("explanation"));
                                 if (releaseIsLive) setInteractionOpen(next.includes("interaction"));
+                                if (hasDependencies) setDependenciesOpen(next.includes("dependencies"));
                             }}
                             aria-label="Unit detail sections"
                         >
@@ -214,6 +219,11 @@ export function DetailedUnitCard({
                             >
                                 Live interaction
                             </ToggleGroupItem>
+                            {hasDependencies ? (
+                                <ToggleGroupItem value="dependencies" className="h-7 min-w-0 px-2.5 py-0 text-xs">
+                                    Dependencies
+                                </ToggleGroupItem>
+                            ) : null}
                         </ToggleGroup>
                         {!releaseIsLive ? <LiveInteractionNotLiveWarningPopover /> : null}
                     </div>
@@ -251,6 +261,16 @@ export function DetailedUnitCard({
                             </CollapsibleContent>
                         </Collapsible>
                     ) : null}
+                    {hasDependencies ? (
+                        <Collapsible open={dependenciesOpen}>
+                            <CollapsibleContent className="min-h-0">
+                                <SectionTitle className="mb-2">Dependencies</SectionTitle>
+                                <div className={cn(isDeleted && "line-through", isRejected && "opacity-90")}>
+                                    <UnitDependenciesChips dependsOn={unit.depends_on} />
+                                </div>
+                            </CollapsibleContent>
+                        </Collapsible>
+                    ) : null}
                 </div>
                 <UnitFullExplanationModal
                     open={modalOpen}
@@ -258,6 +278,7 @@ export function DetailedUnitCard({
                     unitId={unit.id}
                     explanation={explanationMarkdown}
                     code={unit.code}
+                    dependsOn={unit.depends_on}
                     isDeleted={isDeleted}
                     isRejected={isRejected}
                     badges={badges}

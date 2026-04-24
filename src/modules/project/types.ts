@@ -94,6 +94,8 @@ export interface ProjectUnitResponse {
     is_deleted?: boolean;
     is_rejected?: boolean;
     chat_session_id: string | null;
+    /** Comma-separated dependency unit paths (no revision). */
+    depends_on?: string | null;
     metadata?: unknown;
 }
 
