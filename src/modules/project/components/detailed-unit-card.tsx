@@ -255,6 +255,7 @@ export function DetailedUnitCard({
                 <UnitFullExplanationModal
                     open={modalOpen}
                     onOpenChange={setModalOpen}
+                    unitId={unit.id}
                     explanation={explanationMarkdown}
                     code={unit.code}
                     isDeleted={isDeleted}

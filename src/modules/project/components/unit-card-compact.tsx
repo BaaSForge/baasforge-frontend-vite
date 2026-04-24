@@ -124,6 +124,7 @@ export function UnitCardCompact({
                     <UnitFullExplanationModal
                         open={modalOpen}
                         onOpenChange={setModalOpen}
+                        unitId={unit.id}
                         explanation={explanation}
                         code={unit.code}
                         isDeleted={isDeleted}

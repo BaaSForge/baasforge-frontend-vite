@@ -90,6 +90,7 @@ export function UnitCardChip({
                     <UnitFullExplanationModal
                         open={modalOpen}
                         onOpenChange={setModalOpen}
+                        unitId={unit.id}
                         explanation={explanation}
                         code={unit.code}
                         isDeleted={isDeleted}

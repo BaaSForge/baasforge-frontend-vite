@@ -116,7 +116,7 @@ export function UnitDetailWithDiff({
     currentUnit,
     oldUnit,
     showDraftPublishedBadge = true,
-    headerStickyTopClassName = "top-19 sm:top-15",
+    headerStickyTopClassName = "top-30 sm:top-26",
     className,
 }: UnitDetailWithDiffProps) {
     const [diffLayoutMode, setDiffLayoutMode] = usePersistedUnitDiffViewMode();

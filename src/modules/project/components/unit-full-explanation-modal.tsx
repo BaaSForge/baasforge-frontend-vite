@@ -9,10 +9,12 @@ import { cn } from "@/lib/utils";
 import { UnitExplanationCurrentViewer } from "@/modules/project-chat/components/unit-explanation-current-viewer";
 import { usePersistedUnitDetailPanels } from "@/modules/project-chat/hooks/use-persisted-unit-detail-panels";
 import { type ReactNode, useMemo } from "react";
+import { UnitCardIdRow } from "./unit-card-id-row";
 
 export interface UnitFullExplanationModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    unitId: string;
     explanation: string;
     code: string | null;
     isDeleted?: boolean;
@@ -23,6 +25,7 @@ export interface UnitFullExplanationModalProps {
 export function UnitFullExplanationModal({
     open,
     onOpenChange,
+    unitId,
     explanation,
     code,
     isDeleted,
@@ -41,7 +44,10 @@ export function UnitFullExplanationModal({
         <CentricModal open={open} onOpenChange={onOpenChange}>
             <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
                 <CentricModalHeader>
-                    <CentricModalTitle>Full explanation</CentricModalTitle>
+                    <div className="flex min-w-0 items-start justify-between gap-2">
+                        <CentricModalTitle className="min-w-0">Full explanation</CentricModalTitle>
+                        <UnitCardIdRow unitId={unitId} variant="inline" className="shrink-0" />
+                    </div>
                     <div className="flex flex-row flex-wrap items-center gap-1">{badges}</div>
                 </CentricModalHeader>
                 <div className="space-y-4">

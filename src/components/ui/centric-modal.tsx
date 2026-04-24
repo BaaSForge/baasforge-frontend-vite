@@ -3,7 +3,6 @@
 import { SCROLL_EDGE_FADER_DEFAULT_FROM, ScrollEdgeFader } from "@/components/scroll-edge-fader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { XIcon } from "lucide-react";
 import * as React from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
 import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "./drawer";
@@ -17,7 +16,7 @@ const CENTRIC_MODAL_SHELL_VIEWPORT_FILL_DESKTOP = "h-[80dvh] max-h-[80dvh]";
 /** Fixed shell height for `fillViewport` mobile drawer (~90% of viewport). */
 const CENTRIC_MODAL_SHELL_VIEWPORT_FILL_MOBILE = "h-[90dvh] max-h-[90dvh]";
 
-/** Body scrollport cap (space for header, close, drawer handle). */
+/** Body scrollport cap (space for header and drawer chrome). */
 export const CENTRIC_MODAL_BODY_SCROLL_MAX_H = "max-h-[calc(80dvh-7rem)]";
 
 /**
@@ -69,6 +68,9 @@ function CentricModalBodyScroll({
         showStart: false,
         showEnd: true,
     });
+    const isDesktopRef = React.useRef(isDesktop);
+    isDesktopRef.current = isDesktop;
+    const [reserveScrollbarGutter, setReserveScrollbarGutter] = React.useState(false);
 
     const flush = React.useCallback(() => {
         const el = viewportRef.current;
@@ -79,6 +81,9 @@ function CentricModalBodyScroll({
         lastRef.current = next;
         if (unchanged) return;
 
+        if (!isDesktopRef.current && prev.canScroll !== next.canScroll) {
+            setReserveScrollbarGutter(next.canScroll);
+        }
         if (startFadeRef.current) startFadeRef.current.style.opacity = next.showStart ? "1" : "0";
         if (endFadeRef.current) endFadeRef.current.style.opacity = next.showEnd ? "1" : "0";
     }, []);
@@ -109,7 +114,7 @@ function CentricModalBodyScroll({
             contentRo?.disconnect();
             if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
         };
-    }, [flush, scrollToEndAndFlush]);
+    }, [flush, scrollToEndAndFlush, isDesktop]);
 
     return (
         <div className={cn("relative min-w-0", fillViewport && "flex min-h-0 min-w-0 flex-1 flex-col")}>
@@ -119,11 +124,10 @@ function CentricModalBodyScroll({
                 tabIndex={-1}
                 className={cn(
                     "focus-visible:ring-ring/50 overflow-y-auto overflow-x-hidden overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:outline-1",
-                    /* Desktop: no reserved gutter — matches header/footer horizontal inset (`px-4`). Mobile keeps stable gutter. */
-                    !isDesktop && "[scrollbar-gutter:stable]",
+                    !isDesktop && reserveScrollbarGutter && "[scrollbar-gutter:stable]",
                     isDesktop
                         ? "px-4 pb-4"
-                        : "px-4 pb-4 sm:px-6 sm:pb-6",
+                        : "px-0 pb-4 sm:pb-6",
                     fillViewport ? "min-h-0 flex-1 max-h-none" : CENTRIC_MODAL_BODY_SCROLL_MAX_H,
                 )}
             >
@@ -203,17 +207,11 @@ function CentricModalContent({
                 )}
                 {...props}
             >
-                <div className={cn("flex min-w-0 flex-col", fillViewport && "min-h-0 flex-1")}>
+                <div className={cn("flex min-w-0 flex-col px-4", fillViewport && "min-h-0 flex-1")}>
                     {header}
                     {bodyRegion}
                     {footer}
                 </div>
-                {showCloseButton && (
-                    <DrawerClose className="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
-                        <XIcon />
-                        <span className="sr-only">Close</span>
-                    </DrawerClose>
-                )}
             </DrawerContent>
         );
     }
@@ -229,7 +227,7 @@ function CentricModalContent({
             {...props}
         >
             {header ? (
-                <div className="shrink-0 px-4 pt-4 pb-3 sm:pb-3.5">
+                <div className="shrink-0 px-4 pt-4 pb-3 sm:pb-3.5 md:pr-12">
                     {header}
                 </div>
             ) : null}
@@ -243,7 +241,7 @@ function CentricModalHeader({ className, ...props }: React.ComponentProps<typeof
     const isMobile = useIsMobile();
     const Component = isMobile ? DrawerHeader : DialogHeader;
     /** Consistent vertical rhythm between title and trailing content (e.g. badges); drawer defaults are tighter. */
-    return <Component className={cn("gap-2", className)} {...props} />;
+    return <Component className={cn("gap-2 md:pr-6 md:pt-4 md:pb-4", className)} {...props} />;
 }
 
 function CentricModalFooter(props: React.ComponentProps<typeof DialogFooter>) {
