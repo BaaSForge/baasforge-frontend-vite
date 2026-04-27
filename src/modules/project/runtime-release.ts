@@ -22,3 +22,12 @@ export function getRuntimeLiveReleaseId(runtime: ProjectRuntimeResponse | null |
     if (runtime == null) return null;
     return runtime.live_release_id ?? runtime.live_release?.id ?? null;
 }
+
+export function getServingRuntimeIdForRelease(
+    release: ReleaseResponse | undefined,
+    runtimes: ProjectRuntimeResponse[] | undefined,
+): string | undefined {
+    if (release == null || runtimes == null) return undefined;
+    const rt = runtimes.find((r) => r.live_release?.id === release.id);
+    return rt?.id;
+}

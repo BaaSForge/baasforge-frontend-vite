@@ -1,7 +1,7 @@
 import { SecondarySidebarProvider, useSidebar } from "@/components/secondary-sidebar";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
-import { useProductionRuntimeQuery, useProjectReleasesQuery } from "@/modules/project/queries";
-import { getRuntimeLiveReleaseId } from "@/modules/project/runtime-release";
+import { useProductionRuntimeQuery, useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
+import { getRuntimeLiveReleaseId, getServingRuntimeIdForRelease } from "@/modules/project/runtime-release";
 import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { useBreadcrumbActions } from "@/stores/breadcrumb";
 import { useEffect, useMemo } from "react";
@@ -35,6 +35,7 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
 
     const { data: releases } = useProjectReleasesQuery(projectIdOrUndefined, PlatformEnvironmentType.prod);
     const { data: productionRuntime, isLoading: isProductionRuntimeLoading } = useProductionRuntimeQuery(projectIdOrUndefined);
+    const { data: runtimes } = useProjectRuntimesQuery(projectIdOrUndefined);
 
     useEffect(() => {
         if (releaseID != null) return;
@@ -63,6 +64,11 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
     const releaseIsLive =
         releaseID != null && liveReleaseId != null && releaseID === liveReleaseId;
 
+    const stageRuntimeIdForSelectedRelease = useMemo(
+        () => getServingRuntimeIdForRelease(selectedRelease, runtimes),
+        [selectedRelease, runtimes],
+    );
+
     const { setSegmentLabel, clearSegmentLabel } = useBreadcrumbActions();
     useEffect(() => {
         if (releaseID == null) {
@@ -81,6 +87,7 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
             releaseId={releaseID}
             releaseTitleLabel={releaseTitleLabel}
             runtimeName={productionRuntime?.name}
+            stageRuntimeId={stageRuntimeIdForSelectedRelease}
             releaseIsStage={selectedRelease?.is_stage === true}
             releaseIsLive={releaseIsLive}
             mainSidebar={mainSidebar}

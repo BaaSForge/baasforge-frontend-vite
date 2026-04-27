@@ -68,14 +68,20 @@ function queueWorkerResultEnvelopeSchema(outputJsonSchema: string | null | undef
     });
 }
 
-function buildQueueWorkerBasePath(unit: ProjectUnitResponse): string {
+function buildQueueWorkerBasePath(unit: ProjectUnitResponse, useStageTrigger: boolean, runtimeId: string): string {
     const { project_id, context_slug, module_slug, unit_name_slug } = unit;
     const enc = encodeURIComponent;
-    return `/api/v1/trigger/workerQueue/${enc(project_id)}/${enc(context_slug)}/${enc(module_slug)}/${enc(unit_name_slug)}`;
+    const tail = `${enc(context_slug)}/${enc(module_slug)}/${enc(unit_name_slug)}`;
+    if (useStageTrigger) {
+        return `/api/v1/trigger/workerQueue/${enc(project_id)}/stage/${enc(runtimeId)}/${tail}`;
+    }
+    return `/api/v1/trigger/workerQueue/${enc(project_id)}/${tail}`;
 }
 
 export type QueueWorkerUnitLiveInteractionProps = {
     unit: ProjectUnitResponse;
+    stageRuntimeId?: string;
+    releaseIsStage?: boolean;
     projectRuntimeBaseUrl?: string;
 };
 
@@ -86,6 +92,7 @@ type QueueWorkerTabsProps = {
     runIdTrimmed: string;
     runIdValid: boolean;
     defaultTab: string;
+    stageSuffix: string;
 };
 
 function runScopedPlaceholder() {
@@ -103,6 +110,7 @@ function QueueWorkerUnitLiveInteractionTabs({
     runIdTrimmed,
     runIdValid,
     defaultTab,
+    stageSuffix,
 }: QueueWorkerTabsProps) {
     const [activeTab, setActiveTab] = useState(defaultTab);
     const runPathPrefix = runIdValid ? `${basePath}/${encodeURIComponent(runIdTrimmed)}` : "";
@@ -153,7 +161,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                             method="POST"
                             requestBodyJsonSchema={meta.input?.jsonSchema ?? null}
                             responseBodyJsonSchema={ENQUEUE_RESPONSE_JSON_SCHEMA}
-                            operationSummary="Enqueue queue worker run"
+                            operationSummary={`Enqueue queue worker run${stageSuffix}`}
                         />
                     ) : null}
                 </TabsContent>
@@ -165,7 +173,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                                 serverBaseUrl={workerBase}
                                 method="GET"
                                 responseBodyJsonSchema={RUN_STATUS_RESPONSE_JSON_SCHEMA}
-                                operationSummary="Queue worker run status"
+                                operationSummary={`Queue worker run status${stageSuffix}`}
                             />
                         ) : (
                             runScopedPlaceholder()
@@ -180,7 +188,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                                 serverBaseUrl={workerBase}
                                 method="GET"
                                 responseBodyJsonSchema={queueWorkerResultEnvelopeSchema(meta.output?.jsonSchema ?? null)}
-                                operationSummary="Queue worker run result"
+                                operationSummary={`Queue worker run result${stageSuffix}`}
                             />
                         ) : (
                             runScopedPlaceholder()
@@ -195,7 +203,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                                 serverBaseUrl={workerBase}
                                 method="POST"
                                 responseBodyJsonSchema={CANCEL_RESPONSE_JSON_SCHEMA}
-                                operationSummary="Cancel queue worker run"
+                                operationSummary={`Cancel queue worker run${stageSuffix}`}
                             />
                         ) : (
                             runScopedPlaceholder()
@@ -207,11 +215,22 @@ function QueueWorkerUnitLiveInteractionTabs({
     );
 }
 
-export function QueueWorkerUnitLiveInteraction({ unit, projectRuntimeBaseUrl }: QueueWorkerUnitLiveInteractionProps) {
+export function QueueWorkerUnitLiveInteraction({
+    unit,
+    stageRuntimeId,
+    releaseIsStage,
+    projectRuntimeBaseUrl,
+}: QueueWorkerUnitLiveInteractionProps) {
     const meta = readQueueWorkerUnitMetadata(unit);
     const workerBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
     const [runId, setRunId] = useState("");
-    const basePath = useMemo(() => buildQueueWorkerBasePath(unit), [unit]);
+    const runtimeId = stageRuntimeId?.trim() ?? "";
+    const useStageTrigger = releaseIsStage === true && runtimeId !== "";
+    const stageSuffix = useStageTrigger ? " (stage)" : "";
+    const basePath = useMemo(
+        () => buildQueueWorkerBasePath(unit, useStageTrigger, runtimeId),
+        [unit, useStageTrigger, runtimeId],
+    );
 
     const runIdTrimmed = runId.trim();
     const runIdValid = RUN_ID_UUID.test(runIdTrimmed);
@@ -257,6 +276,7 @@ export function QueueWorkerUnitLiveInteraction({ unit, projectRuntimeBaseUrl }: 
                 runIdTrimmed={runIdTrimmed}
                 runIdValid={runIdValid}
                 defaultTab="enqueue"
+                stageSuffix={stageSuffix}
             />
         </div>
     );

@@ -265,6 +265,8 @@ export function DetailedUnitCard({
                                     ) : unit.unit_type === "queue_worker" ? (
                                         <QueueWorkerUnitLiveInteraction
                                             unit={unit}
+                                            stageRuntimeId={stageRuntimeId}
+                                            releaseIsStage={releaseIsStage}
                                             projectRuntimeBaseUrl={unitRuntimeBaseUrl}
                                         />
                                     ) : unit.unit_type === "workflow" ? (
