@@ -9,6 +9,13 @@ import { useMemo, useState } from "react";
 import type { ActorUnitMetadata, ProjectUnitResponse } from "../types";
 
 const ACTOR_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
+const UNIT_SLUG_PATTERN = /^[a-z]+(-[a-z]+)*$/;
+
+function handlerMetadataKeyToPathSegment(metadataKey: string): string {
+    const c0 = metadataKey.charCodeAt(0);
+    if (c0 >= 65 && c0 <= 90) return String.fromCharCode(c0 + 32) + metadataKey.slice(1);
+    return metadataKey;
+}
 
 const HANDLER_QUERY_PARAMS_JSON_SCHEMA = JSON.stringify({
     type: "object",
@@ -17,7 +24,7 @@ const HANDLER_QUERY_PARAMS_JSON_SCHEMA = JSON.stringify({
             type: "boolean",
             default: true,
             description:
-                "When true, run the handler and wait for the JSON result. When false, publish to the actor mailbox only (fire-and-forget).",
+                "Sync (true or omitted): response includes handler return value as result. Async (false): enqueue to mailbox only; response is { delivered: true } (requires actor NATS). Server wait is capped (~30s).",
         },
     },
 });
@@ -41,13 +48,22 @@ function parseJsonObjectRecord(json: string | null | undefined): Record<string, 
     return null;
 }
 
-function envelopeResultResponse(handlerOutputJsonSchema: string | null | undefined): string {
+function envelopeHandlerSuccessResponse(handlerOutputJsonSchema: string | null | undefined): string {
     const inner = parseJsonObjectRecord(handlerOutputJsonSchema);
     const resultSchema = inner ?? { description: "Handler return value (JSON)" };
     return JSON.stringify({
-        type: "object",
-        properties: { result: resultSchema },
-        required: ["result"],
+        anyOf: [
+            {
+                type: "object",
+                properties: { result: resultSchema },
+                required: ["result"],
+            },
+            {
+                type: "object",
+                properties: { delivered: { type: "boolean", const: true } },
+                required: ["delivered"],
+            },
+        ],
     });
 }
 
@@ -64,14 +80,30 @@ function envelopeStateResponse(stateJsonSchema: string | null | undefined): stri
     });
 }
 
-function buildActorPathPrefix(unit: ProjectUnitResponse, actorId: string, useStageTrigger: boolean, runtimeId: string): string {
+function unitSlugsValid(unit: ProjectUnitResponse): boolean {
+    return (
+        UNIT_SLUG_PATTERN.test(unit.context_slug) &&
+        UNIT_SLUG_PATTERN.test(unit.module_slug) &&
+        UNIT_SLUG_PATTERN.test(unit.unit_name_slug)
+    );
+}
+
+function buildActorUnitBasePath(unit: ProjectUnitResponse, useStageTrigger: boolean, runtimeId: string): string {
     const { project_id, context_slug, module_slug, unit_name_slug } = unit;
     const enc = encodeURIComponent;
-    const tail = `${enc(context_slug)}/${enc(module_slug)}/${enc(unit_name_slug)}/${enc(actorId)}`;
+    const tail = `${enc(context_slug)}/${enc(module_slug)}/${enc(unit_name_slug)}`;
     if (useStageTrigger) {
         return `/api/v1/trigger/actor/${enc(project_id)}/stage/${enc(runtimeId)}/${tail}`;
     }
     return `/api/v1/trigger/actor/${enc(project_id)}/${tail}`;
+}
+
+function collectHandlerMetadataKeys(meta: ActorUnitMetadata): string[] {
+    const inKeys =
+        meta.handlerInputs != null && typeof meta.handlerInputs === "object" ? Object.keys(meta.handlerInputs) : [];
+    const outKeys =
+        meta.handlerOutputs != null && typeof meta.handlerOutputs === "object" ? Object.keys(meta.handlerOutputs) : [];
+    return [...new Set([...inKeys, ...outKeys])].sort((a, b) => a.localeCompare(b));
 }
 
 export type ActorUnitLiveInteractionProps = {
@@ -81,11 +113,13 @@ export type ActorUnitLiveInteractionProps = {
     projectRuntimeBaseUrl?: string;
 };
 
+const DEFAULT_ACTOR_INSTANCE_ID = "default";
+
 type ActorTabsProps = {
     pathPrefix: string;
     actorBase: string;
     meta: ActorUnitMetadata;
-    handlerNames: string[];
+    handlerMetadataKeys: string[];
     defaultTab: string;
     stageSuffix: string;
 };
@@ -94,7 +128,7 @@ function ActorUnitLiveInteractionTabs({
     pathPrefix,
     actorBase,
     meta,
-    handlerNames,
+    handlerMetadataKeys,
     defaultTab,
     stageSuffix,
 }: ActorTabsProps) {
@@ -112,13 +146,13 @@ function ActorUnitLiveInteractionTabs({
                     "bg-muted text-muted-foreground inline-flex h-auto w-44 shrink-0 flex-col items-stretch justify-start gap-0.5 rounded-none rounded-l-md border-0 border-r p-1.5",
                 )}
             >
-                {handlerNames.map((name) => (
+                {handlerMetadataKeys.map((metadataKey) => (
                     <TabsTrigger
-                        key={name}
-                        value={`handler:${name}`}
+                        key={metadataKey}
+                        value={`handler:${metadataKey}`}
                         className="h-auto min-h-8 w-full flex-initial justify-start whitespace-normal px-2 py-1.5 text-left text-xs leading-snug break-words"
                     >
-                        {name}
+                        {metadataKey}
                     </TabsTrigger>
                 ))}
                 <TabsTrigger
@@ -141,23 +175,26 @@ function ActorUnitLiveInteractionTabs({
                 </TabsTrigger>
             </TabsList>
             <div className="min-h-0 min-w-0 flex-1 p-2">
-                {handlerNames.map((name) => (
-                    <TabsContent key={name} value={`handler:${name}`} className="m-0 min-h-0 outline-none">
-                        {activeTab === `handler:${name}` ? (
-                            <ScalarHttpOperationClient
-                                url={`${pathPrefix}/${encodeURIComponent(name)}`}
-                                serverBaseUrl={actorBase}
-                                method="POST"
-                                requestBodyJsonSchema={meta.handlerInputs?.[name]?.jsonSchema ?? null}
-                                queryParamsJsonSchema={HANDLER_QUERY_PARAMS_JSON_SCHEMA}
-                                responseBodyJsonSchema={envelopeResultResponse(
-                                    meta.handlerOutputs?.[name]?.jsonSchema ?? null,
-                                )}
-                                operationSummary={`Handler ${name}${stageSuffix}`}
-                            />
-                        ) : null}
-                    </TabsContent>
-                ))}
+                {handlerMetadataKeys.map((metadataKey) => {
+                    const pathSeg = handlerMetadataKeyToPathSegment(metadataKey);
+                    return (
+                        <TabsContent key={metadataKey} value={`handler:${metadataKey}`} className="m-0 min-h-0 outline-none">
+                            {activeTab === `handler:${metadataKey}` ? (
+                                <ScalarHttpOperationClient
+                                    url={`${pathPrefix}/${encodeURIComponent(pathSeg)}`}
+                                    serverBaseUrl={actorBase}
+                                    method="POST"
+                                    requestBodyJsonSchema={meta.handlerInputs?.[metadataKey]?.jsonSchema ?? null}
+                                    queryParamsJsonSchema={HANDLER_QUERY_PARAMS_JSON_SCHEMA}
+                                    responseBodyJsonSchema={envelopeHandlerSuccessResponse(
+                                        meta.handlerOutputs?.[metadataKey]?.jsonSchema ?? null,
+                                    )}
+                                    operationSummary={`Handler ${pathSeg}${stageSuffix}`}
+                                />
+                            ) : null}
+                        </TabsContent>
+                    );
+                })}
                 <TabsContent value="state" className="m-0 min-h-0 outline-none">
                     {activeTab === "state" ? (
                         <ScalarHttpOperationClient
@@ -175,6 +212,7 @@ function ActorUnitLiveInteractionTabs({
                             url={`${pathPrefix}/passivate`}
                             serverBaseUrl={actorBase}
                             method="POST"
+                            omitRequestBody
                             responseBodyJsonSchema='{"type":"object","properties":{"passivated":{"type":"boolean"}},"required":["passivated"]}'
                             operationSummary={`Passivate (flush / evict)${stageSuffix}`}
                         />
@@ -204,27 +242,33 @@ export function ActorUnitLiveInteraction({
 }: ActorUnitLiveInteractionProps) {
     const meta = readActorUnitMetadata(unit);
     const actorBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
-    const [actorId, setActorId] = useState("");
+    const [actorId, setActorId] = useState(DEFAULT_ACTOR_INSTANCE_ID);
 
     const runtimeId = stageRuntimeId?.trim() ?? "";
     const useStageTrigger = releaseIsStage === true && runtimeId !== "";
     const stageSuffix = useStageTrigger ? " (stage)" : "";
 
-    const handlerNames = useMemo(() => {
-        const inputs = meta?.handlerInputs;
-        if (inputs == null || typeof inputs !== "object") return [] as string[];
-        return Object.keys(inputs).sort((a, b) => a.localeCompare(b));
-    }, [meta?.handlerInputs]);
+    const slugsOk = useMemo(() => unitSlugsValid(unit), [unit]);
+
+    const handlerMetadataKeys = useMemo(() => (meta == null ? [] : collectHandlerMetadataKeys(meta)), [meta]);
 
     const defaultTab = useMemo(() => {
-        if (handlerNames.length > 0) return `handler:${handlerNames[0]}`;
+        if (handlerMetadataKeys.length > 0) return `handler:${handlerMetadataKeys[0]}`;
         return "state";
-    }, [handlerNames]);
+    }, [handlerMetadataKeys]);
+
+    const pathThroughUnitSlug = useMemo(() => {
+        if (!slugsOk) return null;
+        return buildActorUnitBasePath(unit, useStageTrigger, runtimeId);
+    }, [unit, slugsOk, useStageTrigger, runtimeId]);
+
+    const actorIdTrimmed = actorId.trim();
+    const actorIdOk = ACTOR_ID_PATTERN.test(actorIdTrimmed);
 
     const pathPrefix = useMemo(() => {
-        if (!ACTOR_ID_PATTERN.test(actorId)) return null;
-        return buildActorPathPrefix(unit, actorId, useStageTrigger, runtimeId);
-    }, [unit, actorId, useStageTrigger, runtimeId]);
+        if (pathThroughUnitSlug == null || !actorIdOk) return null;
+        return `${pathThroughUnitSlug}/${encodeURIComponent(actorIdTrimmed)}`;
+    }, [pathThroughUnitSlug, actorIdTrimmed, actorIdOk]);
 
     if (actorBase === "") {
         return <div className="text-muted-foreground p-3 text-xs">No actor runtime base URL for this project.</div>;
@@ -233,10 +277,17 @@ export function ActorUnitLiveInteraction({
         return <div className="text-muted-foreground p-3 text-xs">No actor metadata for this unit.</div>;
     }
 
-    const actorIdInvalid = actorId.length > 0 && !ACTOR_ID_PATTERN.test(actorId);
+    const actorIdInvalid = actorIdTrimmed.length > 0 && !actorIdOk;
 
     return (
         <div className="flex flex-col gap-3">
+            {!slugsOk ? (
+                <p className="text-destructive text-xs" role="alert">
+                    Unit path slugs must be lowercase hyphen words (pattern{" "}
+                    <code className="text-[10px]">^[a-z]+(-[a-z]+)*$</code>) for context, module, and unit name. Fix
+                    the unit definition so trigger URLs match the runtime API.
+                </p>
+            ) : null}
             <div className="space-y-1.5">
                 <Label htmlFor={`actor-id-${unit.id}`} className="text-xs">
                     Actor instance id
@@ -245,13 +296,14 @@ export function ActorUnitLiveInteraction({
                     id={`actor-id-${unit.id}`}
                     value={actorId}
                     onChange={(e) => setActorId(e.target.value)}
-                    placeholder="e.g. my-instance-1"
+                    placeholder="e.g. default, default-store, or a UUID"
                     className="h-8 text-xs"
                     autoComplete="off"
                     spellCheck={false}
                 />
                 <p className="text-muted-foreground text-[11px] leading-snug">
-                    Non-empty, up to 512 characters: letters, digits, <code className="text-[10px]">._:-</code>
+                    Path is <code className="text-[10px]">…/unit/{"{id}"}/{"{handler}"}</code> (handler segment is
+                    camelCase from metadata). Id: letters, digits, <code className="text-[10px]">-._:</code>, max 512.
                 </p>
                 {actorIdInvalid ? (
                     <p className="text-destructive text-xs" role="alert">
@@ -259,18 +311,21 @@ export function ActorUnitLiveInteraction({
                     </p>
                 ) : null}
             </div>
-
-            {pathPrefix == null ? (
+            {pathThroughUnitSlug == null ? (
                 <div className="text-muted-foreground rounded-md border border-dashed p-4 text-center text-xs">
-                    Enter a valid actor instance id to load request clients.
+                    Cannot build actor URLs until unit slugs are valid.
+                </div>
+            ) : pathPrefix == null ? (
+                <div className="text-muted-foreground rounded-md border border-dashed p-4 text-center text-xs">
+                    Enter a valid actor instance id (required between unit name and handler in the URL).
                 </div>
             ) : (
                 <ActorUnitLiveInteractionTabs
-                    key={`${unit.id}\u0000${defaultTab}`}
+                    key={`${unit.id}\u0000${pathPrefix}\u0000${defaultTab}`}
                     pathPrefix={pathPrefix}
                     actorBase={actorBase}
                     meta={meta}
-                    handlerNames={handlerNames}
+                    handlerMetadataKeys={handlerMetadataKeys}
                     defaultTab={defaultTab}
                     stageSuffix={stageSuffix}
                 />
