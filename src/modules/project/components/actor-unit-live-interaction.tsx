@@ -7,7 +7,11 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { TabsTriggerTracked } from "@/components/ui/tabs-trigger-tracked";
 import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab-trigger-into-view";
 import { useMemo, useState } from "react";
-import { ScalarLiveInteractionTabsList, useScalarLiveInteractionTabsLayout } from "./scalar-live-interaction-tabs";
+import {
+    ScalarLiveInteractionTabGroupsSeparator,
+    ScalarLiveInteractionTabsList,
+    useScalarLiveInteractionTabsLayout,
+} from "./scalar-live-interaction-tabs";
 import type { ActorUnitMetadata, ProjectUnitResponse } from "../types";
 
 const ACTOR_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
@@ -157,6 +161,9 @@ function ActorUnitLiveInteractionTabs({
                         {metadataKey}
                     </TabsTriggerTracked>
                 ))}
+                {handlerMetadataKeys.length > 0 ? (
+                    <ScalarLiveInteractionTabGroupsSeparator isMobile={isMobile} />
+                ) : null}
                 <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="state" className={tabsTriggerClassName}>
                     Read state
                 </TabsTriggerTracked>

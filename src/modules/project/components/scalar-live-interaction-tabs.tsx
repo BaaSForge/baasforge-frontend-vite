@@ -1,6 +1,7 @@
 "use client";
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { TabsList } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -18,7 +19,7 @@ export function useScalarLiveInteractionTabsLayout() {
         tabsListClassName: cn(
             "text-muted-foreground inline-flex h-auto shrink-0 flex-nowrap gap-1.5 p-[3px]",
             isMobile
-                ? "min-h-9 w-max max-w-none items-center justify-start"
+                ? "h-9 w-max max-w-none items-center justify-start"
                 : "max-w-[12.5rem] w-full flex-col items-stretch justify-start",
         ),
         tabsTriggerClassName: cn(
@@ -28,6 +29,19 @@ export function useScalarLiveInteractionTabsLayout() {
             isMobile ? "flex-none justify-center text-center whitespace-nowrap" : "w-full flex-none justify-start text-left whitespace-normal break-words",
         ),
     };
+}
+
+export function ScalarLiveInteractionTabGroupsSeparator({ isMobile }: { isMobile: boolean }) {
+    return (
+        <Separator
+            decorative
+            orientation={isMobile ? "vertical" : "horizontal"}
+            className={cn(
+                "bg-border shrink-0",
+                isMobile ? "mx-1 h-7 w-px self-center" : "my-1.5 h-px w-full",
+            )}
+        />
+    );
 }
 
 export function ScalarLiveInteractionTabsList({
@@ -42,7 +56,7 @@ export function ScalarLiveInteractionTabsList({
             orientation="horizontal"
             horizontalIntrinsicHeight
             hideScrollbar
-            className="min-w-0 w-full max-w-full"
+            className="h-9 min-w-0 w-full max-w-full shrink-0"
         >
             {list}
         </FadedScrollArea>

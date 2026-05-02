@@ -7,7 +7,11 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { TabsTriggerTracked } from "@/components/ui/tabs-trigger-tracked";
 import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab-trigger-into-view";
 import { useMemo, useState } from "react";
-import { ScalarLiveInteractionTabsList, useScalarLiveInteractionTabsLayout } from "./scalar-live-interaction-tabs";
+import {
+    ScalarLiveInteractionTabGroupsSeparator,
+    ScalarLiveInteractionTabsList,
+    useScalarLiveInteractionTabsLayout,
+} from "./scalar-live-interaction-tabs";
 import type { ProjectUnitResponse, WorkflowUnitMetadata } from "../types";
 
 const INSTANCE_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
@@ -229,6 +233,7 @@ function WorkflowUnitLiveInteractionBody({
                     <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="handler" className={tabsTriggerClassName}>
                         Call shared handler
                     </TabsTriggerTracked>
+                    <ScalarLiveInteractionTabGroupsSeparator isMobile={isMobile} />
                     <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="status" className={tabsTriggerClassName}>
                         Get status
                     </TabsTriggerTracked>

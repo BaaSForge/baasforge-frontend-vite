@@ -7,7 +7,11 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { TabsTriggerTracked } from "@/components/ui/tabs-trigger-tracked";
 import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab-trigger-into-view";
 import { useMemo, useState } from "react";
-import { ScalarLiveInteractionTabsList, useScalarLiveInteractionTabsLayout } from "./scalar-live-interaction-tabs";
+import {
+    ScalarLiveInteractionTabGroupsSeparator,
+    ScalarLiveInteractionTabsList,
+    useScalarLiveInteractionTabsLayout,
+} from "./scalar-live-interaction-tabs";
 import type { ProjectUnitResponse, QueueWorkerUnitMetadata } from "../types";
 
 const RUN_ID_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -126,6 +130,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                 <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="enqueue" className={tabsTriggerClassName}>
                     Enqueue run
                 </TabsTriggerTracked>
+                <ScalarLiveInteractionTabGroupsSeparator isMobile={isMobile} />
                 <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="status" className={tabsTriggerClassName}>
                     Run status
                 </TabsTriggerTracked>
