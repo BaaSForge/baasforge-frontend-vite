@@ -3,12 +3,12 @@
 import { useResolvedAppTheme } from "@/components/theme-provider/hooks";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import "@scalar/api-reference-react/style.css";
 import "./scalar-http-operation-embed.css";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
 import { resolveOperationUrl } from "./resolve-operation-url";
+import { ensureScalarApiReferenceStylesLoaded } from "./scalar-api-reference-styles";
 import { scalarSiteEmbedConfiguration } from "./scalar-site-embed";
 
 const ApiReferenceReactLazy = lazy(() =>
@@ -33,6 +33,10 @@ function ScalarApiHostWithPaintGate({ configuration }: { configuration: AnyApiRe
     const shellRef = useRef<HTMLDivElement>(null);
     const [paintDone, setPaintDone] = useState(false);
     const finishedRef = useRef(false);
+
+    useEffect(() => {
+        void ensureScalarApiReferenceStylesLoaded();
+    }, []);
 
     useEffect(() => {
         const shell = shellRef.current;
