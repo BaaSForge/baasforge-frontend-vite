@@ -3,9 +3,11 @@
 import { ScalarHttpOperationClient } from "@/components/scalar-http-operation-client/scalar-http-operation-client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { TabsTriggerTracked } from "@/components/ui/tabs-trigger-tracked";
+import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab-trigger-into-view";
 import { useMemo, useState } from "react";
+import { ScalarLiveInteractionTabsList, useScalarLiveInteractionTabsLayout } from "./scalar-live-interaction-tabs";
 import type { ActorUnitMetadata, ProjectUnitResponse } from "../types";
 
 const ACTOR_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
@@ -133,48 +135,39 @@ function ActorUnitLiveInteractionTabs({
     stageSuffix,
 }: ActorTabsProps) {
     const [activeTab, setActiveTab] = useState(defaultTab);
+    const { isMobile, tabsOrientation, tabsClassName, tabsListClassName, tabsTriggerClassName } =
+        useScalarLiveInteractionTabsLayout();
+    const setTriggerRef = useScrollActiveTabTriggerIntoView(activeTab);
 
     return (
         <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
-            orientation="vertical"
-            className="flex min-h-[18rem] flex-row gap-0 rounded-md border !flex-row"
+            orientation={tabsOrientation}
+            className={tabsClassName}
         >
-            <TabsList
-                className={cn(
-                    "bg-muted text-muted-foreground inline-flex h-auto w-44 shrink-0 flex-col items-stretch justify-start gap-0.5 rounded-none rounded-l-md border-0 border-r p-1.5",
-                )}
-            >
+            <ScalarLiveInteractionTabsList isMobile={isMobile} className={tabsListClassName}>
                 {handlerMetadataKeys.map((metadataKey) => (
-                    <TabsTrigger
+                    <TabsTriggerTracked
                         key={metadataKey}
+                        onRegisterTrigger={setTriggerRef}
                         value={`handler:${metadataKey}`}
-                        className="h-auto min-h-8 w-full flex-initial justify-start whitespace-normal px-2 py-1.5 text-left text-xs leading-snug break-words"
+                        className={tabsTriggerClassName}
                     >
                         {metadataKey}
-                    </TabsTrigger>
+                    </TabsTriggerTracked>
                 ))}
-                <TabsTrigger
-                    value="state"
-                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                >
+                <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="state" className={tabsTriggerClassName}>
                     Read state
-                </TabsTrigger>
-                <TabsTrigger
-                    value="passivate"
-                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                >
+                </TabsTriggerTracked>
+                <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="passivate" className={tabsTriggerClassName}>
                     Passivate
-                </TabsTrigger>
-                <TabsTrigger
-                    value="delete"
-                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                >
+                </TabsTriggerTracked>
+                <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="delete" className={tabsTriggerClassName}>
                     Delete instance
-                </TabsTrigger>
-            </TabsList>
-            <div className="min-h-0 min-w-0 flex-1 p-2">
+                </TabsTriggerTracked>
+            </ScalarLiveInteractionTabsList>
+            <div className="min-h-0 min-w-0 flex-1">
                 {handlerMetadataKeys.map((metadataKey) => {
                     const pathSeg = handlerMetadataKeyToPathSegment(metadataKey);
                     return (

@@ -3,9 +3,11 @@
 import { ScalarHttpOperationClient } from "@/components/scalar-http-operation-client/scalar-http-operation-client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { TabsTriggerTracked } from "@/components/ui/tabs-trigger-tracked";
+import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab-trigger-into-view";
 import { useMemo, useState } from "react";
+import { ScalarLiveInteractionTabsList, useScalarLiveInteractionTabsLayout } from "./scalar-live-interaction-tabs";
 import type { ProjectUnitResponse, QueueWorkerUnitMetadata } from "../types";
 
 const RUN_ID_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -114,45 +116,27 @@ function QueueWorkerUnitLiveInteractionTabs({
 }: QueueWorkerTabsProps) {
     const [activeTab, setActiveTab] = useState(defaultTab);
     const runPathPrefix = runIdValid ? `${basePath}/${encodeURIComponent(runIdTrimmed)}` : "";
+    const { isMobile, tabsOrientation, tabsClassName, tabsListClassName, tabsTriggerClassName } =
+        useScalarLiveInteractionTabsLayout();
+    const setTriggerRef = useScrollActiveTabTriggerIntoView(activeTab);
 
     return (
-        <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            orientation="vertical"
-            className="flex min-h-[18rem] flex-row gap-0 rounded-md border !flex-row"
-        >
-            <TabsList
-                className={cn(
-                    "bg-muted text-muted-foreground inline-flex h-auto w-44 shrink-0 flex-col items-stretch justify-start gap-0.5 rounded-none rounded-l-md border-0 border-r p-1.5",
-                )}
-            >
-                <TabsTrigger
-                    value="enqueue"
-                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                >
+        <Tabs value={activeTab} onValueChange={setActiveTab} orientation={tabsOrientation} className={tabsClassName}>
+            <ScalarLiveInteractionTabsList isMobile={isMobile} className={tabsListClassName}>
+                <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="enqueue" className={tabsTriggerClassName}>
                     Enqueue run
-                </TabsTrigger>
-                <TabsTrigger
-                    value="status"
-                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                >
+                </TabsTriggerTracked>
+                <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="status" className={tabsTriggerClassName}>
                     Run status
-                </TabsTrigger>
-                <TabsTrigger
-                    value="result"
-                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                >
+                </TabsTriggerTracked>
+                <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="result" className={tabsTriggerClassName}>
                     Run result
-                </TabsTrigger>
-                <TabsTrigger
-                    value="cancel"
-                    className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                >
+                </TabsTriggerTracked>
+                <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="cancel" className={tabsTriggerClassName}>
                     Cancel run
-                </TabsTrigger>
-            </TabsList>
-            <div className="min-h-0 min-w-0 flex-1 p-2">
+                </TabsTriggerTracked>
+            </ScalarLiveInteractionTabsList>
+            <div className="min-h-0 min-w-0 flex-1">
                 <TabsContent value="enqueue" className="m-0 min-h-0 outline-none">
                     {activeTab === "enqueue" ? (
                         <ScalarHttpOperationClient

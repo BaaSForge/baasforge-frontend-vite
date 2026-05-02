@@ -73,10 +73,11 @@ html.dark-midnight .scalar-http-operation-client.scalar-app {
 .scalar-http-operation-client .section-container {
     padding-left: 0;
     padding-right: 0;
+    border-top: none;
 }
 
 .scalar-http-operation-client .section {
-    padding-top: 1rem;
+    padding-top: 0;
     padding-bottom: 0;
     padding-left: 0;
     padding-right: 0;

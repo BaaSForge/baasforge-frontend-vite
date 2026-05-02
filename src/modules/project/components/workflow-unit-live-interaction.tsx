@@ -3,9 +3,11 @@
 import { ScalarHttpOperationClient } from "@/components/scalar-http-operation-client/scalar-http-operation-client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { TabsTriggerTracked } from "@/components/ui/tabs-trigger-tracked";
+import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab-trigger-into-view";
 import { useMemo, useState } from "react";
+import { ScalarLiveInteractionTabsList, useScalarLiveInteractionTabsLayout } from "./scalar-live-interaction-tabs";
 import type { ProjectUnitResponse, WorkflowUnitMetadata } from "../types";
 
 const INSTANCE_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
@@ -132,6 +134,9 @@ function WorkflowUnitLiveInteractionBody({
     const stageSuffix = useStageTrigger ? " (stage)" : "";
 
     const [activeTab, setActiveTab] = useState("start");
+    const { isMobile, tabsOrientation, tabsClassName, tabsListClassName, tabsTriggerClassName } =
+        useScalarLiveInteractionTabsLayout();
+    const setTriggerRef = useScrollActiveTabTriggerIntoView(activeTab);
 
     const basePath = useMemo(
         () => buildWorkflowBasePath(unit, useStageTrigger, runtimeId),
@@ -216,49 +221,25 @@ function WorkflowUnitLiveInteractionBody({
                 </div>
             </div>
 
-            <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                orientation="vertical"
-                className="flex min-h-[18rem] flex-row gap-0 rounded-md border !flex-row"
-            >
-                <TabsList
-                    className={cn(
-                        "bg-muted text-muted-foreground inline-flex h-auto w-44 shrink-0 flex-col items-stretch justify-start gap-0.5 rounded-none rounded-l-md border-0 border-r p-1.5",
-                    )}
-                >
-                    <TabsTrigger
-                        value="start"
-                        className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs leading-snug"
-                    >
+            <Tabs value={activeTab} onValueChange={setActiveTab} orientation={tabsOrientation} className={tabsClassName}>
+                <ScalarLiveInteractionTabsList isMobile={isMobile} className={tabsListClassName}>
+                    <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="start" className={tabsTriggerClassName}>
                         Start workflow
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="handler"
-                        className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs leading-snug"
-                    >
+                    </TabsTriggerTracked>
+                    <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="handler" className={tabsTriggerClassName}>
                         Call shared handler
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="status"
-                        className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                    >
+                    </TabsTriggerTracked>
+                    <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="status" className={tabsTriggerClassName}>
                         Get status
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="cancel"
-                        className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                    >
+                    </TabsTriggerTracked>
+                    <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="cancel" className={tabsTriggerClassName}>
                         Cancel workflow
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="result"
-                        className="h-auto min-h-8 w-full flex-initial justify-start px-2 py-1.5 text-left text-xs"
-                    >
+                    </TabsTriggerTracked>
+                    <TabsTriggerTracked onRegisterTrigger={setTriggerRef} value="result" className={tabsTriggerClassName}>
                         Get result (poll)
-                    </TabsTrigger>
-                </TabsList>
-                <div className="min-h-0 min-w-0 flex-1 p-2">
+                    </TabsTriggerTracked>
+                </ScalarLiveInteractionTabsList>
+                <div className="min-h-0 min-w-0 flex-1">
                     <TabsContent value="start" className="m-0 min-h-0 outline-none">
                         {activeTab === "start" ? (
                             <ScalarHttpOperationClient

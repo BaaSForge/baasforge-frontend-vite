@@ -8,13 +8,15 @@ import {
     CentricModalDescription,
     CentricModalTitle,
 } from "@/components/ui/centric-modal";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
+import { TabsTriggerTracked } from "@/components/ui/tabs-trigger-tracked";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab-trigger-into-view";
 import { cn } from "@/lib/utils";
 import { UnitRevisionBadge } from "@/modules/project/components/unit-revision-badge";
 import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types";
 import { XIcon } from "lucide-react";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePersistedUnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
 import { UnitDetailWithDiff } from "./unit-detail-with-diff";
 
@@ -102,24 +104,8 @@ export function ChatSessionViewChangesModal({
         setContextFilter(next);
     };
 
-    const tabTriggerRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-
-    useLayoutEffect(() => {
-        if (!open || tabValue === "") return;
-        const el = tabTriggerRefs.current.get(tabValue);
-        if (!el) return;
-        let cancelled = false;
-        const outer = requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                if (cancelled) return;
-                el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-            });
-        });
-        return () => {
-            cancelled = true;
-            cancelAnimationFrame(outer);
-        };
-    }, [open, tabValue]);
+    const setContextTabTriggerRef = useScrollActiveTabTriggerIntoView(contextFilter, { enabled: open });
+    const setUnitTabTriggerRef = useScrollActiveTabTriggerIntoView(tabValue, { enabled: open });
 
     const splitView = !isMobile && diffLayoutMode === "split";
     const modalWidthClass = splitView
@@ -152,7 +138,8 @@ export function ChatSessionViewChangesModal({
                                         className="min-w-0 w-full max-w-full"
                                     >
                                         <TabsList className="h-auto min-h-9 w-max flex-nowrap justify-start gap-1.5 bg-muted p-[3px]">
-                                            <TabsTrigger
+                                            <TabsTriggerTracked
+                                                onRegisterTrigger={setContextTabTriggerRef}
                                                 value={ALL_CONTEXTS_TAB_VALUE}
                                                 className={cn(
                                                     "shrink-0 px-2.5 py-1.5 text-xs",
@@ -162,10 +149,11 @@ export function ChatSessionViewChangesModal({
                                                 )}
                                             >
                                                 All contexts
-                                            </TabsTrigger>
+                                            </TabsTriggerTracked>
                                             {distinctContextSlugs.map((slug) => (
-                                                <TabsTrigger
+                                                <TabsTriggerTracked
                                                     key={slug}
+                                                    onRegisterTrigger={setContextTabTriggerRef}
                                                     value={contextTabValue(slug)}
                                                     title={slug}
                                                     className={cn(
@@ -176,7 +164,7 @@ export function ChatSessionViewChangesModal({
                                                     )}
                                                 >
                                                     {slug}
-                                                </TabsTrigger>
+                                                </TabsTriggerTracked>
                                             ))}
                                         </TabsList>
                                     </FadedScrollArea>
@@ -201,12 +189,9 @@ export function ChatSessionViewChangesModal({
                                             const id = pair.afterUnit.id;
                                             const positionLabel = `${tabIndex + 1}/${visiblePairs.length}`;
                                             return (
-                                                <TabsTrigger
+                                                <TabsTriggerTracked
                                                     key={id}
-                                                    ref={(node) => {
-                                                        if (node) tabTriggerRefs.current.set(id, node);
-                                                        else tabTriggerRefs.current.delete(id);
-                                                    }}
+                                                    onRegisterTrigger={setUnitTabTriggerRef}
                                                     value={id}
                                                     aria-label={`Unit ${tabIndex + 1} of ${visiblePairs.length}, ${id}`}
                                                     className={cn(
@@ -236,7 +221,7 @@ export function ChatSessionViewChangesModal({
                                                         chatSessionId={pair.afterUnit.chat_session_id ?? undefined}
                                                         className="shrink-0 px-1.5 py-0 text-[10px] font-medium"
                                                     />
-                                                </TabsTrigger>
+                                                </TabsTriggerTracked>
                                             );
                                         })}
                                     </TabsList>
