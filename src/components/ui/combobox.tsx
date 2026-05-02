@@ -290,6 +290,40 @@ function useComboboxAnchor() {
   return React.useRef<HTMLDivElement | null>(null)
 }
 
+function useListboxTriggerKeyDown(options: {
+  disabled: boolean
+  open: boolean
+  onRequestClose: () => void
+  onRequestOpen: () => void
+  focusListElement: () => void
+}) {
+  const { disabled, open, onRequestClose, onRequestOpen, focusListElement } = options
+  return React.useCallback<React.KeyboardEventHandler<HTMLButtonElement>>(
+    (e) => {
+      if (disabled) return
+      if (e.key === "Escape") {
+        if (open) {
+          e.preventDefault()
+          onRequestClose()
+        }
+        return
+      }
+      if (!open) {
+        if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter") {
+          e.preventDefault()
+          onRequestOpen()
+        }
+        return
+      }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Home" || e.key === "End") {
+        e.preventDefault()
+        focusListElement()
+      }
+    },
+    [disabled, open, onRequestClose, onRequestOpen, focusListElement],
+  )
+}
+
 export {
   Combobox,
   ComboboxInput,
@@ -307,4 +341,5 @@ export {
   ComboboxTrigger,
   ComboboxValue,
   useComboboxAnchor,
+  useListboxTriggerKeyDown,
 }

@@ -1,17 +1,26 @@
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Contrast, Monitor, Moon, Sun } from "lucide-react";
+import * as React from "react";
 
 import type { Theme } from "@/components/theme-provider/hooks";
 import { useTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { RotatingCombobox, type RotatingComboboxOption } from "@/components/ui/rotating-combobox";
 
-const THEME_ORDER: Theme[] = ["light", "dark-midnight", "dark-default", "system"];
+const THEME_ORDER = ["light", "dark-midnight", "dark-default", "system"] as const satisfies readonly Theme[];
+
 const THEME_LABELS: Record<Theme, string> = {
     light: "Light",
     "dark-midnight": "Midnight",
-    "dark-default": "Default dark",
+    "dark-default": "Dense dark",
     system: "System",
 };
+
+function themeIcon(t: Theme) {
+    if (t === "light") return <Sun className="h-[1.2rem] w-[1.2rem]" />;
+    if (t === "system") return <Monitor className="h-[1.2rem] w-[1.2rem]" />;
+    if (t === "dark-default") return <Contrast className="h-[1.2rem] w-[1.2rem]" />;
+    return <Moon className="h-[1.2rem] w-[1.2rem]" />;
+}
 
 function getNextTheme(current: Theme): Theme {
     const i = THEME_ORDER.indexOf(current);
@@ -22,22 +31,35 @@ export function ModeToggle() {
     const { theme, setTheme } = useTheme();
     const nextTheme = getNextTheme(theme);
 
-    const handleClick = () => {
-        setTheme(nextTheme);
-    };
+    const options = React.useMemo<RotatingComboboxOption<Theme>[]>(
+        () =>
+            THEME_ORDER.map((t) => ({
+                value: t,
+                label: THEME_LABELS[t],
+                keywords: [THEME_LABELS[t], t, ...(t === "dark-default" ? ["deep dark", "high contrast", "default dark"] : [])],
+                icon: themeIcon(t),
+            })),
+        [],
+    );
 
-    const Icon = theme === "light" ? Sun : theme === "system" ? Monitor : Moon;
+    const Icon = theme === "light" ? Sun : theme === "system" ? Monitor : theme === "dark-default" ? Contrast : Moon;
 
     return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleClick} aria-label={`Theme: ${THEME_LABELS[theme]}. Switch to ${THEME_LABELS[nextTheme]}.`}>
+        <RotatingCombobox
+            value={theme}
+            onValueChange={setTheme}
+            options={options}
+            tooltipSide="left"
+            renderTrigger={(p, { open }) => (
+                <Button
+                    {...p}
+                    variant="outline"
+                    size="icon"
+                    aria-label={`Theme: ${THEME_LABELS[theme]}. ${open ? `Rotate to ${THEME_LABELS[nextTheme]}` : "Open theme menu"}.`}
+                >
                     <Icon className="h-[1.2rem] w-[1.2rem]" />
                 </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-                {THEME_LABELS[theme]}, click to switch to {THEME_LABELS[nextTheme]}
-            </TooltipContent>
-        </Tooltip>
+            )}
+        />
     );
 }
