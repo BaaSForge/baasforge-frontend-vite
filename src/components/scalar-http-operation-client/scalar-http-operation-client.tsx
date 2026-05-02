@@ -1,15 +1,110 @@
 "use client";
 
 import { useResolvedAppTheme } from "@/components/theme-provider/hooks";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 import "./scalar-http-operation-embed.css";
-import { useMemo } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
 import { resolveOperationUrl } from "./resolve-operation-url";
 import { scalarSiteEmbedConfiguration } from "./scalar-site-embed";
+
+const ApiReferenceReactLazy = lazy(() =>
+    import("@scalar/api-reference-react").then((m) => ({ default: m.ApiReferenceReact })),
+);
+
+function ScalarHttpOperationLoading() {
+    return (
+        <div
+            className="flex min-h-[12rem] items-center justify-center rounded-md border border-dashed bg-muted/20"
+            role="status"
+            aria-label="Loading API client"
+        >
+            <Spinner className="size-8" />
+        </div>
+    );
+}
+
+const SCALAR_CONTENT_MIN_HEIGHT_PX = 64;
+
+function ScalarApiHostWithPaintGate({ configuration }: { configuration: AnyApiReferenceConfiguration }) {
+    const shellRef = useRef<HTMLDivElement>(null);
+    const [paintDone, setPaintDone] = useState(false);
+    const finishedRef = useRef(false);
+
+    useEffect(() => {
+        const shell = shellRef.current;
+        if (shell == null) return;
+
+        const finish = () => {
+            if (finishedRef.current) return;
+            finishedRef.current = true;
+            setPaintDone(true);
+        };
+
+        const consider = () => {
+            if (shell.scrollHeight >= SCALAR_CONTENT_MIN_HEIGHT_PX) finish();
+        };
+
+        const ro = new ResizeObserver(consider);
+        ro.observe(shell);
+        const mo = new MutationObserver(consider);
+        mo.observe(shell, { childList: true, subtree: true, attributes: true });
+        consider();
+
+        const failSafe = window.setTimeout(finish, 12_000);
+        return () => {
+            ro.disconnect();
+            mo.disconnect();
+            window.clearTimeout(failSafe);
+        };
+    }, [configuration]);
+
+    return (
+        <div className={cn("relative w-full", !paintDone && "min-h-[12rem]")}>
+            <div ref={shellRef} className="w-full min-h-0">
+                <ApiReferenceReactLazy configuration={configuration} />
+            </div>
+            {!paintDone ? (
+                <div
+                    className="bg-background/85 absolute inset-0 z-[1] flex items-center justify-center rounded-md backdrop-blur-[1px]"
+                    role="status"
+                    aria-label="Loading API client"
+                >
+                    <Spinner className="size-8" />
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+function ScalarHttpOperationEmbed({ configuration }: { configuration: AnyApiReferenceConfiguration }) {
+    const [deferEmbed, setDeferEmbed] = useState(false);
+    useEffect(() => {
+        let cancelled = false;
+        let raf2: number | undefined;
+        const raf1 = requestAnimationFrame(() => {
+            raf2 = requestAnimationFrame(() => {
+                if (!cancelled) setDeferEmbed(true);
+            });
+        });
+        return () => {
+            cancelled = true;
+            cancelAnimationFrame(raf1);
+            if (raf2 !== undefined) cancelAnimationFrame(raf2);
+        };
+    }, []);
+
+    if (!deferEmbed) return <ScalarHttpOperationLoading />;
+
+    return (
+        <Suspense fallback={<ScalarHttpOperationLoading />}>
+            <ScalarApiHostWithPaintGate configuration={configuration} />
+        </Suspense>
+    );
+}
 
 export { SCALAR_HTTP_OPERATION_WORKSPACE_SLUG } from "./scalar-site-embed";
 export type ScalarHttpOperationClientProps = {
@@ -77,7 +172,7 @@ export function ScalarHttpOperationClient({
                 className,
             )}
         >
-            <ApiReferenceReact key={embedKey} configuration={configuration} />
+            <ScalarHttpOperationEmbed key={embedKey} configuration={configuration} />
         </div>
     );
 }
