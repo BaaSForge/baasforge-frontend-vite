@@ -10,6 +10,7 @@ import { buildOpenApiDocument } from "./build-openapi-document";
 import { resolveOperationUrl } from "./resolve-operation-url";
 import { ensureScalarApiReferenceStylesLoaded } from "./scalar-api-reference-styles";
 import { scalarSiteEmbedConfiguration } from "./scalar-site-embed";
+import { useScalarHttpTestAiNudge } from "./scalar-http-test-ai-nudge";
 
 const ApiReferenceReactLazy = lazy(() =>
     import("@scalar/api-reference-react").then((m) => ({ default: m.ApiReferenceReact })),
@@ -138,6 +139,7 @@ export function ScalarHttpOperationClient({
     omitRequestBody,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
+    const scalarHttpTestAiNudge = useScalarHttpTestAiNudge();
 
     const configuration = useMemo((): AnyApiReferenceConfiguration => {
         const { serverBaseUrl: server, path } = resolveOperationUrl(url, serverBaseUrl);
@@ -154,6 +156,7 @@ export function ScalarHttpOperationClient({
         return {
             ...scalarSiteEmbedConfiguration(resolvedAppTheme !== "light"),
             content: spec,
+            onRequestSent: scalarHttpTestAiNudge.onRequestSent,
         };
     }, [
         url,
@@ -165,6 +168,7 @@ export function ScalarHttpOperationClient({
         operationSummary,
         omitRequestBody,
         resolvedAppTheme,
+        scalarHttpTestAiNudge.onRequestSent,
     ]);
 
     const embedKey = `${url}\u0001${method}\u0001${operationSummary ?? ""}\u0001${omitRequestBody === true ? "1" : "0"}`;

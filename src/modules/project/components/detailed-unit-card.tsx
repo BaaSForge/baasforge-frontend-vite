@@ -13,7 +13,8 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { Maximize2, TriangleAlert } from "lucide-react";
-import { useMemo, useState } from "react";
+import { scheduleScalarHttpTestAiNudgeInboxSync } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
+import { useEffect, useMemo, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
 import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
@@ -87,6 +88,10 @@ export function DetailedUnitCard({
     const [explanationOpen, setExplanationOpen] = useState(true);
     const [interactionOpen, setInteractionOpen] = useState(false);
     const [dependenciesOpen, setDependenciesOpen] = useState(false);
+    useEffect(() => {
+        if (!releaseIsLive) return;
+        scheduleScalarHttpTestAiNudgeInboxSync();
+    }, [releaseIsLive]);
     const hasDependencies = useMemo(() => hasUnitDependsOn(unit.depends_on), [unit.depends_on]);
     const panelToggleValue = useMemo(() => {
         const v: string[] = [];

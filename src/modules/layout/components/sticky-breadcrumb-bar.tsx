@@ -1,5 +1,6 @@
 "use client";
 
+import { AppNotificationInboxButton } from "@/components/app-notification-inbox-button";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
@@ -157,6 +158,7 @@ function StickyBreadcrumbBarInner({
                     </Breadcrumb>
                 </FadedScrollArea>
             </div>
+            <AppNotificationInboxButton />
             <ModeToggle />
         </>
     );

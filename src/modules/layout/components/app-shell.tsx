@@ -1,3 +1,4 @@
+import { ScalarHttpTestAiNudgeGlobalHost } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { useSubscribeUserNotifications } from "@/hooks/use-subscribe-user-notifications";
 import { register, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
@@ -54,6 +55,7 @@ export function AppShell() {
                 <Outlet />
             </SidebarInset>
             <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+            <ScalarHttpTestAiNudgeGlobalHost />
         </SidebarProvider>
     );
 }

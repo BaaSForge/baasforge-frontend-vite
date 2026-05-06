@@ -9,6 +9,7 @@ type MarkdownBlockProps = {
     code: string;
     language: string;
     markdownTheme?: "light" | "dark";
+    compact?: boolean;
 };
 
 type DiffLineProps = {
@@ -61,6 +62,7 @@ export function AppSyntaxHighlighter(props: AppSyntaxHighlighterProps) {
         );
     }
 
+    const compact = Boolean(props.compact);
     const highlighter = (
         <SyntaxHighlighter
             PreTag="div"
@@ -70,7 +72,8 @@ export function AppSyntaxHighlighter(props: AppSyntaxHighlighterProps) {
                 margin: 0,
                 padding: 0,
                 borderRadius: 0,
-                fontSize: "0.875rem",
+                fontSize: compact ? "7px" : "0.875rem",
+                lineHeight: compact ? 1.28 : undefined,
                 minWidth: "100%",
                 width: "max-content",
                 background: "transparent",
