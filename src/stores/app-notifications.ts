@@ -1,4 +1,5 @@
 import { createStore, useStore } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 
 export type AppNotificationOpenContext = {
     group: string;
@@ -86,14 +87,17 @@ export function useAppNotificationOpen(): (group: string, id: string) => void {
     return useStore(appNotificationsStore, (s) => s.open);
 }
 
-export function useAppNotificationBadgeLabel(): string | null {
-    return useStore(appNotificationsStore, (s) => {
-        const { notifications } = s;
-        if (notifications.length === 0) return null;
-        const unread = notifications.filter((n) => !n.read).length;
-        const n = unread > 0 ? unread : notifications.length;
-        return n > 50 ? "50+" : String(n);
-    });
+export function useAppNotificationBadge(): { label: string | null; allRead: boolean } {
+    return useStore(
+        appNotificationsStore,
+        useShallow((s) => {
+            const { notifications } = s;
+            if (notifications.length === 0) return { label: null, allRead: false };
+            const unread = notifications.reduce((acc, n) => acc + (n.read ? 0 : 1), 0);
+            const n = unread > 0 ? unread : notifications.length;
+            return { label: n > 50 ? "50+" : String(n), allRead: unread === 0 };
+        }),
+    );
 }
 
 export function readStoredNotificationGroupFilter(): string[] {

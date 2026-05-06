@@ -19,7 +19,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import {
     openAppNotification,
     readStoredNotificationGroupFilter,
-    useAppNotificationBadgeLabel,
+    useAppNotificationBadge,
     useAppNotifications,
     writeStoredNotificationGroupFilter,
 } from "@/stores/app-notifications";
@@ -92,7 +92,7 @@ export function AppNotificationInboxButton() {
     const isMobile = useIsMobile();
     const [open, setOpen] = React.useState(false);
     const notifications = useAppNotifications();
-    const badgeLabel = useAppNotificationBadgeLabel();
+    const { label: badgeLabel, allRead: badgeAllRead } = useAppNotificationBadge();
     const [selectedGroups, setSelectedGroups] = React.useState<string[]>(() => readStoredNotificationGroupFilter());
 
     React.useEffect(() => {
@@ -107,13 +107,18 @@ export function AppNotificationInboxButton() {
         return [...set].sort((a, b) => a.localeCompare(b));
     }, [notifications]);
 
+    const appliedGroupFilter = React.useMemo(() => {
+        const valid = new Set(groupOptions);
+        return selectedGroups.filter((g) => valid.has(g));
+    }, [groupOptions, selectedGroups]);
+
     const filtered = React.useMemo(() => {
         const list =
-            selectedGroups.length === 0
+            appliedGroupFilter.length === 0
                 ? notifications
-                : notifications.filter((n) => selectedGroups.includes(n.group));
+                : notifications.filter((n) => appliedGroupFilter.includes(n.group));
         return [...list].sort((a, b) => b.pushedAt - a.pushedAt);
-    }, [notifications, selectedGroups]);
+    }, [notifications, appliedGroupFilter]);
 
     const activateRow = React.useCallback((group: string, id: string) => {
         openAppNotification(group, id);
@@ -125,7 +130,7 @@ export function AppNotificationInboxButton() {
     const renderHeaderBlock = (opts?: { extraClass?: string; title?: React.ReactNode; sheet?: boolean }) => {
         const sheet = opts?.sheet === true;
         const filterControls =
-            groupOptions.length > 0 ? (
+            groupOptions.length > 1 ? (
                 <div className="flex shrink-0 items-center gap-1">
                     {selectedGroups.length > 0 ? (
                         <Button
@@ -144,7 +149,7 @@ export function AppNotificationInboxButton() {
                         selectedGroups={selectedGroups}
                         onSelectedGroupsChange={setSelectedGroups}
                         menuSide={isMobile ? "top" : "bottom"}
-                        hasActiveFilter={selectedGroups.length > 0}
+                        hasActiveFilter={appliedGroupFilter.length > 0}
                     />
                 </div>
             ) : null;
@@ -225,8 +230,12 @@ export function AppNotificationInboxButton() {
             <Inbox className="h-[1.2rem] w-[1.2rem]" />
             {badgeLabel != null ? (
                 <Badge
-                    variant="default"
-                    className="pointer-events-none absolute -right-1.5 -top-1.5 flex h-5 min-w-5 justify-center px-1 text-[0.65rem] tabular-nums"
+                    variant={badgeAllRead ? "secondary" : "default"}
+                    className={cn(
+                        "pointer-events-none absolute -right-1.5 -top-1.5 flex h-5 min-w-5 justify-center px-1 text-[0.65rem] tabular-nums font-medium",
+                        badgeAllRead &&
+                            "border-transparent bg-muted/90 text-muted-foreground shadow-none dark:bg-muted/50",
+                    )}
                 >
                     {badgeLabel}
                 </Badge>
