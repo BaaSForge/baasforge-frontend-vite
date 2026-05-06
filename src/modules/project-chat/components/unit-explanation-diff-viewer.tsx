@@ -2,6 +2,7 @@
 
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { AppSyntaxHighlighter } from "@/components/syntax-highlight/app-syntax-highlighter";
+import { CodeSnippetActions } from "@/components/syntax-highlight/code-snippet-actions";
 import { cn } from "@/lib/utils";
 import type { MutableRefObject, ReactElement, ReactNode } from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -295,6 +296,8 @@ function UnitExplanationSplitDiff({
     leftTitle,
     rightTitle,
     plainText,
+    copyLeftText,
+    copyRightText,
 }: {
     lineInformation: LineInformation[];
     lineBlocks: Record<number, number>;
@@ -303,6 +306,8 @@ function UnitExplanationSplitDiff({
     leftTitle: string;
     rightTitle: string;
     plainText?: boolean;
+    copyLeftText: string;
+    copyRightText: string;
 }) {
     const [expandedBlocks, setExpandedBlocks] = useState<number[]>([]);
 
@@ -335,109 +340,135 @@ function UnitExplanationSplitDiff({
                     gridTemplateColumns: "1fr 1fr",
                 }}
             >
-                <div
-                    ref={tl}
-                    className="overflow-x-auto border-r border-border px-2 py-2"
-                    onScroll={() => tr.current && tl.current && syncScrollX(tl.current, tr.current, lockT)}
-                >
-                    <div className="w-max min-w-full">
-                        <pre className="m-0 font-mono text-[12px] whitespace-pre text-[var(--diff-viewer-title-fg)]">{leftTitle}</pre>
+                <div className="flex min-w-0 items-center gap-2 border-r border-border px-2 py-2">
+                    <div
+                        ref={tl}
+                        className="min-w-0 flex-1 overflow-x-auto"
+                        onScroll={() => tr.current && tl.current && syncScrollX(tl.current, tr.current, lockT)}
+                    >
+                        <div className="w-max min-w-full">
+                            <pre className="m-0 font-mono text-[12px] whitespace-pre text-[var(--diff-viewer-title-fg)]">{leftTitle}</pre>
+                        </div>
                     </div>
+                    <CodeSnippetActions textToCopy={copyLeftText} className="shrink-0" />
                 </div>
-                <div
-                    ref={tr}
-                    className="overflow-x-auto px-2 py-2"
-                    onScroll={() => tl.current && tr.current && syncScrollX(tr.current, tl.current, lockT)}
-                >
-                    <div className="w-max min-w-full">
-                        <pre className="m-0 font-mono text-[12px] whitespace-pre text-[var(--diff-viewer-title-fg)]">{rightTitle}</pre>
+                <div className="flex min-w-0 items-center gap-2 px-2 py-2">
+                    <div
+                        ref={tr}
+                        className="min-w-0 flex-1 overflow-x-auto"
+                        onScroll={() => tl.current && tr.current && syncScrollX(tr.current, tl.current, lockT)}
+                    >
+                        <div className="w-max min-w-full">
+                            <pre className="m-0 font-mono text-[12px] whitespace-pre text-[var(--diff-viewer-title-fg)]">{rightTitle}</pre>
+                        </div>
                     </div>
+                    <CodeSnippetActions textToCopy={copyRightText} className="shrink-0" />
                 </div>
             </div>
             <div className="relative z-0 grid min-w-0" style={{ gridTemplateColumns: "1fr 1fr", gridTemplateRows: rows }}>
                 <div
-                    ref={bl}
-                    className="min-h-0 min-w-0 overflow-x-auto border-r border-border bg-[var(--diff-viewer-bg)]"
+                    className="relative min-w-0 border-r border-border bg-[var(--diff-viewer-bg)]"
                     style={{
                         display: "grid",
                         gridColumn: 1,
                         gridRow: n ? "1 / -1" : "auto",
                         gridTemplateRows: n ? "subgrid" : "auto",
                     }}
-                    onScroll={() => br.current && bl.current && syncScrollX(bl.current, br.current, lockB)}
                 >
-                    {visibleRows.map((row, i) => {
-                        const gridRow = n ? i + 1 : undefined;
-                        if (row.kind === "fold") {
+                    <div
+                        ref={bl}
+                        className="min-h-0 min-w-0 overflow-x-auto"
+                        style={{
+                            display: "grid",
+                            gridRow: n ? "1 / -1" : "auto",
+                            gridTemplateRows: n ? "subgrid" : "auto",
+                            minHeight: 0,
+                        }}
+                        onScroll={() => br.current && bl.current && syncScrollX(bl.current, br.current, lockB)}
+                    >
+                        {visibleRows.map((row, i) => {
+                            const gridRow = n ? i + 1 : undefined;
+                            if (row.kind === "fold") {
+                                const line = lineInformation[row.lineIndex];
+                                const b = blocks[row.blockIndex];
+                                const leftLn = line.left?.lineNumber ?? 0;
+                                const rightLn = line.right?.lineNumber ?? 0;
+                                return (
+                                    <div key={`L-f-${row.blockIndex}`} className="w-max min-w-full" style={{ gridRow }}>
+                                        <SplitFoldRow
+                                            foldedLines={b?.lines ?? 0}
+                                            leftLine={leftLn}
+                                            rightLine={rightLn}
+                                            onToggle={() => toggleBlock(row.blockIndex)}
+                                            plainText={plainText}
+                                        />
+                                    </div>
+                                );
+                            }
                             const line = lineInformation[row.lineIndex];
-                            const b = blocks[row.blockIndex];
-                            const leftLn = line.left?.lineNumber ?? 0;
-                            const rightLn = line.right?.lineNumber ?? 0;
                             return (
-                                <div key={`L-f-${row.blockIndex}`} className="w-max min-w-full" style={{ gridRow }}>
-                                    <SplitFoldRow
-                                        foldedLines={b?.lines ?? 0}
-                                        leftLine={leftLn}
-                                        rightLine={rightLn}
-                                        onToggle={() => toggleBlock(row.blockIndex)}
+                                <div key={`L-${row.lineIndex}`} className="w-max min-w-full" style={{ gridRow }}>
+                                    <SplitDiffLineRow
+                                        side={line.left ?? {}}
+                                        renderContent={renderContent}
                                         plainText={plainText}
                                     />
                                 </div>
                             );
-                        }
-                        const line = lineInformation[row.lineIndex];
-                        return (
-                            <div key={`L-${row.lineIndex}`} className="w-max min-w-full" style={{ gridRow }}>
-                                <SplitDiffLineRow
-                                    side={line.left ?? {}}
-                                    renderContent={renderContent}
-                                    plainText={plainText}
-                                />
-                            </div>
-                        );
-                    })}
+                        })}
+                    </div>
                 </div>
                 <div
-                    ref={br}
-                    className="min-h-0 min-w-0 overflow-x-auto bg-[var(--diff-viewer-bg)]"
+                    className="relative min-w-0 bg-[var(--diff-viewer-bg)]"
                     style={{
                         display: "grid",
                         gridColumn: 2,
                         gridRow: n ? "1 / -1" : "auto",
                         gridTemplateRows: n ? "subgrid" : "auto",
                     }}
-                    onScroll={() => bl.current && br.current && syncScrollX(br.current, bl.current, lockB)}
                 >
-                    {visibleRows.map((row, i) => {
-                        const gridRow = n ? i + 1 : undefined;
-                        if (row.kind === "fold") {
+                    <div
+                        ref={br}
+                        className="min-h-0 min-w-0 overflow-x-auto"
+                        style={{
+                            display: "grid",
+                            gridRow: n ? "1 / -1" : "auto",
+                            gridTemplateRows: n ? "subgrid" : "auto",
+                            minHeight: 0,
+                        }}
+                        onScroll={() => bl.current && br.current && syncScrollX(br.current, bl.current, lockB)}
+                    >
+                        {visibleRows.map((row, i) => {
+                            const gridRow = n ? i + 1 : undefined;
+                            if (row.kind === "fold") {
+                                const line = lineInformation[row.lineIndex];
+                                const b = blocks[row.blockIndex];
+                                const leftLn = line.left?.lineNumber ?? 0;
+                                const rightLn = line.right?.lineNumber ?? 0;
+                                return (
+                                    <div key={`R-f-${row.blockIndex}`} className="w-max min-w-full" style={{ gridRow }}>
+                                        <SplitFoldRow
+                                            foldedLines={b?.lines ?? 0}
+                                            leftLine={leftLn}
+                                            rightLine={rightLn}
+                                            onToggle={() => toggleBlock(row.blockIndex)}
+                                            plainText={plainText}
+                                        />
+                                    </div>
+                                );
+                            }
                             const line = lineInformation[row.lineIndex];
-                            const b = blocks[row.blockIndex];
-                            const leftLn = line.left?.lineNumber ?? 0;
-                            const rightLn = line.right?.lineNumber ?? 0;
                             return (
-                                <div key={`R-f-${row.blockIndex}`} className="w-max min-w-full" style={{ gridRow }}>
-                                    <SplitFoldRow
-                                        foldedLines={b?.lines ?? 0}
-                                        leftLine={leftLn}
-                                        rightLine={rightLn}
-                                        onToggle={() => toggleBlock(row.blockIndex)}
+                                <div key={`R-${row.lineIndex}`} className="w-max min-w-full" style={{ gridRow }}>
+                                    <SplitDiffLineRow
+                                        side={line.right ?? {}}
+                                        renderContent={renderContent}
                                         plainText={plainText}
                                     />
                                 </div>
                             );
-                        }
-                        const line = lineInformation[row.lineIndex];
-                        return (
-                            <div key={`R-${row.lineIndex}`} className="w-max min-w-full" style={{ gridRow }}>
-                                <SplitDiffLineRow
-                                    side={line.right ?? {}}
-                                    renderContent={renderContent}
-                                    plainText={plainText}
-                                />
-                            </div>
-                        );
-                    })}
+                        })}
+                    </div>
                 </div>
             </div>
         </div>
@@ -626,6 +657,8 @@ export function UnitExplanationDiffViewer({
                     leftTitle={UNIT_EXPLANATION_DIFF_LEFT_TITLE}
                     rightTitle={UNIT_EXPLANATION_DIFF_RIGHT_TITLE}
                     plainText={plainText}
+                    copyLeftText={oldValue}
+                    copyRightText={newValue}
                 />
             </div>
         );
@@ -638,32 +671,43 @@ export function UnitExplanationDiffViewer({
             className={cn("min-h-0 w-full min-w-0 rounded-md border border-border bg-[var(--diff-viewer-bg)]", className)}
         >
             <div
-                className="rounded-t-md border-b border-border px-2 py-2"
+                className="flex min-w-0 items-center gap-2 rounded-t-md border-b border-border px-2 py-2"
                 style={{ backgroundColor: "var(--diff-viewer-title-bg)" }}
             >
-                <pre className="m-0 font-mono text-[12px] whitespace-pre text-[var(--diff-viewer-title-fg)]">
-                    {UNIT_EXPLANATION_DIFF_INLINE_TITLE}
-                </pre>
+                <div className="min-w-0 flex-1 overflow-x-auto">
+                    <pre className="m-0 w-max min-w-full font-mono text-[12px] whitespace-pre text-[var(--diff-viewer-title-fg)]">
+                        {UNIT_EXPLANATION_DIFF_INLINE_TITLE}
+                    </pre>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    <CodeSnippetActions textToCopy={oldValue} tooltip="Prev" />
+                    <span className="select-none font-mono text-[12px] text-[var(--diff-viewer-title-fg)]/70" aria-hidden>
+                        →
+                    </span>
+                    <CodeSnippetActions textToCopy={newValue} tooltip="Next" />
+                </div>
             </div>
-            <div
-                className={cn(
-                    "min-h-0 min-w-0 overflow-x-auto rounded-b-md [&_table]:w-max [&_table]:min-w-full",
-                    INLINE_DIFF_STICKY_GUTTERS,
-                    INLINE_FOLD_STICKY,
-                    INLINE_FOLD_ICON,
-                )}
-            >
-                <ReactDiffViewer
-                    oldValue={oldValue}
-                    newValue={newValue}
-                    splitView={false}
-                    compareMethod={DiffMethod.LINES}
-                    disableWordDiff={false}
-                    useDarkTheme={useDarkTheme}
-                    styles={inlineStyles}
-                    renderContent={renderContent}
-                    hideSummary
-                />
+            <div className="relative min-w-0 rounded-b-md bg-[var(--diff-viewer-bg)]">
+                <div
+                    className={cn(
+                        "min-h-0 min-w-0 overflow-x-auto rounded-b-md [&_table]:w-max [&_table]:min-w-full",
+                        INLINE_DIFF_STICKY_GUTTERS,
+                        INLINE_FOLD_STICKY,
+                        INLINE_FOLD_ICON,
+                    )}
+                >
+                    <ReactDiffViewer
+                        oldValue={oldValue}
+                        newValue={newValue}
+                        splitView={false}
+                        compareMethod={DiffMethod.LINES}
+                        disableWordDiff={false}
+                        useDarkTheme={useDarkTheme}
+                        styles={inlineStyles}
+                        renderContent={renderContent}
+                        hideSummary
+                    />
+                </div>
             </div>
         </div>
     );

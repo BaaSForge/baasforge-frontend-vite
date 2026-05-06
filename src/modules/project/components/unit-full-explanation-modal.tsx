@@ -50,7 +50,7 @@ export function UnitFullExplanationModal({
             <CentricModalContent className="sm:max-w-[48rem]" showCloseButton>
                 <CentricModalHeader>
                     <div className="flex min-w-0 items-start justify-between gap-2">
-                        <CentricModalTitle className="min-w-0">Full explanation</CentricModalTitle>
+                        <CentricModalTitle className="min-w-0 hidden md:block">Full explanation</CentricModalTitle>
                         <UnitCardIdRow unitId={unitId} variant="inline" className="shrink-0" />
                     </div>
                     <div className="flex flex-row flex-wrap items-center gap-1">{badges}</div>

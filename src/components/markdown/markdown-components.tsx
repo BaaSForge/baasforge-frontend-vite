@@ -5,6 +5,7 @@ import { Link } from "react-router";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { markdownPreWithFader } from "./markdown-code-block-shell";
 
 const SAFE_LINK_REL = "noopener noreferrer nofollow noindex";
 const EXTERNAL_LINK_RE = /^https?:\/\//i;
@@ -13,29 +14,7 @@ function isExternalHref(href: string | undefined): boolean {
     return Boolean(href && EXTERNAL_LINK_RE.test(href));
 }
 
-export function markdownPreWithFader(faderFromClassName: string): NonNullable<Components["pre"]> {
-    return function MarkdownPre({ children, className, ...props }) {
-        return (
-            <FadedScrollArea
-                orientation="horizontal"
-                horizontalIntrinsicHeight
-                className="my-2 min-w-0 max-w-full"
-                faderFromClassName={faderFromClassName}
-            >
-                <pre
-                    className={cn(
-                        "m-0 min-w-full w-max max-w-none overflow-visible rounded-md font-mono text-sm leading-relaxed",
-                        "[&>div]:min-w-full [&>div]:w-max",
-                        className,
-                    )}
-                    {...props}
-                >
-                    {children}
-                </pre>
-            </FadedScrollArea>
-        );
-    };
-}
+export { markdownPreWithFader } from "./markdown-code-block-shell";
 
 export function markdownTableWithFader(faderFromClassName: string): NonNullable<Components["table"]> {
     return function MarkdownTable({ children, className, ...props }) {

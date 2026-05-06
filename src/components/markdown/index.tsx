@@ -9,6 +9,7 @@ import { AppSyntaxHighlighter } from "@/components/syntax-highlight/app-syntax-h
 import { useResolvedAppTheme, useResolvedTheme } from "@/components/theme-provider/hooks";
 import { cn } from "@/lib/utils";
 
+import { MarkdownRegisterCodeCopy } from "./markdown-code-block-shell";
 import { markdownComponents, markdownPreWithFader, markdownTableWithFader } from "./markdown-components";
 
 export type MarkdownTheme = "light" | "dark";
@@ -52,24 +53,28 @@ export function Markdown({ children, className, theme: themeProp, embeddedOnInve
                 const match = /language-(\w+)/.exec(codeClassName ?? "");
                 const language = match ? match[1] : "text";
                 const isBlock = codeClassName?.startsWith("language-");
+                const blockSource = String(codeChildren).replace(/\n$/, "");
                 return isBlock ? (
-                    <div
-                        className={cn(
-                            "overflow-x-auto rounded-md p-2 sm:p-3",
-                            themeProp != null && embeddedOnInverse && resolvedAppTheme === "dark-midnight"
-                                ? "bg-secondary"
-                                : themeProp != null && embeddedOnInverse && resolvedAppTheme === "dark-default"
-                                  ? "bg-[color-mix(in_oklch,var(--muted),oklch(1_0_0)_4%)]"
-                                  : "bg-muted",
-                        )}
-                    >
-                        <AppSyntaxHighlighter
-                            variant="markdownBlock"
-                            code={String(codeChildren).replace(/\n$/, "")}
-                            language={language}
-                            markdownTheme={themeProp != null && embeddedOnInverse ? undefined : themeProp}
-                        />
-                    </div>
+                    <>
+                        <MarkdownRegisterCodeCopy text={blockSource} />
+                        <div
+                            className={cn(
+                                "relative w-full min-w-0 max-w-full min-h-12 rounded-md p-2 sm:p-3",
+                                themeProp != null && embeddedOnInverse && resolvedAppTheme === "dark-midnight"
+                                    ? "bg-secondary"
+                                    : themeProp != null && embeddedOnInverse && resolvedAppTheme === "dark-default"
+                                      ? "bg-[color-mix(in_oklch,var(--muted),oklch(1_0_0)_4%)]"
+                                      : "bg-muted",
+                            )}
+                        >
+                            <AppSyntaxHighlighter
+                                variant="markdownBlock"
+                                code={blockSource}
+                                language={language}
+                                markdownTheme={themeProp != null && embeddedOnInverse ? undefined : themeProp}
+                            />
+                        </div>
+                    </>
                 ) : (
                     <code className={cn("relative rounded px-[0.3rem] py-[0.2rem] font-mono font-semibold break-words", inlineCodeClass)} {...props}>
                         {codeChildren}

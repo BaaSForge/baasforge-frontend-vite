@@ -167,7 +167,7 @@ export function UnitDetailWithDiff({
         <div className={cn("min-h-0 space-y-3", className)}>
             <div
                 className={cn(
-                    "sticky z-[9] -mx-4 flex flex-col gap-1.5 border-b border-border/60 bg-background/95 px-4 pt-3 pb-1.5 backdrop-blur-sm supports-[backdrop-filter]:bg-background/90 sm:-mx-6 sm:px-6",
+                    "sticky z-15 -mx-4 flex flex-col gap-1.5 border-b border-border/60 bg-background/95 px-4 pt-3 pb-1.5 backdrop-blur-sm supports-[backdrop-filter]:bg-background/90 sm:-mx-6 sm:px-6",
                     headerStickyTopClassName,
                 )}
             >

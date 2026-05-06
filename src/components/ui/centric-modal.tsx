@@ -241,7 +241,7 @@ function CentricModalHeader({ className, ...props }: React.ComponentProps<typeof
     const isMobile = useIsMobile();
     const Component = isMobile ? DrawerHeader : DialogHeader;
     /** Consistent vertical rhythm between title and trailing content (e.g. badges); drawer defaults are tighter. */
-    return <Component className={cn("gap-2 md:pr-6 md:pt-4 md:pb-4", className)} {...props} />;
+    return <Component className={cn("gap-2", className)} {...props} />;
 }
 
 function CentricModalFooter(props: React.ComponentProps<typeof DialogFooter>) {

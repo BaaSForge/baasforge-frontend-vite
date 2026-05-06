@@ -119,7 +119,7 @@ export function ChatSessionViewChangesModal({
                     <p className="text-sm text-muted-foreground">No units to compare.</p>
                 ) : (
                     <Tabs value={tabValue} onValueChange={setTabUserOverride} className="min-h-0 w-full gap-0">
-                        <div className="sticky top-0 z-10 -mx-4 border-b bg-background px-4 pb-3 sm:-mx-6 sm:px-6">
+                        <div className="sticky top-0 z-15 -mx-4 border-b bg-background px-4 pb-3 sm:-mx-6 sm:px-6">
                             <CentricModalTitle className="sr-only">Unit changes</CentricModalTitle>
                             <CentricModalDescription className="sr-only">
                                 Compare JSON for each draft unit before this chat and its current draft state. Use the context tabs to filter
