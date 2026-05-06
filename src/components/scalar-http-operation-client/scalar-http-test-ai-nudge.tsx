@@ -217,48 +217,14 @@ function ScalarHttpTestAiNudgeIllustration({ className }: { className?: string }
             <ScalarHttpTestAiNudgeConnector junctionX={junctionX} />
             <ScalarHttpTestAiNudgeMergeNode junctionX={junctionX} />
             <div className="relative isolate z-20 flex w-full min-w-0 items-center gap-2">
-                <svg
-                    viewBox="28 18 118 118"
-                    className="text-foreground relative z-[30] h-[4.75rem] w-[3.75rem] shrink-0"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden
-                >
-                <defs>
-                    <linearGradient id="scalarNudgeFace" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" className="[stop-color:var(--primary)]" stopOpacity="0.35" />
-                        <stop offset="100%" className="[stop-color:var(--muted-foreground)]" stopOpacity="0.2" />
-                    </linearGradient>
-                </defs>
-                <g transform="translate(32, 24)">
-                    <rect
-                        x="0"
-                        y="20"
-                        width="112"
-                        height="92"
-                        rx="18"
-                        fill="url(#scalarNudgeFace)"
-                        stroke="currentColor"
-                        strokeOpacity="0.2"
-                    />
-                    <rect x="14" y="36" width="84" height="56" rx="10" fill="currentColor" fillOpacity="0.08" />
-                    <circle cx="40" cy="58" r="9" fill="currentColor" fillOpacity="0.55">
-                        <animate attributeName="fill-opacity" values="0.55;0.95;0.55" dur="2.4s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="72" cy="58" r="9" fill="currentColor" fillOpacity="0.55">
-                        <animate attributeName="fill-opacity" values="0.55;0.95;0.55" dur="2.4s" begin="0.35s" repeatCount="indefinite" />
-                    </circle>
-                    <rect x="34" y="78" width="44" height="6" rx="3" fill="currentColor" fillOpacity="0.25" />
-                    <path
-                        d="M 56 112 L 44 132 M 56 112 L 68 132"
-                        stroke="currentColor"
-                        strokeOpacity="0.35"
-                        strokeWidth="5"
-                        strokeLinecap="round"
-                    />
-                    <rect x="40" y="0" width="32" height="22" rx="6" fill="currentColor" fillOpacity="0.15" />
-                    <path d="M 56 22 L 56 34" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" strokeLinecap="round" />
-                </g>
-                </svg>
+                <img
+                    src="/icon.png"
+                    alt=""
+                    width={76}
+                    height={76}
+                    draggable={false}
+                    className="relative z-[30] h-[4.5rem] w-[4.5rem] shrink-0 object-contain mt-8"
+                />
                 <div className="min-h-[calc(10.25rem+theme(spacing.6))] min-w-0 flex-1" aria-hidden />
                 <div className="relative z-[40] h-[calc(10.25rem+theme(spacing.6))] w-[min(100%,13.25rem)] shrink-0">
                     <NudgeCodeBlock code={SNIPPET_SPAN} className={cn(NUDGE_CARD_STACK.span.className)} style={NUDGE_CARD_STACK.span.style} />
