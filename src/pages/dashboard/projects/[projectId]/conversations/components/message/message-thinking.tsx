@@ -53,7 +53,7 @@ export function MessageThinking({ thinking, status, align }: MessageThinkingProp
                         "border-l-2 border-muted pl-3",
                     )}
                 >
-                    <Markdown className="max-w-none text-sm text-muted-foreground [&_p]:my-1 [&_pre]:my-2 [&_pre]:text-xs [&_code]:text-xs">
+                    <Markdown className="max-w-none text-sm text-muted-foreground [&_p]:my-1 [&_pre]:text-xs [&_code]:text-xs">
                         {trimmed}
                     </Markdown>
                 </CollapsibleContent>

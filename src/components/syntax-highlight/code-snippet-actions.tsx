@@ -25,9 +25,9 @@ export function CodeSnippetActions({ textToCopy, className, tooltip, disabled }:
         <ButtonGroup className={cn("gap-0 border-0 bg-transparent p-0 shadow-none", className)}>
             <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 size="icon-xs"
-                className="size-7 rounded-md font-semibold text-foreground shadow-sm hover:bg-muted/90"
+                className="size-7 rounded-md font-semibold text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-background dark:hover:bg-accent dark:hover:text-accent-foreground"
                 aria-label="Copy code"
                 disabled={mergedDisabled}
                 onClick={() => {

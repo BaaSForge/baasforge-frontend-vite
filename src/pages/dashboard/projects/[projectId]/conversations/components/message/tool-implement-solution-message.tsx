@@ -77,7 +77,7 @@ export function ToolImplementSolutionMessage({ message, nestedMessages }: { mess
                                     <blockquote
                                         className={cn(
                                             "min-w-0 max-w-full border-l-2 border-muted pl-3 text-sm text-muted-foreground",
-                                            "[&_p]:my-1 [&_pre]:my-2 [&_pre]:text-xs [&_code]:text-xs",
+                                            "[&_p]:my-1 [&_pre]:text-xs [&_code]:text-xs",
                                         )}
                                     >
                                         <Markdown className="max-w-none">{detailedReport}</Markdown>
