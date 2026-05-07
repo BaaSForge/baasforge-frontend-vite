@@ -46,7 +46,7 @@ export function ProjectSwitcher() {
                                     hasActiveProject && "text-sidebar-primary-foreground",
                                 )}
                             >
-                                <AppLogoSquare className="size-7" />
+                                <AppLogoSquare className={hasActiveProject ? "size-7" : "size-6"} grayscale={!hasActiveProject} />
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 {hasActiveProject ? (
