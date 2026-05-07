@@ -72,7 +72,9 @@ function ScalarApiHostWithPaintGate({
     }, [configuration]);
 
     const onEmbedReadyRef = useRef(onEmbedReady);
-    onEmbedReadyRef.current = onEmbedReady;
+    useEffect(() => {
+        onEmbedReadyRef.current = onEmbedReady;
+    }, [onEmbedReady]);
     useEffect(() => {
         if (!paintDone) return;
         onEmbedReadyRef.current?.();

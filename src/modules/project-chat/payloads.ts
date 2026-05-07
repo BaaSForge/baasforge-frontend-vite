@@ -113,11 +113,29 @@ export interface ToolAnalyzeObservabilityPayload {
 export interface FinishObservabilityAnalysisPayload {
     args?: {
         detailed_report?: string | null;
-        relevant_units_ids?: unknown[];
+        relevant_unit_ids?: unknown[];
     };
     tool_call_id?: string;
     tool_name?: string;
     error?: string;
+}
+
+export function relevantUnitIdStringsFromToolArgs(args: { relevant_unit_ids?: unknown } | null | undefined): string[] {
+    if (args == null) return [];
+    const raw = args.relevant_unit_ids;
+    if (!Array.isArray(raw)) return [];
+    return raw.filter((x): x is string => typeof x === "string" && x.length > 0);
+}
+
+export function orderedDraftUnitsForFullIds(ids: string[], draftUnits: ProjectUnitResponse[] | undefined): ProjectUnitResponse[] {
+    if (ids.length === 0 || draftUnits == null || draftUnits.length === 0) return [];
+    const byId = new Map(draftUnits.map((u) => [u.id, u]));
+    const out: ProjectUnitResponse[] = [];
+    for (const id of ids) {
+        const u = byId.get(id);
+        if (u != null) out.push(u);
+    }
+    return out;
 }
 
 export interface ToolAnalyzeSolutionPayload {

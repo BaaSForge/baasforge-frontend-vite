@@ -15,7 +15,7 @@ export enum ChatMessageType {
     ToolAnalyzeArchitecture = "tool_analyze_architecture",
     FinishArchitectureAnalysis = "tool_finish_architecture_analysis",
     ToolAnalyzeObservability = "tool_analyze_observability",
-    FinishObservabilityAnalysis = "tool_finish_observability_analyze",
+    FinishObservabilityAnalysis = "tool_finish_observability_analysis",
     ToolAnalyzeSolution = "tool_analyze_solution",
     FinishSolutionAnalysis = "tool_finish_solution_analysis",
     ToolImplementSolution = "tool_implement_solution",

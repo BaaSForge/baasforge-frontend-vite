@@ -1,6 +1,9 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { relevantUnitIdStringsFromToolArgs } from "@/modules/project-chat/payloads";
 import {
     ChatMessageStatus,
     getToolPayloadErrorString,
@@ -20,7 +23,8 @@ function formatArgs(args: FinishObservabilityAnalysisPayload["args"]): string {
     if (args?.detailed_report != null && args.detailed_report !== "") {
         parts.push(`detailed report: ${truncateToWords(String(args.detailed_report), SUMMARY_MAX_WORDS)}`);
     }
-    if (args?.relevant_units_ids != null && args.relevant_units_ids.length > 0) parts.push(`relevant units count: ${args.relevant_units_ids.length}`);
+    const n = relevantUnitIdStringsFromToolArgs(args).length;
+    if (n > 0) parts.push(`relevant units count: ${n}`);
     return parts.length ? parts.join("\n") : "—";
 }
 
