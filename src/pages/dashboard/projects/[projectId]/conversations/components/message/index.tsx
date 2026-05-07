@@ -12,8 +12,10 @@ import { MessageThinking } from "./message-thinking";
 import { TextMessage } from "./text-message";
 import { FinishArchitectureAnalysisMessage } from "./finish-architecture-analysis-message";
 import { FinishImplementationMessage } from "./finish-implementation-message";
+import { FinishObservabilityAnalysisMessage } from "./finish-observability-analysis-message";
 import { FinishSolutionAnalysisMessage } from "./finish-solution-analysis-message";
 import { ToolAnalyzeArchitectureMessage } from "./tool-analyze-architecture-message";
+import { ToolAnalyzeObservabilityMessage } from "./tool-analyze-observability-message";
 import { ToolAnalyzeSolutionMessage } from "./tool-analyze-solution-message";
 import { ToolImplementSolutionMessage } from "./tool-implement-solution-message";
 import { ToolFetchLatestReleasesMessage } from "./tool-fetch-latest-releases-message";
@@ -71,6 +73,12 @@ function MessageContent({
     if (message.type === ChatMessageType.FinishArchitectureAnalysis) {
         return <FinishArchitectureAnalysisMessage message={message} nestedMessages={nestedMessages} />;
     }
+    if (message.type === ChatMessageType.ToolAnalyzeObservability) {
+        return <ToolAnalyzeObservabilityMessage message={message} nestedMessages={nestedMessages} />;
+    }
+    if (message.type === ChatMessageType.FinishObservabilityAnalysis) {
+        return <FinishObservabilityAnalysisMessage message={message} nestedMessages={nestedMessages} />;
+    }
     if (message.type === ChatMessageType.ToolAnalyzeSolution) {
         return <ToolAnalyzeSolutionMessage message={message} nestedMessages={nestedMessages} />;
     }
@@ -114,6 +122,8 @@ const toolMessageTypes = [
     ChatMessageType.ToolFetchLatestReleases,
     ChatMessageType.ToolAnalyzeArchitecture,
     ChatMessageType.FinishArchitectureAnalysis,
+    ChatMessageType.ToolAnalyzeObservability,
+    ChatMessageType.FinishObservabilityAnalysis,
     ChatMessageType.ToolAnalyzeSolution,
     ChatMessageType.FinishSolutionAnalysis,
     ChatMessageType.ToolImplementSolution,

@@ -98,6 +98,28 @@ export interface FinishArchitectureAnalysisPayload {
     error?: string;
 }
 
+export interface ToolAnalyzeObservabilityPayload {
+    args?: {
+        brief?: string | null;
+    };
+    related_units?: unknown[];
+    detailed_report?: string;
+    messages?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
+export interface FinishObservabilityAnalysisPayload {
+    args?: {
+        detailed_report?: string | null;
+        relevant_units_ids?: unknown[];
+    };
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
 export interface ToolAnalyzeSolutionPayload {
     args?: {
         intent?: string | null;
