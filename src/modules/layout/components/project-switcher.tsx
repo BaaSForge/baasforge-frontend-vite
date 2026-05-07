@@ -15,6 +15,7 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { cn } from "@/lib/utils";
 import { getSwitchProjectLink } from "@/modules/project/libs";
 import { useProjectQuery, useProjectsQuery } from "@/modules/project/queries";
+import { AppLogoSquare } from "@/components/logo/app-logo-square";
 
 export function ProjectSwitcher() {
     const { isMobile } = useSidebar();
@@ -40,12 +41,12 @@ export function ProjectSwitcher() {
                         >
                             <div
                                 className={cn(
-                                    "bg-sidebar-secondary text-sidebar-secondary-foreground flex",
+                                    "text-sidebar-secondary-foreground flex",
                                     "aspect-square size-8 items-center justify-center rounded-lg",
-                                    hasActiveProject && "bg-sidebar-primary text-sidebar-primary-foreground",
+                                    hasActiveProject && "text-sidebar-primary-foreground",
                                 )}
                             >
-                                {hasActiveProject ? <Package className="size-4" /> : <MousePointerClick className="size-4 opacity-60" />}
+                                <AppLogoSquare className="size-7" />
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 {hasActiveProject ? (
