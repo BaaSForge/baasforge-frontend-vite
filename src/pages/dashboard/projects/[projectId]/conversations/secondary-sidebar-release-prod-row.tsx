@@ -116,22 +116,26 @@ export function SecondarySidebarReleaseProdRow({
         );
     }
 
-    return (
-        <div className="w-full min-w-0">
-            <span className="flex w-full">
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-center gap-2 text-xs"
-                    disabled={view.pending}
-                    aria-busy={view.pending}
-                    onClick={() => setProductionConfirmOpen(true)}
-                >
-                    <Rocket className="size-3 shrink-0" aria-hidden />
-                    <span className="min-w-0 text-left">Release production</span>
-                </Button>
-            </span>
-        </div>
-    );
+    if (view.kind === "open-production-confirm") {
+        return (
+            <div className="w-full min-w-0">
+                <span className="flex w-full">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-center gap-2 text-xs"
+                        disabled={view.pending}
+                        aria-busy={view.pending}
+                        onClick={() => setProductionConfirmOpen(true)}
+                    >
+                        <Rocket className="size-3 shrink-0" aria-hidden />
+                        <span className="min-w-0 text-left">Release production</span>
+                    </Button>
+                </span>
+            </div>
+        );
+    }
+
+    return null;
 }

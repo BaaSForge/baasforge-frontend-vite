@@ -26,6 +26,7 @@
     // Paths
     "baseUrl": ".",
     "paths": {
+      "@public/*": ["./public/*"],
       "@/*": ["./src/*"],
       "react-diff-viewer-compute-lines": [
         "./node_modules/react-diff-viewer-continued/lib/cjs/src/compute-lines.js"

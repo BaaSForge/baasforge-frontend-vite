@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
         ],
         resolve: {
             alias: {
+                "@public": path.resolve(__dirname, "./public"),
                 "@": path.resolve(__dirname, "./src"),
                 "react-diff-viewer-compute-lines": path.resolve(
                     __dirname,

@@ -95,20 +95,24 @@ export function ReleaseControllerThreadProdRow({
         );
     }
 
-    return (
-        <div className={cn("inline-flex min-w-0", className)}>
-            <span className="inline-flex">
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="xs"
-                    disabled={view.pending}
-                    aria-busy={view.pending}
-                    onClick={() => setProductionConfirmOpen(true)}
-                >
-                    Release production
-                </Button>
-            </span>
-        </div>
-    );
+    if (view.kind === "open-production-confirm") {
+        return (
+            <div className={cn("inline-flex min-w-0", className)}>
+                <span className="inline-flex">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        disabled={view.pending}
+                        aria-busy={view.pending}
+                        onClick={() => setProductionConfirmOpen(true)}
+                    >
+                        Release production
+                    </Button>
+                </span>
+            </div>
+        );
+    }
+
+    return null;
 }

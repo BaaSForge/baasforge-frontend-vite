@@ -58,7 +58,7 @@ export function ReleaseCardCompact({
 
     const badges = (
         <>
-            <ReleaseRevisionBadge revision={release.revision} releaseId={release.id} />
+            <ReleaseRevisionBadge revision={release.revision} />
             {release.is_stage && (
                 <Badge variant="outline" className="text-[0.625rem]">
                     Stage
