@@ -117,6 +117,8 @@ export type ActorUnitLiveInteractionProps = {
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
     projectRuntimeBaseUrl?: string;
+    scalarEmbedReadyNotifyGeneration?: number;
+    onScalarEmbedReady?: () => void;
 };
 
 const DEFAULT_ACTOR_INSTANCE_ID = "default";
@@ -128,6 +130,8 @@ type ActorTabsProps = {
     handlerMetadataKeys: string[];
     defaultTab: string;
     stageSuffix: string;
+    scalarEmbedReadyNotifyGeneration: number;
+    onScalarEmbedReady?: () => void;
 };
 
 function ActorUnitLiveInteractionTabs({
@@ -137,6 +141,8 @@ function ActorUnitLiveInteractionTabs({
     handlerMetadataKeys,
     defaultTab,
     stageSuffix,
+    scalarEmbedReadyNotifyGeneration,
+    onScalarEmbedReady,
 }: ActorTabsProps) {
     const [activeTab, setActiveTab] = useState(defaultTab);
     const { isMobile, tabsOrientation, tabsClassName, tabsListClassName, tabsTriggerClassName } =
@@ -190,6 +196,8 @@ function ActorUnitLiveInteractionTabs({
                                         meta.handlerOutputs?.[metadataKey]?.jsonSchema ?? null,
                                     )}
                                     operationSummary={`Handler ${pathSeg}${stageSuffix}`}
+                                    onEmbedReady={onScalarEmbedReady}
+                                    readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                                 />
                             ) : null}
                         </TabsContent>
@@ -203,6 +211,8 @@ function ActorUnitLiveInteractionTabs({
                             method="GET"
                             responseBodyJsonSchema={envelopeStateResponse(meta.state?.jsonSchema ?? null)}
                             operationSummary={`Read persisted state${stageSuffix}`}
+                            onEmbedReady={onScalarEmbedReady}
+                            readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                         />
                     ) : null}
                 </TabsContent>
@@ -215,6 +225,8 @@ function ActorUnitLiveInteractionTabs({
                             omitRequestBody
                             responseBodyJsonSchema='{"type":"object","properties":{"passivated":{"type":"boolean"}},"required":["passivated"]}'
                             operationSummary={`Passivate (flush / evict)${stageSuffix}`}
+                            onEmbedReady={onScalarEmbedReady}
+                            readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                         />
                     ) : null}
                 </TabsContent>
@@ -226,6 +238,8 @@ function ActorUnitLiveInteractionTabs({
                             method="DELETE"
                             responseBodyJsonSchema='{"type":"object","properties":{"deleted":{"type":"boolean"}},"required":["deleted"]}'
                             operationSummary={`Delete actor instance${stageSuffix}`}
+                            onEmbedReady={onScalarEmbedReady}
+                            readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                         />
                     ) : null}
                 </TabsContent>
@@ -239,6 +253,8 @@ export function ActorUnitLiveInteraction({
     stageRuntimeId,
     releaseIsStage,
     projectRuntimeBaseUrl,
+    scalarEmbedReadyNotifyGeneration = 0,
+    onScalarEmbedReady,
 }: ActorUnitLiveInteractionProps) {
     const meta = readActorUnitMetadata(unit);
     const actorBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
@@ -328,6 +344,8 @@ export function ActorUnitLiveInteraction({
                     handlerMetadataKeys={handlerMetadataKeys}
                     defaultTab={defaultTab}
                     stageSuffix={stageSuffix}
+                    scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
+                    onScalarEmbedReady={onScalarEmbedReady}
                 />
             )}
         </div>

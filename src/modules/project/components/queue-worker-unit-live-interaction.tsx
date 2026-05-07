@@ -89,6 +89,8 @@ export type QueueWorkerUnitLiveInteractionProps = {
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
     projectRuntimeBaseUrl?: string;
+    scalarEmbedReadyNotifyGeneration?: number;
+    onScalarEmbedReady?: () => void;
 };
 
 type QueueWorkerTabsProps = {
@@ -99,6 +101,8 @@ type QueueWorkerTabsProps = {
     runIdValid: boolean;
     defaultTab: string;
     stageSuffix: string;
+    scalarEmbedReadyNotifyGeneration: number;
+    onScalarEmbedReady?: () => void;
 };
 
 function runScopedPlaceholder() {
@@ -117,6 +121,8 @@ function QueueWorkerUnitLiveInteractionTabs({
     runIdValid,
     defaultTab,
     stageSuffix,
+    scalarEmbedReadyNotifyGeneration,
+    onScalarEmbedReady,
 }: QueueWorkerTabsProps) {
     const [activeTab, setActiveTab] = useState(defaultTab);
     const runPathPrefix = runIdValid ? `${basePath}/${encodeURIComponent(runIdTrimmed)}` : "";
@@ -151,6 +157,8 @@ function QueueWorkerUnitLiveInteractionTabs({
                             requestBodyJsonSchema={meta.input?.jsonSchema ?? null}
                             responseBodyJsonSchema={ENQUEUE_RESPONSE_JSON_SCHEMA}
                             operationSummary={`Enqueue queue worker run${stageSuffix}`}
+                            onEmbedReady={onScalarEmbedReady}
+                            readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                         />
                     ) : null}
                 </TabsContent>
@@ -163,6 +171,8 @@ function QueueWorkerUnitLiveInteractionTabs({
                                 method="GET"
                                 responseBodyJsonSchema={RUN_STATUS_RESPONSE_JSON_SCHEMA}
                                 operationSummary={`Queue worker run status${stageSuffix}`}
+                                onEmbedReady={onScalarEmbedReady}
+                                readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                             />
                         ) : (
                             runScopedPlaceholder()
@@ -178,6 +188,8 @@ function QueueWorkerUnitLiveInteractionTabs({
                                 method="GET"
                                 responseBodyJsonSchema={queueWorkerResultEnvelopeSchema(meta.output?.jsonSchema ?? null)}
                                 operationSummary={`Queue worker run result${stageSuffix}`}
+                                onEmbedReady={onScalarEmbedReady}
+                                readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                             />
                         ) : (
                             runScopedPlaceholder()
@@ -193,6 +205,8 @@ function QueueWorkerUnitLiveInteractionTabs({
                                 method="POST"
                                 responseBodyJsonSchema={CANCEL_RESPONSE_JSON_SCHEMA}
                                 operationSummary={`Cancel queue worker run${stageSuffix}`}
+                                onEmbedReady={onScalarEmbedReady}
+                                readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                             />
                         ) : (
                             runScopedPlaceholder()
@@ -209,6 +223,8 @@ export function QueueWorkerUnitLiveInteraction({
     stageRuntimeId,
     releaseIsStage,
     projectRuntimeBaseUrl,
+    scalarEmbedReadyNotifyGeneration = 0,
+    onScalarEmbedReady,
 }: QueueWorkerUnitLiveInteractionProps) {
     const meta = readQueueWorkerUnitMetadata(unit);
     const workerBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
@@ -266,6 +282,8 @@ export function QueueWorkerUnitLiveInteraction({
                 runIdValid={runIdValid}
                 defaultTab="enqueue"
                 stageSuffix={stageSuffix}
+                scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
+                onScalarEmbedReady={onScalarEmbedReady}
             />
         </div>
     );

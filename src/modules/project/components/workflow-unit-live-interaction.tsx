@@ -113,6 +113,8 @@ export type WorkflowUnitLiveInteractionProps = {
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
     projectRuntimeBaseUrl?: string;
+    scalarEmbedReadyNotifyGeneration?: number;
+    onScalarEmbedReady?: () => void;
 };
 
 type WorkflowBodyProps = {
@@ -121,6 +123,8 @@ type WorkflowBodyProps = {
     wfBase: string;
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
+    scalarEmbedReadyNotifyGeneration: number;
+    onScalarEmbedReady?: () => void;
 };
 
 function WorkflowUnitLiveInteractionBody({
@@ -129,6 +133,8 @@ function WorkflowUnitLiveInteractionBody({
     wfBase,
     stageRuntimeId,
     releaseIsStage,
+    scalarEmbedReadyNotifyGeneration,
+    onScalarEmbedReady,
 }: WorkflowBodyProps) {
     const [instanceId, setInstanceId] = useState("");
     const [handlerName, setHandlerName] = useState("");
@@ -254,6 +260,8 @@ function WorkflowUnitLiveInteractionBody({
                                 requestBodyJsonSchema={meta.input?.jsonSchema ?? null}
                                 responseBodyJsonSchema={START_WORKFLOW_RESPONSE_JSON_SCHEMA}
                                 operationSummary={`Start workflow${stageSuffix}`}
+                                onEmbedReady={onScalarEmbedReady}
+                                readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                             />
                         ) : null}
                     </TabsContent>
@@ -267,6 +275,8 @@ function WorkflowUnitLiveInteractionBody({
                                     requestBodyJsonSchema={handlerRequestSchema}
                                     responseBodyJsonSchema={handlerResponseSchema}
                                     operationSummary={`Call shared handler${stageSuffix}`}
+                                    onEmbedReady={onScalarEmbedReady}
+                                    readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                                 />
                             ) : (
                                 <div className="text-muted-foreground flex min-h-[12rem] items-center justify-center rounded-md border border-dashed p-4 text-center text-xs">
@@ -284,6 +294,8 @@ function WorkflowUnitLiveInteractionBody({
                                     method="GET"
                                     responseBodyJsonSchema={WORKFLOW_STATUS_RESPONSE_JSON_SCHEMA}
                                     operationSummary={`Get workflow status${stageSuffix}`}
+                                    onEmbedReady={onScalarEmbedReady}
+                                    readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                                 />
                             ) : (
                                 <div className="text-muted-foreground flex min-h-[12rem] items-center justify-center rounded-md border border-dashed p-4 text-center text-xs">
@@ -302,6 +314,8 @@ function WorkflowUnitLiveInteractionBody({
                                     omitRequestBody
                                     responseBodyJsonSchema={CANCEL_WORKFLOW_RESPONSE_JSON_SCHEMA}
                                     operationSummary={`Cancel workflow${stageSuffix}`}
+                                    onEmbedReady={onScalarEmbedReady}
+                                    readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                                 />
                             ) : (
                                 <div className="text-muted-foreground flex min-h-[12rem] items-center justify-center rounded-md border border-dashed p-4 text-center text-xs">
@@ -319,6 +333,8 @@ function WorkflowUnitLiveInteractionBody({
                                     method="GET"
                                     responseBodyJsonSchema={workflowPollResultResponseSchema(meta.output?.jsonSchema)}
                                     operationSummary={`Get workflow result${stageSuffix}`}
+                                    onEmbedReady={onScalarEmbedReady}
+                                    readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
                                 />
                             ) : (
                                 <div className="text-muted-foreground flex min-h-[12rem] items-center justify-center rounded-md border border-dashed p-4 text-center text-xs">
@@ -338,6 +354,8 @@ export function WorkflowUnitLiveInteraction({
     stageRuntimeId,
     releaseIsStage,
     projectRuntimeBaseUrl,
+    scalarEmbedReadyNotifyGeneration = 0,
+    onScalarEmbedReady,
 }: WorkflowUnitLiveInteractionProps) {
     const meta = readWorkflowUnitMetadata(unit);
     const wfBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
@@ -357,6 +375,8 @@ export function WorkflowUnitLiveInteraction({
             wfBase={wfBase}
             stageRuntimeId={stageRuntimeId}
             releaseIsStage={releaseIsStage}
+            scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
+            onScalarEmbedReady={onScalarEmbedReady}
         />
     );
 }

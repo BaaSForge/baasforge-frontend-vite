@@ -25,6 +25,8 @@ export type ApiUnitLiveInteractionProps = {
     stageRuntimeId?: string;
     releaseIsStage?: boolean;
     projectRuntimeBaseUrl?: string;
+    scalarEmbedReadyNotifyGeneration?: number;
+    onScalarEmbedReady?: () => void;
 };
 
 export function ApiUnitLiveInteraction({
@@ -32,6 +34,8 @@ export function ApiUnitLiveInteraction({
     stageRuntimeId,
     releaseIsStage,
     projectRuntimeBaseUrl,
+    scalarEmbedReadyNotifyGeneration = 0,
+    onScalarEmbedReady,
 }: ApiUnitLiveInteractionProps) {
     const meta = readApiUnitMetadata(unit);
     const apiBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
@@ -61,6 +65,8 @@ export function ApiUnitLiveInteraction({
             queryParamsJsonSchema={queryParamsJsonSchema}
             responseBodyJsonSchema={responseBodyJsonSchema}
             operationSummary={operationSummary}
+            onEmbedReady={onScalarEmbedReady}
+            readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
         />
     );
 }

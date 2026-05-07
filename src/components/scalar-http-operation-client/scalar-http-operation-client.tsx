@@ -30,7 +30,15 @@ function ScalarHttpOperationLoading() {
 
 const SCALAR_CONTENT_MIN_HEIGHT_PX = 64;
 
-function ScalarApiHostWithPaintGate({ configuration }: { configuration: AnyApiReferenceConfiguration }) {
+function ScalarApiHostWithPaintGate({
+    configuration,
+    onEmbedReady,
+    readyNotifyGeneration = 0,
+}: {
+    configuration: AnyApiReferenceConfiguration;
+    onEmbedReady?: () => void;
+    readyNotifyGeneration?: number;
+}) {
     const shellRef = useRef<HTMLDivElement>(null);
     const [paintDone, setPaintDone] = useState(false);
     const finishedRef = useRef(false);
@@ -63,6 +71,13 @@ function ScalarApiHostWithPaintGate({ configuration }: { configuration: AnyApiRe
         };
     }, [configuration]);
 
+    const onEmbedReadyRef = useRef(onEmbedReady);
+    onEmbedReadyRef.current = onEmbedReady;
+    useEffect(() => {
+        if (!paintDone) return;
+        onEmbedReadyRef.current?.();
+    }, [paintDone, readyNotifyGeneration]);
+
     return (
         <div className={cn("relative w-full", !paintDone && "min-h-[12rem]")}>
             <div ref={shellRef} className="w-full min-h-0">
@@ -81,7 +96,15 @@ function ScalarApiHostWithPaintGate({ configuration }: { configuration: AnyApiRe
     );
 }
 
-function ScalarHttpOperationEmbed({ configuration }: { configuration: AnyApiReferenceConfiguration }) {
+function ScalarHttpOperationEmbed({
+    configuration,
+    onEmbedReady,
+    readyNotifyGeneration,
+}: {
+    configuration: AnyApiReferenceConfiguration;
+    onEmbedReady?: () => void;
+    readyNotifyGeneration?: number;
+}) {
     const [deferEmbed, setDeferEmbed] = useState(false);
     useEffect(() => {
         let cancelled = false;
@@ -105,7 +128,11 @@ function ScalarHttpOperationEmbed({ configuration }: { configuration: AnyApiRefe
 
     return (
         <Suspense fallback={<ScalarHttpOperationLoading />}>
-            <ScalarApiHostWithPaintGate configuration={configuration} />
+            <ScalarApiHostWithPaintGate
+                configuration={configuration}
+                onEmbedReady={onEmbedReady}
+                readyNotifyGeneration={readyNotifyGeneration}
+            />
         </Suspense>
     );
 }
@@ -124,6 +151,8 @@ export type ScalarHttpOperationClientProps = {
     responseBodyJsonSchema?: string | null;
     operationSummary?: string;
     omitRequestBody?: boolean;
+    onEmbedReady?: () => void;
+    readyNotifyGeneration?: number;
 };
 
 export function ScalarHttpOperationClient({
@@ -136,6 +165,8 @@ export function ScalarHttpOperationClient({
     responseBodyJsonSchema,
     operationSummary,
     omitRequestBody,
+    onEmbedReady,
+    readyNotifyGeneration = 0,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
     const scalarHttpTestAiNudge = useScalarHttpTestAiNudge();
@@ -179,7 +210,12 @@ export function ScalarHttpOperationClient({
                 className,
             )}
         >
-            <ScalarHttpOperationEmbed key={embedKey} configuration={configuration} />
+            <ScalarHttpOperationEmbed
+                key={embedKey}
+                configuration={configuration}
+                onEmbedReady={onEmbedReady}
+                readyNotifyGeneration={readyNotifyGeneration}
+            />
         </div>
     );
 }

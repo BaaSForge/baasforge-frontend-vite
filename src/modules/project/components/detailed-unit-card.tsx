@@ -14,7 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { Maximize2, TriangleAlert } from "lucide-react";
 import { scheduleScalarHttpTestAiNudgeInboxSync } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
 import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
@@ -88,6 +88,16 @@ export function DetailedUnitCard({
     const [explanationOpen, setExplanationOpen] = useState(true);
     const [interactionOpen, setInteractionOpen] = useState(false);
     const [dependenciesOpen, setDependenciesOpen] = useState(false);
+    const unitCardStackRef = useRef<HTMLDivElement>(null);
+    const scrollUnitCardAfterScalarRef = useRef(false);
+    const [scalarEmbedReadyNotifyGen, setScalarEmbedReadyNotifyGen] = useState(0);
+    const handleScalarEmbedReady = useCallback(() => {
+        if (!scrollUnitCardAfterScalarRef.current) return;
+        scrollUnitCardAfterScalarRef.current = false;
+        const el = unitCardStackRef.current;
+        if (el == null) return;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, []);
     useEffect(() => {
         if (!releaseIsLive) return;
         scheduleScalarHttpTestAiNudgeInboxSync();
@@ -137,7 +147,7 @@ export function DetailedUnitCard({
     );
 
     return (
-        <div className={cn("relative w-full min-w-0", className)} data-unit-card-stack>
+        <div ref={unitCardStackRef} className={cn("relative w-full min-w-0", className)} data-unit-card-stack>
             {hasParent && (
                 <Card
                     className="pointer-events-none absolute top-1.5 left-1.5 right-0 bottom-0 z-0 rounded-lg border bg-card p-0 shadow-none"
@@ -210,8 +220,19 @@ export function DetailedUnitCard({
                             className="h-8 w-fit shrink-0"
                             value={panelToggleValue}
                             onValueChange={(next) => {
+                                const hadInteraction = panelToggleValue.includes("interaction");
                                 setExplanationOpen(next.includes("explanation"));
-                                if (releaseIsLive) setInteractionOpen(next.includes("interaction"));
+                                if (releaseIsLive) {
+                                    const willInteraction = next.includes("interaction");
+                                    setInteractionOpen(willInteraction);
+                                    if (willInteraction && !hadInteraction) {
+                                        setScalarEmbedReadyNotifyGen((g) => g + 1);
+                                        scrollUnitCardAfterScalarRef.current = true;
+                                    }
+                                    if (!willInteraction) {
+                                        scrollUnitCardAfterScalarRef.current = false;
+                                    }
+                                }
                                 if (hasDependencies) setDependenciesOpen(next.includes("dependencies"));
                             }}
                             aria-label="Unit detail sections"
@@ -259,6 +280,8 @@ export function DetailedUnitCard({
                                             stageRuntimeId={stageRuntimeId}
                                             releaseIsStage={releaseIsStage}
                                             projectRuntimeBaseUrl={unitRuntimeBaseUrl}
+                                            scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGen}
+                                            onScalarEmbedReady={handleScalarEmbedReady}
                                         />
                                     ) : unit.unit_type === "actor" ? (
                                         <ActorUnitLiveInteraction
@@ -266,6 +289,8 @@ export function DetailedUnitCard({
                                             stageRuntimeId={stageRuntimeId}
                                             releaseIsStage={releaseIsStage}
                                             projectRuntimeBaseUrl={unitRuntimeBaseUrl}
+                                            scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGen}
+                                            onScalarEmbedReady={handleScalarEmbedReady}
                                         />
                                     ) : unit.unit_type === "queue_worker" ? (
                                         <QueueWorkerUnitLiveInteraction
@@ -273,6 +298,8 @@ export function DetailedUnitCard({
                                             stageRuntimeId={stageRuntimeId}
                                             releaseIsStage={releaseIsStage}
                                             projectRuntimeBaseUrl={unitRuntimeBaseUrl}
+                                            scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGen}
+                                            onScalarEmbedReady={handleScalarEmbedReady}
                                         />
                                     ) : unit.unit_type === "workflow" ? (
                                         <WorkflowUnitLiveInteraction
@@ -280,6 +307,8 @@ export function DetailedUnitCard({
                                             stageRuntimeId={stageRuntimeId}
                                             releaseIsStage={releaseIsStage}
                                             projectRuntimeBaseUrl={unitRuntimeBaseUrl}
+                                            scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGen}
+                                            onScalarEmbedReady={handleScalarEmbedReady}
                                         />
                                     ) : (
                                         <div className="text-muted-foreground flex min-h-[6rem] items-center justify-center px-2 text-center text-xs">
