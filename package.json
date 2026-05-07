@@ -45,7 +45,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-stately/utils": "^3.10.8",
-    "@scalar/api-reference-react": "^0.8.70",
+    "@scalar/api-reference-react": "^0.9.34",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.18",

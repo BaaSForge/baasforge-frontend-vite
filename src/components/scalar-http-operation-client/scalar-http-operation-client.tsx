@@ -36,10 +36,6 @@ function ScalarApiHostWithPaintGate({ configuration }: { configuration: AnyApiRe
     const finishedRef = useRef(false);
 
     useEffect(() => {
-        void ensureScalarApiReferenceStylesLoaded();
-    }, []);
-
-    useEffect(() => {
         const shell = shellRef.current;
         if (shell == null) return;
 
@@ -92,7 +88,10 @@ function ScalarHttpOperationEmbed({ configuration }: { configuration: AnyApiRefe
         let raf2: number | undefined;
         const raf1 = requestAnimationFrame(() => {
             raf2 = requestAnimationFrame(() => {
-                if (!cancelled) setDeferEmbed(true);
+                void (async () => {
+                    await ensureScalarApiReferenceStylesLoaded();
+                    if (!cancelled) setDeferEmbed(true);
+                })();
             });
         });
         return () => {
