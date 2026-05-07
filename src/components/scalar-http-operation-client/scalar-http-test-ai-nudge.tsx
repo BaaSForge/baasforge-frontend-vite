@@ -218,7 +218,7 @@ function ScalarHttpTestAiNudgeIllustration({ className }: { className?: string }
             <ScalarHttpTestAiNudgeMergeNode junctionX={junctionX} />
             <div className="relative isolate z-20 flex w-full min-w-0 items-center gap-2">
                 <img
-                    src="/icon.png"
+                    src="/logo-256x256.png"
                     alt=""
                     width={76}
                     height={76}
