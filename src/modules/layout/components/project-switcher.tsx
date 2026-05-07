@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronsUpDown, MousePointerClick, Package, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, Package, Plus } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router";
 
 import {
