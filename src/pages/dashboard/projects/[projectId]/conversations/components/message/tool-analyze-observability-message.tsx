@@ -1,7 +1,8 @@
-import { ChevronDownIcon } from "lucide-react";
+import { Activity, ChevronDownIcon, Package } from "lucide-react";
 import type { ReactNode } from "react";
 import { useParams } from "react-router";
 
+import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -47,7 +48,15 @@ function getDetailedReport(message: ChatMessageWithDeliveryStatus): string {
 function formatAnalyzeObservabilityArgs(args: ToolAnalyzeObservabilityPayload["args"]): string {
     const parts: string[] = [];
     if (args?.brief != null && args.brief !== "") parts.push(`brief: ${String(args.brief)}`);
+    if (args?.trace_id != null && String(args.trace_id).trim() !== "") parts.push(`trace_id: ${String(args.trace_id)}`);
+    if (args?.release_id != null && String(args.release_id).trim() !== "") parts.push(`release_id: ${String(args.release_id)}`);
     return parts.length ? parts.join(", ") : "—";
+}
+
+function trimArgString(value: unknown): string | null {
+    if (value == null) return null;
+    const s = String(value).trim();
+    return s.length > 0 ? s : null;
 }
 
 export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { message: ChatMessageWithDeliveryStatus; nestedMessages?: ReactNode }) {
@@ -64,31 +73,60 @@ export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { m
     const hasNestedMessages = nestedMessages != null;
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
     const formattedArgs = args ? formatAnalyzeObservabilityArgs(args) : "—";
+    const traceIdLabel = trimArgString(args?.trace_id);
+    const releaseIdLabel = trimArgString(args?.release_id);
+    const argIdChips: { kind: "trace" | "release"; id: string }[] = [];
+    if (traceIdLabel != null) argIdChips.push({ kind: "trace", id: traceIdLabel });
+    if (releaseIdLabel != null) argIdChips.push({ kind: "release", id: releaseIdLabel });
+    const hasArgIdChips = argIdChips.length > 0;
 
     return (
         <>
             <div className="w-full min-w-0 max-w-full">
                 <div className="flex w-full min-w-0 max-w-full justify-start overflow-hidden">
                     <Collapsible defaultOpen className="group/tool-obs w-full min-w-0 max-w-full overflow-hidden">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <CollapsibleTrigger className="inline-flex max-w-full items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
-                                    <span className="shrink-0">
-                                        <AiMessageStatusIcon status={status} />
-                                    </span>
-                                    <span className="font-medium text-sm">Analyzing observability</span>
-                                    {hasUnits && (
-                                        <span className="text-muted-foreground text-xs">
-                                            {unitCount} {unitCount === 1 ? "unit" : "units"}
+                        <div className="flex min-w-0 flex-col gap-1.5">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <CollapsibleTrigger className="inline-flex max-w-full min-w-0 items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
+                                        <span className="shrink-0">
+                                            <AiMessageStatusIcon status={status} />
                                         </span>
-                                    )}
-                                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-obs:rotate-180" />
-                                </CollapsibleTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                                <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
-                            </TooltipContent>
-                        </Tooltip>
+                                        <span className="font-medium text-sm">Analyzing observability</span>
+                                        {hasUnits && (
+                                            <span className="text-muted-foreground text-xs">
+                                                {unitCount} {unitCount === 1 ? "unit" : "units"}
+                                            </span>
+                                        )}
+                                        <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-obs:rotate-180" />
+                                    </CollapsibleTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs">
+                                    <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
+                                </TooltipContent>
+                            </Tooltip>
+                            {hasArgIdChips && (
+                                <div className="flex min-w-0 max-w-full flex-wrap content-start gap-x-2 gap-y-2 pr-3 pb-1">
+                                    {argIdChips.map(({ kind, id }) => (
+                                        <CopyableEntityIdBadge
+                                            key={kind}
+                                            id={id}
+                                            label={kind}
+                                            leadingIcon={
+                                                kind === "trace" ? (
+                                                    <Activity className="size-3" aria-hidden />
+                                                ) : (
+                                                    <Package className="size-3" aria-hidden />
+                                                )
+                                            }
+                                            truncate={false}
+                                            title={kind === "trace" ? "Click to copy trace_id" : "Click to copy release_id"}
+                                            className="min-w-0 shrink-0 justify-start self-start"
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         <CollapsibleContent
                             className={cn(
                                 "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",

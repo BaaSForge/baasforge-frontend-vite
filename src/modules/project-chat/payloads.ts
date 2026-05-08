@@ -101,6 +101,8 @@ export interface FinishArchitectureAnalysisPayload {
 export interface ToolAnalyzeObservabilityPayload {
     args?: {
         brief?: string | null;
+        trace_id?: string | null;
+        release_id?: string | null;
     };
     related_units?: unknown[];
     detailed_report?: string;
