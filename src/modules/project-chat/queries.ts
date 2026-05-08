@@ -1,7 +1,14 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getProjectChatSessionDetail, getProjectChatSessionMessages, getProjectChatSessions } from "./api";
+import {
+    getProjectChatSessionDetail,
+    getProjectChatSessionMessages,
+    getProjectChatSessions,
+    type ChatSessionListReleaseFilter,
+} from "./api";
 import type { ChatMessageWithDeliveryStatus } from "./types";
+
+const CHAT_SESSIONS_LIST_PAGE_SIZE = 20;
 
 const CHAT_MESSAGES_PAGE_RETRY_DELAY_MS = 3000;
 
@@ -24,7 +31,42 @@ export function useProjectChatSessionsQuery(projectId?: string, options?: { enab
     return useQuery({
         enabled: userEnabled && !!projectId,
         queryKey: QueryKeys.projectChatSessionList(projectId ?? ""),
-        queryFn: () => getProjectChatSessions(projectId ?? ""),
+        queryFn: () => getProjectChatSessions(projectId ?? "", { page: 1, page_size: CHAT_SESSIONS_LIST_PAGE_SIZE }).then((r) => r.sessions),
+    });
+}
+
+export type ProjectChatSessionsListFilters = {
+    release_filters: ChatSessionListReleaseFilter[];
+    unit_filters: string[];
+};
+
+function chatSessionsListFiltersKey(filters: ProjectChatSessionsListFilters): string {
+    return JSON.stringify([filters.release_filters, filters.unit_filters]);
+}
+
+export function useProjectChatSessionsInfiniteQuery(
+    projectId: string | undefined,
+    filters: ProjectChatSessionsListFilters,
+    options?: { enabled?: boolean },
+) {
+    const userEnabled = options?.enabled ?? true;
+    const filtersKey = chatSessionsListFiltersKey(filters);
+    return useInfiniteQuery({
+        enabled: userEnabled && !!projectId,
+        queryKey: [...QueryKeys.projectChatSessionList(projectId ?? ""), "infinite", filtersKey] as const,
+        queryFn: ({ pageParam }: { pageParam: number }) =>
+            getProjectChatSessions(projectId!, {
+                page: pageParam,
+                page_size: CHAT_SESSIONS_LIST_PAGE_SIZE,
+                release_filters: filters.release_filters.length > 0 ? filters.release_filters : undefined,
+                unit_filters: filters.unit_filters.length > 0 ? filters.unit_filters : undefined,
+            }),
+        initialPageParam: 1,
+        getNextPageParam: (last) => {
+            const loaded = last.page * last.page_size;
+            if (loaded >= last.total) return undefined;
+            return last.page + 1;
+        },
     });
 }
 

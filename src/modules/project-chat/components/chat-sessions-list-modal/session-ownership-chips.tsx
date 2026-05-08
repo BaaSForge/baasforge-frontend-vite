@@ -48,6 +48,7 @@ export function SessionOwnershipChipsRow({
     ownedReleases = [],
     ownedUnits = [],
     className,
+    suppressReleaseLinks,
 }: {
     projectId?: string;
     /** Session that `ownedUnits` belong to. */
@@ -55,6 +56,7 @@ export function SessionOwnershipChipsRow({
     ownedReleases?: ReleaseResponse[];
     ownedUnits?: ProjectUnitResponse[];
     className?: string;
+    suppressReleaseLinks?: boolean;
 }) {
     const { data: runtimes } = useProjectRuntimesQuery(projectId);
     const releasesOrdered = useMemo(() => {
@@ -103,7 +105,12 @@ export function SessionOwnershipChipsRow({
                 >
                     <div className={chipRowClass}>
                         {releasesOrdered.map((release) => (
-                            <CompactReleaseBadge key={release.id} release={release} projectId={projectId} />
+                            <CompactReleaseBadge
+                                key={release.id}
+                                release={release}
+                                projectId={projectId}
+                                suppressLink={suppressReleaseLinks}
+                            />
                         ))}
                     </div>
                 </FadedScrollArea>

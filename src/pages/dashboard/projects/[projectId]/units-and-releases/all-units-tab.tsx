@@ -1,5 +1,6 @@
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import {
     Combobox,
     ComboboxChip,
@@ -26,7 +27,7 @@ import {
 } from "@/modules/project/queries";
 import type { ContextModulePair, ListReleaseUnitsAllRequest, ProjectUnitResponse, ProjectUnitType } from "@/modules/project/types";
 import { STATIC_PROJECT_UNIT_TYPES } from "@/modules/project/types";
-import { ChevronLeftIcon, ChevronRightIcon, FilterXIcon, LayersIcon, TextAlignJustifyIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, LayersIcon, TextAlignJustifyIcon } from "lucide-react";
 import { Fragment, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { groupUnitsByType } from "./group-units-by-type";
@@ -334,24 +335,7 @@ export function AllUnitsTab({
                         </Combobox>
                     </div>
 
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="inline-flex shrink-0">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="size-8 shrink-0 border-destructive/50 text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40"
-                                    disabled={!hasActiveFilters}
-                                    onClick={clearFilters}
-                                    aria-label="Clear filters"
-                                >
-                                    <FilterXIcon className="size-4" />
-                                </Button>
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">Clear filters</TooltipContent>
-                    </Tooltip>
+                    {hasActiveFilters ? <FilterClearButton onClear={clearFilters} /> : null}
                 </div>
 
                 <div className="flex w-full min-w-0 justify-end">

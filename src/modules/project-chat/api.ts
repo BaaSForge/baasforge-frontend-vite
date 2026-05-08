@@ -51,8 +51,47 @@ export type UnitPreviousByFullIdsResponse = {
     units: (ProjectUnitResponse | null)[];
 };
 
-export function getProjectChatSessions(projectId: string): Promise<ChatSessionResponse[]> {
-    return apiClient.get<ApiResponse<ChatSessionResponse[]>>(chatSessionsEndpoint(projectId)).then((res) => res.data ?? []);
+export type ChatSessionListReleaseFilter = {
+    env: "prod" | "stage";
+    revision: number | string;
+};
+
+export type ListProjectChatSessionsParams = {
+    page: number;
+    page_size: number;
+    release_filters?: ChatSessionListReleaseFilter[];
+    unit_filters?: string[];
+};
+
+export type ListProjectChatSessionsResponse = {
+    sessions: ChatSessionResponse[];
+    total: number;
+    page: number;
+    page_size: number;
+};
+
+export function getProjectChatSessions(
+    projectId: string,
+    params?: Partial<ListProjectChatSessionsParams>,
+): Promise<ListProjectChatSessionsResponse> {
+    const page = params?.page ?? 1;
+    const page_size = params?.page_size ?? 20;
+    const searchParams = new URLSearchParams();
+    searchParams.set("page", String(page));
+    searchParams.set("page_size", String(page_size));
+    if (params?.release_filters != null && params.release_filters.length > 0) {
+        searchParams.set("release_filters", JSON.stringify(params.release_filters));
+    }
+    if (params?.unit_filters != null && params.unit_filters.length > 0) {
+        searchParams.set("unit_filters", JSON.stringify(params.unit_filters));
+    }
+    const url = `${chatSessionsEndpoint(projectId)}?${searchParams.toString()}`;
+    return apiClient.get<ApiResponse<ListProjectChatSessionsResponse>>(url).then((res) => ({
+        sessions: res.data?.sessions ?? [],
+        total: res.data?.total ?? 0,
+        page: res.data?.page ?? page,
+        page_size: res.data?.page_size ?? page_size,
+    }));
 }
 
 export function createProjectChatSession(projectId: string, title: string): Promise<ChatSessionResponse | undefined> {

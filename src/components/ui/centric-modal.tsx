@@ -16,6 +16,9 @@ const CENTRIC_MODAL_SHELL_VIEWPORT_FILL_DESKTOP = "h-[80dvh] max-h-[80dvh]";
 /** Fixed shell height for `fillViewport` mobile drawer (~90% of viewport). */
 const CENTRIC_MODAL_SHELL_VIEWPORT_FILL_MOBILE = "h-[90dvh] max-h-[90dvh]";
 
+/** Mobile drawer when `tallMobileSheet` is set (e.g. long lists) — slightly taller than fillViewport mobile. */
+const CENTRIC_MODAL_SHELL_TALL_MOBILE_SHEET = "h-[95dvh] max-h-[95dvh]";
+
 /** Body scrollport cap (space for header and drawer chrome). */
 export const CENTRIC_MODAL_BODY_SCROLL_MAX_H = "max-h-[calc(80dvh-7rem)]";
 
@@ -54,10 +57,13 @@ function CentricModalBodyScroll({
     children,
     isDesktop,
     fillViewport,
+    bodyScroll = true,
 }: {
     children: React.ReactNode;
     isDesktop?: boolean;
     fillViewport?: boolean;
+    /** When false, this region does not scroll; use an inner `min-h-0 flex-1 overflow-y-auto` (or similar) for scroll. */
+    bodyScroll?: boolean;
 }) {
     const viewportRef = React.useRef<HTMLDivElement>(null);
     const startFadeRef = React.useRef<HTMLDivElement>(null);
@@ -101,6 +107,7 @@ function CentricModalBodyScroll({
     }, [flush]);
 
     React.useEffect(() => {
+        if (!bodyScroll) return;
         const el = viewportRef.current;
         if (!el) return;
         flush();
@@ -114,39 +121,52 @@ function CentricModalBodyScroll({
             contentRo?.disconnect();
             if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
         };
-    }, [flush, scrollToEndAndFlush, isDesktop]);
+    }, [flush, scrollToEndAndFlush, isDesktop, bodyScroll]);
 
     return (
-        <div className={cn("relative min-w-0", fillViewport && "flex min-h-0 min-w-0 flex-1 flex-col")}>
+        <div
+            className={cn(
+                "relative min-w-0",
+                fillViewport && "flex min-h-0 min-w-0 flex-1 flex-col",
+                !bodyScroll && "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
+            )}
+        >
             <div
                 ref={viewportRef}
-                onScroll={onScroll}
-                tabIndex={-1}
+                onScroll={bodyScroll ? onScroll : undefined}
+                tabIndex={bodyScroll ? -1 : undefined}
                 className={cn(
-                    "focus-visible:ring-ring/50 overflow-y-auto overflow-x-hidden overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:outline-1",
-                    !isDesktop && reserveScrollbarGutter && "[scrollbar-gutter:stable]",
-                    isDesktop
-                        ? "px-4 pb-4"
-                        : "px-0 pb-4 sm:pb-6",
-                    fillViewport ? "min-h-0 flex-1 max-h-none" : CENTRIC_MODAL_BODY_SCROLL_MAX_H,
+                    "focus-visible:ring-ring/50 overflow-x-hidden outline-none focus-visible:ring-[3px] focus-visible:outline-1",
+                    bodyScroll ? "overflow-y-auto overscroll-contain" : "flex min-h-0 flex-1 flex-col overflow-y-hidden",
+                    bodyScroll && !isDesktop && reserveScrollbarGutter && "[scrollbar-gutter:stable]",
+                    isDesktop ? "px-4 pb-4" : "px-0 pb-4 sm:pb-6",
+                    bodyScroll
+                        ? fillViewport
+                            ? "min-h-0 flex-1 max-h-none"
+                            : CENTRIC_MODAL_BODY_SCROLL_MAX_H
+                        : "min-h-0 flex-1 max-h-none",
                 )}
             >
                 {children}
             </div>
-            <ScrollEdgeFader
-                ref={startFadeRef}
-                edge="top"
-                fromClassName={SCROLL_EDGE_FADER_DEFAULT_FROM}
-                className="right-4"
-                style={{ opacity: 0 }}
-            />
-            <ScrollEdgeFader
-                ref={endFadeRef}
-                edge="bottom"
-                fromClassName={SCROLL_EDGE_FADER_DEFAULT_FROM}
-                className="right-4"
-                style={{ opacity: 1 }}
-            />
+            {bodyScroll ? (
+                <>
+                    <ScrollEdgeFader
+                        ref={startFadeRef}
+                        edge="top"
+                        fromClassName={SCROLL_EDGE_FADER_DEFAULT_FROM}
+                        className="right-4"
+                        style={{ opacity: 0 }}
+                    />
+                    <ScrollEdgeFader
+                        ref={endFadeRef}
+                        edge="bottom"
+                        fromClassName={SCROLL_EDGE_FADER_DEFAULT_FROM}
+                        className="right-4"
+                        style={{ opacity: 1 }}
+                    />
+                </>
+            ) : null}
         </div>
     );
 }
@@ -184,32 +204,48 @@ function CentricModalContent({
     children,
     showCloseButton = true,
     fillViewport = false,
+    bodyScroll = true,
+    tallMobileSheet = false,
     ...props
-}: React.ComponentProps<typeof DialogContent> & { showCloseButton?: boolean; fillViewport?: boolean }) {
+}: React.ComponentProps<typeof DialogContent> & {
+    showCloseButton?: boolean;
+    fillViewport?: boolean;
+    /** When false, the modal body does not create its own scrollport (avoids nested scrollbars). */
+    bodyScroll?: boolean;
+    /** Mobile drawer only: use a tall fixed sheet (~95dvh); desktop unchanged. */
+    tallMobileSheet?: boolean;
+}) {
     assertCentricModalContentClassName(className, "CentricModalContent");
 
     const isMobile = useIsMobile();
     const { header, footer, body } = splitCentricModalChildren(children);
 
     const bodyRegion = (
-        <CentricModalBodyScroll isDesktop={!isMobile} fillViewport={fillViewport}>
+        <CentricModalBodyScroll isDesktop={!isMobile} fillViewport={fillViewport} bodyScroll={bodyScroll}>
             {body}
         </CentricModalBodyScroll>
     );
 
+    const bodyShell =
+        bodyScroll ? bodyRegion : (
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{bodyRegion}</div>
+        );
+
     if (isMobile) {
+        const mobileDrawerShell = fillViewport
+            ? CENTRIC_MODAL_SHELL_VIEWPORT_FILL_MOBILE
+            : tallMobileSheet
+              ? CENTRIC_MODAL_SHELL_TALL_MOBILE_SHEET
+              : cn("h-auto", CENTRIC_MODAL_SHELL_MAX_H);
+
         return (
             <DrawerContent
-                className={cn(
-                    "flex flex-col overflow-hidden",
-                    fillViewport ? CENTRIC_MODAL_SHELL_VIEWPORT_FILL_MOBILE : cn("h-auto", CENTRIC_MODAL_SHELL_MAX_H),
-                    className,
-                )}
+                className={cn("flex flex-col overflow-hidden", mobileDrawerShell, !bodyScroll && "min-h-0", className)}
                 {...props}
             >
-                <div className={cn("flex min-w-0 flex-col px-4", fillViewport && "min-h-0 flex-1")}>
+                <div className={cn("flex min-w-0 flex-col px-4", (fillViewport || tallMobileSheet || !bodyScroll) && "min-h-0 flex-1")}>
                     {header}
-                    {bodyRegion}
+                    {bodyShell}
                     {footer}
                 </div>
             </DrawerContent>
@@ -221,6 +257,7 @@ function CentricModalContent({
             className={cn(
                 "flex flex-col gap-0 overflow-hidden p-0",
                 fillViewport ? cn(CENTRIC_MODAL_SHELL_VIEWPORT_FILL_DESKTOP, "min-h-0") : CENTRIC_MODAL_SHELL_MAX_H,
+                !bodyScroll && "min-h-0",
                 className,
             )}
             showCloseButton={showCloseButton}
@@ -231,7 +268,7 @@ function CentricModalContent({
                     {header}
                 </div>
             ) : null}
-            {bodyRegion}
+            {bodyShell}
             {footer ? <div className="shrink-0 px-4 pt-3 pb-4 sm:pb-5">{footer}</div> : null}
         </DialogContent>
     );

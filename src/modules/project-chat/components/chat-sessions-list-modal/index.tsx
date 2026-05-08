@@ -1,15 +1,43 @@
 "use client";
 
 import { SelectionCornerPill } from "@/components/selection-corner-pill";
+import { FreeformMultiCombobox } from "@/components/ui/freeform-multi-combobox";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { CentricModal, CentricModalContent, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { Item, ItemGroup } from "@/components/ui/item";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import type { ChatSessionListReleaseFilter } from "@/modules/project-chat/api";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { useProjectChatSessionsQuery } from "../../queries";
+import { useProjectChatSessionsInfiniteQuery, type ProjectChatSessionsListFilters } from "../../queries";
 import type { ChatSessionResponse } from "../../types";
 import { SessionLastMessageRow } from "./session-last-message-row";
 import { SessionOwnershipChipsRow } from "./session-ownership-chips";
 import { useChatSessionsModal, useChatSessionsModalState } from "./store";
+
+function revisionForApi(raw: string): number | string {
+    const t = raw.trim();
+    if (t.length === 0) return t;
+    const n = Number(t);
+    if (Number.isFinite(n)) return n;
+    return t;
+}
+
+function buildListFilters(stageRevisions: string[], productionRevisions: string[], unitPaths: string[]): ProjectChatSessionsListFilters {
+    const release_filters: ChatSessionListReleaseFilter[] = [
+        ...stageRevisions
+            .map((r) => r.trim())
+            .filter((r) => r.length > 0)
+            .map((r) => ({ env: "stage" as const, revision: revisionForApi(r) })),
+        ...productionRevisions
+            .map((r) => r.trim())
+            .filter((r) => r.length > 0)
+            .map((r) => ({ env: "prod" as const, revision: revisionForApi(r) })),
+    ];
+    const unit_filters = unitPaths.map((u) => u.trim()).filter((u) => u.length > 0);
+    return { release_filters, unit_filters };
+}
 
 function SessionItem({
     projectId,
@@ -23,7 +51,6 @@ function SessionItem({
     pathname: string;
 }) {
     const url = `/dashboard/projects/${projectId}/conversations/${session.id}`;
-    // Trailing slash avoids matching /conversations/10 when URL is /conversations/1 (same as sidebar).
     const isCurrentChat = `${pathname}/`.startsWith(`${url}/`);
 
     return (
@@ -62,6 +89,7 @@ function SessionItem({
                     chatSessionId={session.id}
                     ownedReleases={session.owned_releases}
                     ownedUnits={session.owned_units}
+                    suppressReleaseLinks
                 />
             </Link>
         </Item>
@@ -72,35 +100,150 @@ export function ChatSessionsListModal() {
     const { pathname } = useLocation();
     const { isOpen, projectId } = useChatSessionsModalState();
     const [, close] = useChatSessionsModal();
-    const { data: sessions = [], isLoading } = useProjectChatSessionsQuery(projectId, { enabled: isOpen });
+    const [stageReleaseRevisions, setStageReleaseRevisions] = useState<string[]>([]);
+    const [productionReleaseRevisions, setProductionReleaseRevisions] = useState<string[]>([]);
+    const [unitIdOrPaths, setUnitIdOrPaths] = useState<string[]>([]);
+
+    const listFilters = useMemo(
+        () => buildListFilters(stageReleaseRevisions, productionReleaseRevisions, unitIdOrPaths),
+        [stageReleaseRevisions, productionReleaseRevisions, unitIdOrPaths],
+    );
+
+    const {
+        data,
+        isLoading,
+        isError,
+        error,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
+    } = useProjectChatSessionsInfiniteQuery(projectId ?? undefined, listFilters, { enabled: isOpen });
+
+    const sessions = useMemo(() => data?.pages.flatMap((p) => p.sessions) ?? [], [data]);
+    const total = data?.pages[0]?.total ?? 0;
+
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setStageReleaseRevisions([]);
+        setProductionReleaseRevisions([]);
+        setUnitIdOrPaths([]);
+    }, [isOpen, projectId]);
+
+    useEffect(() => {
+        const root = scrollRef.current;
+        const target = sentinelRef.current;
+        if (!root || !target || projectId == null) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (!entries[0]?.isIntersecting) return;
+                if (!hasNextPage || isFetchingNextPage) return;
+                void fetchNextPage();
+            },
+            { root, rootMargin: "100px", threshold: 0 },
+        );
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage, projectId, sessions.length]);
+
+    const clearFilters = useCallback(() => {
+        setStageReleaseRevisions([]);
+        setProductionReleaseRevisions([]);
+        setUnitIdOrPaths([]);
+    }, []);
 
     const handleOpenChange = (open: boolean) => {
         if (!open) close();
     };
 
+    const hasActiveFilters =
+        listFilters.release_filters.length > 0 || listFilters.unit_filters.length > 0;
+
     return (
         <CentricModal open={isOpen} onOpenChange={handleOpenChange}>
-            <CentricModalContent className="sm:max-w-4xl">
+            <CentricModalContent bodyScroll={false} tallMobileSheet className="sm:max-w-4xl">
                 <CentricModalHeader>
                     <CentricModalTitle>Chat sessions</CentricModalTitle>
+                    {!isLoading && !isError && projectId != null ? (
+                        <p className="text-muted-foreground text-sm font-normal">
+                            {total === 1 ? "1 session" : `${total} sessions`}
+                            {hasActiveFilters ? " (filtered)" : ""}
+                        </p>
+                    ) : null}
                 </CentricModalHeader>
-                {isLoading ? (
-                    <div className="text-muted-foreground flex items-center justify-center py-8 text-center text-sm">Loading…</div>
-                ) : sessions.length === 0 ? (
-                    <div className="text-muted-foreground flex items-center justify-center py-8 text-center text-sm">No chat sessions yet.</div>
-                ) : projectId != null ? (
-                    <ItemGroup className="gap-3 pt-3">
-                        {sessions.map((session) => (
-                            <SessionItem
-                                key={session.id}
-                                projectId={projectId}
-                                session={session}
-                                onNavigate={close}
-                                pathname={pathname}
+                <div className="flex min-h-0 flex-1 flex-col">
+                    {projectId != null ? (
+                        <div
+                            className={cn(
+                                "grid shrink-0 grid-cols-2 gap-3 border-b border-border pb-3",
+                                hasActiveFilters
+                                    ? "md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
+                                    : "md:grid-cols-3",
+                            )}
+                        >
+                            <FreeformMultiCombobox
+                                id={`chat-sessions-filter-stage-${projectId}`}
+                                label="Stage release revision"
+                                placeholder="Revision, then Enter"
+                                value={stageReleaseRevisions}
+                                onValueChange={setStageReleaseRevisions}
                             />
-                        ))}
-                    </ItemGroup>
-                ) : null}
+                            <FreeformMultiCombobox
+                                id={`chat-sessions-filter-prod-${projectId}`}
+                                label="Production release revision"
+                                placeholder="Revision, then Enter"
+                                value={productionReleaseRevisions}
+                                onValueChange={setProductionReleaseRevisions}
+                            />
+                            <FreeformMultiCombobox
+                                id={`chat-sessions-filter-units-${projectId}`}
+                                className="col-span-2 md:col-span-1"
+                                label="Unit id or path"
+                                placeholder="Id or path, then Enter"
+                                value={unitIdOrPaths}
+                                onValueChange={setUnitIdOrPaths}
+                            />
+                            {hasActiveFilters ? (
+                                <div className="col-span-2 flex items-end justify-end md:col-span-1">
+                                    <FilterClearButton onClear={clearFilters} />
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
+                    {isLoading ? (
+                        <div className="text-muted-foreground flex min-h-0 flex-1 items-center justify-center gap-2 py-12 text-sm">
+                            <Spinner className="size-5" />
+                            Loading…
+                        </div>
+                    ) : isError ? (
+                        <div className="text-destructive flex min-h-0 flex-1 items-center justify-center px-2 py-8 text-center text-sm">
+                            {error instanceof Error ? error.message : "Could not load sessions."}
+                        </div>
+                    ) : sessions.length === 0 ? (
+                        <div className="text-muted-foreground flex min-h-0 flex-1 items-center justify-center py-8 text-center text-sm">
+                            {hasActiveFilters ? "No sessions match these filters." : "No chat sessions yet."}
+                        </div>
+                    ) : projectId != null ? (
+                        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto pt-3">
+                            <ItemGroup className="gap-3">
+                                {sessions.map((session) => (
+                                    <SessionItem
+                                        key={session.id}
+                                        projectId={projectId}
+                                        session={session}
+                                        onNavigate={close}
+                                        pathname={pathname}
+                                    />
+                                ))}
+                            </ItemGroup>
+                            <div ref={sentinelRef} className="flex min-h-12 items-center justify-center py-2" aria-hidden>
+                                {isFetchingNextPage ? <Spinner className="size-5 text-muted-foreground" /> : null}
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
             </CentricModalContent>
         </CentricModal>
     );

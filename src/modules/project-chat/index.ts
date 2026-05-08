@@ -5,6 +5,9 @@ export {
     postChatSessionUnitPreviousByFullIds,
 } from "./api";
 export type {
+    ChatSessionListReleaseFilter,
+    ListProjectChatSessionsParams,
+    ListProjectChatSessionsResponse,
     UnitLatestRevisionsResponse,
     UnitPathsBody,
     UnitPreChatBaseByPathsResponse,
@@ -15,5 +18,6 @@ export { ChatSessionViewChangesModal } from "./components/chat-session-view-chan
 export type { ChatSessionUnitChangePair } from "./components/chat-session-view-changes-modal";
 export { ChatSessionsListModal } from "./components/chat-sessions-list-modal";
 export { useChatSessionsModal, useChatSessionsModalState } from "./components/chat-sessions-list-modal/store";
-export { useProjectChatSessionsQuery } from "./queries";
+export { useProjectChatSessionsInfiniteQuery, useProjectChatSessionsQuery } from "./queries";
+export type { ProjectChatSessionsListFilters } from "./queries";
 export type { ChatSessionResponse } from "./types";
