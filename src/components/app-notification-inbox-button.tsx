@@ -1,6 +1,6 @@
 "use client";
 
-import { CENTRIC_MODAL_SHELL_MAX_H } from "@/components/ui/centric-modal";
+import { CENTRIC_MODAL_SHELL_MAX_H, CentricModalHeader, CentricModalTitle } from "@/components/ui/centric-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -154,11 +154,20 @@ export function AppNotificationInboxButton() {
                 </div>
             ) : null;
         if (sheet) {
-            if (filterControls == null) return null;
             return (
-                <div className={cn("flex shrink-0 flex-col py-2", opts?.extraClass)}>
-                    <div className="flex justify-end">{filterControls}</div>
-                </div>
+                <CentricModalHeader className={cn("relative", opts?.extraClass)}>
+                    <CentricModalTitle
+                        className={cn(
+                            "w-full text-center text-base",
+                            filterControls != null && "pe-12",
+                        )}
+                    >
+                        {opts?.title ?? "Notifications"}
+                    </CentricModalTitle>
+                    {filterControls != null ? (
+                        <div className="absolute end-0 top-1/2 flex -translate-y-1/2 items-center">{filterControls}</div>
+                    ) : null}
+                </CentricModalHeader>
             );
         }
         return (
