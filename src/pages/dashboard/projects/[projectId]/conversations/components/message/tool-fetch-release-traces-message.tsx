@@ -79,6 +79,7 @@ export function ToolFetchReleaseTracesMessage({
     const traceCount = traces.length;
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasTraces = traceCount > 0;
+    const showNoTracesEmptyState = !hasTraces && status !== ChatMessageStatus.Generating;
     const showInvokedConnector = Boolean(message.invoking_message_id);
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
     const formattedArgs = args ? formatFetchReleaseTracesArgs(args) : "—";
@@ -109,13 +110,15 @@ export function ToolFetchReleaseTracesMessage({
                 {!hasTraces ? (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className="flex max-w-full flex-col gap-1.5 py-3 pr-3 text-left rounded-md">
+                            <div className="flex max-w-full min-w-0 flex-col gap-1.5 py-3 pr-3 text-left rounded-md">
                                 <div className="flex max-w-full items-center gap-2">
                                     <span className="shrink-0">
                                         <AiMessageStatusIcon status={status} />
                                     </span>
                                     <span className="font-medium text-sm">Fetching release traces</span>
-                                    <span className="text-muted-foreground text-xs">No content</span>
+                                    <span className="text-muted-foreground text-xs">
+                                        {showNoTracesEmptyState ? "0 traces" : "Awaiting traces…"}
+                                    </span>
                                 </div>
                                 {hasArgIdChips && (
                                     <div className="flex min-w-0 max-w-full flex-wrap content-start gap-x-2 gap-y-2 pb-0.5">
@@ -136,6 +139,12 @@ export function ToolFetchReleaseTracesMessage({
                                                 className="min-w-0 shrink-0 justify-start self-start"
                                             />
                                         ))}
+                                    </div>
+                                )}
+                                {showNoTracesEmptyState && (
+                                    <div className="mt-0.5 flex max-w-full items-center gap-1.5 rounded-md border border-dashed border-border/50 bg-muted/20 px-2 py-1.5">
+                                        <Activity className="size-3 shrink-0 text-muted-foreground opacity-80" aria-hidden />
+                                        <span className="text-xs font-normal leading-snug text-muted-foreground">No traces logged</span>
                                     </div>
                                 )}
                             </div>
