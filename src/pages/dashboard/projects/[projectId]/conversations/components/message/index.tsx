@@ -19,6 +19,7 @@ import { ToolAnalyzeObservabilityMessage } from "./tool-analyze-observability-me
 import { ToolAnalyzeSolutionMessage } from "./tool-analyze-solution-message";
 import { ToolImplementSolutionMessage } from "./tool-implement-solution-message";
 import { ToolFetchLatestReleasesMessage } from "./tool-fetch-latest-releases-message";
+import { ToolFetchReleaseTracesMessage } from "./tool-fetch-release-traces-message";
 import { ToolFetchRelevantUnitsMessage } from "./tool-fetch-relevant-units-message";
 import { ToolCreateUnitMessage } from "./tool-create-unit-message";
 import { ToolModifyUnitMessage } from "./tool-modify-unit-message";
@@ -66,6 +67,9 @@ function MessageContent({
     }
     if (message.type === ChatMessageType.ToolFetchLatestReleases) {
         return <ToolFetchLatestReleasesMessage message={message} nestedMessages={nestedMessages} />;
+    }
+    if (message.type === ChatMessageType.ToolFetchReleaseTraces) {
+        return <ToolFetchReleaseTracesMessage message={message} nestedMessages={nestedMessages} />;
     }
     if (message.type === ChatMessageType.ToolAnalyzeArchitecture) {
         return <ToolAnalyzeArchitectureMessage message={message} nestedMessages={nestedMessages} />;
@@ -120,6 +124,7 @@ function MessageContent({
 const toolMessageTypes = [
     ChatMessageType.ToolFetchRelevantUnits,
     ChatMessageType.ToolFetchLatestReleases,
+    ChatMessageType.ToolFetchReleaseTraces,
     ChatMessageType.ToolAnalyzeArchitecture,
     ChatMessageType.FinishArchitectureAnalysis,
     ChatMessageType.ToolAnalyzeObservability,

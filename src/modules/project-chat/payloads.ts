@@ -54,6 +54,17 @@ export interface ToolFetchLatestReleasesPayload {
     error?: string;
 }
 
+export interface ToolFetchReleaseTracesPayload {
+    args?: {
+        trace_id?: string | null;
+        release_id?: string | null;
+    };
+    traces?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
 export interface ToolListUnitContextsPayload {
     context_slugs?: string[];
     tool_call_id?: string;
