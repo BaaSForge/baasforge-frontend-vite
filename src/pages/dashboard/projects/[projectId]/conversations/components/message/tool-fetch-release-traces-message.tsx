@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
-import { Activity, ChevronDownIcon, Package } from "lucide-react";
+import { useState } from "react";
+import { Activity, Braces, ChevronDownIcon, Package } from "lucide-react";
 
 import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
+import { SpanJsonModal } from "@/components/span-json-modal";
+import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -53,11 +56,50 @@ function getToolFetchReleaseTracesArgs(message: ChatMessageWithDeliveryStatus): 
     return argsFromToolArgumentsToPass(pass as Record<string, unknown>);
 }
 
-function getTraces(message: ChatMessageWithDeliveryStatus): unknown[] {
+function getSpans(message: ChatMessageWithDeliveryStatus): unknown[] {
     const p = message.payload as ToolFetchReleaseTracesPayload | undefined | null;
     if (!p || Array.isArray(p)) return [];
-    const t = (p as ToolFetchReleaseTracesPayload).traces;
-    return Array.isArray(t) ? t : [];
+    const s = (p as ToolFetchReleaseTracesPayload).spans;
+    return Array.isArray(s) ? s : [];
+}
+
+/** Jaeger-style span `duration` field: whole microseconds. */
+function formatSpanDurationMicros(micros: number): string {
+    if (!Number.isFinite(micros) || micros < 0) return "—";
+    if (micros === 0) return "0";
+
+    const ms = micros / 1000;
+    const s = ms / 1000;
+    const m = s / 60;
+    const h = m / 60;
+
+    const trimTrailingZeros = (n: number, decimals: number) => {
+        const t = n.toFixed(decimals).replace(/\.?0+$/, "");
+        return t === "" || t === "-" ? "0" : t;
+    };
+
+    if (h >= 1) return `${trimTrailingZeros(h, 1)} h`;
+    if (m >= 1) return `${trimTrailingZeros(m, 1)} min`;
+    if (s >= 1) return `${s >= 10 ? String(Math.round(s)) : trimTrailingZeros(s, 2)} s`;
+    if (ms >= 1) return `${ms >= 10 ? String(Math.round(ms)) : trimTrailingZeros(ms, 2)} ms`;
+    if (micros >= 1) return `${micros < 10 ? trimTrailingZeros(micros, 2) : String(Math.round(micros))} µs`;
+    return "<1 µs";
+}
+
+function spanRowFields(span: unknown): { duration: string; durationRawTitle: string | null; spanId: string; tagCount: number } {
+    if (span == null || typeof span !== "object" || Array.isArray(span)) {
+        return { duration: "—", durationRawTitle: null, spanId: "—", tagCount: 0 };
+    }
+    const o = span as Record<string, unknown>;
+    const dur = o.duration;
+    const hasDur = typeof dur === "number" && Number.isFinite(dur);
+    const duration = hasDur ? formatSpanDurationMicros(dur) : "—";
+    const durationRawTitle = hasDur ? `${dur} µs` : null;
+    const sid = o.spanID;
+    const spanId = typeof sid === "string" && sid.length > 0 ? sid : "—";
+    const tags = o.tags;
+    const tagCount = Array.isArray(tags) ? tags.length : 0;
+    return { duration, durationRawTitle, spanId, tagCount };
 }
 
 function formatFetchReleaseTracesArgs(args: NonNullable<ToolFetchReleaseTracesPayload["args"]>): string {
@@ -74,12 +116,15 @@ export function ToolFetchReleaseTracesMessage({
     message: ChatMessageWithDeliveryStatus;
     nestedMessages?: ReactNode;
 }) {
-    const traces = getTraces(message);
+    const [spanModalOpen, setSpanModalOpen] = useState(false);
+    const [modalSpan, setModalSpan] = useState<unknown | null>(null);
+
+    const spans = getSpans(message);
     const args = getToolFetchReleaseTracesArgs(message);
-    const traceCount = traces.length;
+    const spanCount = spans.length;
     const status = message.status ?? ChatMessageStatus.Generating;
-    const hasTraces = traceCount > 0;
-    const showNoTracesEmptyState = !hasTraces && status !== ChatMessageStatus.Generating;
+    const hasSpans = spanCount > 0;
+    const showNoSpansEmptyState = !hasSpans && status !== ChatMessageStatus.Generating;
     const showInvokedConnector = Boolean(message.invoking_message_id);
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
     const formattedArgs = args ? formatFetchReleaseTracesArgs(args) : "—";
@@ -96,18 +141,16 @@ export function ToolFetchReleaseTracesMessage({
         </TooltipContent>
     );
 
-    let tracesBody = "";
-    try {
-        tracesBody = JSON.stringify(traces, null, 2);
-    } catch {
-        tracesBody = String(traces);
-    }
+    const openSpanModal = (span: unknown) => {
+        setModalSpan(span);
+        setSpanModalOpen(true);
+    };
 
     return (
         <>
             <div className="relative flex w-full min-w-0 max-w-full flex-col justify-start overflow-hidden">
                 {showInvokedConnector && <InvokedMessageConnector />}
-                {!hasTraces ? (
+                {!hasSpans ? (
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex max-w-full min-w-0 flex-col gap-1.5 py-3 pr-3 text-left rounded-md">
@@ -117,7 +160,7 @@ export function ToolFetchReleaseTracesMessage({
                                     </span>
                                     <span className="font-medium text-sm">Fetching release traces</span>
                                     <span className="text-muted-foreground text-xs">
-                                        {showNoTracesEmptyState ? "0 traces" : "Awaiting traces…"}
+                                        {showNoSpansEmptyState ? "0 spans" : "Awaiting spans…"}
                                     </span>
                                 </div>
                                 {hasArgIdChips && (
@@ -141,10 +184,10 @@ export function ToolFetchReleaseTracesMessage({
                                         ))}
                                     </div>
                                 )}
-                                {showNoTracesEmptyState && (
+                                {showNoSpansEmptyState && (
                                     <div className="mt-0.5 flex max-w-full items-center gap-1.5 rounded-md border border-dashed border-border/50 bg-muted/20 px-2 py-1.5">
                                         <Activity className="size-3 shrink-0 text-muted-foreground opacity-80" aria-hidden />
-                                        <span className="text-xs font-normal leading-snug text-muted-foreground">No traces logged</span>
+                                        <span className="text-xs font-normal leading-snug text-muted-foreground">No spans</span>
                                     </div>
                                 )}
                             </div>
@@ -152,7 +195,7 @@ export function ToolFetchReleaseTracesMessage({
                         {headerTooltip}
                     </Tooltip>
                 ) : (
-                    <Collapsible defaultOpen className="group/tool-release-traces w-full min-w-0 max-w-full overflow-hidden">
+                    <Collapsible defaultOpen className="group/tool-release-spans w-full min-w-0 max-w-full overflow-hidden">
                         <div className="flex min-w-0 flex-col gap-1.5">
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -162,9 +205,9 @@ export function ToolFetchReleaseTracesMessage({
                                         </span>
                                         <span className="font-medium text-sm">Fetching release traces</span>
                                         <span className="text-muted-foreground text-xs">
-                                            {traceCount} {traceCount === 1 ? "trace" : "traces"}
+                                            {spanCount} {spanCount === 1 ? "span" : "spans"}
                                         </span>
-                                        <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-release-traces:rotate-180" />
+                                        <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-release-spans:rotate-180" />
                                     </CollapsibleTrigger>
                                 </TooltipTrigger>
                                 {headerTooltip}
@@ -198,10 +241,64 @@ export function ToolFetchReleaseTracesMessage({
                                 "outline-none min-w-0 max-w-full overflow-hidden",
                             )}
                         >
-                            <div className="min-w-0 max-w-full py-2">
-                                <pre className="max-h-64 overflow-auto rounded-md border border-border bg-muted/30 p-3 text-xs leading-relaxed">
-                                    {tracesBody}
-                                </pre>
+                            <div className="min-w-0 max-w-full py-2 pl-2 pr-3">
+                                <table className="w-full border-collapse text-left text-sm">
+                                    <thead>
+                                        <tr className="border-b border-border text-xs text-muted-foreground">
+                                            <th className="py-1.5 pl-2.5 pr-3 font-medium tabular-nums">Duration</th>
+                                            <th className="min-w-0 py-1.5 pr-3 font-medium">Span ID</th>
+                                            <th className="w-16 py-1.5 pl-2 pr-3 text-right font-medium">Tags</th>
+                                            <th className="shrink-0 py-1.5 pl-5 pr-4 text-right font-medium">
+                                                <span className="sr-only">Details</span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {spans.map((span, index) => {
+                                            const { duration, durationRawTitle, spanId, tagCount } = spanRowFields(span);
+                                            const rowKey = spanId !== "—" ? spanId : `span-${index}`;
+                                            return (
+                                                <tr
+                                                    key={rowKey}
+                                                    className="cursor-pointer border-b border-border/40 transition-colors last:border-b-0 hover:bg-muted/40"
+                                                    onClick={() => openSpanModal(span)}
+                                                >
+                                                    <td
+                                                        className="py-2 pl-2.5 pr-3 font-mono text-xs tabular-nums align-top"
+                                                        title={durationRawTitle ?? undefined}
+                                                    >
+                                                        {duration}
+                                                    </td>
+                                                    <td
+                                                        className="max-w-[min(12rem,40vw)] truncate py-2 pr-3 font-mono text-xs align-top"
+                                                        title={spanId}
+                                                    >
+                                                        {spanId}
+                                                    </td>
+                                                    <td className="py-2 pl-2 pr-3 text-right text-xs text-muted-foreground align-top tabular-nums">
+                                                        {tagCount}
+                                                    </td>
+                                                    <td className="py-1.5 pl-5 pr-4 text-right align-middle">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="xs"
+                                                            className="ml-auto h-5 min-h-5 gap-1.5 px-1.5 py-0 text-[10px] leading-none font-medium shadow-none [&_svg]:size-2.5"
+                                                            aria-label="View span details and logs"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openSpanModal(span);
+                                                            }}
+                                                        >
+                                                            <Braces aria-hidden className="size-2.5 shrink-0 stroke-[1.75]" />
+                                                            View
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         </CollapsibleContent>
                     </Collapsible>
@@ -209,6 +306,11 @@ export function ToolFetchReleaseTracesMessage({
             </div>
             {payloadError != null && <ToolMessagePayloadError message={payloadError} />}
             {nestedMessages}
+            <SpanJsonModal
+                open={spanModalOpen}
+                onOpenChange={setSpanModalOpen}
+                span={modalSpan}
+            />
         </>
     );
 }

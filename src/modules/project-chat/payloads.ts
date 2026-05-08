@@ -59,7 +59,7 @@ export interface ToolFetchReleaseTracesPayload {
         trace_id?: string | null;
         release_id?: string | null;
     };
-    traces?: unknown[];
+    spans?: unknown[];
     tool_call_id?: string;
     tool_name?: string;
     error?: string;
