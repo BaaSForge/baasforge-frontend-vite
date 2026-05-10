@@ -101,7 +101,7 @@ export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { m
                                         <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-obs:rotate-180" />
                                     </CollapsibleTrigger>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-xs">
+                                <TooltipContent side="top" align="start" className="max-w-xs">
                                     <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
                                 </TooltipContent>
                             </Tooltip>

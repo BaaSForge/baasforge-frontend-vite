@@ -136,7 +136,7 @@ export function ToolFetchReleaseTracesMessage({
     const hasArgIdChips = argIdChips.length > 0;
 
     const headerTooltip = (
-        <TooltipContent side="top" className="max-w-xs">
+        <TooltipContent side="top" align="start" className="max-w-xs">
             <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
         </TooltipContent>
     );
