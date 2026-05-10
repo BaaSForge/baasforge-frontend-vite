@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, register, unregister } from "@/lib/unified-keyboard";
 import { ChatSessionsListModal, useChatSessionsModal, useProjectChatSessionsQuery } from "@/modules/project-chat";
 import { useProjectQuery } from "@/modules/project/queries";
+import { useStartDebugModal } from "@/modules/layout";
 import { cn } from "@/lib/utils";
 
 const VISIBLE_CHAT_SESSIONS_COUNT = 5;
@@ -33,6 +34,7 @@ export function NavProjects() {
     const { data: project } = useProjectQuery(projectIdOrUndefined);
     const { data: chatSessions } = useProjectChatSessionsQuery(projectIdOrUndefined);
     const [openChatSessionsModal] = useChatSessionsModal();
+    const { open: openStartDebugModal } = useStartDebugModal();
 
     useEffect(() => {
         if (projectIdOrUndefined == null) return;
@@ -116,7 +118,7 @@ export function NavProjects() {
                                             isCollapsed ? "px-0" : "",
                                             isCollapsed ? "rounded-t-none rounded-b-lg" : "rounded-l-none rounded-r-lg",
                                         )}
-                                        onClick={() => window.alert("Debug by AI - temp action")}
+                                        onClick={() => openStartDebugModal()}
                                     >
                                         <Bug className="size-4 shrink-0" />
                                         <span className="group-data-[collapsible=icon]:hidden">Debug</span>

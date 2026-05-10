@@ -180,14 +180,14 @@ function ChatSessionsListModalInner({
                 <FreeformMultiCombobox
                     id={`chat-sessions-filter-stage-${projectId}`}
                     label="Stage release revision"
-                    placeholder="Revision, then Enter"
+                    placeholder="Revision e.g. 1.0"
                     value={stageReleaseRevisions}
                     onValueChange={setStageReleaseRevisions}
                 />
                 <FreeformMultiCombobox
                     id={`chat-sessions-filter-prod-${projectId}`}
                     label="Production release revision"
-                    placeholder="Revision, then Enter"
+                    placeholder="Revision, e.g. 1.0"
                     value={productionReleaseRevisions}
                     onValueChange={setProductionReleaseRevisions}
                 />

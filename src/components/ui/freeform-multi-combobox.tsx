@@ -24,6 +24,8 @@ export function FreeformMultiCombobox({
     onValueChange,
     disabled,
     className,
+    labelRowClassName,
+    chipsClassName,
 }: {
     id?: string;
     label: string;
@@ -32,6 +34,8 @@ export function FreeformMultiCombobox({
     onValueChange: (next: string[]) => void;
     disabled?: boolean;
     className?: string;
+    labelRowClassName?: string;
+    chipsClassName?: string;
 }) {
     const anchor = useComboboxAnchor();
     const items = useMemo(() => [...value].sort((a, b) => a.localeCompare(b)), [value]);
@@ -50,11 +54,15 @@ export function FreeformMultiCombobox({
         e.currentTarget.value = "";
     };
 
+    const labelEl = (
+        <Label htmlFor={id} className="text-muted-foreground text-xs font-medium">
+            {label}
+        </Label>
+    );
+
     return (
         <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
-            <Label htmlFor={id} className="text-muted-foreground text-xs font-medium">
-                {label}
-            </Label>
+            {labelRowClassName ? <div className={labelRowClassName}>{labelEl}</div> : labelEl}
             <Combobox
                 multiple
                 autoHighlight
@@ -65,7 +73,10 @@ export function FreeformMultiCombobox({
                     onValueChange([...(next ?? [])].sort((a, b) => a.localeCompare(b)));
                 }}
             >
-                <ComboboxChips ref={anchor} className={cn("h-auto min-h-8 w-full min-w-0 py-1", disabled && "opacity-50")}>
+                <ComboboxChips
+                    ref={anchor}
+                    className={cn("h-auto min-h-8 w-full min-w-0 py-1", chipsClassName, disabled && "opacity-50")}
+                >
                     <ComboboxValue>
                         {(values: string[]) => (
                             <Fragment>
