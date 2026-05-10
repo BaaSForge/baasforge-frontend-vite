@@ -4,7 +4,7 @@ import { Bot, Box, Bug, ChevronRight, MessageSquareText, ServerCrash, Settings }
 import { useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router";
 
-import { FancyButton } from "@/components/fancy-button";
+import { Button } from "@/components/ui/button";
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, register, unregister } from "@/lib/unified-keyboard";
 import { ChatSessionsListModal, useChatSessionsModal, useProjectChatSessionsQuery } from "@/modules/project-chat";
 import { useProjectQuery } from "@/modules/project/queries";
+import { cn } from "@/lib/utils";
 
 const VISIBLE_CHAT_SESSIONS_COUNT = 5;
 
@@ -64,22 +65,69 @@ export function NavProjects() {
                 <SidebarGroupLabel>{project.name} Area</SidebarGroupLabel>
                 <SidebarMenu>
                     <SidebarMenuItem className="my-2">
-                        <div className="flex w-full items-stretch gap-1 px-2">
-                            <FancyButton size="sm" asChild className="min-w-0 flex-[1] rounded-l-lg rounded-r-none">
-                                <Link to={conversationsUrl}>
-                                    <Bot className="size-4 shrink-0" />
-                                    <span className="group-data-[collapsible=icon]:hidden">Develop</span>
-                                </Link>
-                            </FancyButton>
-                            <FancyButton
-                                size="sm"
-                                color="orange"
-                                className="min-w-0 flex-[1] rounded-l-none rounded-r-lg"
-                                onClick={() => window.alert("Debug by AI - temp action")}
-                            >
-                                <Bug className="size-4 shrink-0" />
-                                <span className="group-data-[collapsible=icon]:hidden">Debug</span>
-                            </FancyButton>
+                        <div className={`flex w-full items-stretch ${isCollapsed ? "flex-col gap-1" : "gap-1 px-2"}`}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        asChild
+                                        style={{ height: "2rem", minHeight: "2rem" }}
+                                        className={cn(
+                                            "min-w-0 flex-[1] border-0 shadow-none transition-[filter,colors]",
+                                            "!bg-gradient-to-r !from-blue-500 !to-blue-700 text-white hover:!text-white",
+                                            "hover:!from-blue-400 hover:!to-blue-600 hover:!bg-gradient-to-r",
+                                            "[.dark-default_&]:!from-blue-800 [.dark-default_&]:!to-blue-950",
+                                            "[.dark-default_&]:hover:!from-blue-700 [.dark-default_&]:hover:!to-blue-900",
+                                            "[.dark-midnight_&]:!from-blue-600 [.dark-midnight_&]:!to-blue-800",
+                                            "[.dark-midnight_&]:hover:!from-blue-500 [.dark-midnight_&]:hover:!to-blue-700",
+                                            "ring-1 ring-blue-500/20 [.dark-default_&]:ring-blue-300/18 [.dark-midnight_&]:ring-blue-300/22",
+                                            "focus-visible:ring-2 focus-visible:ring-blue-500/35",
+                                            isCollapsed ? "px-0" : "",
+                                            isCollapsed ? "rounded-t-lg rounded-b-none" : "rounded-l-lg rounded-r-none",
+                                        )}
+                                    >
+                                        <Link to={conversationsUrl}>
+                                            <Bot className="size-4 shrink-0" />
+                                            <span className="group-data-[collapsible=icon]:hidden">Develop</span>
+                                        </Link>
+                                    </Button>
+                                </TooltipTrigger>
+                                {isCollapsed && (
+                                    <TooltipContent side="right" align="center">
+                                        Develop
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        size="sm"
+                                        style={{ height: "2rem", minHeight: "2rem" }}
+                                        className={cn(
+                                            "min-w-0 flex-[1] border-0 shadow-none transition-[filter,colors]",
+                                            "!bg-gradient-to-r !from-orange-500 !to-orange-700 text-white hover:!text-white",
+                                            "hover:!from-orange-400 hover:!to-orange-600 hover:!bg-gradient-to-r",
+                                            "[.dark-default_&]:!from-orange-800 [.dark-default_&]:!to-orange-950",
+                                            "[.dark-default_&]:hover:!from-orange-700 [.dark-default_&]:hover:!to-orange-900",
+                                            "[.dark-midnight_&]:!from-orange-600 [.dark-midnight_&]:!to-orange-800",
+                                            "[.dark-midnight_&]:hover:!from-orange-500 [.dark-midnight_&]:hover:!to-orange-700",
+                                            "ring-1 ring-orange-500/22 [.dark-default_&]:ring-orange-300/16 [.dark-midnight_&]:ring-orange-300/22",
+                                            "focus-visible:ring-2 focus-visible:ring-orange-500/35",
+                                            isCollapsed ? "px-0" : "",
+                                            isCollapsed ? "rounded-t-none rounded-b-lg" : "rounded-l-none rounded-r-lg",
+                                        )}
+                                        onClick={() => window.alert("Debug by AI - temp action")}
+                                    >
+                                        <Bug className="size-4 shrink-0" />
+                                        <span className="group-data-[collapsible=icon]:hidden">Debug</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                {isCollapsed && (
+                                    <TooltipContent side="right" align="center">
+                                        Debug
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
                         </div>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
