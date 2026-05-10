@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Box, ChevronRight, MessageSquareText, ServerCrash, Settings } from "lucide-react";
+import { Bot, Box, Bug, ChevronRight, MessageSquareText, ServerCrash, Settings } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router";
 
@@ -64,14 +64,23 @@ export function NavProjects() {
                 <SidebarGroupLabel>{project.name} Area</SidebarGroupLabel>
                 <SidebarMenu>
                     <SidebarMenuItem className="my-2">
-                        <SidebarMenuButton asChild tooltip="Develop by AI">
-                            <FancyButton size="xs" asChild className="rounded-full">
+                        <div className="flex w-full items-stretch gap-1 px-2">
+                            <FancyButton size="sm" asChild className="min-w-0 flex-[1] rounded-l-lg rounded-r-none">
                                 <Link to={conversationsUrl}>
                                     <Bot className="size-4 shrink-0" />
-                                    <span className="group-data-[collapsible=icon]:hidden">Develop by AI</span>
+                                    <span className="group-data-[collapsible=icon]:hidden">Develop</span>
                                 </Link>
                             </FancyButton>
-                        </SidebarMenuButton>
+                            <FancyButton
+                                size="sm"
+                                color="orange"
+                                className="min-w-0 flex-[1] rounded-l-none rounded-r-lg"
+                                onClick={() => window.alert("Debug by AI - temp action")}
+                            >
+                                <Bug className="size-4 shrink-0" />
+                                <span className="group-data-[collapsible=icon]:hidden">Debug</span>
+                            </FancyButton>
+                        </div>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         {visibleSessions.length > 0 ? (
