@@ -206,6 +206,7 @@ function CentricModalContent({
     fillViewport = false,
     bodyScroll = true,
     tallMobileSheet = false,
+    decorator,
     ...props
 }: React.ComponentProps<typeof DialogContent> & {
     showCloseButton?: boolean;
@@ -214,6 +215,8 @@ function CentricModalContent({
     bodyScroll?: boolean;
     /** Mobile drawer only: use a tall fixed sheet (~95dvh); desktop unchanged. */
     tallMobileSheet?: boolean;
+    /** Renders behind header, body, and footer; use for full-bleed backgrounds (covers the whole modal shell). */
+    decorator?: React.ReactNode;
 }) {
     assertCentricModalContentClassName(className, "CentricModalContent");
 
@@ -243,7 +246,17 @@ function CentricModalContent({
                 className={cn("flex flex-col overflow-hidden", mobileDrawerShell, !bodyScroll && "min-h-0", className)}
                 {...props}
             >
-                <div className={cn("flex min-w-0 flex-col px-4", (fillViewport || tallMobileSheet || !bodyScroll) && "min-h-0 flex-1")}>
+                {decorator ? (
+                    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-[inherit] [&_*]:pointer-events-none">
+                        {decorator}
+                    </div>
+                ) : null}
+                <div
+                    className={cn(
+                        "relative z-10 flex min-w-0 flex-col px-4",
+                        (fillViewport || tallMobileSheet || !bodyScroll) && "min-h-0 flex-1",
+                    )}
+                >
                     {header}
                     {bodyShell}
                     {footer}
@@ -263,13 +276,20 @@ function CentricModalContent({
             showCloseButton={showCloseButton}
             {...props}
         >
+            {decorator ? (
+                <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-[inherit] [&_*]:pointer-events-none">
+                    {decorator}
+                </div>
+            ) : null}
             {header ? (
-                <div className="shrink-0 px-4 pt-4 pb-3 sm:pb-3.5 md:pr-12">
+                <div className="relative z-10 shrink-0 px-4 pt-4 pb-3 sm:pb-3.5 md:pr-12">
                     {header}
                 </div>
             ) : null}
-            {bodyShell}
-            {footer ? <div className="shrink-0 px-4 pt-3 pb-4 sm:pb-5">{footer}</div> : null}
+            <div className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col">{bodyShell}</div>
+            {footer ? (
+                <div className="relative z-10 shrink-0 px-4 pt-3 pb-4 sm:pb-5">{footer}</div>
+            ) : null}
         </DialogContent>
     );
 }

@@ -16,6 +16,8 @@ import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FlaskConical, Play, Rocket } from "lucide-react";
 
+import { StartDebugModalBgIllustration } from "./start-debug-modal-bg";
+
 type StartDebugModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -36,15 +38,16 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     return (
         <CentricModal open={open} onOpenChange={onOpenChange}>
             <CentricModalContent
-                className="w-full max-w-[calc(100%-2rem)] gap-0 p-0 sm:max-w-5xl"
+                className="w-full max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-5xl"
                 bodyScroll={false}
                 showCloseButton
+                decorator={<StartDebugModalBgIllustration />}
             >
-                <CentricModalHeader>
+                <CentricModalHeader className="bg-transparent">
                     <CentricModalTitle>Start Debug</CentricModalTitle>
                 </CentricModalHeader>
                 <div className="flex w-full min-h-0 flex-1 flex-col justify-start sm:justify-center py-10">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch sm:gap-x-6 sm:gap-y-0">
+                    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch sm:gap-x-6 sm:gap-y-0">
                         <FreeformMultiCombobox
                             id="start-debug-trace-ids"
                             label="by trace id"

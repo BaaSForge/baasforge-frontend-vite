@@ -6,7 +6,7 @@ import * as React from "react";
 import { Outlet } from "react-router";
 import { AppSidebar } from "./app-sidebar";
 import { ShortcutsModal } from "./shortcuts-modal";
-import { StartDebugModalProvider } from "./start-debug-modal-context";
+import { StartDebugModalProvider } from "./start-debug-modal";
 import { StickyBreadcrumbBar, StickyBreadcrumbBarPlaceholder } from "./sticky-breadcrumb-bar";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
