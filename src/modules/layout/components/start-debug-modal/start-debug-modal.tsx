@@ -23,16 +23,24 @@ type StartDebugModalProps = {
     onOpenChange: (open: boolean) => void;
 };
 
+const SAMPLE_TRACE_ERROR = "Add at least one trace id.";
+const SAMPLE_RELEASE_ERROR = "Enter a release revision.";
+const PADDINGS = "md:pb-4 md:pt-6";
+
 export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     const [traceIds, setTraceIds] = React.useState<string[]>([]);
     const [releaseEnv, setReleaseEnv] = React.useState<"production" | "stage">("stage");
     const [releaseRevision, setReleaseRevision] = React.useState("");
+    const [traceError, setTraceError] = React.useState<string | null>(SAMPLE_TRACE_ERROR);
+    const [releaseError, setReleaseError] = React.useState<string | null>(SAMPLE_RELEASE_ERROR);
 
     React.useEffect(() => {
         if (!open) return;
         setTraceIds([]);
         setReleaseEnv("stage");
         setReleaseRevision("");
+        setTraceError(SAMPLE_TRACE_ERROR);
+        setReleaseError(SAMPLE_RELEASE_ERROR);
     }, [open]);
 
     return (
@@ -46,18 +54,27 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                 <CentricModalHeader className="bg-transparent">
                     <CentricModalTitle>Start Debug</CentricModalTitle>
                 </CentricModalHeader>
-                <div className="flex w-full min-h-0 flex-1 flex-col justify-start sm:justify-center py-10">
+                <div className="flex w-full min-h-0 flex-1 flex-col justify-start sm:justify-center md:py-10">
                     <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch sm:gap-x-6 sm:gap-y-0">
-                        <FreeformMultiCombobox
-                            id="start-debug-trace-ids"
-                            label="by trace id"
-                            placeholder="Trace id, press Enter to add multiple"
-                            value={traceIds}
-                            onValueChange={setTraceIds}
-                            className="gap-3 md:pb-10 md:pt-6"
-                            chipsClassName="min-h-9 items-center"
-                            labelRowClassName="flex h-7 shrink-0 items-center"
-                        />
+                        <div className={`flex flex-col gap-3 ${PADDINGS}`}>
+                            <FreeformMultiCombobox
+                                id="start-debug-trace-ids"
+                                label="by trace id"
+                                placeholder="Trace id, press Enter to add multiple"
+                                value={traceIds}
+                                onValueChange={setTraceIds}
+                                className="gap-3"
+                                chipsClassName="min-h-9 items-center"
+                                labelRowClassName="flex h-7 shrink-0 items-center"
+                            />
+                            <div className="min-h-[2.75rem] shrink-0">
+                                {traceError ? (
+                                    <p className="text-destructive text-sm leading-snug" role="alert">
+                                        {traceError}
+                                    </p>
+                                ) : null}
+                            </div>
+                        </div>
                         <div
                             role="separator"
                             aria-hidden
@@ -68,7 +85,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                             aria-hidden
                             className="border-border hidden w-0 shrink-0 self-stretch border-l border-dashed sm:block"
                         />
-                        <div className="flex min-w-0 flex-col gap-3 md:pb-10 md:pt-6">
+                        <div className={`flex min-w-0 flex-col gap-3 ${PADDINGS}`}>
                             <div className="flex h-7 min-h-7 shrink-0 items-center justify-between gap-2">
                                 <Label className="text-muted-foreground shrink-0 text-xs font-medium">by release</Label>
                                 <ToggleGroup
@@ -98,6 +115,13 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                                 className="w-full"
                                 autoComplete="off"
                             />
+                            <div className="min-h-[2.75rem] shrink-0">
+                                {releaseError ? (
+                                    <p className="text-destructive text-sm leading-snug" role="alert">
+                                        {releaseError}
+                                    </p>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
                 </div>
