@@ -25,6 +25,11 @@ export async function invalidateDueToRejectOrEdit(queryClient: QueryClient, proj
         queryKey: QueryKeys.projectReleases(projectId, PlatformEnvironmentType.stage),
     });
 
+    // Stage release set may have changed, so the by-revision lookup cache (e.g. Start Debug modal) must be refreshed
+    await queryClient.invalidateQueries({
+        queryKey: QueryKeys.projectLiveReleaseByRevisionByEnv(projectId, PlatformEnvironmentType.stage),
+    });
+
     // Some units might be removed in truncate, so update the draft units list
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectDraftUnitsByProject(projectId) });
 
@@ -48,6 +53,11 @@ export async function invalidateQueriesAfterRuntimeDeploy(
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(projectId) });
     // New releases, so just update it
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectReleases(projectId, env) });
+
+    // A new release shifts which revision is "live", so refresh by-revision lookups (e.g. Start Debug modal) for this env
+    await queryClient.invalidateQueries({
+        queryKey: QueryKeys.projectLiveReleaseByRevisionByEnv(projectId, env),
+    });
 
     // The last release controller may have a new release after deploy (secondary sidebar footer reads this query)
     await invalidateLastNotDisabledReleaseControllerMessageQueries(queryClient, projectId);

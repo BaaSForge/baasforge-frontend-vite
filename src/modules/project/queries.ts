@@ -34,7 +34,7 @@ export function useProjectLiveReleaseByRevisionQuery(
     revision: number | undefined,
 ) {
     return useQuery({
-        queryKey: QueryKeys.projectLiveReleaseByRevision(projectId ?? "", environment ?? "", revision ?? NaN),
+        queryKey: QueryKeys.projectLiveReleaseByRevision(projectId ?? "", environment ?? PlatformEnvironmentType.stage, revision ?? NaN),
         queryFn: () => getProjectLiveReleaseByRevision(projectId!, environment!, revision!),
         enabled: !!projectId && environment != null && revision != null && Number.isFinite(revision),
         retry: false,
