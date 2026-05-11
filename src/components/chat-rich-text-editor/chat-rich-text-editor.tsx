@@ -14,9 +14,11 @@ import {
     KEY_DOWN_COMMAND,
     KEY_ENTER_COMMAND,
     KEY_ESCAPE_COMMAND,
+    PASTE_COMMAND,
     LineBreakNode,
     ParagraphNode,
     TextNode,
+    $createLineBreakNode,
     $createParagraphNode,
     $createTextNode,
     $getRoot,
@@ -36,7 +38,12 @@ import {
     type JSX,
     type MutableRefObject,
 } from "react";
-import { exportSerializedComposerText, replaceComposerFromSerialized } from "./composer-serialization";
+import {
+    $parseComposerLineToLexicalNodes,
+    exportSerializedComposerText,
+    plainTextContainsInlineToken,
+    replaceComposerFromSerialized,
+} from "./composer-serialization";
 import {
     $createInlineReleaseNode,
     $createInlineTraceNode,
@@ -167,6 +174,35 @@ function ComposerCommandsPlugin({
         );
     }, [editor, onAtGlyph, onSlashGlyph]);
 
+    return null;
+}
+
+/** Plain-text paste from history / copy does not run `replaceComposerFromSerialized`; parse `<baal:inline …/>` here. */
+function ComposerPasteInlineTokensPlugin(): null {
+    const [editor] = useLexicalComposerContext();
+    useEffect(() => {
+        return editor.registerCommand(
+            PASTE_COMMAND,
+            (event: ClipboardEvent) => {
+                const text = event.clipboardData?.getData("text/plain") ?? "";
+                if (!text || !plainTextContainsInlineToken(text)) return false;
+                event.preventDefault();
+                editor.update(() => {
+                    const sel = $getSelection();
+                    if (!$isRangeSelection(sel)) return;
+                    const lines = text.split("\n");
+                    const nodes: LexicalNode[] = [];
+                    for (let i = 0; i < lines.length; i++) {
+                        if (i > 0) nodes.push($createLineBreakNode());
+                        nodes.push(...$parseComposerLineToLexicalNodes(lines[i] ?? ""));
+                    }
+                    sel.insertNodes(nodes);
+                });
+                return true;
+            },
+            COMMAND_PRIORITY_HIGH,
+        );
+    }, [editor]);
     return null;
 }
 
@@ -309,6 +345,7 @@ export const ChatRichTextEditor = forwardRef<ChatRichTextEditorHandle, ChatRichT
                         onAtGlyph={onAtGlyph}
                         onSlashGlyph={onSlashGlyph}
                     />
+                    <ComposerPasteInlineTokensPlugin />
                     <ControlledValuePlugin value={value} onChange={onChange} />
                     <RichTextPlugin
                         contentEditable={

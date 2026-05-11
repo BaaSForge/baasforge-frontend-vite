@@ -27,6 +27,11 @@ export function exportSerializedComposerText(editor: LexicalEditor): string {
     return result;
 }
 
+/** True when `text` contains at least one well-formed `<baal:inline .../>` token (used for paste handling). */
+export function plainTextContainsInlineToken(text: string): boolean {
+    return new RegExp(BAAL_INLINE_TOKEN_RE.source, "g").test(text);
+}
+
 export function replaceComposerFromSerialized(editor: LexicalEditor, serialized: string): void {
     editor.update(
         () => {
@@ -48,12 +53,7 @@ export function $replaceComposerFromSerialized(serialized: string): void {
     }
     for (const line of lines) {
         const p = $createParagraphNode();
-        const nodes = $parseParagraphToLexicalNodes(line);
-        if (nodes.length === 0) {
-            p.append($createTextNode(""));
-        } else {
-            p.append(...nodes);
-        }
+        p.append(...$parseComposerLineToLexicalNodes(line));
         root.append(p);
     }
 }
@@ -87,14 +87,15 @@ function $serializeParagraphInline(p: ParagraphNode): string {
     return out;
 }
 
-function $parseParagraphToLexicalNodes(paragraph: string): LexicalNode[] {
+/** One logical line of composer text (no `\n`) into paragraph children, including inline release/unit/trace widgets. */
+export function $parseComposerLineToLexicalNodes(line: string): LexicalNode[] {
     const nodes: LexicalNode[] = [];
     const re = new RegExp(BAAL_INLINE_TOKEN_RE.source, "g");
     let lastIndex = 0;
     let m: RegExpExecArray | null;
-    while ((m = re.exec(paragraph)) !== null) {
+    while ((m = re.exec(line)) !== null) {
         if (m.index > lastIndex) {
-            nodes.push($createTextNode(paragraph.slice(lastIndex, m.index)));
+            nodes.push($createTextNode(line.slice(lastIndex, m.index)));
         }
         const kind = m[1] as "release" | "unit" | "trace";
         const rawData = m[2];
@@ -113,8 +114,11 @@ function $parseParagraphToLexicalNodes(paragraph: string): LexicalNode[] {
         }
         lastIndex = re.lastIndex;
     }
-    if (lastIndex < paragraph.length) {
-        nodes.push($createTextNode(paragraph.slice(lastIndex)));
+    if (lastIndex < line.length) {
+        nodes.push($createTextNode(line.slice(lastIndex)));
+    }
+    if (nodes.length === 0) {
+        nodes.push($createTextNode(""));
     }
     return nodes;
 }
