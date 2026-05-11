@@ -29,12 +29,18 @@ import { scrollToBottom, scrollToTop, smoothScrollToElementTop } from "@/lib/dom
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { register, SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
-import { invalidateDueToRejectOrEdit } from "@/modules/project/invalidate-project-queries";
+import {
+    invalidateDueToRejectOrEdit,
+    removeProjectDraftUnitsAsOfReleaseControllerQueries,
+} from "@/modules/project/invalidate-project-queries";
 import { postUserMessageTruncateBelow, stopProjectChatSession } from "@/modules/project-chat/api";
 import { addSessionToGeneratingSet } from "@/modules/project-chat/ws-cache-handler";
 import { createOptimisticUserTextMessage } from "@/modules/project-chat/optimistic-user-text-message";
 import { useCreateProjectChatSessionMessageMutation, useCreateProjectChatSessionMutation } from "@/modules/project-chat/mutations";
-import { trimInfiniteMessagesCacheRemovingMessageAndAfter } from "@/modules/project-chat/trim-messages-cache";
+import {
+    collectReleaseControllerMessageIdsRemovedByTruncateBelow,
+    trimInfiniteMessagesCacheRemovingMessageAndAfter,
+} from "@/modules/project-chat/trim-messages-cache";
 import { useIsSessionGenerating, useProjectChatSessionDetailQuery, useProjectChatSessionMessagesQuery } from "@/modules/project-chat/queries";
 import {
     ChatMessageDeliveryStatus,
@@ -224,9 +230,23 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         async (message: ChatMessageWithDeliveryStatus) => {
             if (projectId == null || chatSessionIdOrUndefined == null) return;
             await postUserMessageTruncateBelow(projectId, chatSessionIdOrUndefined, message.id);
+
+            const messagesKey = QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined);
+            const messagesBeforeTrim = queryClient.getQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(messagesKey);
+            const removedReleaseControllerIds = collectReleaseControllerMessageIdsRemovedByTruncateBelow(
+                messagesBeforeTrim,
+                message.id,
+            );
+            removeProjectDraftUnitsAsOfReleaseControllerQueries(
+                queryClient,
+                projectId,
+                chatSessionIdOrUndefined,
+                removedReleaseControllerIds,
+            );
+
             await invalidateDueToRejectOrEdit(queryClient, projectId);
             queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
-                QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined),
+                messagesKey,
                 (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,
             );
         },

@@ -11,6 +11,20 @@ export async function invalidateLastNotDisabledReleaseControllerMessageQueries(
     });
 }
 
+/** Drops draft-units-as-of-release-controller rows so broad invalidation does not refetch deleted messages. */
+export function removeProjectDraftUnitsAsOfReleaseControllerQueries(
+    queryClient: QueryClient,
+    projectId: string,
+    chatSessionId: string,
+    releaseControllerMessageIds: readonly string[],
+) {
+    for (const messageId of releaseControllerMessageIds) {
+        queryClient.removeQueries({
+            queryKey: QueryKeys.projectDraftUnitsAsOfReleaseControllerMessage(projectId, chatSessionId, messageId),
+        });
+    }
+}
+
 // NOTE: When user rejects or edit a message (which cause a truncate), some stage releases might be deleted so some runtimes might be disconnected
 // Also some units might be removed in truncate
 export async function invalidateDueToRejectOrEdit(queryClient: QueryClient, projectId: string) {
