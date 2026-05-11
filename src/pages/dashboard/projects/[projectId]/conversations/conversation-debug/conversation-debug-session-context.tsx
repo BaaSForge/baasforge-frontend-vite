@@ -141,11 +141,10 @@ export function ConversationDebugSessionProvider({ children }: { children: React
                             <AlertDialogDescription asChild>
                                 <div className="text-muted-foreground flex flex-col gap-3 text-center text-sm leading-snug sm:text-left">
                                     <p>
-                                        Outgoing messages in this chat can include the release from your link until you turn that
-                                        off.
+                                        Outgoing messages in this chat can include the release or trace ids from your link.
                                     </p>
                                     <p>
-                                        Use the debug control at the bottom-left of the message box to disable or re-enable it.
+                                        Use the `+` button at the top-left of the message input to edit the release or trace ids.
                                     </p>
                                 </div>
                             </AlertDialogDescription>

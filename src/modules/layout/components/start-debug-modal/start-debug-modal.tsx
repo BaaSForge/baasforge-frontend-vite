@@ -6,6 +6,16 @@ import { useNavigate, useParams } from "react-router";
 import { useDebounce } from "use-debounce";
 
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     CentricModal,
     CentricModalContent,
     CentricModalFooter,
@@ -39,9 +49,33 @@ function parseRevisionForLookup(trimmed: string): number | undefined {
     return Number.isFinite(n) ? n : undefined;
 }
 
+/** True when the user is already in a specific chat and navigation would move them away from it. */
+function shouldConfirmLeavingCurrentChat(params: {
+    currentConversationId: string | undefined;
+    releaseEnv: "production" | "stage";
+    targetStageSessionId: string | undefined;
+}): boolean {
+    const current = params.currentConversationId?.trim();
+    if (!current) return false;
+    if (params.releaseEnv === "production") {
+        return true;
+    }
+    const target = params.targetStageSessionId?.trim() ?? "";
+    if (!target) return false;
+    return current !== target;
+}
+
 export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
-    const { projectId } = useParams();
+    const { projectId, conversationId: currentConversationId } = useParams<{
+        projectId?: string;
+        conversationId?: string;
+    }>();
     const navigate = useNavigate();
+
+    const [leaveChatConfirm, setLeaveChatConfirm] = React.useState<{
+        path: string;
+        releaseEnv: "production" | "stage";
+    } | null>(null);
 
     const [traceIds, setTraceIds] = React.useState<string[]>([]);
     const [releaseEnv, setReleaseEnv] = React.useState<"production" | "stage">("stage");
@@ -54,6 +88,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
         setReleaseEnv("stage");
         setReleaseRevision("");
         setTraceError(SAMPLE_TRACE_ERROR);
+        setLeaveChatConfirm(null);
     }, [open]);
 
     const platformEnvironment =
@@ -116,6 +151,15 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
         resolvedRelease !== null &&
         (releaseEnv === "production" || stageChatSessionId.length > 0);
 
+    const performNavigateToDebug = React.useCallback(
+        (path: string) => {
+            navigate(path);
+            onOpenChange(false);
+            setLeaveChatConfirm(null);
+        },
+        [navigate, onOpenChange],
+    );
+
     const handleStart = () => {
         if (!projectId || !resolvedRelease) return;
         if (releaseEnv === "production") {
@@ -124,9 +168,18 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                 release_id: resolvedRelease.id,
                 release_revision: String(resolvedRelease.revision),
             };
-            navigate(
-                `/dashboard/projects/${projectId}/conversations?debug=${encodeURIComponent(JSON.stringify(payload))}`,
-            );
+            const path = `/dashboard/projects/${projectId}/conversations?debug=${encodeURIComponent(JSON.stringify(payload))}`;
+            if (
+                shouldConfirmLeavingCurrentChat({
+                    currentConversationId,
+                    releaseEnv: "production",
+                    targetStageSessionId: undefined,
+                })
+            ) {
+                setLeaveChatConfirm({ path, releaseEnv: "production" });
+                return;
+            }
+            performNavigateToDebug(path);
         } else {
             const sessionId = resolvedRelease.chat_session_id?.trim();
             if (!sessionId) return;
@@ -135,15 +188,64 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                 release_id: resolvedRelease.id,
                 release_revision: String(resolvedRelease.revision),
             };
-            navigate(
-                `/dashboard/projects/${projectId}/conversations/${sessionId}?debug=${encodeURIComponent(JSON.stringify(payload))}`,
-            );
+            const path = `/dashboard/projects/${projectId}/conversations/${sessionId}?debug=${encodeURIComponent(JSON.stringify(payload))}`;
+            if (
+                shouldConfirmLeavingCurrentChat({
+                    currentConversationId,
+                    releaseEnv: "stage",
+                    targetStageSessionId: sessionId,
+                })
+            ) {
+                setLeaveChatConfirm({ path, releaseEnv: "stage" });
+                return;
+            }
+            performNavigateToDebug(path);
         }
-        onOpenChange(false);
     };
 
     return (
-        <CentricModal open={open} onOpenChange={onOpenChange}>
+        <>
+            <AlertDialog
+                open={leaveChatConfirm != null}
+                onOpenChange={(next) => {
+                    if (!next) setLeaveChatConfirm(null);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {leaveChatConfirm?.releaseEnv === "production"
+                                ? "Leave this conversation?"
+                                : "Switch to the linked chat?"}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {leaveChatConfirm?.releaseEnv === "production" ? (
+                                <>
+                                    Production debug opens from the conversations list with this release attached. You will leave
+                                    the chat you are viewing now.
+                                </>
+                            ) : (
+                                <>
+                                    This stage release is wired to a different conversation than the one you have open. We will take
+                                    you there so traces and release context match what you are debugging.
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel type="button">Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            type="button"
+                            onClick={() => {
+                                if (leaveChatConfirm) performNavigateToDebug(leaveChatConfirm.path);
+                            }}
+                        >
+                            Continue
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            <CentricModal open={open} onOpenChange={onOpenChange}>
             <CentricModalContent
                 className="w-full max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-5xl"
                 bodyScroll={false}
@@ -253,5 +355,6 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                 </CentricModalFooter>
             </CentricModalContent>
         </CentricModal>
+        </>
     );
 }
