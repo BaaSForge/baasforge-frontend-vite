@@ -93,6 +93,7 @@
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.1",
     "typewriter-effect": "^2.22.0",
+    "use-debounce": "^10.1.1",
     "vaul": "^1.1.2",
     "zod": "^4.3.5",
     "zustand": "^5.0.9"

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { CheckCircle2, FlaskConical, Loader2, Play, Rocket, XCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
+import { useDebounce } from "use-debounce";
 
 import {
     CentricModal,
@@ -45,7 +46,6 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     const [traceIds, setTraceIds] = React.useState<string[]>([]);
     const [releaseEnv, setReleaseEnv] = React.useState<"production" | "stage">("stage");
     const [releaseRevision, setReleaseRevision] = React.useState("");
-    const [debouncedRevision, setDebouncedRevision] = React.useState("");
     const [traceError, setTraceError] = React.useState<string | null>(SAMPLE_TRACE_ERROR);
 
     React.useEffect(() => {
@@ -53,26 +53,23 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
         setTraceIds([]);
         setReleaseEnv("stage");
         setReleaseRevision("");
-        setDebouncedRevision("");
         setTraceError(SAMPLE_TRACE_ERROR);
     }, [open]);
 
-    React.useEffect(() => {
-        const t = window.setTimeout(() => setDebouncedRevision(releaseRevision.trim()), RELEASE_LOOKUP_DEBOUNCE_MS);
-        return () => window.clearTimeout(t);
-    }, [releaseRevision]);
-
     const platformEnvironment =
         releaseEnv === "production" ? PlatformEnvironmentType.prod : PlatformEnvironmentType.stage;
-    const revisionForQuery = React.useMemo(
-        () => parseRevisionForLookup(debouncedRevision),
-        [debouncedRevision],
-    );
+
+    const revisionTrimmed = releaseRevision.trim();
+    const [debouncedRevision] = useDebounce(revisionTrimmed, RELEASE_LOOKUP_DEBOUNCE_MS);
+    const revisionForQuery = React.useMemo(() => {
+        if (!revisionTrimmed) return undefined;
+        return parseRevisionForLookup(debouncedRevision);
+    }, [revisionTrimmed, debouncedRevision]);
 
     const releaseQuery = useProjectReleaseByRevisionQuery(projectId, platformEnvironment, revisionForQuery);
 
-    const revisionTrimmed = releaseRevision.trim();
-    const revisionParsingIdle = revisionTrimmed === debouncedRevision;
+    const revisionParsingIdle =
+        revisionTrimmed === "" || revisionTrimmed === debouncedRevision;
     const releaseInputLoading = releaseQuery.isFetching || !revisionParsingIdle;
 
     type ReleaseFeedback =
