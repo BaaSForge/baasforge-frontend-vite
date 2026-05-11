@@ -1,4 +1,4 @@
-import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
+import type { PlatformEnvironmentType, ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
 import type { ToolMessagePayloadRaw } from "./payloads";
 
 export enum ChatSessionRoleType {
@@ -128,8 +128,14 @@ export interface ChatMessageWithDeliveryStatus extends ChatMessageResponse {
     is_optimistic?: boolean;
 }
 
+export type CreateProjectChatSessionMessageDebugContext = {
+    release_id: string;
+    environment: PlatformEnvironmentType;
+};
+
 export type CreateProjectChatSessionMessageMutationParams = {
     projectId: string;
     chatSessionId: string;
     optimisticMessage: ChatMessageWithDeliveryStatus;
+    debugContext?: CreateProjectChatSessionMessageDebugContext;
 };

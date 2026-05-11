@@ -37,7 +37,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import {
+    ConversationDebugSessionProvider,
+    getConversationDebugSendContext,
+    useConversationDebugSession,
+} from "./conversation-debug";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { ConversationSessionMessagesProvider } from "./components/conversation-session-messages-context";
 import { ConversationStaleBaseReleaseProvider } from "./components/conversation-stale-base-release-context";
 import { ConversationStaleBaseReleaseTitleBadge } from "./components/conversation-stale-base-release-title-badge";
@@ -57,7 +62,9 @@ export default function ProjectConversationsPage() {
 
     return (
         <SecondarySidebarProvider storageKey={STORAGE_KEYS.CONVERSATION_SIDEBAR_COLLAPSED} defaultOpen>
-            <ProjectConversationsContent mainSidebar={mainSidebar} />
+            <ConversationDebugSessionProvider>
+                <ProjectConversationsContent mainSidebar={mainSidebar} />
+            </ConversationDebugSessionProvider>
         </SecondarySidebarProvider>
     );
 }
@@ -67,6 +74,10 @@ type ProjectConversationsContentProps = {
 };
 
 function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
+    const { search: locationSearch } = useLocation();
+    const conversationDebug = useConversationDebugSession();
+    const messageDebugContext = useMemo(() => getConversationDebugSendContext(conversationDebug), [conversationDebug]);
+
     const queryClient = useQueryClient();
     const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
     const justRedirectedToNewSessionRef = useRef(false);
@@ -203,6 +214,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                     projectId,
                     chatSessionId: chatSessionIdOrUndefined,
                     optimisticMessage,
+                    debugContext: messageDebugContext,
                 });
                 addSessionToGeneratingSet(queryClient, projectId, chatSessionIdOrUndefined);
                 const el = responsePlaceholderRef.current;
@@ -218,7 +230,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 setSubmittingEditMessageId(null);
             }
         },
-        [projectId, chatSessionIdOrUndefined, queryClient, createMessageMutation],
+        [projectId, chatSessionIdOrUndefined, queryClient, createMessageMutation, messageDebugContext],
     );
 
     const responsePlaceholderRef = useRef<HTMLDivElement>(null);
@@ -255,6 +267,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                             ...optimisticMessage,
                             delivery_status: ChatMessageDeliveryStatus.Pending,
                         },
+                        debugContext: messageDebugContext,
                     },
                     {
                         onSuccess: () => {
@@ -263,7 +276,10 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                     },
                 );
 
-                navigate(`/dashboard/projects/${projectId}/conversations/${session.id}`);
+                navigate({
+                    pathname: `/dashboard/projects/${projectId}/conversations/${session.id}`,
+                    search: locationSearch || undefined,
+                });
                 justRedirectedToNewSessionRef.current = true;
             },
             onError: () => {
@@ -295,6 +311,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                     projectId: projectId ?? "",
                     chatSessionId: chatSessionIdOrUndefined ?? "",
                     optimisticMessage,
+                    debugContext: messageDebugContext,
                 },
                 {
                     onSuccess: () => {
@@ -316,6 +333,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             projectId: projectId ?? "",
             chatSessionId: chatSessionIdOrUndefined ?? "",
             optimisticMessage: message,
+            debugContext: messageDebugContext,
         });
     };
 

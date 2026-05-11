@@ -106,7 +106,6 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
         releaseQuery.isError,
         releaseQuery.error,
         releaseQuery.isFetching,
-        releaseQuery.isSuccess,
         releaseQuery.data,
         revisionParsingIdle,
     ]);
@@ -123,6 +122,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
             const payload = {
                 environment: PlatformEnvironmentType.prod,
                 release_id: resolvedRelease.id,
+                release_revision: String(resolvedRelease.revision),
             };
             navigate(
                 `/dashboard/projects/${projectId}/conversations?debug=${encodeURIComponent(JSON.stringify(payload))}`,
@@ -133,6 +133,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
             const payload = {
                 environment: PlatformEnvironmentType.stage,
                 release_id: resolvedRelease.id,
+                release_revision: String(resolvedRelease.revision),
             };
             navigate(
                 `/dashboard/projects/${projectId}/conversations/${sessionId}?debug=${encodeURIComponent(JSON.stringify(payload))}`,

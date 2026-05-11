@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
-import type { ProjectUnitResponse } from "@/modules/project/types";
+import type { PlatformEnvironmentType, ProjectUnitResponse } from "@/modules/project/types";
 import {
     ChatMessageDeliveryStatus,
     type ChatMessageDTO,
@@ -138,14 +138,25 @@ export function postUserMessageTruncateBelow(projectId: string, chatSessionId: s
         .then(() => undefined);
 }
 
+type CreateProjectChatSessionMessageBody = ChatMessageDTO & {
+    release_id?: string;
+    environment?: PlatformEnvironmentType;
+};
+
 export function createProjectChatSessionMessage(
     projectId: string,
     chatSessionId: string,
     message: ChatMessageDTO,
+    debugContext?: { release_id: string; environment: PlatformEnvironmentType },
 ): Promise<CreateProjectChatSessionMessageResult | undefined> {
     const endpoint = chatSessionMessagesEndpoint(projectId, chatSessionId);
 
-    return apiClient.post<ApiResponse<ChatMessageResponse>>(endpoint, message).then((res) => {
+    const body: CreateProjectChatSessionMessageBody =
+        debugContext != null
+            ? { ...message, release_id: debugContext.release_id, environment: debugContext.environment }
+            : message;
+
+    return apiClient.post<ApiResponse<ChatMessageResponse>>(endpoint, body).then((res) => {
         if (!res.data) return undefined;
         const userMessage = res.data;
         const saved: ChatMessageWithDeliveryStatus = {

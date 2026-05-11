@@ -20,7 +20,7 @@ export function useCreateProjectChatSessionMessageMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ projectId, chatSessionId, optimisticMessage }: CreateProjectChatSessionMessageMutationParams) => {
+        mutationFn: async ({ projectId, chatSessionId, optimisticMessage, debugContext }: CreateProjectChatSessionMessageMutationParams) => {
             const cacheKey = QueryKeys.projectChatSessionMessages(projectId, chatSessionId);
 
             queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(cacheKey, (old) => {
@@ -73,7 +73,7 @@ export function useCreateProjectChatSessionMessageMutation() {
                     type: optimisticMessage.type,
                     payload: optimisticMessage.payload,
                 };
-                const result = await createProjectChatSessionMessage(projectId, chatSessionId, message);
+                const result = await createProjectChatSessionMessage(projectId, chatSessionId, message, debugContext);
 
                 if (result) {
                     setDelivered(result.saved);

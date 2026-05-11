@@ -1,4 +1,4 @@
-import type { ApiError, ApiResponse } from "@/lib/api-client";
+import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
 import type { ChatMessageResponse } from "@/modules/project-chat/types";
 import {
