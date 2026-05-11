@@ -31,7 +31,7 @@ export function ChatComposerSendButton({
                 !isGenerating && canSend && !disabled && !isLoading && "!bg-blue-500 hover:!bg-blue-600 !text-white",
                 className,
             )}
-            variant={isGenerating ? "destructive" : canSend && !disabled && !isLoading ? "default" : "ghost"}
+            variant={isGenerating ? "destructive" : canSend && !disabled && !isLoading ? "default" : "outline"}
             disabled={busy}
             onClick={() =>
                 isGenerating ? onStop?.() : canSend && !disabled && !isLoading ? onSend() : undefined

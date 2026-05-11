@@ -1,13 +1,10 @@
-import {
-    InputGroup,
-    InputGroupAddon,
-    InputGroupTextarea,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { ChatComposerAddMenu } from "../chat-composer-add-menu";
 import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 import { useConversationDebugSession } from "../../conversation-debug";
 import { ChatComposerSendButton } from "../chat-composer-send-button";
@@ -84,7 +81,7 @@ export default function Controls({
                 </div>
             )}
             <div className={cn("fixed min-h-14 z-20 transition-[left,right,bottom] duration-200 ease-out", leftClassName, rightClassName, bottomClassName)}>
-                <div className={cn("flex items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)} onClick={handleFocus}>
+                <div className={cn("flex w-full items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)} onClick={handleFocus}>
                     <InputGroup
                         className={cn(
                             "w-full shadow-2xl flex flex-col !bg-background transition-shadow duration-300",
@@ -109,22 +106,26 @@ export default function Controls({
                                 }
                             }}
                             placeholder={placeholder}
-                            className="px-3 py-3 min-h-10 max-h-40"
+                            className="min-h-10 max-h-40 px-3 py-3"
                             rows={1}
                         />
-                        <InputGroupAddon align="block-end" className="!p-3 !pt-0">
-                            {/* <InputGroupButton variant="ghost" size="icon-xs">
-                <Copy />
-              </InputGroupButton> */}
-                            <span className="text-xs text-muted-foreground opacity-50">
+                        <InputGroupAddon
+                            align="block-end"
+                            className="!flex !w-full !flex-row !items-center !gap-2 !p-3 !pt-0"
+                        >
+                            <span className="min-w-0 flex-1 text-xs text-muted-foreground opacity-50">
                                 press {isInputFocused ? "Esc to release" : `${SHORTCUT_LABELS.FOCUS_CHAT} to focus`}
                             </span>
-                            <ChatComposerSendButton
-                                isGenerating={isGenerating}
-                                canSend={canSend}
-                                onSend={handleSend}
-                                onStop={handleStop}
-                            />
+                            <div className="flex shrink-0 items-center gap-2">
+                                <ChatComposerAddMenu />
+                                <ChatComposerSendButton
+                                    className="!ml-0"
+                                    isGenerating={isGenerating}
+                                    canSend={canSend}
+                                    onSend={handleSend}
+                                    onStop={handleStop}
+                                />
+                            </div>
                         </InputGroupAddon>
                     </InputGroup>
                 </div>
