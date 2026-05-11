@@ -81,6 +81,11 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     const [releaseEnv, setReleaseEnv] = React.useState<"production" | "stage">("stage");
     const [releaseRevision, setReleaseRevision] = React.useState("");
     const [traceError, setTraceError] = React.useState<string | null>(SAMPLE_TRACE_ERROR);
+    const releaseRevisionInputRef = React.useRef<HTMLInputElement>(null);
+
+    const focusReleaseRevisionInput = React.useCallback(() => {
+        window.setTimeout(() => releaseRevisionInputRef.current?.focus(), 0);
+    }, []);
 
     React.useEffect(() => {
         if (!open) return;
@@ -221,7 +226,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                         <AlertDialogDescription>
                             {leaveChatConfirm?.releaseEnv === "production" ? (
                                 <>
-                                    Production debug opens from the conversations list with this release attached. You will leave
+                                    Production debug opens a new chat with this release / traces attached. You will leave
                                     the chat you are viewing now.
                                 </>
                             ) : (
@@ -293,17 +298,28 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                                     type="single"
                                     value={releaseEnv}
                                     onValueChange={(v) => {
-                                        if (v === "production" || v === "stage") setReleaseEnv(v);
+                                        if (v === "production" || v === "stage") {
+                                            setReleaseEnv(v);
+                                            focusReleaseRevisionInput();
+                                        }
                                     }}
                                     variant="outline"
                                     size="sm"
                                     className="shrink-0"
                                 >
-                                    <ToggleGroupItem value="stage" className="h-7 min-h-7 gap-1 px-2 text-xs">
+                                    <ToggleGroupItem
+                                        value="stage"
+                                        className="h-7 min-h-7 gap-1 px-2 text-xs"
+                                        onClick={focusReleaseRevisionInput}
+                                    >
                                         <FlaskConical className="size-3 shrink-0" aria-hidden />
                                         stage
                                     </ToggleGroupItem>
-                                    <ToggleGroupItem value="production" className="h-7 min-h-7 gap-1 px-2 text-xs">
+                                    <ToggleGroupItem
+                                        value="production"
+                                        className="h-7 min-h-7 gap-1 px-2 text-xs"
+                                        onClick={focusReleaseRevisionInput}
+                                    >
                                         <Rocket className="size-3 shrink-0" aria-hidden />
                                         production
                                     </ToggleGroupItem>
@@ -311,6 +327,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                             </div>
                             <div className="relative w-full">
                                 <Input
+                                    ref={releaseRevisionInputRef}
                                     value={releaseRevision}
                                     onChange={(e) => setReleaseRevision(e.target.value)}
                                     placeholder="release revision e.g. 1.0"
