@@ -44,6 +44,14 @@ export interface ApiClientOptions {
     onError?: (error: unknown) => void;
 }
 
+/** Optional controls for the global API error handler (`showApiError` / toast); not sent over the wire. */
+export type ExtendedOptions = {
+    /** Do not invoke the global API error handler for this request. */
+    skipErrorToast?: boolean;
+    /** Do not invoke the global API error handler for these HTTP status codes only (e.g. expected 404). */
+    skipErrorToastForStatuses?: readonly number[];
+};
+
 class ApiClient {
     private baseUrl: string;
     private timeoutDuration = 10_000;
@@ -96,20 +104,35 @@ class ApiClient {
         }
     }
 
-    private async request<T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    private shouldNotifyGlobalError(status: number, extendedOptions: ExtendedOptions): boolean {
+        if (extendedOptions.skipErrorToast) {
+            return false;
+        }
+        const statuses = extendedOptions.skipErrorToastForStatuses;
+        if (statuses?.includes(status)) {
+            return false;
+        }
+        return true;
+    }
+
+    private async request<T = unknown>(
+        endpoint: string,
+        init: RequestInit = {},
+        extendedOptions: ExtendedOptions = {},
+    ): Promise<T> {
         const url = this.buildUrl(endpoint);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), this.timeoutDuration);
 
-        const isFormData = options.body instanceof FormData;
+        const isFormData = init.body instanceof FormData;
         const defaultHeaders: HeadersInit = isFormData ? {} : { "Content-Type": "application/json" };
 
         const config: RequestInit = {
-            ...options,
+            ...init,
             signal: controller.signal,
             credentials: "include",
-            headers: { ...defaultHeaders, ...options.headers },
+            headers: { ...defaultHeaders, ...init.headers },
         };
 
         let response: Response;
@@ -141,10 +164,10 @@ class ApiClient {
             if (response.status === 401) {
                 if (isNeedsRefreshBody(responseData)) {
                     await this.refreshToken();
-                    return this.request<T>(endpoint, options);
+                    return this.request<T>(endpoint, init, extendedOptions);
                 }
                 this.onSessionExpired?.();
-            } else {
+            } else if (this.shouldNotifyGlobalError(response.status, extendedOptions)) {
                 this.onError?.(responseData, response.status);
             }
             throw responseData;
@@ -153,49 +176,61 @@ class ApiClient {
         return responseData as T;
     }
 
-    async get<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
-        return this.request<T>(endpoint, { ...options, method: "GET" });
+    async get<T = unknown>(endpoint: string, init?: RequestInit, extendedOptions?: ExtendedOptions): Promise<T> {
+        return this.request<T>(endpoint, { ...init, method: "GET" }, extendedOptions);
     }
 
-    async post<T = unknown>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
-        return this.request<T>(endpoint, {
-            ...options,
-            method: "POST",
-            body: data ? JSON.stringify(data) : undefined,
-        });
+    async post<T = unknown>(endpoint: string, data?: unknown, init?: RequestInit, extendedOptions?: ExtendedOptions): Promise<T> {
+        return this.request<T>(
+            endpoint,
+            {
+                ...init,
+                method: "POST",
+                body: data ? JSON.stringify(data) : undefined,
+            },
+            extendedOptions,
+        );
     }
 
-    async put<T = unknown>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
-        return this.request<T>(endpoint, {
-            ...options,
-            method: "PUT",
-            body: data ? (data instanceof FormData ? data : JSON.stringify(data)) : undefined,
-        });
+    async put<T = unknown>(endpoint: string, data?: unknown, init?: RequestInit, extendedOptions?: ExtendedOptions): Promise<T> {
+        return this.request<T>(
+            endpoint,
+            {
+                ...init,
+                method: "PUT",
+                body: data ? (data instanceof FormData ? data : JSON.stringify(data)) : undefined,
+            },
+            extendedOptions,
+        );
     }
 
-    async delete<T = unknown>(endpoint: string, options?: RequestInit): Promise<T> {
-        return this.request<T>(endpoint, { ...options, method: "DELETE" });
+    async delete<T = unknown>(endpoint: string, init?: RequestInit, extendedOptions?: ExtendedOptions): Promise<T> {
+        return this.request<T>(endpoint, { ...init, method: "DELETE" }, extendedOptions);
     }
 
-    async patch<T = unknown>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
-        return this.request<T>(endpoint, {
-            ...options,
-            method: "PATCH",
-            body: data ? JSON.stringify(data) : undefined,
-        });
+    async patch<T = unknown>(endpoint: string, data?: unknown, init?: RequestInit, extendedOptions?: ExtendedOptions): Promise<T> {
+        return this.request<T>(
+            endpoint,
+            {
+                ...init,
+                method: "PATCH",
+                body: data ? JSON.stringify(data) : undefined,
+            },
+            extendedOptions,
+        );
     }
 
-    async uploadFile<T = unknown>(endpoint: string, file: File, options?: RequestInit): Promise<T> {
+    async uploadFile<T = unknown>(endpoint: string, file: File, init?: RequestInit, extendedOptions?: ExtendedOptions): Promise<T> {
         const formData = new FormData();
         formData.append("file", file);
 
         const url = this.buildUrl(endpoint);
         const config: RequestInit = {
-            ...options,
+            ...init,
             method: "POST",
             body: formData,
             credentials: "include",
-            headers: { ...options?.headers },
+            headers: { ...init?.headers },
         };
 
         const response = await fetch(url, config);
@@ -205,11 +240,12 @@ class ApiClient {
             if (response.status === 401) {
                 if (isNeedsRefreshBody(responseData)) {
                     await this.refreshToken();
-                    return this.uploadFile<T>(endpoint, file, options);
+                    return this.uploadFile<T>(endpoint, file, init, extendedOptions);
                 }
                 this.onSessionExpired?.();
+            } else if (this.shouldNotifyGlobalError(response.status, extendedOptions ?? {})) {
+                this.onError?.(responseData, response.status);
             }
-            this.onError?.(responseData, response.status);
             throw responseData;
         }
 

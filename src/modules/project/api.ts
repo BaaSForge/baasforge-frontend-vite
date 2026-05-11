@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@/lib/api-client";
+import type { ApiError, ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
 import type { ChatMessageResponse } from "@/modules/project-chat/types";
 import {
@@ -135,6 +135,30 @@ export function getLastNotDisabledReleaseControllerMessage(
 export function getReleases(projectId: string, environment: PlatformEnvironmentType): Promise<ReleaseResponse[]> {
     const url = `${projectReleasesEndpoint(projectId)}?environment=${encodeURIComponent(environment)}`;
     return apiClient.get<ApiResponse<ReleaseResponse[]>>(url).then((res) => res.data ?? []);
+}
+
+/** Matches `api_error` message for `LookupOutcome::NotFound` on the release-by-revision endpoint. */
+const PROJECT_RELEASE_BY_REVISION_NOT_FOUND_MESSAGE =
+    "No release with this environment and revision exists for this project";
+
+export async function getProjectReleaseByRevision(
+    projectId: string,
+    environment: PlatformEnvironmentType,
+    revision: number,
+): Promise<ReleaseResponse | null> {
+    const url = `${projectReleasesEndpoint(projectId)}/by-revision?environment=${encodeURIComponent(environment)}&revision=${encodeURIComponent(String(revision))}`;
+    try {
+        const res = await apiClient.get<ApiResponse<ReleaseResponse>>(url, undefined, {
+            skipErrorToastForStatuses: [404],
+        });
+        return res.data ?? null;
+    } catch (error: unknown) {
+        const e = error as ApiError;
+        if (e?.isSuccess === false && e.error?.message === PROJECT_RELEASE_BY_REVISION_NOT_FOUND_MESSAGE) {
+            return null;
+        }
+        throw error;
+    }
 }
 
 export type ReleaseUnitPreviousByFullIdsBody = {

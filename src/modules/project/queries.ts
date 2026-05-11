@@ -9,6 +9,7 @@ import {
     getLastNotDisabledReleaseControllerMessage,
     getProject,
     getProjectNonDraftUnits,
+    getProjectReleaseByRevision,
     getProjectRuntimes,
     getProjects,
     getReleases,
@@ -24,6 +25,20 @@ export function useProjectsQuery() {
     return useQuery({
         queryKey: QueryKeys.PROJECTS_LIST,
         queryFn: getProjects,
+    });
+}
+
+export function useProjectReleaseByRevisionQuery(
+    projectId: string | undefined,
+    environment: PlatformEnvironmentType | undefined,
+    revision: number | undefined,
+) {
+    return useQuery({
+        queryKey: QueryKeys.projectReleaseByRevision(projectId ?? "", environment ?? "", revision ?? NaN),
+        queryFn: () => getProjectReleaseByRevision(projectId!, environment!, revision!),
+        enabled: !!projectId && environment != null && revision != null && Number.isFinite(revision),
+        retry: false,
+        staleTime: 15_000,
     });
 }
 
