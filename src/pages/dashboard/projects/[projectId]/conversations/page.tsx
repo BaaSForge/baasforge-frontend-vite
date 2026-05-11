@@ -409,11 +409,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         <NestedMainSidebarProvider mainSidebar={mainSidebar}>
             <ConversationStaleBaseReleaseProvider staleBaseRelease={conversationStaleBaseRelease}>
                 <ConversationSessionMessagesProvider messages={chatSessionMessages}>
-                    <LiveProductionTimelineProvider
-                        projectId={projectIdOrUndefined}
-                        rootMessages={displayRootMessages}
-                        childrenByParentId={displayChildrenByParentId}
-                    >
+                    <LiveProductionTimelineProvider projectId={projectIdOrUndefined}>
                         <StickyMessageGroupsProvider>
                             <PageTitleBox
                                 title={title}

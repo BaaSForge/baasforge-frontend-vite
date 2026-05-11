@@ -1,37 +1,57 @@
-import { ChatMessageType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import {
+    ChatMessageType,
+    ChatSessionRoleType,
+    type ChatMessageWithDeliveryStatus,
+} from "@/modules/project-chat/types";
 import { getReleaseControllerPayload } from "./release-controller-box-shared";
 
-/** Same DFS pre-order as {@link MessageBranch}: parent, then children (by `created_at`). */
-export function flattenMessagesInRenderOrder(
-    roots: ChatMessageWithDeliveryStatus[],
-    childrenByParentId: Map<string, ChatMessageWithDeliveryStatus[]>,
-): ChatMessageWithDeliveryStatus[] {
-    const out: ChatMessageWithDeliveryStatus[] = [];
-    const visit = (m: ChatMessageWithDeliveryStatus) => {
-        out.push(m);
-        const kids = childrenByParentId.get(m.id) ?? [];
-        for (const c of kids) visit(c);
-    };
-    for (const r of roots) visit(r);
-    return out;
-}
-
 /**
- * True when some release-controller message **after** `messageId` on the rendered timeline has a
- * `prod_release` whose id is in `liveProdReleaseIds` (i.e. that revision is currently live on a prod runtime).
+ * User message edit: true if any release-controller message **after** this user message in session order
+ * carries a prod release that is live on a runtime (same turn or a later turn).
  */
-export function hasLiveProductionReleaseFromRcAfterMessageOnTimeline(
+export function isUserEditDisabledDueToSubsequentLiveProdReleaseOnTimeline(
     messageId: string,
-    orderedMessages: readonly ChatMessageWithDeliveryStatus[],
+    sessionMessagesChronological: readonly ChatMessageWithDeliveryStatus[],
     liveProdReleaseIds: ReadonlySet<string>,
-): boolean {
-    const idx = orderedMessages.findIndex((m) => m.id === messageId);
-    if (idx < 0) return false;
-    for (let i = idx + 1; i < orderedMessages.length; i++) {
-        const m = orderedMessages[i];
+): boolean | undefined {
+    const idx = sessionMessagesChronological.findIndex((m) => m.id === messageId);
+    if (idx < 0) return undefined;
+    if (sessionMessagesChronological[idx].role !== ChatSessionRoleType.User) return undefined;
+
+    for (let j = idx + 1; j < sessionMessagesChronological.length; j++) {
+        const m = sessionMessagesChronological[j];
         if (m.type !== ChatMessageType.ReleaseControllerBox) continue;
         const prId = getReleaseControllerPayload(m).prod_release?.id;
         if (prId != null && liveProdReleaseIds.has(prId)) return true;
     }
     return false;
+}
+
+/** Index of the last user message strictly before `index`, or -1 if none. */
+function lastUserMessageIndexBefore(messages: readonly ChatMessageWithDeliveryStatus[], index: number): number {
+    for (let j = index - 1; j >= 0; j--) {
+        if (messages[j].role === ChatSessionRoleType.User) return j;
+    }
+    return -1;
+}
+
+/**
+ * True when the reject controller’s immediate predecessor in session order is a release controller
+ * whose prod revision is live on a runtime, and that predecessor is part of the same assistant turn
+ * (strictly after the last user message before this reject).
+ */
+export function isRejectDisabledDueToImmediatePriorLiveProdRelease(
+    messageId: string,
+    sessionMessagesChronological: readonly ChatMessageWithDeliveryStatus[],
+    liveProdReleaseIds: ReadonlySet<string>,
+): boolean {
+    const idx = sessionMessagesChronological.findIndex((m) => m.id === messageId);
+    if (idx <= 0) return false;
+    const lastUserIdx = lastUserMessageIndexBefore(sessionMessagesChronological, idx);
+    const prevIdx = idx - 1;
+    if (prevIdx <= lastUserIdx) return false;
+    const prev = sessionMessagesChronological[prevIdx];
+    if (prev.type !== ChatMessageType.ReleaseControllerBox) return false;
+    const prId = getReleaseControllerPayload(prev).prod_release?.id;
+    return prId != null && liveProdReleaseIds.has(prId);
 }

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { UnitCardChip } from "@/modules/project";
 import { invalidateDueToRejectOrEdit } from "@/modules/project/invalidate-project-queries";
@@ -32,7 +33,7 @@ import {
 import type { RejectControllerBoxPayload } from "@/modules/project-chat/payloads";
 import { ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { useConversationSessionMessages } from "../conversation-session-messages-context";
-import { useLiveProductionTimelineAfter } from "./live-production-timeline-context";
+import { useLiveProductionSessionGates } from "./live-production-timeline-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 
@@ -68,6 +69,10 @@ function readUnitChanges(payload: RejectControllerBoxPayload): ProjectUnitRespon
 
 const ruleLineClass = "h-px min-w-6 flex-1 bg-border/50 dark:bg-border/40";
 
+/** Shown when reject is blocked because the prior message in this assistant turn is a live production release. */
+const rejectDisabledAfterLiveProdTitle =
+    "You cannot reject when the previous message in this assistant turn is a release controller with production live on a runtime.";
+
 function RuleCenteredMessage({ children, className }: { children: ReactNode; className?: string }) {
     return (
         <div className="flex w-full min-w-0 items-center gap-3 py-1">
@@ -95,9 +100,9 @@ export function RejectControllerBoxMessage({
     }, [sessionMessages, message.id]);
     const payload = useMemo(() => getRejectControllerBoxPayload(message), [message]);
     const isRejected = payload.is_rejected === true;
-    const liveProdTimelineAfter = useLiveProductionTimelineAfter();
+    const { rejectImmediatePriorLiveProd } = useLiveProductionSessionGates();
     const disabledDueToLiveProductionReleaseFromPayload = payload.is_disabled_due_to_live_production_release === true;
-    const disabledFromRuntimes = liveProdTimelineAfter(message.id);
+    const disabledFromRuntimes = rejectImmediatePriorLiveProd(message.id);
     const disabledDueToLiveProductionRelease =
         disabledFromRuntimes !== undefined ? disabledFromRuntimes : disabledDueToLiveProductionReleaseFromPayload;
     const unitChanges = useMemo(() => readUnitChanges(payload), [payload]);
@@ -187,9 +192,18 @@ export function RejectControllerBoxMessage({
                 You have rejected these changes for this step.
             </RuleCenteredMessage>
         ) : hasUserMessageAfter ? null : disabledDueToLiveProductionRelease ? (
-            <RuleCenteredMessage className="text-muted-foreground">
-                You cannot reject these changes because a live production release exists for this turn.
-            </RuleCenteredMessage>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div className="w-full cursor-default" aria-label={rejectDisabledAfterLiveProdTitle}>
+                        <RuleCenteredMessage className="text-muted-foreground">
+                            Cannot reject — the previous message in this assistant turn is a live production release.
+                        </RuleCenteredMessage>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-sm text-left">
+                    {rejectDisabledAfterLiveProdTitle}
+                </TooltipContent>
+            </Tooltip>
         ) : (
             <div className="relative w-full min-w-0 overflow-hidden py-2">
                 <ScrollHighlightOverlay

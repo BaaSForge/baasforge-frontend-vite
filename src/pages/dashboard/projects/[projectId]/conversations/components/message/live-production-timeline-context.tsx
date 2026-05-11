@@ -2,35 +2,35 @@
 
 import { useProjectRuntimesQuery } from "@/modules/project/queries";
 import { PlatformEnvironmentType } from "@/modules/project/types";
-import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
+
+import { useConversationSessionMessages } from "../conversation-session-messages-context";
 import {
-    flattenMessagesInRenderOrder,
-    hasLiveProductionReleaseFromRcAfterMessageOnTimeline,
+    isRejectDisabledDueToImmediatePriorLiveProdRelease,
+    isUserEditDisabledDueToSubsequentLiveProdReleaseOnTimeline,
 } from "./live-production-timeline-gate";
 
 /** `undefined` = runtimes not loaded yet — caller should fall back to API/payload flags. */
-export type LiveProductionTimelineAfterPredicate = (messageId: string) => boolean | undefined;
+export type LiveProductionTimelinePredicate = (messageId: string) => boolean | undefined;
 
-const LiveProductionTimelineContext = createContext<LiveProductionTimelineAfterPredicate | null>(null);
+export type LiveProductionSessionGates = {
+    /** Reject controller only — see `isRejectDisabledDueToImmediatePriorLiveProdRelease`. */
+    rejectImmediatePriorLiveProd: LiveProductionTimelinePredicate;
+    /** User text edit only — any live prod release controller strictly after this user message. */
+    userEditSubsequentLiveProd: LiveProductionTimelinePredicate;
+};
+
+const LiveProductionTimelineContext = createContext<LiveProductionSessionGates | null>(null);
 
 export function LiveProductionTimelineProvider({
     projectId,
-    rootMessages,
-    childrenByParentId,
     children,
 }: {
     projectId: string | undefined;
-    rootMessages: ChatMessageWithDeliveryStatus[];
-    childrenByParentId: Map<string, ChatMessageWithDeliveryStatus[]>;
     children: ReactNode;
 }) {
+    const sessionMessages = useConversationSessionMessages();
     const { data: runtimes, isSuccess } = useProjectRuntimesQuery(projectId);
-
-    const orderedMessages = useMemo(
-        () => flattenMessagesInRenderOrder(rootMessages, childrenByParentId),
-        [rootMessages, childrenByParentId],
-    );
 
     const liveProdReleaseIds = useMemo(() => {
         if (runtimes == null) return null;
@@ -43,16 +43,33 @@ export function LiveProductionTimelineProvider({
         return ids;
     }, [runtimes]);
 
-    const value = useMemo((): LiveProductionTimelineAfterPredicate => {
-        return (messageId: string) => {
-            if (!isSuccess || liveProdReleaseIds == null) return undefined;
-            return hasLiveProductionReleaseFromRcAfterMessageOnTimeline(messageId, orderedMessages, liveProdReleaseIds);
+    const value = useMemo((): LiveProductionSessionGates => {
+        if (!isSuccess || liveProdReleaseIds == null) {
+            return {
+                rejectImmediatePriorLiveProd: () => undefined,
+                userEditSubsequentLiveProd: () => undefined,
+            };
+        }
+        return {
+            rejectImmediatePriorLiveProd: (messageId: string) =>
+                isRejectDisabledDueToImmediatePriorLiveProdRelease(messageId, sessionMessages, liveProdReleaseIds),
+            userEditSubsequentLiveProd: (messageId: string) =>
+                isUserEditDisabledDueToSubsequentLiveProdReleaseOnTimeline(
+                    messageId,
+                    sessionMessages,
+                    liveProdReleaseIds,
+                ),
         };
-    }, [isSuccess, liveProdReleaseIds, orderedMessages]);
+    }, [isSuccess, liveProdReleaseIds, sessionMessages]);
 
     return <LiveProductionTimelineContext.Provider value={value}>{children}</LiveProductionTimelineContext.Provider>;
 }
 
-export function useLiveProductionTimelineAfter(): LiveProductionTimelineAfterPredicate {
-    return useContext(LiveProductionTimelineContext) ?? (() => undefined);
+export function useLiveProductionSessionGates(): LiveProductionSessionGates {
+    return (
+        useContext(LiveProductionTimelineContext) ?? {
+            rejectImmediatePriorLiveProd: () => undefined,
+            userEditSubsequentLiveProd: () => undefined,
+        }
+    );
 }

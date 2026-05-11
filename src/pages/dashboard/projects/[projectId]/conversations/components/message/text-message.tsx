@@ -17,7 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { ChatComposerSendButton } from "../chat-composer-send-button";
-import { useLiveProductionTimelineAfter } from "./live-production-timeline-context";
+import { useLiveProductionSessionGates } from "./live-production-timeline-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
@@ -79,7 +79,7 @@ export function TextMessage({
         });
     }, [isEditing]);
 
-    const liveProdTimelineAfter = useLiveProductionTimelineAfter();
+    const { userEditSubsequentLiveProd } = useLiveProductionSessionGates();
 
     if (isExploringPlaceholder) {
         return <ExploringToolCallsMessage message={message} toolCallCount={toolCallCount} onRetry={onRetry} />;
@@ -100,10 +100,10 @@ export function TextMessage({
     const hasText = text.trim().length > 0;
     const showCopyAction = hasText && !isAiGeneratingOrFailed && !isUserPendingOrFailed;
 
+    const editBlockedFromSession = userEditSubsequentLiveProd(message.id);
     const editBlockedFromApi = message.is_edit_disabled_due_to_live_production_release === true;
-    const editBlockedFromRuntimes = liveProdTimelineAfter(message.id);
     const editBlockedByLiveProductionRelease =
-        editBlockedFromRuntimes !== undefined ? editBlockedFromRuntimes : editBlockedFromApi;
+        editBlockedFromSession !== undefined ? editBlockedFromSession : editBlockedFromApi;
     const editBlockedByGeneration = isAnyMessageGenerating;
     const showEditAction =
         isUser &&
@@ -120,7 +120,7 @@ export function TextMessage({
 
     const handleSendEdit = async () => {
         const trimmed = draft.trim();
-        if (!trimmed || !onSubmitMessageEdit || editBlockedByGeneration) return;
+        if (!trimmed || !onSubmitMessageEdit || editBlockedByGeneration || editBlockedByLiveProductionRelease) return;
         await onSubmitMessageEdit(message, trimmed);
         setIsEditing(false);
     };
@@ -131,7 +131,7 @@ export function TextMessage({
     const hasActions = showCopyAction || isFailed || showEditAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
 
-    if (isUser && isEditing && !editBlockedByGeneration) {
+    if (isUser && isEditing && !editBlockedByGeneration && !editBlockedByLiveProductionRelease) {
         const canSendEdit = draft.trim().length > 0 && !isSubmittingEdit;
         return (
             <div className="flex w-full justify-end">
