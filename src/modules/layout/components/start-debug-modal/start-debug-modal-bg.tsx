@@ -15,7 +15,7 @@ export function StartDebugModalBgIllustration({ className, colorClassName }: Sta
         <div
             className={cn(
                 "pointer-events-none h-full min-h-0 w-full [.light_&]:text-orange-950/10 [.dark-default_&]:text-orange-200/14 [.dark-midnight_&]:text-orange-200/11 [&_svg]:block [&_svg]:h-full [&_svg]:min-h-full [&_svg]:w-full [&_svg]:max-w-none",
-                "[.light_&]:opacity-40 [.dark-default_&]:opacity-14 [.dark-midnight_&]:opacity-7",
+                "[.light_&]:opacity-30 [.dark-default_&]:opacity-7 [.dark-midnight_&]:opacity-7",
                 colorClassName,
                 className,
             )}
