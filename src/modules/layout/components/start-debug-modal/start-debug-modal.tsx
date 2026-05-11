@@ -112,7 +112,10 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     ]);
 
     const resolvedRelease = releaseQuery.data ?? null;
-    const canStartWithRelease = resolvedRelease !== null;
+    const stageChatSessionId = resolvedRelease?.chat_session_id?.trim() ?? "";
+    const canStartWithRelease =
+        resolvedRelease !== null &&
+        (releaseEnv === "production" || stageChatSessionId.length > 0);
 
     const handleStart = () => {
         if (!projectId || !resolvedRelease) return;
@@ -123,6 +126,16 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
             };
             navigate(
                 `/dashboard/projects/${projectId}/conversations?debug=${encodeURIComponent(JSON.stringify(payload))}`,
+            );
+        } else {
+            const sessionId = resolvedRelease.chat_session_id?.trim();
+            if (!sessionId) return;
+            const payload = {
+                environment: PlatformEnvironmentType.stage,
+                release_id: resolvedRelease.id,
+            };
+            navigate(
+                `/dashboard/projects/${projectId}/conversations/${sessionId}?debug=${encodeURIComponent(JSON.stringify(payload))}`,
             );
         }
         onOpenChange(false);
