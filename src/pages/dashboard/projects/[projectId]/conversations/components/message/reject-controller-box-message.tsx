@@ -229,9 +229,18 @@ export function RejectControllerBoxMessage({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Reject changes from this step?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Rejecting will permanently discard the changes introduced by this step. This action cannot be undone.
-                            Any stage releases tied to this step will be removed, and the runtime will be disconnected.
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-3 text-sm text-muted-foreground">
+                                <p>
+                                    Rejecting will permanently discard the changes introduced by this step. This action cannot be undone.
+                                </p>
+                                <p className="text-amber-900 dark:text-amber-100/95">
+                                    Any stage releases tied to this step will be removed, and the runtime will be disconnected.
+                                </p>
+                                <p className="text-destructive">
+                                    If there are any production releases tied to this step that are not live, those will be removed as well.
+                                </p>
+                            </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
