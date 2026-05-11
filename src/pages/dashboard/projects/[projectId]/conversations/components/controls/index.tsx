@@ -55,9 +55,11 @@ export default function Controls({
         mainSidebar.open && !mainSidebar.isMobile ? "!left-[var(--sidebar-width)]" : mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]";
     const rightClassName = secondarySidebar?.open && !secondarySidebar?.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
 
-    // Use only `bottom` for vertical position so the transition doesn't jump (changing
-    // both bottom and transform caused transform to snap to 0 first, then bottom to animate).
-    const bottomClassName = !isNewSession || isMobile ? "bottom-4" : "bottom-[calc(50%-3rem)]";
+    // Desktop new session: anchor by `top` so multi-line growth extends downward and does not
+    // cover "What would you like to create?". Else keep bottom anchoring as usual.
+    // Use only one vertical edge per state so the transition doesn't jump.
+    const verticalPositionClassName =
+        !isNewSession || isMobile ? "bottom-4" : "top-[calc(50%-3rem)]";
 
     const handleFocus = () => {
         if (messageInputRef.current) {
@@ -80,7 +82,14 @@ export default function Controls({
                     <h1 className={cn("text-3xl font-bold text-foreground", MIDDLE_CONTENT_CLASSNAME)}>What would you like to create?</h1>
                 </div>
             )}
-            <div className={cn("fixed min-h-14 z-20 transition-[left,right,bottom] duration-200 ease-out", leftClassName, rightClassName, bottomClassName)}>
+            <div
+                className={cn(
+                    "fixed min-h-14 z-20 transition-[left,right,bottom,top] duration-200 ease-out",
+                    leftClassName,
+                    rightClassName,
+                    verticalPositionClassName,
+                )}
+            >
                 <div className={cn("flex w-full items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)} onClick={handleFocus}>
                     <InputGroup
                         className={cn(
