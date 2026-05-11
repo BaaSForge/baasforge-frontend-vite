@@ -35,8 +35,8 @@ export const QueryKeys = {
     chatSessionGeneratingSet: () => ["chat", "sessions", "generating"] as const,
     /** Releases list for `GET .../releases?environment={environment}`. */
     projectReleases: (projectId: string, environment: string) => ["project", "releases", projectId, environment] as const,
-    projectReleaseByRevision: (projectId: string, environment: string, revision: number) =>
-        ["project", "releases", "by-revision", projectId, environment, revision] as const,
+    projectLiveReleaseByRevision: (projectId: string, environment: string, revision: number) =>
+        ["project", "releases", "live-release-by-revision", projectId, environment, revision] as const,
     /** `releaseId` — release row id, not numeric revision (revision can repeat across sessions). */
     projectReleaseUnits: (projectId: string, releaseId: string) => ["project", "release", "units", projectId, releaseId] as const,
     projectReleaseUnitsByProject: (projectId: string) => ["project", "release", "units", projectId] as const,

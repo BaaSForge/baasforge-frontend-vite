@@ -137,28 +137,16 @@ export function getReleases(projectId: string, environment: PlatformEnvironmentT
     return apiClient.get<ApiResponse<ReleaseResponse[]>>(url).then((res) => res.data ?? []);
 }
 
-/** Matches `api_error` message for `LookupOutcome::NotFound` on the release-by-revision endpoint. */
-const PROJECT_RELEASE_BY_REVISION_NOT_FOUND_MESSAGE =
-    "No release with this environment and revision exists for this project";
-
-export async function getProjectReleaseByRevision(
+export async function getProjectLiveReleaseByRevision(
     projectId: string,
     environment: PlatformEnvironmentType,
     revision: number,
 ): Promise<ReleaseResponse | null> {
-    const url = `${projectReleasesEndpoint(projectId)}/by-revision?environment=${encodeURIComponent(environment)}&revision=${encodeURIComponent(String(revision))}`;
-    try {
-        const res = await apiClient.get<ApiResponse<ReleaseResponse>>(url, undefined, {
-            skipErrorToastForStatuses: [404],
-        });
-        return res.data ?? null;
-    } catch (error: unknown) {
-        const e = error as ApiError;
-        if (e?.isSuccess === false && e.error?.message === PROJECT_RELEASE_BY_REVISION_NOT_FOUND_MESSAGE) {
-            return null;
-        }
-        throw error;
-    }
+    const url = `${projectReleasesEndpoint(projectId)}/live-release-by-revision?environment=${encodeURIComponent(environment)}&revision=${encodeURIComponent(String(revision))}`;
+    const res = await apiClient.get<ApiResponse<ReleaseResponse>>(url, undefined, {
+        skipErrorToastForStatuses: [400, 404],
+    });
+    return res.data ?? null;
 }
 
 export type ReleaseUnitPreviousByFullIdsBody = {

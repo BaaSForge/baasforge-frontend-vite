@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, FlaskConical, Loader2, Play, Rocket, XCircle } from "lucide-react";
+import { CheckCircle2, FlaskConical, Loader2, Play, Rocket } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { useDebounce } from "use-debounce";
 
@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { getApiErrorMessage } from "@/lib/errors";
-import { useProjectReleaseByRevisionQuery } from "@/modules/project/queries";
+import { useProjectLiveReleaseByRevisionQuery } from "@/modules/project/queries";
 import { PlatformEnvironmentType } from "@/modules/project/types";
 
 import { StartDebugModalBgIllustration } from "./start-debug-modal-bg";
@@ -28,8 +28,8 @@ type StartDebugModalProps = {
     onOpenChange: (open: boolean) => void;
 };
 
-const SAMPLE_TRACE_ERROR = "Add at least one trace id.";
-const SAMPLE_RELEASE_ERROR = "Enter a release revision.";
+const SAMPLE_TRACE_ERROR = "";
+const SAMPLE_RELEASE_ERROR = "";
 const RELEASE_LOOKUP_DEBOUNCE_MS = 1000;
 const PADDINGS = "md:pb-4 md:pt-6";
 
@@ -63,10 +63,12 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     const [debouncedRevision] = useDebounce(revisionTrimmed, RELEASE_LOOKUP_DEBOUNCE_MS);
     const revisionForQuery = React.useMemo(() => {
         if (!revisionTrimmed) return undefined;
+        // Do not query while the current input is invalid — debounced value may still be a stale valid number.
+        if (parseRevisionForLookup(revisionTrimmed) === undefined) return undefined;
         return parseRevisionForLookup(debouncedRevision);
     }, [revisionTrimmed, debouncedRevision]);
 
-    const releaseQuery = useProjectReleaseByRevisionQuery(projectId, platformEnvironment, revisionForQuery);
+    const releaseQuery = useProjectLiveReleaseByRevisionQuery(projectId, platformEnvironment, revisionForQuery);
 
     const revisionParsingIdle =
         revisionTrimmed === "" || revisionTrimmed === debouncedRevision;
@@ -75,8 +77,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     type ReleaseFeedback =
         | null
         | { kind: "text"; tone: "destructive"; message: string }
-        | { kind: "release-available" }
-        | { kind: "release-not-found" };
+        | { kind: "release-available" };
 
     const releaseFeedback = React.useMemo((): ReleaseFeedback => {
         if (!revisionTrimmed) {
@@ -97,9 +98,6 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
         }
         if (releaseQuery.data) {
             return { kind: "release-available" };
-        }
-        if (releaseQuery.isSuccess && releaseQuery.data === null) {
-            return { kind: "release-not-found" };
         }
         return null;
     }, [
@@ -221,12 +219,6 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                                     <div className="text-green-600 dark:text-green-500 flex items-start gap-2 text-sm leading-snug">
                                         <CheckCircle2 className="size-4 shrink-0 translate-y-px" aria-hidden />
                                         <span>The release is available.</span>
-                                    </div>
-                                ) : null}
-                                {releaseFeedback?.kind === "release-not-found" ? (
-                                    <div className="text-destructive flex items-start gap-2 text-sm leading-snug" role="alert">
-                                        <XCircle className="size-4 shrink-0 translate-y-px" aria-hidden />
-                                        <span>There is no such release.</span>
                                     </div>
                                 ) : null}
                             </div>
