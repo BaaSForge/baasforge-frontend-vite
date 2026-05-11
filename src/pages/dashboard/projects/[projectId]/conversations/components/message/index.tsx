@@ -35,6 +35,8 @@ type MessageProps = {
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
     onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
     submittingEditMessageId?: string | null;
+    onRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => Promise<void>;
+    submittingRevertMessageId?: string | null;
     isAnyMessageGenerating?: boolean;
     nestedMessages?: ReactNode;
     isNested?: boolean;
@@ -45,6 +47,8 @@ function MessageContent({
     onRetry,
     onSubmitMessageEdit,
     submittingEditMessageId,
+    onRevertToThisMessage,
+    submittingRevertMessageId,
     isAnyMessageGenerating,
     nestedMessages,
 }: Omit<MessageProps, "isNested">) {
@@ -56,6 +60,8 @@ function MessageContent({
                     onRetry={onRetry}
                     onSubmitMessageEdit={onSubmitMessageEdit}
                     isSubmittingEdit={submittingEditMessageId === message.id}
+                    onRevertToThisMessage={onRevertToThisMessage}
+                    isSubmittingRevert={submittingRevertMessageId === message.id}
                     isAnyMessageGenerating={isAnyMessageGenerating}
                 />
                 {nestedMessages}
@@ -147,6 +153,8 @@ export function Message({
     onRetry,
     onSubmitMessageEdit,
     submittingEditMessageId,
+    onRevertToThisMessage,
+    submittingRevertMessageId,
     isAnyMessageGenerating,
     nestedMessages,
     isNested,
@@ -184,6 +192,8 @@ export function Message({
                 onRetry={onRetry}
                 onSubmitMessageEdit={onSubmitMessageEdit}
                 submittingEditMessageId={submittingEditMessageId}
+                onRevertToThisMessage={onRevertToThisMessage}
+                submittingRevertMessageId={submittingRevertMessageId}
                 isAnyMessageGenerating={isAnyMessageGenerating}
                 nestedMessages={nestedMessages}
             />
@@ -197,6 +207,8 @@ type MessageBranchProps = {
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
     onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
     submittingEditMessageId?: string | null;
+    onRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => Promise<void>;
+    submittingRevertMessageId?: string | null;
     isAnyMessageGenerating?: boolean;
     isNested?: boolean;
 };
@@ -207,6 +219,8 @@ export function MessageBranch({
     onRetry,
     onSubmitMessageEdit,
     submittingEditMessageId,
+    onRevertToThisMessage,
+    submittingRevertMessageId,
     isAnyMessageGenerating,
     isNested,
 }: MessageBranchProps) {
@@ -222,6 +236,8 @@ export function MessageBranch({
                         onRetry={onRetry}
                         onSubmitMessageEdit={onSubmitMessageEdit}
                         submittingEditMessageId={submittingEditMessageId}
+                        onRevertToThisMessage={onRevertToThisMessage}
+                        submittingRevertMessageId={submittingRevertMessageId}
                         isAnyMessageGenerating={isAnyMessageGenerating}
                         isNested
                     />
@@ -235,6 +251,8 @@ export function MessageBranch({
             onRetry={onRetry}
             onSubmitMessageEdit={onSubmitMessageEdit}
             submittingEditMessageId={submittingEditMessageId}
+            onRevertToThisMessage={onRevertToThisMessage}
+            submittingRevertMessageId={submittingRevertMessageId}
             isAnyMessageGenerating={isAnyMessageGenerating}
             nestedMessages={nested}
             isNested={isNested}

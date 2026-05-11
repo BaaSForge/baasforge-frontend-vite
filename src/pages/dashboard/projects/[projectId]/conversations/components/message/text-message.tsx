@@ -1,6 +1,7 @@
 import { Markdown, type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from "@/components/ui/input-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useClipboard } from "@/hooks/use-clipboard";
@@ -12,7 +13,7 @@ import {
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
-import { Copy, Pencil } from "lucide-react";
+import { Copy, Pencil, Undo2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -29,6 +30,8 @@ export type TextMessageProps = {
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
     onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
     isSubmittingEdit?: boolean;
+    onRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => Promise<void>;
+    isSubmittingRevert?: boolean;
     isAnyMessageGenerating?: boolean;
 };
 
@@ -54,6 +57,8 @@ export function TextMessage({
     onRetry,
     onSubmitMessageEdit,
     isSubmittingEdit = false,
+    onRevertToThisMessage,
+    isSubmittingRevert = false,
     isAnyMessageGenerating = false,
 }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
@@ -111,6 +116,12 @@ export function TextMessage({
         !isUserPendingOrFailed &&
         onSubmitMessageEdit &&
         message.is_optimistic !== true;
+    const showRevertAction =
+        isUser &&
+        hasText &&
+        !isUserPendingOrFailed &&
+        onRevertToThisMessage &&
+        message.is_optimistic !== true;
 
     const handleCopy = async () => {
         const { success } = await copy(text);
@@ -120,18 +131,36 @@ export function TextMessage({
 
     const handleSendEdit = async () => {
         const trimmed = draft.trim();
-        if (!trimmed || !onSubmitMessageEdit || editBlockedByGeneration || editBlockedByLiveProductionRelease) return;
+        if (
+            !trimmed ||
+            !onSubmitMessageEdit ||
+            editBlockedByGeneration ||
+            editBlockedByLiveProductionRelease ||
+            isSubmittingRevert
+        )
+            return;
         await onSubmitMessageEdit(message, trimmed);
         setIsEditing(false);
+    };
+
+    const handleRevertToHere = async () => {
+        if (
+            !onRevertToThisMessage ||
+            editBlockedByGeneration ||
+            editBlockedByLiveProductionRelease ||
+            isSubmittingRevert
+        )
+            return;
+        await onRevertToThisMessage(message);
     };
 
     const showAiStatus = message.role === ChatSessionRoleType.Ai && message.status != null;
     const showUserDelivery = message.role === ChatSessionRoleType.User;
     const hasStatusStrip = showAiStatus || showUserDelivery;
-    const hasActions = showCopyAction || isFailed || showEditAction;
+    const hasActions = showCopyAction || isFailed || showEditAction || showRevertAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
 
-    if (isUser && isEditing && !editBlockedByGeneration && !editBlockedByLiveProductionRelease) {
+    if (isUser && isEditing && !editBlockedByGeneration && !editBlockedByLiveProductionRelease && !isSubmittingRevert) {
         const canSendEdit = draft.trim().length > 0 && !isSubmittingEdit;
         return (
             <div className="flex w-full justify-end">
@@ -285,6 +314,24 @@ export function TextMessage({
                                                 You cannot edit while a response is generating.
                                             </TooltipContent>
                                         </Tooltip>
+                                    ) : isSubmittingRevert ? (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="inline-flex">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="xs"
+                                                        className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-muted-foreground"
+                                                        disabled
+                                                    >
+                                                        <Pencil className="size-3" />
+                                                        Edit
+                                                    </Button>
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">Please wait.</TooltipContent>
+                                        </Tooltip>
                                     ) : (
                                         <Button
                                             type="button"
@@ -301,6 +348,76 @@ export function TextMessage({
                                         >
                                             <Pencil className="size-3" />
                                             Edit
+                                        </Button>
+                                    )}
+                                </>
+                            )}
+                            {showRevertAction && (
+                                <>
+                                    {editBlockedByLiveProductionRelease ? (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="inline-flex">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="xs"
+                                                        className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-muted-foreground"
+                                                        disabled
+                                                    >
+                                                        <Undo2 className="size-3" />
+                                                        revert this message
+                                                    </Button>
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top" className="max-w-[18rem]">
+                                                You cannot revert from this message while a live production release exists after this point on the timeline.
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    ) : editBlockedByGeneration ? (
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="inline-flex">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="xs"
+                                                        className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-muted-foreground"
+                                                        disabled
+                                                    >
+                                                        <Undo2 className="size-3" />
+                                                        revert this message
+                                                    </Button>
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">
+                                                You cannot revert while a response is generating.
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    ) : isSubmittingRevert ? (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="xs"
+                                            className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-muted-foreground"
+                                            disabled
+                                        >
+                                            <Spinner className="size-3" />
+                                            revert this message
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="xs"
+                                            className={cn(
+                                                "h-6 shrink-0 gap-1 px-2 text-xs font-medium",
+                                                "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                                            )}
+                                            onClick={() => void handleRevertToHere()}
+                                        >
+                                            <Undo2 className="size-3" />
+                                            revert this message
                                         </Button>
                                     )}
                                 </>

@@ -196,6 +196,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const createMessageMutation = useCreateProjectChatSessionMessageMutation();
 
     const [submittingEditMessageId, setSubmittingEditMessageId] = useState<string | null>(null);
+    const [submittingRevertMessageId, setSubmittingRevertMessageId] = useState<string | null>(null);
 
     const handleSubmitMessageEdit = useCallback(
         async (message: ChatMessageWithDeliveryStatus, newText: string) => {
@@ -232,6 +233,32 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             }
         },
         [projectId, chatSessionIdOrUndefined, queryClient, createMessageMutation, messageDebugContext],
+    );
+
+    const handleRevertToThisMessage = useCallback(
+        async (message: ChatMessageWithDeliveryStatus) => {
+            if (projectId == null || chatSessionIdOrUndefined == null) return;
+
+            setSubmittingRevertMessageId(message.id);
+            try {
+                await postUserMessageTruncateBelow(projectId, chatSessionIdOrUndefined, message.id);
+                await invalidateDueToRejectOrEdit(queryClient, projectId);
+                queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
+                    QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined),
+                    (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,
+                );
+                scrollToBottom();
+                requestAnimationFrame(() => {
+                    messageInputRef.current?.focus();
+                });
+            } catch (e) {
+                toast.error("Could not revert to this point.", { position: "top-center" });
+                throw e;
+            } finally {
+                setSubmittingRevertMessageId(null);
+            }
+        },
+        [projectId, chatSessionIdOrUndefined, queryClient],
     );
 
     const responsePlaceholderRef = useRef<HTMLDivElement>(null);
@@ -453,6 +480,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                                 onRetry={handleRetryMessage}
                                                 onSubmitMessageEdit={handleSubmitMessageEdit}
                                                 submittingEditMessageId={submittingEditMessageId}
+                                                onRevertToThisMessage={handleRevertToThisMessage}
+                                                submittingRevertMessageId={submittingRevertMessageId}
                                                 isAnyMessageGenerating={isAnyMessageGenerating}
                                             />
                                         ))}
