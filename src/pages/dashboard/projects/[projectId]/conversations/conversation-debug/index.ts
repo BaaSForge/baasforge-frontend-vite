@@ -9,3 +9,4 @@ export {
     parseConversationDebugFromSearch,
     type ConversationDebugFromUrl,
 } from "./parse-conversation-debug-search";
+export { releaseResponseFromConversationDebug } from "./release-response-from-conversation-debug";

@@ -139,3 +139,9 @@ export type CreateProjectChatSessionMessageMutationParams = {
     optimisticMessage: ChatMessageWithDeliveryStatus;
     debugContext?: CreateProjectChatSessionMessageDebugContext;
 };
+
+/** Composer-only trace chip payload (not persisted separately today). */
+export type ChatComposerTraceReference = {
+    release: ReleaseResponse;
+    traceID: string;
+};

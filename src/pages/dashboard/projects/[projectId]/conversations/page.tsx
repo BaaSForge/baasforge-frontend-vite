@@ -52,10 +52,12 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
 import { toast } from "sonner";
+import { buildInlineToken } from "@/components/chat-rich-text-editor/composer-inline-format";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     ConversationDebugSessionProvider,
     getConversationDebugSendContext,
+    releaseResponseFromConversationDebug,
     useConversationDebugSession,
 } from "./conversation-debug";
 import { useLocation, useNavigate, useParams } from "react-router";
@@ -63,6 +65,7 @@ import { ConversationSessionMessagesProvider } from "./components/conversation-s
 import { ConversationStaleBaseReleaseProvider } from "./components/conversation-stale-base-release-context";
 import { ConversationStaleBaseReleaseTitleBadge } from "./components/conversation-stale-base-release-title-badge";
 import { buildComposerPrefillFromUserTextMessage, type ChatComposerPrefill } from "./chat-composer-prefill";
+import type { ChatRichTextEditorHandle } from "@/components/chat-rich-text-editor";
 import Controls from "./components/controls";
 import { Message, MessageBranch } from "./components/message";
 import { LiveProductionTimelineProvider } from "./components/message/live-production-timeline-context";
@@ -95,9 +98,10 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const { search: locationSearch } = useLocation();
     const conversationDebug = useConversationDebugSession();
     const messageDebugContext = useMemo(() => getConversationDebugSendContext(conversationDebug), [conversationDebug]);
+    const { parsedFromUrl: debugParsedFromUrl } = conversationDebug;
 
     const queryClient = useQueryClient();
-    const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
+    const messageInputRef = useRef<ChatRichTextEditorHandle | null>(null);
     const justRedirectedToNewSessionRef = useRef(false);
     const [temporaryMessageBeforeRedirectingToNewSession, setTemporaryMessageBeforeRedirectingToNewSession] = useState<
         ChatMessageWithDeliveryStatus | undefined
@@ -109,7 +113,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         const onFocusChat = () => messageInputRef.current?.focus();
         const onFallbackKey = (key: string) => {
             messageInputRef.current?.focus();
-            setMessageInput((prev) => prev + key);
+            messageInputRef.current?.appendPlainText(key);
         };
         register(UNIFIED_KEYBOARD_SCOPES.FOCUS_CHAT, onFocusChat);
         register(UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY, onFallbackKey);
@@ -117,11 +121,25 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
             unregister(UNIFIED_KEYBOARD_SCOPES.FOCUS_CHAT);
             unregister(UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY);
         };
-    }, []);
+    }, [messageInputRef]);
     const { conversationId, projectId } = useParams<{
         conversationId?: string;
         projectId: string;
     }>();
+
+    /** Seed composer from `?debug=` when present; skips if the release token is already in the text. */
+    useEffect(() => {
+        if (!debugParsedFromUrl || projectId == null || projectId === "") return;
+
+        const release = releaseResponseFromConversationDebug(debugParsedFromUrl, projectId);
+        const token = buildInlineToken("release", JSON.stringify(release));
+
+        setMessageInput((prev) => {
+            if (prev.includes(token)) return prev;
+            const t = prev.trim();
+            return t === "" ? token : `${t} ${token}`;
+        });
+    }, [debugParsedFromUrl, projectId, conversationId]);
 
     const title = conversationId ? "Conversation" : "New conversation";
 
@@ -151,7 +169,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         if (messageInputRef.current) {
             messageInputRef.current.focus();
         }
-    }, [chatSessionIdOrUndefined]);
+    }, [chatSessionIdOrUndefined, messageInputRef]);
 
     const { data: chatSession } = useProjectChatSessionDetailQuery(projectIdOrUndefined, chatSessionIdOrUndefined);
     const conversationStaleBaseRelease = chatSession?.stale_base_release === true;
@@ -284,6 +302,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         chatSessionIdOrUndefined,
         runTruncateBelowMessage,
         applyComposerPrefill,
+        messageInputRef,
     ]);
 
     const handleBranchTruncateDialogOpenChange = useCallback((open: boolean) => {
@@ -449,7 +468,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 requestAnimationFrame(() => el.focus());
             }
         }
-    }, [isGenerating]);
+    }, [isGenerating, messageInputRef]);
 
     const handleStop = useCallback(() => {
         if (projectIdOrUndefined == null || chatSessionIdOrUndefined == null) return;
@@ -540,6 +559,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                         )}
                                     </div>
                                     <Controls
+                                        composerResetKey={conversationId ?? "new"}
                                         messageInputRef={messageInputRef}
                                         messageInputValue={messageInput}
                                         setMessageInputValue={setMessageInput}

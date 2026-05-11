@@ -1,4 +1,6 @@
-import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
+import type { ChatRichTextEditorHandle } from "@/components/chat-rich-text-editor";
+import { ChatRichTextEditor } from "@/components/chat-rich-text-editor";
+import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
@@ -12,7 +14,9 @@ import { ChatComposerSendButton } from "../chat-composer-send-button";
 type Sidebar = ReturnType<typeof useSidebar>;
 
 type Props = {
-    messageInputRef: React.RefObject<HTMLTextAreaElement | null>;
+    /** Remount the composer when switching chat sessions (Lexical editor identity). */
+    composerResetKey?: string;
+    messageInputRef: React.RefObject<ChatRichTextEditorHandle | null>;
     messageInputValue: string;
     setMessageInputValue: (value: string) => void;
     handleSend: () => void;
@@ -24,6 +28,7 @@ type Props = {
 };
 
 export default function Controls({
+    composerResetKey,
     messageInputRef,
     messageInputValue,
     setMessageInputValue,
@@ -42,14 +47,13 @@ export default function Controls({
     const { isDebugSendActive } = useConversationDebugSession();
 
     const lineBreakHint = ", Shift+Enter for new line";
-    const placeholderBase = isDebugSendActive
+    const placeholder = isDebugSendActive
         ? isNewSession
             ? "Describe what went wrong or what you need so we can debug this release"
-            : "Explain the issue, what you expected, and any steps to reproduce — we will use the linked release for context"
+            : "Explain the issue"
         : isNewSession
-          ? "Type a message to start a new conversation"
-          : "Type a message";
-    const placeholder = `${placeholderBase}${lineBreakHint}`;
+          ? `Type a message to start a new conversation ${lineBreakHint}`
+          : `Type a message ${lineBreakHint}`;
 
     const leftClassName =
         mainSidebar.open && !mainSidebar.isMobile ? "!left-[var(--sidebar-width)]" : mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]";
@@ -62,9 +66,7 @@ export default function Controls({
         !isNewSession || isMobile ? "bottom-4" : "top-[calc(50%-3rem)]";
 
     const handleFocus = () => {
-        if (messageInputRef.current) {
-            messageInputRef.current.focus();
-        }
+        messageInputRef.current?.focus();
     };
 
     return (
@@ -97,26 +99,21 @@ export default function Controls({
                             isGenerating && "controller-generating-glow",
                         )}
                     >
-                        <InputGroupTextarea
+                        <ChatRichTextEditor
+                            resetKey={composerResetKey}
                             ref={messageInputRef}
                             value={messageInputValue}
-                            onChange={(e) => setMessageInputValue(e.target.value)}
+                            onChange={setMessageInputValue}
                             onFocus={() => setIsInputFocused(true)}
                             onBlur={() => setIsInputFocused(false)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Escape") {
-                                    e.currentTarget.blur();
-                                    return;
-                                }
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                    e.preventDefault();
-                                    if (isGenerating || !canSend) return;
-                                    handleSend();
-                                }
-                            }}
                             placeholder={placeholder}
-                            className="min-h-10 max-h-40 px-3 py-3"
-                            rows={1}
+                            className="min-h-10 max-h-40 px-0 py-0"
+                            contentClassName="min-h-10 max-h-40 px-3 py-3"
+                            onEscapeRequest={() => messageInputRef.current?.blur()}
+                            onSubmitRequest={() => {
+                                if (isGenerating || !canSend) return;
+                                handleSend();
+                            }}
                         />
                         <InputGroupAddon
                             align="block-end"
