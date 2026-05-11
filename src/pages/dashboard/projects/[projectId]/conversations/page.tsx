@@ -52,7 +52,7 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
 import { toast } from "sonner";
-import { buildInlineToken } from "@/components/chat-rich-text-editor/composer-inline-format";
+import { buildInlineToken, stripInlineReleaseTokens } from "@/components/chat-rich-text-editor/composer-inline-format";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     ConversationDebugSessionProvider,
@@ -74,7 +74,18 @@ import { StickyMessageBars, StickyMessageGroupsProvider } from "./components/sti
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
 import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll } from "./hooks";
 import { SecondarySideBar } from "./secondary-side-bar";
+import {
+    chatComposerDraftStorageKey,
+    readChatComposerDraft,
+    writeChatComposerDraft,
+} from "./chat-composer-draft-session-storage";
 import { findLastUserMessageIndex } from "./utils";
+
+function composeDebugReleaseDraft(prev: string, releaseToken: string): string {
+    const body = stripInlineReleaseTokens(prev).trim();
+    if (body === "") return `${releaseToken}\n\n`;
+    return `${releaseToken}\n\n${body}`;
+}
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -127,7 +138,28 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         projectId: string;
     }>();
 
-    /** Seed composer from `?debug=` when present; skips if the release token is already in the text. */
+    const composerDraftStorageKey =
+        projectId != null && projectId !== "" ? chatComposerDraftStorageKey(projectId, conversationId) : null;
+
+    const skipComposerDraftPersistAfterHydrateRef = useRef(false);
+
+    useLayoutEffect(() => {
+        if (composerDraftStorageKey == null) return;
+        skipComposerDraftPersistAfterHydrateRef.current = true;
+        const stored = readChatComposerDraft(composerDraftStorageKey) ?? "";
+        setMessageInput(stored);
+    }, [composerDraftStorageKey]);
+
+    useEffect(() => {
+        if (composerDraftStorageKey == null) return;
+        if (skipComposerDraftPersistAfterHydrateRef.current) {
+            skipComposerDraftPersistAfterHydrateRef.current = false;
+            return;
+        }
+        writeChatComposerDraft(composerDraftStorageKey, messageInput);
+    }, [composerDraftStorageKey, messageInput]);
+
+    /** With `?debug=`, strip release chips, then debug release first, two line breaks, then remaining text. */
     useEffect(() => {
         if (!debugParsedFromUrl || projectId == null || projectId === "") return;
 
@@ -135,9 +167,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         const token = buildInlineToken("release", JSON.stringify(release));
 
         setMessageInput((prev) => {
-            if (prev.includes(token)) return prev;
-            const t = prev.trim();
-            return t === "" ? token : `${t} ${token}`;
+            const next = composeDebugReleaseDraft(prev, token);
+            return next === prev ? prev : next;
         });
     }, [debugParsedFromUrl, projectId, conversationId]);
 
@@ -559,7 +590,11 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                         )}
                                     </div>
                                     <Controls
-                                        composerResetKey={conversationId ?? "new"}
+                                        composerResetKey={
+                                            projectId != null && projectId !== ""
+                                                ? `${projectId}:${conversationId ?? "new"}`
+                                                : (conversationId ?? "new")
+                                        }
                                         messageInputRef={messageInputRef}
                                         messageInputValue={messageInput}
                                         setMessageInputValue={setMessageInput}

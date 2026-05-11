@@ -314,6 +314,7 @@ export const ChatRichTextEditor = forwardRef<ChatRichTextEditorHandle, ChatRichT
                         contentEditable={
                             <ContentEditable
                                 spellCheck
+                                data-slot="input-group-control"
                                 placeholder={null}
                                 className={cn(
                                     "relative z-[1] min-h-10 max-h-40 w-full resize-none bg-transparent px-3 py-3 outline-none",
