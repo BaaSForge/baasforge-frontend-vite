@@ -2,7 +2,6 @@ import { Markdown, type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from "@/components/ui/input-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { cn } from "@/lib/utils";
@@ -14,10 +13,8 @@ import {
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
 import { Copy, Pencil, Undo2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { ChatComposerSendButton } from "../chat-composer-send-button";
 import { useLiveProductionSessionGates } from "./live-production-timeline-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
@@ -28,10 +25,9 @@ import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 export type TextMessageProps = {
     message: ChatMessageWithDeliveryStatus;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
-    onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
-    isSubmittingEdit?: boolean;
-    onRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => Promise<void>;
-    isSubmittingRevert?: boolean;
+    onRequestEditMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    onRequestRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    isTruncatingBranch?: boolean;
     isAnyMessageGenerating?: boolean;
 };
 
@@ -55,34 +51,15 @@ function getTextMessageDisplay(payload: unknown): {
 export function TextMessage({
     message,
     onRetry,
-    onSubmitMessageEdit,
-    isSubmittingEdit = false,
-    onRevertToThisMessage,
-    isSubmittingRevert = false,
+    onRequestEditMessage,
+    onRequestRevertToThisMessage,
+    isTruncatingBranch = false,
     isAnyMessageGenerating = false,
 }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
     const { copy } = useClipboard();
     const { text, isExploringPlaceholder, toolCallCount } = getTextMessageDisplay(message.payload);
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
-    const [isEditing, setIsEditing] = useState(false);
-    const [draft, setDraft] = useState("");
-    const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-    useEffect(() => {
-        if (!isEditing) return;
-        const el = editTextareaRef.current;
-        if (!el) return;
-        const moveCaretToEnd = () => {
-            const len = el.value.length;
-            el.setSelectionRange(len, len);
-        };
-        el.focus();
-        moveCaretToEnd();
-        requestAnimationFrame(() => {
-            moveCaretToEnd();
-        });
-    }, [isEditing]);
 
     const { userEditSubsequentLiveProd } = useLiveProductionSessionGates();
 
@@ -114,13 +91,13 @@ export function TextMessage({
         isUser &&
         hasText &&
         !isUserPendingOrFailed &&
-        onSubmitMessageEdit &&
+        onRequestEditMessage &&
         message.is_optimistic !== true;
     const showRevertAction =
         isUser &&
         hasText &&
         !isUserPendingOrFailed &&
-        onRevertToThisMessage &&
+        onRequestRevertToThisMessage &&
         message.is_optimistic !== true;
 
     const handleCopy = async () => {
@@ -129,93 +106,11 @@ export function TextMessage({
         else toast.error("Failed to copy");
     };
 
-    const handleSendEdit = async () => {
-        const trimmed = draft.trim();
-        if (
-            !trimmed ||
-            !onSubmitMessageEdit ||
-            editBlockedByGeneration ||
-            editBlockedByLiveProductionRelease ||
-            isSubmittingRevert
-        )
-            return;
-        await onSubmitMessageEdit(message, trimmed);
-        setIsEditing(false);
-    };
-
-    const handleRevertToHere = async () => {
-        if (
-            !onRevertToThisMessage ||
-            editBlockedByGeneration ||
-            editBlockedByLiveProductionRelease ||
-            isSubmittingRevert
-        )
-            return;
-        await onRevertToThisMessage(message);
-    };
-
     const showAiStatus = message.role === ChatSessionRoleType.Ai && message.status != null;
     const showUserDelivery = message.role === ChatSessionRoleType.User;
     const hasStatusStrip = showAiStatus || showUserDelivery;
     const hasActions = showCopyAction || isFailed || showEditAction || showRevertAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
-
-    if (isUser && isEditing && !editBlockedByGeneration && !editBlockedByLiveProductionRelease && !isSubmittingRevert) {
-        const canSendEdit = draft.trim().length > 0 && !isSubmittingEdit;
-        return (
-            <div className="flex w-full justify-end">
-                <div className="flex w-full min-w-0 max-w-full flex-col items-end gap-1">
-                    <InputGroup className="w-full flex flex-col !bg-background shadow-2xl">
-                        <InputGroupTextarea
-                            ref={editTextareaRef}
-                            value={draft}
-                            onChange={(e) => setDraft(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Escape") {
-                                    e.preventDefault();
-                                    if (!isSubmittingEdit) setIsEditing(false);
-                                    return;
-                                }
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                    e.preventDefault();
-                                    if (!isSubmittingEdit && canSendEdit) void handleSendEdit();
-                                }
-                            }}
-                            placeholder="Edit message, Shift+Enter for new line"
-                            className="min-h-24 px-3 py-3 pb-0"
-                            rows={3}
-                            disabled={isSubmittingEdit}
-                        />
-                        <InputGroupAddon align="block-end" className="!flex !flex-row !items-center !justify-end !gap-2 !p-3 !pt-0">
-                            <div className="flex shrink-0 items-center gap-2">
-                                <InputGroupButton
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    disabled={isSubmittingEdit}
-                                    onClick={() => setIsEditing(false)}
-                                >
-                                    Cancel
-                                </InputGroupButton>
-                                <ChatComposerSendButton
-                                    isGenerating={false}
-                                    canSend={canSendEdit}
-                                    onSend={() => void handleSendEdit()}
-                                    isLoading={isSubmittingEdit}
-                                    className="!ml-0"
-                                />
-                            </div>
-                        </InputGroupAddon>
-                    </InputGroup>
-                    {showUserDelivery && (
-                        <div className="flex min-h-6 items-center gap-1.5">
-                            <DeliveryStatusIcon status={message.delivery_status} />
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
@@ -314,7 +209,7 @@ export function TextMessage({
                                                 You cannot edit while a response is generating.
                                             </TooltipContent>
                                         </Tooltip>
-                                    ) : isSubmittingRevert ? (
+                                    ) : isTruncatingBranch ? (
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <span className="inline-flex">
@@ -325,7 +220,7 @@ export function TextMessage({
                                                         className="h-6 shrink-0 gap-1 px-2 text-xs font-medium text-muted-foreground"
                                                         disabled
                                                     >
-                                                        <Pencil className="size-3" />
+                                                        <Spinner className="size-3" />
                                                         Edit
                                                     </Button>
                                                 </span>
@@ -341,10 +236,7 @@ export function TextMessage({
                                                 "h-6 shrink-0 gap-1 px-2 text-xs font-medium",
                                                 "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                                             )}
-                                            onClick={() => {
-                                                setDraft(text);
-                                                setIsEditing(true);
-                                            }}
+                                            onClick={() => onRequestEditMessage?.(message)}
                                         >
                                             <Pencil className="size-3" />
                                             Edit
@@ -394,7 +286,7 @@ export function TextMessage({
                                                 You cannot revert while a response is generating.
                                             </TooltipContent>
                                         </Tooltip>
-                                    ) : isSubmittingRevert ? (
+                                    ) : isTruncatingBranch ? (
                                         <Button
                                             type="button"
                                             variant="ghost"
@@ -414,7 +306,7 @@ export function TextMessage({
                                                 "h-6 shrink-0 gap-1 px-2 text-xs font-medium",
                                                 "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                                             )}
-                                            onClick={() => void handleRevertToHere()}
+                                            onClick={() => onRequestRevertToThisMessage?.(message)}
                                         >
                                             <Undo2 className="size-3" />
                                             revert this message

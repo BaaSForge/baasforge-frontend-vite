@@ -9,7 +9,17 @@ import {
     useSecondarySidebar,
     useSidebar,
 } from "@/components/secondary-sidebar";
-import { Button } from "@/components/ui/button";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { QueryKeys } from "@/constants/query-keys";
@@ -46,6 +56,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { ConversationSessionMessagesProvider } from "./components/conversation-session-messages-context";
 import { ConversationStaleBaseReleaseProvider } from "./components/conversation-stale-base-release-context";
 import { ConversationStaleBaseReleaseTitleBadge } from "./components/conversation-stale-base-release-title-badge";
+import { buildComposerPrefillFromUserTextMessage, type ChatComposerPrefill } from "./chat-composer-prefill";
 import Controls from "./components/controls";
 import { Message, MessageBranch } from "./components/message";
 import { LiveProductionTimelineProvider } from "./components/message/live-production-timeline-context";
@@ -195,71 +206,71 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const createSessionMutation = useCreateProjectChatSessionMutation(projectId ?? "");
     const createMessageMutation = useCreateProjectChatSessionMessageMutation();
 
-    const [submittingEditMessageId, setSubmittingEditMessageId] = useState<string | null>(null);
-    const [submittingRevertMessageId, setSubmittingRevertMessageId] = useState<string | null>(null);
+    const [branchTruncateDialog, setBranchTruncateDialog] = useState<{
+        open: boolean;
+        mode: "edit" | "revert";
+        message: ChatMessageWithDeliveryStatus | null;
+    }>({ open: false, mode: "edit", message: null });
+    const [truncatingBranchMessageId, setTruncatingBranchMessageId] = useState<string | null>(null);
 
-    const handleSubmitMessageEdit = useCallback(
-        async (message: ChatMessageWithDeliveryStatus, newText: string) => {
-            const trimmed = newText.trim();
-            if (!trimmed || projectId == null || chatSessionIdOrUndefined == null) return;
+    const applyComposerPrefill = useCallback((prefill: ChatComposerPrefill) => {
+        setMessageInput(prefill.text);
+        if (prefill.extras) {
+            // Merge attachment IDs, staged files, and other composer-only state when the main input supports them.
+        }
+    }, []);
 
-            setSubmittingEditMessageId(message.id);
-            try {
-                await postUserMessageTruncateBelow(projectId, chatSessionIdOrUndefined, message.id);
-                await invalidateDueToRejectOrEdit(queryClient, projectId);
-                queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
-                    QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined),
-                    (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,
-                );
-                const optimisticMessage = createOptimisticUserTextMessage(chatSessionIdOrUndefined, trimmed);
-                await createMessageMutation.mutateAsync({
-                    projectId,
-                    chatSessionId: chatSessionIdOrUndefined,
-                    optimisticMessage,
-                    debugContext: messageDebugContext,
-                });
-                addSessionToGeneratingSet(queryClient, projectId, chatSessionIdOrUndefined);
-                const el = responsePlaceholderRef.current;
-                if (el) {
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => smoothScrollToElementTop(el));
-                    });
-                }
-            } catch (e) {
-                toast.error("Could not update message.", { position: "top-center" });
-                throw e;
-            } finally {
-                setSubmittingEditMessageId(null);
-            }
-        },
-        [projectId, chatSessionIdOrUndefined, queryClient, createMessageMutation, messageDebugContext],
-    );
-
-    const handleRevertToThisMessage = useCallback(
+    const runTruncateBelowMessage = useCallback(
         async (message: ChatMessageWithDeliveryStatus) => {
             if (projectId == null || chatSessionIdOrUndefined == null) return;
-
-            setSubmittingRevertMessageId(message.id);
-            try {
-                await postUserMessageTruncateBelow(projectId, chatSessionIdOrUndefined, message.id);
-                await invalidateDueToRejectOrEdit(queryClient, projectId);
-                queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
-                    QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined),
-                    (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,
-                );
-                scrollToBottom();
-                requestAnimationFrame(() => {
-                    messageInputRef.current?.focus();
-                });
-            } catch (e) {
-                toast.error("Could not revert to this point.", { position: "top-center" });
-                throw e;
-            } finally {
-                setSubmittingRevertMessageId(null);
-            }
+            await postUserMessageTruncateBelow(projectId, chatSessionIdOrUndefined, message.id);
+            await invalidateDueToRejectOrEdit(queryClient, projectId);
+            queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
+                QueryKeys.projectChatSessionMessages(projectId, chatSessionIdOrUndefined),
+                (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,
+            );
         },
         [projectId, chatSessionIdOrUndefined, queryClient],
     );
+
+    const handleConfirmBranchTruncate = useCallback(async () => {
+        const msg = branchTruncateDialog.message;
+        const mode = branchTruncateDialog.mode;
+        if (!msg || projectId == null || chatSessionIdOrUndefined == null) return;
+
+        setTruncatingBranchMessageId(msg.id);
+        try {
+            await runTruncateBelowMessage(msg);
+            setBranchTruncateDialog({ open: false, mode: "edit", message: null });
+
+            if (mode === "edit") {
+                applyComposerPrefill(buildComposerPrefillFromUserTextMessage(msg));
+                requestAnimationFrame(() => messageInputRef.current?.focus());
+            } else {
+                scrollToBottom();
+                requestAnimationFrame(() => messageInputRef.current?.focus());
+            }
+        } catch {
+            toast.error(mode === "edit" ? "Could not prepare edit." : "Could not revert to this point.", {
+                position: "top-center",
+            });
+        } finally {
+            setTruncatingBranchMessageId(null);
+        }
+    }, [
+        branchTruncateDialog.message,
+        branchTruncateDialog.mode,
+        projectId,
+        chatSessionIdOrUndefined,
+        runTruncateBelowMessage,
+        applyComposerPrefill,
+    ]);
+
+    const handleBranchTruncateDialogOpenChange = useCallback((open: boolean) => {
+        if (!open && truncatingBranchMessageId == null) {
+            setBranchTruncateDialog({ open: false, mode: "edit", message: null });
+        }
+    }, [truncatingBranchMessageId]);
 
     const responsePlaceholderRef = useRef<HTMLDivElement>(null);
 
@@ -478,10 +489,13 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                                 message={message}
                                                 childrenByParentId={displayChildrenByParentId}
                                                 onRetry={handleRetryMessage}
-                                                onSubmitMessageEdit={handleSubmitMessageEdit}
-                                                submittingEditMessageId={submittingEditMessageId}
-                                                onRevertToThisMessage={handleRevertToThisMessage}
-                                                submittingRevertMessageId={submittingRevertMessageId}
+                                                onRequestEditMessage={(m) =>
+                                                    setBranchTruncateDialog({ open: true, mode: "edit", message: m })
+                                                }
+                                                onRequestRevertToThisMessage={(m) =>
+                                                    setBranchTruncateDialog({ open: true, mode: "revert", message: m })
+                                                }
+                                                isTruncatingBranch={truncatingBranchMessageId != null}
                                                 isAnyMessageGenerating={isAnyMessageGenerating}
                                             />
                                         ))}
@@ -517,6 +531,61 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                         mainSidebar={mainSidebar}
                                     />
                                 </Container>
+                                <AlertDialog
+                                    open={branchTruncateDialog.open}
+                                    onOpenChange={handleBranchTruncateDialogOpenChange}
+                                >
+                                    <AlertDialogContent className="sm:max-w-lg">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                {branchTruncateDialog.mode === "edit"
+                                                    ? "Edit from this message?"
+                                                    : "Revert to this message?"}
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription asChild>
+                                                <div className="space-y-3 text-sm text-muted-foreground">
+                                                    <p>
+                                                        Everything after this point in the conversation will be permanently removed.
+                                                    </p>
+                                                    <p>
+                                                        That includes non-live stage and production releases created later on this
+                                                        timeline, all live stage releases associated with it, and any runtimes that
+                                                        were attached to those live stage releases (those connections will be cleared).
+                                                    </p>
+                                                    <p className="text-destructive">This cannot be undone.</p>
+                                                </div>
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel disabled={truncatingBranchMessageId != null}>
+                                                Cancel
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                                type="button"
+                                                className={cn(
+                                                    buttonVariants({ variant: "destructive" }),
+                                                    "inline-flex items-center gap-2",
+                                                )}
+                                                disabled={truncatingBranchMessageId != null}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    void handleConfirmBranchTruncate();
+                                                }}
+                                            >
+                                                {truncatingBranchMessageId != null ? (
+                                                    <>
+                                                        <Spinner className="size-3 shrink-0" aria-hidden />
+                                                        {branchTruncateDialog.mode === "edit" ? "Preparing…" : "Reverting…"}
+                                                    </>
+                                                ) : branchTruncateDialog.mode === "edit" ? (
+                                                    "Continue to edit"
+                                                ) : (
+                                                    "Revert"
+                                                )}
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </SidebarInset>
                         </StickyMessageGroupsProvider>
                     </LiveProductionTimelineProvider>

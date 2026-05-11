@@ -33,10 +33,9 @@ import { getStickyMessageGroupForMessage, useStickyMessageRegistration } from ".
 type MessageProps = {
     message: ChatMessageWithDeliveryStatus;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
-    onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
-    submittingEditMessageId?: string | null;
-    onRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => Promise<void>;
-    submittingRevertMessageId?: string | null;
+    onRequestEditMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    onRequestRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    isTruncatingBranch?: boolean;
     isAnyMessageGenerating?: boolean;
     nestedMessages?: ReactNode;
     isNested?: boolean;
@@ -45,10 +44,9 @@ type MessageProps = {
 function MessageContent({
     message,
     onRetry,
-    onSubmitMessageEdit,
-    submittingEditMessageId,
-    onRevertToThisMessage,
-    submittingRevertMessageId,
+    onRequestEditMessage,
+    onRequestRevertToThisMessage,
+    isTruncatingBranch,
     isAnyMessageGenerating,
     nestedMessages,
 }: Omit<MessageProps, "isNested">) {
@@ -58,10 +56,9 @@ function MessageContent({
                 <TextMessage
                     message={message}
                     onRetry={onRetry}
-                    onSubmitMessageEdit={onSubmitMessageEdit}
-                    isSubmittingEdit={submittingEditMessageId === message.id}
-                    onRevertToThisMessage={onRevertToThisMessage}
-                    isSubmittingRevert={submittingRevertMessageId === message.id}
+                    onRequestEditMessage={onRequestEditMessage}
+                    onRequestRevertToThisMessage={onRequestRevertToThisMessage}
+                    isTruncatingBranch={isTruncatingBranch}
                     isAnyMessageGenerating={isAnyMessageGenerating}
                 />
                 {nestedMessages}
@@ -151,10 +148,9 @@ const toolMessageTypes = [
 export function Message({
     message,
     onRetry,
-    onSubmitMessageEdit,
-    submittingEditMessageId,
-    onRevertToThisMessage,
-    submittingRevertMessageId,
+    onRequestEditMessage,
+    onRequestRevertToThisMessage,
+    isTruncatingBranch,
     isAnyMessageGenerating,
     nestedMessages,
     isNested,
@@ -190,10 +186,9 @@ export function Message({
             <MessageContent
                 message={message}
                 onRetry={onRetry}
-                onSubmitMessageEdit={onSubmitMessageEdit}
-                submittingEditMessageId={submittingEditMessageId}
-                onRevertToThisMessage={onRevertToThisMessage}
-                submittingRevertMessageId={submittingRevertMessageId}
+                onRequestEditMessage={onRequestEditMessage}
+                onRequestRevertToThisMessage={onRequestRevertToThisMessage}
+                isTruncatingBranch={isTruncatingBranch}
                 isAnyMessageGenerating={isAnyMessageGenerating}
                 nestedMessages={nestedMessages}
             />
@@ -205,10 +200,9 @@ type MessageBranchProps = {
     message: ChatMessageWithDeliveryStatus;
     childrenByParentId: Map<string, ChatMessageWithDeliveryStatus[]>;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
-    onSubmitMessageEdit?: (message: ChatMessageWithDeliveryStatus, newText: string) => Promise<void>;
-    submittingEditMessageId?: string | null;
-    onRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => Promise<void>;
-    submittingRevertMessageId?: string | null;
+    onRequestEditMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    onRequestRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    isTruncatingBranch?: boolean;
     isAnyMessageGenerating?: boolean;
     isNested?: boolean;
 };
@@ -217,10 +211,9 @@ export function MessageBranch({
     message,
     childrenByParentId,
     onRetry,
-    onSubmitMessageEdit,
-    submittingEditMessageId,
-    onRevertToThisMessage,
-    submittingRevertMessageId,
+    onRequestEditMessage,
+    onRequestRevertToThisMessage,
+    isTruncatingBranch,
     isAnyMessageGenerating,
     isNested,
 }: MessageBranchProps) {
@@ -234,10 +227,9 @@ export function MessageBranch({
                         message={child}
                         childrenByParentId={childrenByParentId}
                         onRetry={onRetry}
-                        onSubmitMessageEdit={onSubmitMessageEdit}
-                        submittingEditMessageId={submittingEditMessageId}
-                        onRevertToThisMessage={onRevertToThisMessage}
-                        submittingRevertMessageId={submittingRevertMessageId}
+                        onRequestEditMessage={onRequestEditMessage}
+                        onRequestRevertToThisMessage={onRequestRevertToThisMessage}
+                        isTruncatingBranch={isTruncatingBranch}
                         isAnyMessageGenerating={isAnyMessageGenerating}
                         isNested
                     />
@@ -249,10 +241,9 @@ export function MessageBranch({
         <Message
             message={message}
             onRetry={onRetry}
-            onSubmitMessageEdit={onSubmitMessageEdit}
-            submittingEditMessageId={submittingEditMessageId}
-            onRevertToThisMessage={onRevertToThisMessage}
-            submittingRevertMessageId={submittingRevertMessageId}
+            onRequestEditMessage={onRequestEditMessage}
+            onRequestRevertToThisMessage={onRequestRevertToThisMessage}
+            isTruncatingBranch={isTruncatingBranch}
             isAnyMessageGenerating={isAnyMessageGenerating}
             nestedMessages={nested}
             isNested={isNested}
