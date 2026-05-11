@@ -32,6 +32,7 @@ import {
 import type { RejectControllerBoxPayload } from "@/modules/project-chat/payloads";
 import { ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { useConversationSessionMessages } from "../conversation-session-messages-context";
+import { useLiveProductionTimelineAfter } from "./live-production-timeline-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 
@@ -94,7 +95,11 @@ export function RejectControllerBoxMessage({
     }, [sessionMessages, message.id]);
     const payload = useMemo(() => getRejectControllerBoxPayload(message), [message]);
     const isRejected = payload.is_rejected === true;
-    const disabledDueToProductionRelease = payload.is_disabled_due_to_production_release === true;
+    const liveProdTimelineAfter = useLiveProductionTimelineAfter();
+    const disabledDueToLiveProductionReleaseFromPayload = payload.is_disabled_due_to_live_production_release === true;
+    const disabledFromRuntimes = liveProdTimelineAfter(message.id);
+    const disabledDueToLiveProductionRelease =
+        disabledFromRuntimes !== undefined ? disabledFromRuntimes : disabledDueToLiveProductionReleaseFromPayload;
     const unitChanges = useMemo(() => readUnitChanges(payload), [payload]);
 
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -146,7 +151,7 @@ export function RejectControllerBoxMessage({
     }, [rejectMutation]);
 
     const canAttemptReject =
-        !hasUserMessageAfter && !isRejected && !disabledDueToProductionRelease;
+        !hasUserMessageAfter && !isRejected && !disabledDueToLiveProductionRelease;
 
     const unitChangesRow =
         unitChanges.length > 0 ? (
@@ -181,9 +186,9 @@ export function RejectControllerBoxMessage({
             <RuleCenteredMessage className="font-medium text-destructive">
                 You have rejected these changes for this step.
             </RuleCenteredMessage>
-        ) : hasUserMessageAfter ? null : disabledDueToProductionRelease ? (
+        ) : hasUserMessageAfter ? null : disabledDueToLiveProductionRelease ? (
             <RuleCenteredMessage className="text-muted-foreground">
-                You cannot reject these changes because a production release already exists for this scope.
+                You cannot reject these changes because a live production release exists for this turn.
             </RuleCenteredMessage>
         ) : (
             <div className="relative w-full min-w-0 overflow-hidden py-2">

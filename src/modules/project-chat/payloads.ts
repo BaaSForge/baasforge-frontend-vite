@@ -246,7 +246,7 @@ export interface ReleaseControllerBoxPayload {
 
 export interface RejectControllerBoxPayload {
     is_rejected?: boolean;
-    is_disabled_due_to_production_release?: boolean;
+    is_disabled_due_to_live_production_release?: boolean;
     unit_changes?: ProjectUnitResponse[];
 }
 

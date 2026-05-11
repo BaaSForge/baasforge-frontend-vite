@@ -78,8 +78,8 @@ export interface ChatMessageResponse {
     chat_session_id: string;
     role: ChatSessionRoleType;
     type: ChatMessageType;
-    /** When true, the user cannot edit this message (branch has a production release below). */
-    is_edit_disabled_due_to_production_release?: boolean;
+    /** When true, the user cannot edit this message (a live production release on the timeline would conflict with changing the branch here). */
+    is_edit_disabled_due_to_live_production_release?: boolean;
     /** Present on some API responses (e.g. agent that produced the message). */
     agent?: string | null;
     // TODO: make the payload strictly typed

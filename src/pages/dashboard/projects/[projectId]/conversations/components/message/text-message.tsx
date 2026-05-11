@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { ChatComposerSendButton } from "../chat-composer-send-button";
+import { useLiveProductionTimelineAfter } from "./live-production-timeline-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
@@ -78,6 +79,8 @@ export function TextMessage({
         });
     }, [isEditing]);
 
+    const liveProdTimelineAfter = useLiveProductionTimelineAfter();
+
     if (isExploringPlaceholder) {
         return <ExploringToolCallsMessage message={message} toolCallCount={toolCallCount} onRetry={onRetry} />;
     }
@@ -97,7 +100,10 @@ export function TextMessage({
     const hasText = text.trim().length > 0;
     const showCopyAction = hasText && !isAiGeneratingOrFailed && !isUserPendingOrFailed;
 
-    const editBlockedByRelease = message.is_edit_disabled_due_to_production_release === true;
+    const editBlockedFromApi = message.is_edit_disabled_due_to_live_production_release === true;
+    const editBlockedFromRuntimes = liveProdTimelineAfter(message.id);
+    const editBlockedByLiveProductionRelease =
+        editBlockedFromRuntimes !== undefined ? editBlockedFromRuntimes : editBlockedFromApi;
     const editBlockedByGeneration = isAnyMessageGenerating;
     const showEditAction =
         isUser &&
@@ -239,7 +245,7 @@ export function TextMessage({
                             )}
                             {showEditAction && (
                                 <>
-                                    {editBlockedByRelease ? (
+                                    {editBlockedByLiveProductionRelease ? (
                                         <Tooltip>
                                             <TooltipTrigger asChild>
                                                 <span className="inline-flex">
@@ -256,7 +262,7 @@ export function TextMessage({
                                                 </span>
                                             </TooltipTrigger>
                                             <TooltipContent side="top" className="max-w-[18rem]">
-                                                You cannot edit this message because there is a production release below it.
+                                                You cannot edit this message while a live production release exists after this point on the timeline.
                                             </TooltipContent>
                                         </Tooltip>
                                     ) : editBlockedByGeneration ? (
