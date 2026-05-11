@@ -1,4 +1,3 @@
-import { Checkbox } from "@/components/ui/checkbox";
 import {
     InputGroup,
     InputGroupAddon,
@@ -8,7 +7,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 import { useConversationDebugSession } from "../../conversation-debug";
 import { ChatComposerSendButton } from "../chat-composer-send-button";
@@ -43,15 +42,8 @@ export default function Controls({
     const secondarySidebar = passedMainSidebar ? useSidebarRes : null;
     const isMobile = useIsMobile();
     const [isInputFocused, setIsInputFocused] = useState(false);
-    const {
-        composerDebugLabel,
-        isDebugSendActive,
-        setDebugSendActive,
-        debugActiveButtonClassName,
-    } = useConversationDebugSession();
-    const composerDebugCheckboxId = useId();
+    const { isDebugSendActive } = useConversationDebugSession();
 
-    const showDebugComposerControl = composerDebugLabel != null;
     const lineBreakHint = ", Shift+Enter for new line";
     const placeholderBase = isDebugSendActive
         ? isNewSession
@@ -124,42 +116,9 @@ export default function Controls({
                             {/* <InputGroupButton variant="ghost" size="icon-xs">
                 <Copy />
               </InputGroupButton> */}
-                            {showDebugComposerControl ? (
-                                <label
-                                    htmlFor={composerDebugCheckboxId}
-                                    className={cn(
-                                        "flex h-8 max-w-[min(100%,20rem)] min-w-0 cursor-pointer items-center gap-2 rounded-md px-2.5 text-xs font-medium select-none",
-                                        isDebugSendActive
-                                            ? debugActiveButtonClassName
-                                            : "bg-muted text-muted-foreground shadow-none hover:bg-muted/90",
-                                    )}
-                                    title={
-                                        isDebugSendActive
-                                            ? "Uncheck to stop attaching this release to new messages"
-                                            : "Check to attach this release to new messages again"
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <Checkbox
-                                        id={composerDebugCheckboxId}
-                                        checked={isDebugSendActive}
-                                        className={cn(
-                                            "size-4 shrink-0",
-                                            isDebugSendActive &&
-                                                "border-white/80 data-[state=checked]:border-white data-[state=checked]:bg-white data-[state=checked]:text-orange-700 dark:data-[state=checked]:bg-white dark:data-[state=checked]:text-orange-800",
-                                        )}
-                                        onCheckedChange={(checked) => {
-                                            if (checked === "indeterminate") return;
-                                            setDebugSendActive(checked === true);
-                                        }}
-                                    />
-                                    <span className="min-w-0 flex-1 truncate">{composerDebugLabel}</span>
-                                </label>
-                            ) : (
-                                <span className="text-xs text-muted-foreground opacity-50">
-                                    press {isInputFocused ? "Esc to release" : `${SHORTCUT_LABELS.FOCUS_CHAT} to focus`}
-                                </span>
-                            )}
+                            <span className="text-xs text-muted-foreground opacity-50">
+                                press {isInputFocused ? "Esc to release" : `${SHORTCUT_LABELS.FOCUS_CHAT} to focus`}
+                            </span>
                             <ChatComposerSendButton
                                 isGenerating={isGenerating}
                                 canSend={canSend}

@@ -8,49 +8,25 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { PlatformEnvironmentType } from "@/modules/project/types";
 import type { CreateProjectChatSessionMessageDebugContext } from "@/modules/project-chat/types";
 import { BugPlay, Check } from "lucide-react";
 import * as React from "react";
 import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useParams, useSearchParams } from "react-router";
+import { useLocation, useParams } from "react-router";
 
-import { debugToolbarActiveToneClassName } from "./debug-toolbar-button-classes";
 import {
     type ConversationDebugFromUrl,
-    isConversationDebugDisabledInSearch,
     parseConversationDebugFromSearch,
 } from "./parse-conversation-debug-search";
 
 type ConversationDebugSessionContextValue = {
     /** Parsed `debug` query when present and valid. */
     parsedFromUrl: ConversationDebugFromUrl | null;
-    /** `debug_disabled=1` in the URL. */
-    isUrlMarkedDisabled: boolean;
-    /** Include release in API calls for new user messages. */
+    /** Include release in API calls for new user messages when `debug` is present. */
     isDebugSendActive: boolean;
-    /** Shown on the composer debug control (e.g. `debug: release 1.1 stage`). */
-    composerDebugLabel: string | null;
-    /** Classes for the active (orange) composer control — same tone as sidebar Debug. */
-    debugActiveButtonClassName: string;
-    /** Turn attaching this release to outgoing messages on or off (updates `debug_disabled` in the URL). */
-    setDebugSendActive: (active: boolean) => void;
 };
 
 const ConversationDebugSessionContext = React.createContext<ConversationDebugSessionContextValue | null>(null);
-
-function environmentDisplayName(environment: PlatformEnvironmentType): string {
-    return environment === PlatformEnvironmentType.prod ? "production" : "stage";
-}
-
-function buildComposerDebugLabel(parsed: ConversationDebugFromUrl): string {
-    const env = environmentDisplayName(parsed.environment);
-    const revPart =
-        parsed.release_revision != null && parsed.release_revision !== ""
-            ? parsed.release_revision
-            : `#${parsed.release_id.slice(0, 8)}`;
-    return `debug: release ${revPart} ${env}`;
-}
 
 function disclaimerStorageKey(projectId: string, conversationId: string | undefined, releaseId: string): string {
     return `baal:conversation-debug-disclaimer:${projectId}:${conversationId ?? "new"}:${releaseId}`;
@@ -58,39 +34,17 @@ function disclaimerStorageKey(projectId: string, conversationId: string | undefi
 
 export function ConversationDebugSessionProvider({ children }: { children: React.ReactNode }) {
     const { search } = useLocation();
-    const [, setSearchParams] = useSearchParams();
     const { conversationId, projectId } = useParams<{ conversationId?: string; projectId: string }>();
 
     const [disclaimerOpen, setDisclaimerOpen] = useState(false);
 
     const parsedFromUrl = useMemo(() => parseConversationDebugFromSearch(search), [search]);
-    const isUrlMarkedDisabled = useMemo(() => isConversationDebugDisabledInSearch(search), [search]);
 
-    const isDebugSendActive = parsedFromUrl != null && !isUrlMarkedDisabled;
-
-    const composerDebugLabel = parsedFromUrl != null ? buildComposerDebugLabel(parsedFromUrl) : null;
-
-    const setDebugSendActive = useCallback(
-        (active: boolean) => {
-            setSearchParams(
-                (prev) => {
-                    const next = new URLSearchParams(prev);
-                    if (active) {
-                        next.delete("debug_disabled");
-                    } else {
-                        next.set("debug_disabled", "1");
-                    }
-                    return next;
-                },
-                { replace: true },
-            );
-        },
-        [setSearchParams],
-    );
+    const isDebugSendActive = parsedFromUrl != null;
 
     useEffect(() => {
         startTransition(() => {
-            if (!parsedFromUrl || isUrlMarkedDisabled) {
+            if (!parsedFromUrl) {
                 setDisclaimerOpen(false);
                 return;
             }
@@ -98,7 +52,7 @@ export function ConversationDebugSessionProvider({ children }: { children: React
             if (sessionStorage.getItem(key)) return;
             setDisclaimerOpen(true);
         });
-    }, [parsedFromUrl, isUrlMarkedDisabled, conversationId, projectId]);
+    }, [parsedFromUrl, conversationId, projectId]);
 
     const persistDisclaimerSeen = useCallback(() => {
         if (!parsedFromUrl) return;
@@ -111,13 +65,9 @@ export function ConversationDebugSessionProvider({ children }: { children: React
     const value = useMemo(
         (): ConversationDebugSessionContextValue => ({
             parsedFromUrl,
-            isUrlMarkedDisabled,
             isDebugSendActive,
-            composerDebugLabel,
-            debugActiveButtonClassName: debugToolbarActiveToneClassName,
-            setDebugSendActive,
         }),
-        [parsedFromUrl, isUrlMarkedDisabled, isDebugSendActive, composerDebugLabel, setDebugSendActive],
+        [parsedFromUrl, isDebugSendActive],
     );
 
     return (

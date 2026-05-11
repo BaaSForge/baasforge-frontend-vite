@@ -98,10 +98,3 @@ export function parseConversationDebugFromSearch(search: string): ConversationDe
     if (raw == null) return null;
     return tryParseDebugPayloadJson(raw);
 }
-
-export function isConversationDebugDisabledInSearch(search: string): boolean {
-    const withoutQ = search.startsWith("?") ? search.slice(1) : search;
-    if (!withoutQ) return false;
-    const params = new URLSearchParams(withoutQ);
-    return params.get("debug_disabled") === "1";
-}
