@@ -85,9 +85,10 @@ export function ToolFetchReleaseTracesMessage({
     const spanCount = spans.length;
     const status = message.status ?? ChatMessageStatus.Generating;
     const hasSpans = spanCount > 0;
-    const showNoSpansEmptyState = !hasSpans && status !== ChatMessageStatus.Generating;
-    const showInvokedConnector = Boolean(message.invoking_message_id);
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
+    const hasPayloadError = payloadError != null;
+    const showNoSpansEmptyState = !hasSpans && status !== ChatMessageStatus.Generating && !hasPayloadError;
+    const showInvokedConnector = Boolean(message.invoking_message_id);
     const formattedArgs = args ? formatFetchReleaseTracesArgs(args) : "—";
     const traceIdLabel = trimArgString(args?.trace_id);
     const releaseIdLabel = trimArgString(args?.release_id);
@@ -120,9 +121,11 @@ export function ToolFetchReleaseTracesMessage({
                                         <AiMessageStatusIcon status={status} />
                                     </span>
                                     <span className="font-medium text-sm">Fetching release traces</span>
-                                    <span className="text-muted-foreground text-xs">
-                                        {showNoSpansEmptyState ? "0 spans" : "Awaiting spans…"}
-                                    </span>
+                                    {!hasPayloadError && (
+                                        <span className="text-muted-foreground text-xs">
+                                            {showNoSpansEmptyState ? "0 spans" : "Awaiting spans…"}
+                                        </span>
+                                    )}
                                 </div>
                                 {hasArgIdChips && (
                                     <div className="flex min-w-0 max-w-full flex-wrap content-start gap-x-2 gap-y-2 pb-0.5">
