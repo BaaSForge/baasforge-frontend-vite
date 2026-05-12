@@ -27,7 +27,7 @@ export function FreeformMultiCombobox({
     className,
     labelRowClassName,
     chipsClassName,
-    aboveChips,
+    chipsEnd,
 }: {
     id?: string;
     label: string;
@@ -38,8 +38,13 @@ export function FreeformMultiCombobox({
     className?: string;
     labelRowClassName?: string;
     chipsClassName?: string;
-    /** Rendered after the label and before the chips input (e.g. loading indicator). */
-    aboveChips?: React.ReactNode;
+    /**
+     * Rendered absolutely-positioned at the right end of the chips input (e.g. a loading
+     * indicator). When provided, the chips area reserves right padding so chips never sit
+     * under it. Render a fixed-size wrapper (e.g. `size-4`) to avoid layout shift when it
+     * appears or disappears.
+     */
+    chipsEnd?: React.ReactNode;
 }) {
     const anchor = useComboboxAnchor();
     const items = useMemo(() => [...value].sort((a, b) => a.localeCompare(b)), [value]);
@@ -67,7 +72,6 @@ export function FreeformMultiCombobox({
     return (
         <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
             {labelRowClassName ? <div className={labelRowClassName}>{labelEl}</div> : labelEl}
-            {aboveChips}
             <Combobox
                 multiple
                 autoHighlight
@@ -78,28 +82,40 @@ export function FreeformMultiCombobox({
                     onValueChange([...(next ?? [])].sort((a, b) => a.localeCompare(b)));
                 }}
             >
-                <ComboboxChips
-                    ref={anchor}
-                    className={cn("h-auto min-h-8 w-full min-w-0 py-1", chipsClassName, disabled && "opacity-50")}
-                >
-                    <ComboboxValue>
-                        {(values: string[]) => (
-                            <Fragment>
-                                {values.map((v) => (
-                                    <ComboboxChip key={v} title={v}>
-                                        {v}
-                                    </ComboboxChip>
-                                ))}
-                                <ComboboxChipsInput
-                                    id={id}
-                                    placeholder={placeholder}
-                                    className="text-sm placeholder:text-muted-foreground"
-                                    onKeyDown={handleInputKeyDown}
-                                />
-                            </Fragment>
+                <div className="relative w-full min-w-0">
+                    <ComboboxChips
+                        ref={anchor}
+                        className={cn(
+                            "h-auto min-h-8 w-full min-w-0 py-1",
+                            chipsEnd != null && "pr-9",
+                            chipsClassName,
+                            disabled && "opacity-50",
                         )}
-                    </ComboboxValue>
-                </ComboboxChips>
+                    >
+                        <ComboboxValue>
+                            {(values: string[]) => (
+                                <Fragment>
+                                    {values.map((v) => (
+                                        <ComboboxChip key={v} title={v}>
+                                            {v}
+                                        </ComboboxChip>
+                                    ))}
+                                    <ComboboxChipsInput
+                                        id={id}
+                                        placeholder={placeholder}
+                                        className="text-sm placeholder:text-muted-foreground"
+                                        onKeyDown={handleInputKeyDown}
+                                    />
+                                </Fragment>
+                            )}
+                        </ComboboxValue>
+                    </ComboboxChips>
+                    {chipsEnd != null ? (
+                        <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
+                            {chipsEnd}
+                        </div>
+                    ) : null}
+                </div>
                 <ComboboxContent anchor={anchor} className="w-[var(--anchor-width)]">
                     <ComboboxEmpty>Type and press Enter to add.</ComboboxEmpty>
                     <ComboboxList>

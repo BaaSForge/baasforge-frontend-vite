@@ -392,14 +392,12 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                                     className="gap-3"
                                     chipsClassName="min-h-9 items-center"
                                     labelRowClassName="flex h-7 shrink-0 items-center"
-                                    aboveChips={
+                                    chipsEnd={
                                         traceInputLoading ? (
-                                            <div className="flex h-5 shrink-0 items-center justify-end" aria-busy>
-                                                <Loader2
-                                                    className="text-muted-foreground size-4 shrink-0 animate-spin"
-                                                    aria-hidden
-                                                />
-                                            </div>
+                                            <Loader2
+                                                className="text-muted-foreground size-4 shrink-0 animate-spin"
+                                                aria-hidden
+                                            />
                                         ) : null
                                     }
                                 />
