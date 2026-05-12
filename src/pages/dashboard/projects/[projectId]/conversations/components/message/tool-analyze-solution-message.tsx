@@ -13,6 +13,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { ToolNestedStepsPlaceholder } from "./generating-inline-placeholders";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
@@ -56,7 +57,7 @@ export function ToolAnalyzeSolutionMessage({ message, nestedMessages }: { messag
                                     <span className="shrink-0">
                                         <AiMessageStatusIcon status={status} />
                                     </span>
-                                    <span className="font-medium text-sm">Analyzing solution</span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status)}>Analyzing solution</span>
                                     <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-sol:rotate-180" />
                                 </CollapsibleTrigger>
                             </TooltipTrigger>

@@ -18,6 +18,7 @@ import {
 import { useChatSessionEmbeddedUnitsLatestRevisions } from "@/modules/project-chat/use-chat-session-embedded-units-latest-revisions";
 
 import { ToolNestedStepsPlaceholder } from "./generating-inline-placeholders";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
@@ -76,7 +77,7 @@ export function ToolAnalyzeArchitectureMessage({ message, nestedMessages }: { me
                                     <span className="shrink-0">
                                         <AiMessageStatusIcon status={status} />
                                     </span>
-                                    <span className="font-medium text-sm">Analyzing architecture</span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status)}>Analyzing architecture</span>
                                     {hasUnits && (
                                         <span className="text-muted-foreground text-xs">
                                             {unitCount} {unitCount === 1 ? "unit" : "units"}

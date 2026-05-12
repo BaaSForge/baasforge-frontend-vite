@@ -16,6 +16,7 @@ import {
     type ToolFetchRelevantUnitsPayload,
 } from "@/modules/project-chat/types";
 
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
@@ -83,7 +84,7 @@ export function ToolFetchRelevantUnitsMessage({
                                 <span className="shrink-0">
                                     <AiMessageStatusIcon status={status} />
                                 </span>
-                                <span className="font-medium text-sm">Reading relevant units</span>
+                                <span className={toolHeaderPrimaryTitleClassName(status)}>Reading relevant units</span>
                                 <span className="text-muted-foreground text-xs">No content</span>
                             </div>
                         </TooltipTrigger>
@@ -97,7 +98,7 @@ export function ToolFetchRelevantUnitsMessage({
                                     <span className="shrink-0">
                                         <AiMessageStatusIcon status={status} />
                                     </span>
-                                    <span className="font-medium text-sm">Reading relevant units</span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status)}>Reading relevant units</span>
                                     <span className="text-muted-foreground text-xs">
                                         {unitCount} {unitCount === 1 ? "unit" : "units"}
                                     </span>

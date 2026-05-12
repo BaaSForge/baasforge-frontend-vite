@@ -10,6 +10,7 @@ import {
 import { truncateToWords } from "@/utils/truncate-to-words";
 
 import { AiMessageStatusIcon } from "./message-icons";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
@@ -45,7 +46,7 @@ export function FinishSolutionAnalysisMessage({
                             <span className="shrink-0">
                                 <AiMessageStatusIcon status={status} />
                             </span>
-                            <span className="font-medium text-sm">Finished solution analysis</span>
+                            <span className={toolHeaderPrimaryTitleClassName(status)}>Finished solution analysis</span>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs">

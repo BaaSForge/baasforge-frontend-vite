@@ -10,6 +10,7 @@ import { ChatMessageStatus, type ChatMessageWithDeliveryStatus } from "@/modules
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
 import { AiMessageStatusIcon } from "./message-icons";
+import { toolUnitMutationStatusLineClassName } from "./tool-header-generating-text";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 import type { UnitSubTask } from "./unit-sub-task-checklist";
@@ -60,7 +61,7 @@ export function ToolUnitMutationLayout({
                                 <span className="shrink-0">
                                     <AiMessageStatusIcon status={status} />
                                 </span>
-                                <p className="min-w-0 text-sm text-muted-foreground">{statusLine}</p>
+                                <p className={toolUnitMutationStatusLineClassName(status)}>{statusLine}</p>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs">

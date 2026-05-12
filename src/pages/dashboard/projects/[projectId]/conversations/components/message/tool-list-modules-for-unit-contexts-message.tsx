@@ -14,6 +14,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
@@ -92,7 +93,9 @@ export function ToolListModulesForUnitContextsMessage({
                                 <span className="shrink-0">
                                     <AiMessageStatusIcon status={status} />
                                 </span>
-                                <span className="text-sm font-medium">Reading modules for contexts</span>
+                                <span className={toolHeaderPrimaryTitleClassName(status, "sm-font-medium")}>
+                                    Reading modules for contexts
+                                </span>
                                 <span className="text-xs text-muted-foreground">no content</span>
                             </div>
                         </TooltipTrigger>
@@ -106,7 +109,9 @@ export function ToolListModulesForUnitContextsMessage({
                                     <span className="shrink-0">
                                         <AiMessageStatusIcon status={status} />
                                     </span>
-                                    <span className="text-sm font-medium">Reading modules for contexts</span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status, "sm-font-medium")}>
+                                        Reading modules for contexts
+                                    </span>
                                     <span className="text-xs text-muted-foreground">
                                         {rowCount} {rowCount === 1 ? "context" : "contexts"}
                                     </span>

@@ -15,6 +15,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
@@ -73,7 +74,7 @@ export function ToolFetchLatestReleasesMessage({
                                 <span className="shrink-0">
                                     <AiMessageStatusIcon status={status} />
                                 </span>
-                                <span className="font-medium text-sm">Reading latest releases</span>
+                                <span className={toolHeaderPrimaryTitleClassName(status)}>Reading latest releases</span>
                                 <span className="text-muted-foreground text-xs">No content</span>
                             </div>
                         </TooltipTrigger>
@@ -87,7 +88,7 @@ export function ToolFetchLatestReleasesMessage({
                                     <span className="shrink-0">
                                         <AiMessageStatusIcon status={status} />
                                     </span>
-                                    <span className="font-medium text-sm">Reading latest releases</span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status)}>Reading latest releases</span>
                                     <span className="text-muted-foreground text-xs">
                                         {releaseCount} {releaseCount === 1 ? "release" : "releases"}
                                     </span>

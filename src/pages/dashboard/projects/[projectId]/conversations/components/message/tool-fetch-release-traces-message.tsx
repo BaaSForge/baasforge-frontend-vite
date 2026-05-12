@@ -16,6 +16,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ReleaseTracesTable } from "./release-traces-table";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
@@ -120,7 +121,7 @@ export function ToolFetchReleaseTracesMessage({
                                     <span className="shrink-0">
                                         <AiMessageStatusIcon status={status} />
                                     </span>
-                                    <span className="font-medium text-sm">Fetching release traces</span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status)}>Fetching release traces</span>
                                     {!hasPayloadError && (
                                         <span className="text-muted-foreground text-xs">
                                             {showNoSpansEmptyState ? "0 spans" : "Awaiting spans…"}
@@ -167,7 +168,7 @@ export function ToolFetchReleaseTracesMessage({
                                         <span className="shrink-0">
                                             <AiMessageStatusIcon status={status} />
                                         </span>
-                                        <span className="font-medium text-sm">Fetching release traces</span>
+                                        <span className={toolHeaderPrimaryTitleClassName(status)}>Fetching release traces</span>
                                         <span className="text-muted-foreground text-xs">
                                             {spanCount} {spanCount === 1 ? "span" : "spans"}
                                         </span>

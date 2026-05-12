@@ -12,6 +12,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { InvokedMessageConnector } from "./invoked-message-connector";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
@@ -42,7 +43,7 @@ export function ToolListUnitContextsMessage({
                         <span className="shrink-0">
                             <AiMessageStatusIcon status={status} />
                         </span>
-                        <span className="text-sm font-medium">Reading unit contexts</span>
+                        <span className={toolHeaderPrimaryTitleClassName(status, "sm-font-medium")}>Reading unit contexts</span>
                         <span className="text-xs text-muted-foreground">no content</span>
                     </div>
                 ) : (
@@ -51,7 +52,7 @@ export function ToolListUnitContextsMessage({
                             <span className="shrink-0">
                                 <AiMessageStatusIcon status={status} />
                             </span>
-                            <span className="text-sm font-medium">Reading unit contexts</span>
+                            <span className={toolHeaderPrimaryTitleClassName(status, "sm-font-medium")}>Reading unit contexts</span>
                             <span className="text-xs text-muted-foreground">
                                 {contextCount} {contextCount === 1 ? "context" : "contexts"}
                             </span>

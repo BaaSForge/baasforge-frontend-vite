@@ -15,6 +15,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
+import { exploringToolCallsAiLabelClassName } from "./tool-header-generating-text";
 
 export type ExploringToolCallsMessageProps = {
     message: ChatMessageWithDeliveryStatus;
@@ -76,7 +77,7 @@ export function ExploringToolCallsMessage({
                 ) : (
                     <div className="flex min-w-0 max-w-full items-center gap-2">
                         {statusSlot}
-                        <span className="min-w-0 text-sm text-muted-foreground">{label}</span>
+                        <span className={exploringToolCallsAiLabelClassName(message.status)}>{label}</span>
                     </div>
                 )}
                 {isFailed && (

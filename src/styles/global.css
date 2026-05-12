@@ -444,6 +444,24 @@ input[type="search"]::-webkit-search-cancel-button {
     animation: generating-text-shimmer-slide 2.4s ease-in-out infinite;
 }
 
+/* Blue variant for chat generating spinners / tool headers (matches `text-blue-500` status icons). */
+.generating-text-shimmer-blue {
+    background-image: linear-gradient(
+        90deg,
+        color-mix(in oklch, var(--color-blue-500) 32%, var(--muted-foreground)) 0%,
+        color-mix(in oklch, var(--color-blue-500) 32%, var(--muted-foreground)) 35%,
+        var(--color-blue-500) 50%,
+        color-mix(in oklch, var(--color-blue-500) 32%, var(--muted-foreground)) 65%,
+        color-mix(in oklch, var(--color-blue-500) 32%, var(--muted-foreground)) 100%
+    );
+    background-size: 220% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: generating-text-shimmer-slide 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .generating-text-shimmer {
         animation: none;
@@ -451,6 +469,15 @@ input[type="search"]::-webkit-search-cancel-button {
         background-clip: unset;
         -webkit-background-clip: unset;
         color: var(--muted-foreground);
+        -webkit-text-fill-color: unset;
+    }
+
+    .generating-text-shimmer-blue {
+        animation: none;
+        background: none;
+        background-clip: unset;
+        -webkit-background-clip: unset;
+        color: var(--color-blue-500);
         -webkit-text-fill-color: unset;
     }
 }
