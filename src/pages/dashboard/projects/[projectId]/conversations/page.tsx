@@ -36,7 +36,7 @@ import {
 import { postUserMessageTruncateBelow, stopProjectChatSession } from "@/modules/project-chat/api";
 import { addSessionToGeneratingSet } from "@/modules/project-chat/ws-cache-handler";
 import { createOptimisticUserTextMessage } from "@/modules/project-chat/optimistic-user-text-message";
-import { useCreateProjectChatSessionMessageMutation, useCreateProjectChatSessionMutation } from "@/modules/project-chat/mutations";
+import { useCreateProjectChatSessionMessageMutation, useCreateProjectChatSessionMutation, useRetryFailedPlannerMessageMutation } from "@/modules/project-chat/mutations";
 import {
     collectReleaseControllerMessageIdsRemovedByTruncateBelow,
     trimInfiniteMessagesCacheRemovingMessageAndAfter,
@@ -277,6 +277,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
 
     const createSessionMutation = useCreateProjectChatSessionMutation(projectId ?? "");
     const createMessageMutation = useCreateProjectChatSessionMessageMutation();
+    const retryFailedPlannerMutation = useRetryFailedPlannerMessageMutation();
+
+    const plannerRetryPendingMessageId =
+        retryFailedPlannerMutation.isPending && retryFailedPlannerMutation.variables
+            ? retryFailedPlannerMutation.variables.messageId
+            : null;
 
     const [branchTruncateDialog, setBranchTruncateDialog] = useState<{
         open: boolean;
@@ -463,6 +469,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         });
     };
 
+    const handleRetryFailedPlannerMessage = (message: ChatMessageWithDeliveryStatus) => {
+        if (projectId == null || projectId === "" || chatSessionIdOrUndefined == null) return;
+        retryFailedPlannerMutation.mutate({
+            projectId,
+            chatSessionId: chatSessionIdOrUndefined,
+            messageId: message.id,
+        });
+    };
+
     const shouldShowTemporaryMessageBeforeRedirecting = temporaryMessageBeforeRedirectingToNewSession != null && !chatSessionIdOrUndefined;
 
     const lastUserMessageIndex = useMemo(() => findLastUserMessageIndex(chatSessionMessages), [chatSessionMessages]);
@@ -576,6 +591,8 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                                 message={message}
                                                 childrenByParentId={displayChildrenByParentId}
                                                 onRetry={handleRetryMessage}
+                                                onRetryFailedPlannerMessage={handleRetryFailedPlannerMessage}
+                                                plannerRetryPendingMessageId={plannerRetryPendingMessageId}
                                                 onRequestEditMessage={(m) =>
                                                     setBranchTruncateDialog({ open: true, mode: "edit", message: m })
                                                 }
@@ -592,15 +609,15 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                                 onRetry={handleRetryTemporaryMessageBeforeRedirectingToNewSession}
                                             />
                                         )}
-                                        {lastAiEndStatus != null && !isGenerating && (
-                                            <div
-                                                className={cn(
-                                                    "py-1 text-sm",
-                                                    lastAiEndStatus === "failed" ? "text-destructive" : "text-muted-foreground",
-                                                )}
-                                            >
-                                                {lastAiEndStatus === "failed" ? "Generation has some failures." : "Generation stopped."}
+                                        {lastAiEndStatus === "failed" && !isGenerating && (
+                                            <div className="mt-3 mb-3 flex w-full min-w-0 items-center gap-3">
+                                                <div className="h-px min-w-0 flex-1 bg-border" aria-hidden />
+                                                <p className="shrink-0 text-xs text-destructive">Generation has some failures.</p>
+                                                <div className="h-px min-w-0 flex-1 bg-border" aria-hidden />
                                             </div>
+                                        )}
+                                        {lastAiEndStatus === "stopped" && !isGenerating && (
+                                            <div className="py-1 text-sm text-muted-foreground">Generation stopped.</div>
                                         )}
                                         {(isGenerating || placeholderVisible) && (
                                             <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />

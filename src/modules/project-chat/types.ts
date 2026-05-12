@@ -40,6 +40,11 @@ export enum ChatMessageStatus {
     Completed = "completed",
 }
 
+/** Serialized `ChatAgentType` from the API (subset used by the client). */
+export enum ChatAgentType {
+    Planner = "planner",
+}
+
 export type {
     TextMessagePayload,
     TextMessageRequestedToolCall,

@@ -26,6 +26,8 @@ const chatSessionUnitPreviousByFullIdsEndpoint = (projectId: string, chatSession
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/unit-previous-by-full-ids`;
 const chatSessionUserMessageTruncateBelowEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/user-messages/${messageId}/truncate-below`;
+const chatSessionMessageRetryPlannerEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
+    `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages/${messageId}/retry-planner`;
 
 /** Matches backend `UnitPathsBody`: each string is the unit path (full id without the trailing `.<revision>` segment). */
 export type UnitPathsBody = {
@@ -135,6 +137,13 @@ export type CreateProjectChatSessionMessageResult = {
 export function postUserMessageTruncateBelow(projectId: string, chatSessionId: string, messageId: string): Promise<void> {
     return apiClient
         .post<ApiResponse<unknown>>(chatSessionUserMessageTruncateBelowEndpoint(projectId, chatSessionId, messageId))
+        .then(() => undefined);
+}
+
+/** Re-queue generation for a main-thread planner text message that ended in `failed`. */
+export function postRetryFailedPlannerMessage(projectId: string, chatSessionId: string, messageId: string): Promise<void> {
+    return apiClient
+        .post<ApiResponse<unknown>>(chatSessionMessageRetryPlannerEndpoint(projectId, chatSessionId, messageId))
         .then(() => undefined);
 }
 

@@ -33,6 +33,8 @@ import { getStickyMessageGroupForMessage, useStickyMessageRegistration } from ".
 type MessageProps = {
     message: ChatMessageWithDeliveryStatus;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+    onRetryFailedPlannerMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    plannerRetryPendingMessageId?: string | null;
     onRequestEditMessage?: (message: ChatMessageWithDeliveryStatus) => void;
     onRequestRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => void;
     isTruncatingBranch?: boolean;
@@ -44,6 +46,8 @@ type MessageProps = {
 function MessageContent({
     message,
     onRetry,
+    onRetryFailedPlannerMessage,
+    plannerRetryPendingMessageId,
     onRequestEditMessage,
     onRequestRevertToThisMessage,
     isTruncatingBranch,
@@ -56,6 +60,8 @@ function MessageContent({
                 <TextMessage
                     message={message}
                     onRetry={onRetry}
+                    onRetryFailedPlannerMessage={onRetryFailedPlannerMessage}
+                    plannerRetryPendingMessageId={plannerRetryPendingMessageId}
                     onRequestEditMessage={onRequestEditMessage}
                     onRequestRevertToThisMessage={onRequestRevertToThisMessage}
                     isTruncatingBranch={isTruncatingBranch}
@@ -148,6 +154,8 @@ const toolMessageTypes = [
 export function Message({
     message,
     onRetry,
+    onRetryFailedPlannerMessage,
+    plannerRetryPendingMessageId,
     onRequestEditMessage,
     onRequestRevertToThisMessage,
     isTruncatingBranch,
@@ -186,6 +194,8 @@ export function Message({
             <MessageContent
                 message={message}
                 onRetry={onRetry}
+                onRetryFailedPlannerMessage={onRetryFailedPlannerMessage}
+                plannerRetryPendingMessageId={plannerRetryPendingMessageId}
                 onRequestEditMessage={onRequestEditMessage}
                 onRequestRevertToThisMessage={onRequestRevertToThisMessage}
                 isTruncatingBranch={isTruncatingBranch}
@@ -200,6 +210,8 @@ type MessageBranchProps = {
     message: ChatMessageWithDeliveryStatus;
     childrenByParentId: Map<string, ChatMessageWithDeliveryStatus[]>;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+    onRetryFailedPlannerMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    plannerRetryPendingMessageId?: string | null;
     onRequestEditMessage?: (message: ChatMessageWithDeliveryStatus) => void;
     onRequestRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => void;
     isTruncatingBranch?: boolean;
@@ -211,6 +223,8 @@ export function MessageBranch({
     message,
     childrenByParentId,
     onRetry,
+    onRetryFailedPlannerMessage,
+    plannerRetryPendingMessageId,
     onRequestEditMessage,
     onRequestRevertToThisMessage,
     isTruncatingBranch,
@@ -227,6 +241,8 @@ export function MessageBranch({
                         message={child}
                         childrenByParentId={childrenByParentId}
                         onRetry={onRetry}
+                        onRetryFailedPlannerMessage={onRetryFailedPlannerMessage}
+                        plannerRetryPendingMessageId={plannerRetryPendingMessageId}
                         onRequestEditMessage={onRequestEditMessage}
                         onRequestRevertToThisMessage={onRequestRevertToThisMessage}
                         isTruncatingBranch={isTruncatingBranch}
@@ -241,6 +257,8 @@ export function MessageBranch({
         <Message
             message={message}
             onRetry={onRetry}
+            onRetryFailedPlannerMessage={onRetryFailedPlannerMessage}
+            plannerRetryPendingMessageId={plannerRetryPendingMessageId}
             onRequestEditMessage={onRequestEditMessage}
             onRequestRevertToThisMessage={onRequestRevertToThisMessage}
             isTruncatingBranch={isTruncatingBranch}

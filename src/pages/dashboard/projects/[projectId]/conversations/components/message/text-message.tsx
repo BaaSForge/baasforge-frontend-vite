@@ -7,25 +7,30 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useClipboard } from "@/hooks/use-clipboard";
 import { cn } from "@/lib/utils";
 import {
+    ChatAgentType,
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
     ChatSessionRoleType,
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
-import { Copy, Pencil, Undo2 } from "lucide-react";
+import { Copy, Pencil, RefreshCw, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useLiveProductionSessionGates } from "./live-production-timeline-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
+import { FailedPlannerRetryWithAlert, destructiveRetryButtonClass } from "./failed-planner-retry-button";
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 
 export type TextMessageProps = {
     message: ChatMessageWithDeliveryStatus;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+    onRetryFailedPlannerMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    /** When set to this message's id, the planner retry request is in flight for that row. */
+    plannerRetryPendingMessageId?: string | null;
     onRequestEditMessage?: (message: ChatMessageWithDeliveryStatus) => void;
     onRequestRevertToThisMessage?: (message: ChatMessageWithDeliveryStatus) => void;
     isTruncatingBranch?: boolean;
@@ -55,6 +60,8 @@ function getTextMessageDisplay(payload: unknown): {
 export function TextMessage({
     message,
     onRetry,
+    onRetryFailedPlannerMessage,
+    plannerRetryPendingMessageId,
     onRequestEditMessage,
     onRequestRevertToThisMessage,
     isTruncatingBranch = false,
@@ -68,11 +75,29 @@ export function TextMessage({
     const { userEditSubsequentLiveProd } = useLiveProductionSessionGates();
 
     if (isExploringPlaceholder) {
-        return <ExploringToolCallsMessage message={message} toolCallCount={toolCallCount} onRetry={onRetry} />;
+        return (
+            <ExploringToolCallsMessage
+                message={message}
+                toolCallCount={toolCallCount}
+                onRetry={onRetry}
+                onRetryFailedPlannerMessage={onRetryFailedPlannerMessage}
+                plannerRetryPendingMessageId={plannerRetryPendingMessageId}
+                isAnyMessageGenerating={isAnyMessageGenerating}
+            />
+        );
     }
 
     const isUser = message.role === ChatSessionRoleType.User;
     const isFailed = message.delivery_status === ChatMessageDeliveryStatus.Failed;
+    const showMainThreadPlannerFailedRetry =
+        !isUser &&
+        message.status === ChatMessageStatus.Failed &&
+        !message.invoking_message_id &&
+        message.agent === ChatAgentType.Planner &&
+        onRetryFailedPlannerMessage != null;
+    const plannerRetryBlockedByGeneration = isAnyMessageGenerating;
+    const plannerRetryInFlight = plannerRetryPendingMessageId === message.id;
+    const plannerRetryDisabled = plannerRetryBlockedByGeneration || plannerRetryInFlight;
     const markdownTheme: MarkdownTheme | undefined = isUser ? (resolvedTheme === "dark" ? "light" : "dark") : undefined;
 
     const isAiGeneratingOrFailed =
@@ -110,10 +135,13 @@ export function TextMessage({
         else toast.error("Failed to copy");
     };
 
-    const showAiStatus = message.role === ChatSessionRoleType.Ai && message.status != null;
     const showUserDelivery = message.role === ChatSessionRoleType.User;
-    const hasStatusStrip = showAiStatus || showUserDelivery;
-    const hasActions = showCopyAction || isFailed || showEditAction || showRevertAction;
+    const showAiStatusIcon =
+        message.role === ChatSessionRoleType.Ai &&
+        message.status != null &&
+        !(message.status === ChatMessageStatus.Failed && showMainThreadPlannerFailedRetry);
+    const hasStatusStrip = showAiStatusIcon || showUserDelivery;
+    const hasActions = showCopyAction || isFailed || showMainThreadPlannerFailedRetry || showEditAction || showRevertAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
 
     return (
@@ -149,7 +177,7 @@ export function TextMessage({
                 <div className={cn("flex min-h-6 flex-wrap items-center gap-x-2 gap-y-1", isUser ? "flex-row-reverse" : "flex-row")}>
                     {hasStatusStrip && (
                         <div className={cn("flex items-center gap-1.5", isUser && "flex-row-reverse")}>
-                            {showAiStatus && <AiMessageStatusIcon status={message.status!} />}
+                            {showAiStatusIcon && <AiMessageStatusIcon status={message.status!} />}
                             {showUserDelivery && <DeliveryStatusIcon status={message.delivery_status} />}
                         </div>
                     )}
@@ -325,11 +353,22 @@ export function TextMessage({
                                     type="button"
                                     variant="ghost"
                                     size="xs"
-                                    className="h-6 shrink-0 px-2 text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                    className={destructiveRetryButtonClass}
                                     onClick={() => onRetry?.(message)}
                                 >
+                                    <RefreshCw className="size-3 shrink-0" />
                                     Retry
                                 </Button>
+                            )}
+                            {showMainThreadPlannerFailedRetry && (
+                                <div className="w-full min-w-0 basis-full">
+                                    <FailedPlannerRetryWithAlert
+                                        onRetry={() => onRetryFailedPlannerMessage?.(message)}
+                                        disabled={plannerRetryDisabled}
+                                        inFlight={plannerRetryInFlight}
+                                        blockedByGeneration={plannerRetryBlockedByGeneration}
+                                    />
+                                </div>
                             )}
                         </div>
                     )}

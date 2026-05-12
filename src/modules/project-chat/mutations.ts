@@ -1,8 +1,8 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createProjectChatSession, createProjectChatSessionMessage } from "./api";
-import type { ChatMessageDTO, ChatMessageWithDeliveryStatus, CreateProjectChatSessionMessageMutationParams } from "./types";
+import { createProjectChatSession, createProjectChatSessionMessage, postRetryFailedPlannerMessage } from "./api";
+import type { ChatMessageDTO, ChatMessageWithDeliveryStatus, CreateProjectChatSessionMessageMutationParams, TextMessagePayload } from "./types";
 import { ChatMessageDeliveryStatus } from "./types";
 
 export function useCreateProjectChatSessionMutation(projectId: string) {
@@ -86,6 +86,21 @@ export function useCreateProjectChatSessionMessageMutation() {
                 setFailed();
                 throw e;
             }
+        },
+    });
+}
+
+export type RetryFailedPlannerMessageParams = {
+    projectId: string;
+    chatSessionId: string;
+    messageId: string;
+};
+
+export function useRetryFailedPlannerMessageMutation() {
+    return useMutation({
+        mutationFn: ({ projectId, chatSessionId, messageId }: RetryFailedPlannerMessageParams) =>
+            postRetryFailedPlannerMessage(projectId, chatSessionId, messageId),
+        onSuccess: (_void, { projectId, chatSessionId, messageId }) => {
         },
     });
 }

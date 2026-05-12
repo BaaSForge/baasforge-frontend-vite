@@ -1,10 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { RefreshCw } from "lucide-react";
 
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
-import { ChatMessageDeliveryStatus, ChatSessionRoleType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import { FailedPlannerRetryWithAlert, destructiveRetryButtonClass } from "./failed-planner-retry-button";
+import {
+    ChatAgentType,
+    ChatMessageDeliveryStatus,
+    ChatMessageStatus,
+    ChatSessionRoleType,
+    type ChatMessageWithDeliveryStatus,
+} from "@/modules/project-chat/types";
 
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 
@@ -12,17 +20,41 @@ export type ExploringToolCallsMessageProps = {
     message: ChatMessageWithDeliveryStatus;
     toolCallCount: number;
     onRetry?: (message: ChatMessageWithDeliveryStatus) => void;
+    onRetryFailedPlannerMessage?: (message: ChatMessageWithDeliveryStatus) => void;
+    plannerRetryPendingMessageId?: string | null;
+    isAnyMessageGenerating?: boolean;
 };
 
-export function ExploringToolCallsMessage({ message, toolCallCount, onRetry }: ExploringToolCallsMessageProps) {
+export function ExploringToolCallsMessage({
+    message,
+    toolCallCount,
+    onRetry,
+    onRetryFailedPlannerMessage,
+    plannerRetryPendingMessageId,
+    isAnyMessageGenerating = false,
+}: ExploringToolCallsMessageProps) {
     const isUser = message.role === ChatSessionRoleType.User;
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
     const isFailed = message.delivery_status === ChatMessageDeliveryStatus.Failed;
+    const showMainThreadPlannerFailedRetry =
+        !isUser &&
+        message.status === ChatMessageStatus.Failed &&
+        !message.invoking_message_id &&
+        message.agent === ChatAgentType.Planner &&
+        onRetryFailedPlannerMessage != null;
+    const plannerRetryBlockedByGeneration = isAnyMessageGenerating;
+    const plannerRetryInFlight = plannerRetryPendingMessageId === message.id;
+    const plannerRetryDisabled = plannerRetryBlockedByGeneration || plannerRetryInFlight;
     const label = `Exploring (${toolCallCount} tool call${toolCallCount === 1 ? "" : "s"})`;
 
+    const showAiStatusIcon =
+        message.role === ChatSessionRoleType.Ai &&
+        message.status != null &&
+        !(message.status === ChatMessageStatus.Failed && showMainThreadPlannerFailedRetry);
+
     const statusSlot =
-        message.role === ChatSessionRoleType.Ai && message.status != null ? (
-            <AiMessageStatusIcon status={message.status} />
+        showAiStatusIcon ? (
+            <AiMessageStatusIcon status={message.status!} />
         ) : isUser ? (
             <DeliveryStatusIcon status={message.delivery_status} />
         ) : null;
@@ -53,11 +85,22 @@ export function ExploringToolCallsMessage({ message, toolCallCount, onRetry }: E
                             type="button"
                             variant="ghost"
                             size="xs"
-                            className="h-6 shrink-0 px-2 text-xs font-medium text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            className={destructiveRetryButtonClass}
                             onClick={() => onRetry?.(message)}
                         >
+                            <RefreshCw className="size-3 shrink-0" />
                             Retry
                         </Button>
+                    </div>
+                )}
+                {showMainThreadPlannerFailedRetry && (
+                    <div className="w-full min-w-0">
+                        <FailedPlannerRetryWithAlert
+                            onRetry={() => onRetryFailedPlannerMessage?.(message)}
+                            disabled={plannerRetryDisabled}
+                            inFlight={plannerRetryInFlight}
+                            blockedByGeneration={plannerRetryBlockedByGeneration}
+                        />
                     </div>
                 )}
             </div>
