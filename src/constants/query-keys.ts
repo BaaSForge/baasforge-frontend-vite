@@ -68,4 +68,7 @@ export const QueryKeys = {
         ["project", "release", "units", "all", projectId, releaseId, requestKey] as const,
     projectReleaseUnitsAllByProject: (projectId: ProjectId) => ["project", "release", "units", "all", projectId] as const,
     projectRuntimes: (projectId: ProjectId) => ["project", "runtimes", projectId] as const,
+    /** POST `.../traces/by-ids`: sorted trace id list for stable cache keys. */
+    projectTracesByIds: (projectId: ProjectId, traceIdsKey: string) =>
+        ["project", "traces", "by-ids", projectId, traceIdsKey] as const,
 };

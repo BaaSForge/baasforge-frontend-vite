@@ -35,6 +35,7 @@ const projectReleaseModulesByContextsEndpoint = (projectId: string, releaseId: s
     `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/modules-by-contexts`;
 const projectReleaseUnitsAllEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units/all`;
 const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
+const projectTracesByIdsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/traces/by-ids`;
 const projectRuntimeDetachLiveReleaseEndpoint = (projectId: string, runtimeId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/detach-live-release`;
 const projectReleaseControllerStageReleaseEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
@@ -206,6 +207,54 @@ export function postListReleaseUnitsAll(
 
 export function getProjectRuntimes(projectId: string): Promise<ProjectRuntimeResponse[]> {
     return apiClient.get<ApiResponse<ProjectRuntimeResponse[]>>(projectRuntimesEndpoint(projectId)).then((res) => res.data ?? []);
+}
+
+/** One row from POST `.../traces/by-ids` (API uses camelCase for this payload). */
+export type LoadedProjectTraceEntry = {
+    traceId: string;
+    trace: unknown;
+    release?: ReleaseResponse | null;
+    runtime?: ProjectRuntimeResponse | null;
+    unit?: ProjectUnitResponse | null;
+};
+
+function readTraceId(entry: Record<string, unknown>): string {
+    const a = entry.traceId;
+    const b = entry.trace_id;
+    if (typeof a === "string" && a.trim() !== "") return a.trim();
+    if (typeof b === "string" && b.trim() !== "") return b.trim();
+    return "";
+}
+
+function normalizeLoadedTraceEntry(raw: unknown): LoadedProjectTraceEntry | null {
+    if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const o = raw as Record<string, unknown>;
+    const traceId = readTraceId(o);
+    if (!traceId) return null;
+    return {
+        traceId,
+        trace: o.trace,
+        release: (o.release ?? null) as ReleaseResponse | null,
+        runtime: (o.runtime ?? null) as ProjectRuntimeResponse | null,
+        unit: (o.unit ?? null) as ProjectUnitResponse | null,
+    };
+}
+
+export async function postLoadProjectTracesByIds(projectId: string, traceIds: string[]): Promise<LoadedProjectTraceEntry[]> {
+    const res = await apiClient.post<ApiResponse<{ traces?: unknown[] }>>(
+        projectTracesByIdsEndpoint(projectId),
+        { traceIds },
+        undefined,
+        { skipErrorToast: true },
+    );
+    const rawList = res.data?.traces;
+    if (!Array.isArray(rawList)) return [];
+    const out: LoadedProjectTraceEntry[] = [];
+    for (const item of rawList) {
+        const row = normalizeLoadedTraceEntry(item);
+        if (row != null) out.push(row);
+    }
+    return out;
 }
 
 /** Detach the runtime’s current live release, then connect via ByRevision (`revision` + `chat_session_id`) or a release-controller scope. */

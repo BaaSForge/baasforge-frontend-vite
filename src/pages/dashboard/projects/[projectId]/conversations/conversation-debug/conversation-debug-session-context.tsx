@@ -94,7 +94,7 @@ export function ConversationDebugSessionProvider({ children }: { children: React
                                         Outgoing messages in this chat can include the release or trace ids from your link.
                                     </p>
                                     <p>
-                                        Use the `+` button at the top-left of the message input to edit the release or trace ids.
+                                        Use the `+` button at the bottom-right of the message input to edit the release or trace ids.
                                     </p>
                                 </div>
                             </AlertDialogDescription>

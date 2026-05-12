@@ -45,6 +45,7 @@ import { useIsSessionGenerating, useProjectChatSessionDetailQuery, useProjectCha
 import {
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
+    type ChatComposerTraceReference,
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
@@ -52,7 +53,7 @@ import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
 import { toast } from "sonner";
-import { buildInlineToken, stripInlineReleaseTokens } from "@/components/chat-rich-text-editor/composer-inline-format";
+import { buildInlineToken, stripInlineReleaseTokens, stripInlineTraceTokens } from "@/components/chat-rich-text-editor/composer-inline-format";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
     ConversationDebugSessionProvider,
@@ -85,6 +86,14 @@ function composeDebugReleaseDraft(prev: string, releaseToken: string): string {
     const body = stripInlineReleaseTokens(prev).trim();
     if (body === "") return `${releaseToken}\n\n`;
     return `${releaseToken}\n\n${body}`;
+}
+
+function composeDebugTraceDraft(prev: string, releaseToken: string, traceTokens: string[]): string {
+    let body = stripInlineReleaseTokens(prev);
+    body = stripInlineTraceTokens(body).trim();
+    const head = [releaseToken, ...traceTokens].join("\n\n");
+    if (body === "") return `${head}\n\n`;
+    return `${head}\n\n${body}`;
 }
 
 type Sidebar = ReturnType<typeof useSidebar>;
@@ -159,15 +168,23 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         writeChatComposerDraft(composerDraftStorageKey, messageInput);
     }, [composerDraftStorageKey, messageInput]);
 
-    /** With `?debug=`, strip release chips, then debug release first, two line breaks, then remaining text. */
+    /** With `?debug=`, strip release/trace chips, then debug release (and traces) first, two line breaks, then remaining text. */
     useEffect(() => {
         if (!debugParsedFromUrl || projectId == null || projectId === "") return;
 
         const release = releaseResponseFromConversationDebug(debugParsedFromUrl, projectId);
-        const token = buildInlineToken("release", JSON.stringify(release));
+        const releaseToken = buildInlineToken("release", JSON.stringify(release));
+        const traceIdList = debugParsedFromUrl.trace_ids ?? [];
+        const traceTokens = traceIdList.map((id) => {
+            const ref: ChatComposerTraceReference = { release, traceID: id.trim() };
+            return buildInlineToken("trace", JSON.stringify(ref));
+        });
 
         setMessageInput((prev) => {
-            const next = composeDebugReleaseDraft(prev, token);
+            const next =
+                traceTokens.length > 0
+                    ? composeDebugTraceDraft(prev, releaseToken, traceTokens)
+                    : composeDebugReleaseDraft(prev, releaseToken);
             return next === prev ? prev : next;
         });
     }, [debugParsedFromUrl, projectId, conversationId]);

@@ -16,6 +16,7 @@ import {
     getReleaseContexts,
     getReleaseUnits,
     postListReleaseUnitsAll,
+    postLoadProjectTracesByIds,
     postModulesByContexts,
 } from "./api";
 import { type ListReleaseUnitsAllRequest, PlatformEnvironmentType } from "./types";
@@ -37,6 +38,17 @@ export function useProjectLiveReleaseByRevisionQuery(
         queryKey: QueryKeys.projectLiveReleaseByRevision(projectId ?? "", environment ?? PlatformEnvironmentType.stage, revision ?? NaN),
         queryFn: () => getProjectLiveReleaseByRevision(projectId!, environment!, revision!),
         enabled: !!projectId && environment != null && revision != null && Number.isFinite(revision),
+        retry: false,
+        staleTime: 15_000,
+    });
+}
+
+export function useProjectTracesByIdsQuery(projectId: string | undefined, traceIds: readonly string[]) {
+    const keyPart = traceIds.join("\u0000");
+    return useQuery({
+        queryKey: QueryKeys.projectTracesByIds(projectId ?? "", keyPart),
+        queryFn: () => postLoadProjectTracesByIds(projectId!, [...traceIds]),
+        enabled: !!projectId && traceIds.length > 0,
         retry: false,
         staleTime: 15_000,
     });

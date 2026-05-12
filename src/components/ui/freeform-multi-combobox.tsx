@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
     Combobox,
     ComboboxChip,
@@ -26,6 +27,7 @@ export function FreeformMultiCombobox({
     className,
     labelRowClassName,
     chipsClassName,
+    aboveChips,
 }: {
     id?: string;
     label: string;
@@ -36,6 +38,8 @@ export function FreeformMultiCombobox({
     className?: string;
     labelRowClassName?: string;
     chipsClassName?: string;
+    /** Rendered after the label and before the chips input (e.g. loading indicator). */
+    aboveChips?: React.ReactNode;
 }) {
     const anchor = useComboboxAnchor();
     const items = useMemo(() => [...value].sort((a, b) => a.localeCompare(b)), [value]);
@@ -63,6 +67,7 @@ export function FreeformMultiCombobox({
     return (
         <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
             {labelRowClassName ? <div className={labelRowClassName}>{labelEl}</div> : labelEl}
+            {aboveChips}
             <Combobox
                 multiple
                 autoHighlight

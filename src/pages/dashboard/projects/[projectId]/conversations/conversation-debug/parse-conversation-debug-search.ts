@@ -5,6 +5,8 @@ export type ConversationDebugFromUrl = {
     environment: PlatformEnvironmentType;
     /** Human-readable revision when present in the `debug` JSON (e.g. Start Debug flow). */
     release_revision?: string;
+    /** Trace ids from Start Debug by trace id (`traceIDs` in URL JSON). */
+    trace_ids?: string[];
 };
 
 function normalizeEnvironment(raw: unknown): PlatformEnvironmentType | null {
@@ -15,6 +17,16 @@ function normalizeEnvironment(raw: unknown): PlatformEnvironmentType | null {
         return PlatformEnvironmentType.stage;
     }
     return null;
+}
+
+function parseTraceIdsFromDebugObject(o: Record<string, unknown>): string[] | undefined {
+    const raw = o.traceIDs ?? o.trace_ids;
+    if (typeof raw !== "string") return undefined;
+    const parts = raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s !== "");
+    return parts.length > 0 ? parts : undefined;
 }
 
 function parseDebugJsonObject(o: Record<string, unknown>): ConversationDebugFromUrl | null {
@@ -31,7 +43,9 @@ function parseDebugJsonObject(o: Record<string, unknown>): ConversationDebugFrom
         release_revision = String(rr);
     }
 
-    return { release_id, environment, release_revision };
+    const trace_ids = parseTraceIdsFromDebugObject(o);
+
+    return { release_id, environment, release_revision, trace_ids };
 }
 
 function tryParseDebugPayloadJson(jsonStr: string): ConversationDebugFromUrl | null {
