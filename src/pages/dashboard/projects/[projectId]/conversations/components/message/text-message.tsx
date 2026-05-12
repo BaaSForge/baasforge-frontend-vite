@@ -1,4 +1,5 @@
-import { Markdown, type MarkdownTheme } from "@/components/markdown";
+import { ChatSerializedMessageBody } from "@/components/chat-rich-text-editor/chat-serialized-message-body";
+import { type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -32,20 +33,23 @@ export type TextMessageProps = {
 };
 
 function getTextMessageDisplay(payload: unknown): {
-    text: string;
+    /** Exact wire-format text (trimmed only for empty / placeholder checks). */
+    rawText: string;
     isExploringPlaceholder: boolean;
     toolCallCount: number;
 } {
-    if (typeof payload === "string") return { text: payload, isExploringPlaceholder: false, toolCallCount: 0 };
+    if (typeof payload === "string")
+        return { rawText: payload, isExploringPlaceholder: false, toolCallCount: 0 };
     if (payload == null || typeof payload !== "object")
-        return { text: "", isExploringPlaceholder: false, toolCallCount: 0 };
+        return { rawText: "", isExploringPlaceholder: false, toolCallCount: 0 };
     const p = payload as TextMessagePayload;
-    const text = typeof p.text === "string" ? p.text.trim() : "";
+    const rawText = typeof p.text === "string" ? p.text : "";
     const toolCalls = Array.isArray(p.requested_tool_calls) ? p.requested_tool_calls : [];
-    if (text) return { text, isExploringPlaceholder: false, toolCallCount: 0 };
+    if (rawText.trim())
+        return { rawText, isExploringPlaceholder: false, toolCallCount: 0 };
     if (toolCalls.length > 0)
-        return { text: "", isExploringPlaceholder: true, toolCallCount: toolCalls.length };
-    return { text: "", isExploringPlaceholder: false, toolCallCount: 0 };
+        return { rawText: "", isExploringPlaceholder: true, toolCallCount: toolCalls.length };
+    return { rawText: "", isExploringPlaceholder: false, toolCallCount: 0 };
 }
 
 export function TextMessage({
@@ -58,7 +62,7 @@ export function TextMessage({
 }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
     const { copy } = useClipboard();
-    const { text, isExploringPlaceholder, toolCallCount } = getTextMessageDisplay(message.payload);
+    const { rawText, isExploringPlaceholder, toolCallCount } = getTextMessageDisplay(message.payload);
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
 
     const { userEditSubsequentLiveProd } = useLiveProductionSessionGates();
@@ -79,7 +83,7 @@ export function TextMessage({
         message.role === ChatSessionRoleType.User &&
         (message.delivery_status === ChatMessageDeliveryStatus.Pending ||
             message.delivery_status === ChatMessageDeliveryStatus.Failed);
-    const hasText = text.trim().length > 0;
+    const hasText = rawText.trim().length > 0;
     const showCopyAction = hasText && !isAiGeneratingOrFailed && !isUserPendingOrFailed;
 
     const editBlockedFromSession = userEditSubsequentLiveProd(message.id);
@@ -101,7 +105,7 @@ export function TextMessage({
         message.is_optimistic !== true;
 
     const handleCopy = async () => {
-        const { success } = await copy(text);
+        const { success } = await copy(rawText);
         if (success) toast.success("Copied to clipboard", { position: "top-center" });
         else toast.error("Failed to copy");
     };
@@ -127,16 +131,18 @@ export function TextMessage({
                             className="rounded-2xl rounded-br-md bg-primary/65"
                         />
                         <div className="relative z-[1] min-w-0 text-sm">
-                            <Markdown theme={markdownTheme} embeddedOnInverse>
-                                {text}
-                            </Markdown>
+                            <ChatSerializedMessageBody
+                                serialized={rawText}
+                                markdownTheme={markdownTheme}
+                                embeddedOnInverse
+                            />
                         </div>
                     </InverseMessageCard>
                 ) : (
                     <div className="relative min-w-0 max-w-full overflow-hidden py-2">
                         <ScrollHighlightOverlay show={isScrollHighlight} className="rounded-2xl bg-muted/90" />
                         <div className="relative z-[1] min-w-0 text-sm">
-                            <Markdown theme={markdownTheme}>{text}</Markdown>
+                            <ChatSerializedMessageBody serialized={rawText} markdownTheme={markdownTheme} />
                         </div>
                     </div>
                 )}
