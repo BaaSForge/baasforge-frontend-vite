@@ -1,4 +1,5 @@
 import { ChatSerializedMessageBody } from "@/components/chat-rich-text-editor/chat-serialized-message-body";
+import { serializedTextToStickyPreview } from "@/components/chat-rich-text-editor/parse-serialized-inline-segments";
 import { type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
 import { FailedPlannerRetryWithAlert, destructiveRetryButtonClass } from "./failed-planner-retry-button";
-import { AiTextGeneratingPlaceholder } from "./generating-inline-placeholders";
+import { AiStreamingStatusInline, AiTextGeneratingPlaceholder } from "./generating-inline-placeholders";
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 
@@ -110,6 +111,11 @@ export function TextMessage({
         (message.delivery_status === ChatMessageDeliveryStatus.Pending ||
             message.delivery_status === ChatMessageDeliveryStatus.Failed);
     const hasText = rawText.trim().length > 0;
+    const aiStreamingBodyBanner =
+        message.role === ChatSessionRoleType.Ai &&
+        message.status === ChatMessageStatus.Generating &&
+        hasText &&
+        serializedTextToStickyPreview(rawText) === "";
     const showAiGeneratingEmptyState =
         message.role === ChatSessionRoleType.Ai &&
         message.status === ChatMessageStatus.Generating &&
@@ -145,7 +151,8 @@ export function TextMessage({
         message.role === ChatSessionRoleType.Ai &&
         message.status != null &&
         !(message.status === ChatMessageStatus.Failed && showMainThreadPlannerFailedRetry) &&
-        !showAiGeneratingEmptyState;
+        !showAiGeneratingEmptyState &&
+        !aiStreamingBodyBanner;
     const hasStatusStrip = showAiStatusIcon || showUserDelivery;
     const hasActions = showCopyAction || isFailed || showMainThreadPlannerFailedRetry || showEditAction || showRevertAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
@@ -179,7 +186,10 @@ export function TextMessage({
                             {showAiGeneratingEmptyState ? (
                                 <AiTextGeneratingPlaceholder />
                             ) : (
-                                <ChatSerializedMessageBody serialized={rawText} markdownTheme={markdownTheme} />
+                                <>
+                                    {aiStreamingBodyBanner && <AiStreamingStatusInline className="mb-2" />}
+                                    <ChatSerializedMessageBody serialized={rawText} markdownTheme={markdownTheme} />
+                                </>
                             )}
                         </div>
                     </div>
@@ -187,7 +197,12 @@ export function TextMessage({
                 <div className={cn("flex min-h-6 flex-wrap items-center gap-x-2 gap-y-1", isUser ? "flex-row-reverse" : "flex-row")}>
                     {hasStatusStrip && (
                         <div className={cn("flex items-center gap-1.5", isUser && "flex-row-reverse")}>
-                            {showAiStatusIcon && <AiMessageStatusIcon status={message.status!} />}
+                            {showAiStatusIcon &&
+                                (message.status === ChatMessageStatus.Generating ? (
+                                    <AiStreamingStatusInline />
+                                ) : (
+                                    <AiMessageStatusIcon status={message.status!} />
+                                ))}
                             {showUserDelivery && <DeliveryStatusIcon status={message.delivery_status} />}
                         </div>
                     )}

@@ -10,6 +10,16 @@ export function AiTextGeneratingPlaceholder({ className }: { className?: string 
     );
 }
 
+/** Status row while AI text is streaming (non-empty payload): replaces icon-only footer spinner. */
+export function AiStreamingStatusInline({ className }: { className?: string }) {
+    return (
+        <div className={cn("flex min-w-0 items-center gap-2.5", className)} role="status" aria-live="polite">
+            <Spinner className="size-4 shrink-0 text-blue-500" aria-hidden />
+            <p className="generating-text-shimmer-blue min-w-0 text-sm font-medium leading-snug">Streaming…</p>
+        </div>
+    );
+}
+
 export function ToolNestedStepsPlaceholder({ className }: { className?: string }) {
     return (
         <div className={cn("flex w-full min-w-0 items-center gap-2.5", className)} role="status" aria-live="polite">
