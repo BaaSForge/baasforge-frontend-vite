@@ -12,7 +12,7 @@ import type { CreateProjectChatSessionMessageDebugContext } from "@/modules/proj
 import { BugPlay, Check } from "lucide-react";
 import * as React from "react";
 import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useParams } from "react-router";
+import { useLocation } from "react-router";
 
 import {
     type ConversationDebugFromUrl,
@@ -28,13 +28,29 @@ type ConversationDebugSessionContextValue = {
 
 const ConversationDebugSessionContext = React.createContext<ConversationDebugSessionContextValue | null>(null);
 
-function disclaimerStorageKey(projectId: string, conversationId: string | undefined, releaseId: string): string {
-    return `baal:conversation-debug-disclaimer:${projectId}:${conversationId ?? "new"}:${releaseId}`;
+/** Rolling window: at most one acknowledgment reminder per 7 days, not scoped to chat or release. */
+const DEBUG_STARTED_MODAL_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
+const DEBUG_STARTED_MODAL_STORAGE_KEY = "baal:conversation-debug-started-disclaimer:last-dismissed-ms";
+
+function readLastDebugStartedDisclaimerDismissMs(): number | null {
+    try {
+        const raw = localStorage.getItem(DEBUG_STARTED_MODAL_STORAGE_KEY);
+        if (raw == null || raw === "") return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : null;
+    } catch {
+        return null;
+    }
+}
+
+function shouldShowDebugStartedDisclaimer(): boolean {
+    const last = readLastDebugStartedDisclaimerDismissMs();
+    if (last == null) return true;
+    return Date.now() - last >= DEBUG_STARTED_MODAL_DISMISS_MS;
 }
 
 export function ConversationDebugSessionProvider({ children }: { children: React.ReactNode }) {
     const { search } = useLocation();
-    const { conversationId, projectId } = useParams<{ conversationId?: string; projectId: string }>();
 
     const [disclaimerOpen, setDisclaimerOpen] = useState(false);
 
@@ -48,19 +64,18 @@ export function ConversationDebugSessionProvider({ children }: { children: React
                 setDisclaimerOpen(false);
                 return;
             }
-            const key = disclaimerStorageKey(projectId ?? "", conversationId, parsedFromUrl.release_id);
-            if (sessionStorage.getItem(key)) return;
+            if (!shouldShowDebugStartedDisclaimer()) return;
             setDisclaimerOpen(true);
         });
-    }, [parsedFromUrl, conversationId, projectId]);
+    }, [parsedFromUrl]);
 
     const persistDisclaimerSeen = useCallback(() => {
-        if (!parsedFromUrl) return;
-        sessionStorage.setItem(
-            disclaimerStorageKey(projectId ?? "", conversationId, parsedFromUrl.release_id),
-            "1",
-        );
-    }, [parsedFromUrl, conversationId, projectId]);
+        try {
+            localStorage.setItem(DEBUG_STARTED_MODAL_STORAGE_KEY, String(Date.now()));
+        } catch {
+            /* ignore quota / private mode */
+        }
+    }, []);
 
     const value = useMemo(
         (): ConversationDebugSessionContextValue => ({
