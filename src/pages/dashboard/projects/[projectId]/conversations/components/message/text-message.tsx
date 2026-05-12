@@ -22,6 +22,7 @@ import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
 import { FailedPlannerRetryWithAlert, destructiveRetryButtonClass } from "./failed-planner-retry-button";
+import { AiTextGeneratingPlaceholder } from "./generating-inline-placeholders";
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 
@@ -109,6 +110,10 @@ export function TextMessage({
         (message.delivery_status === ChatMessageDeliveryStatus.Pending ||
             message.delivery_status === ChatMessageDeliveryStatus.Failed);
     const hasText = rawText.trim().length > 0;
+    const showAiGeneratingEmptyState =
+        message.role === ChatSessionRoleType.Ai &&
+        message.status === ChatMessageStatus.Generating &&
+        !hasText;
     const showCopyAction = hasText && !isAiGeneratingOrFailed && !isUserPendingOrFailed;
 
     const editBlockedFromSession = userEditSubsequentLiveProd(message.id);
@@ -139,7 +144,8 @@ export function TextMessage({
     const showAiStatusIcon =
         message.role === ChatSessionRoleType.Ai &&
         message.status != null &&
-        !(message.status === ChatMessageStatus.Failed && showMainThreadPlannerFailedRetry);
+        !(message.status === ChatMessageStatus.Failed && showMainThreadPlannerFailedRetry) &&
+        !showAiGeneratingEmptyState;
     const hasStatusStrip = showAiStatusIcon || showUserDelivery;
     const hasActions = showCopyAction || isFailed || showMainThreadPlannerFailedRetry || showEditAction || showRevertAction;
     const showStatusActionDivider = hasStatusStrip && hasActions;
@@ -170,7 +176,11 @@ export function TextMessage({
                     <div className="relative min-w-0 max-w-full overflow-hidden py-2">
                         <ScrollHighlightOverlay show={isScrollHighlight} className="rounded-2xl bg-muted/90" />
                         <div className="relative z-[1] min-w-0 text-sm">
-                            <ChatSerializedMessageBody serialized={rawText} markdownTheme={markdownTheme} />
+                            {showAiGeneratingEmptyState ? (
+                                <AiTextGeneratingPlaceholder />
+                            ) : (
+                                <ChatSerializedMessageBody serialized={rawText} markdownTheme={markdownTheme} />
+                            )}
                         </div>
                     </div>
                 )}

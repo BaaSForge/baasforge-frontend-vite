@@ -417,6 +417,44 @@ input[type="search"]::-webkit-search-cancel-button {
     animation: controller-generating-glow 3s linear infinite, controller-generating-opacity 2s ease-in-out infinite;
 }
 
+@keyframes generating-text-shimmer-slide {
+    0% {
+        background-position: 160% center;
+    }
+    100% {
+        background-position: -160% center;
+    }
+}
+
+/* Sliding highlight across muted copy (e.g. chat “generating” placeholders). */
+.generating-text-shimmer {
+    background-image: linear-gradient(
+        90deg,
+        var(--muted-foreground) 0%,
+        var(--muted-foreground) 38%,
+        var(--foreground) 50%,
+        var(--muted-foreground) 62%,
+        var(--muted-foreground) 100%
+    );
+    background-size: 220% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: generating-text-shimmer-slide 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .generating-text-shimmer {
+        animation: none;
+        background: none;
+        background-clip: unset;
+        -webkit-background-clip: unset;
+        color: var(--muted-foreground);
+        -webkit-text-fill-color: unset;
+    }
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;

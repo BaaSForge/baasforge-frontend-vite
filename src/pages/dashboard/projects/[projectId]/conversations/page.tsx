@@ -610,7 +610,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                             />
                                         )}
                                         {lastAiEndStatus === "failed" && !isGenerating && (
-                                            <div className="mt-3 mb-3 flex w-full min-w-0 items-center gap-3">
+                                            <div className="mt-4 mb-6 flex w-full min-w-0 items-center gap-3">
                                                 <div className="h-px min-w-0 flex-1 bg-border" aria-hidden />
                                                 <p className="shrink-0 text-xs text-destructive">Generation has some failures.</p>
                                                 <div className="h-px min-w-0 flex-1 bg-border" aria-hidden />

@@ -6,7 +6,6 @@ import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "@/modules/project";
@@ -19,6 +18,7 @@ import {
 } from "@/modules/project-chat/types";
 import { useChatSessionEmbeddedUnitsLatestRevisions } from "@/modules/project-chat/use-chat-session-embedded-units-latest-revisions";
 
+import { ToolNestedStepsPlaceholder } from "./generating-inline-placeholders";
 import { AiMessageStatusIcon } from "./message-icons";
 import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
@@ -136,7 +136,7 @@ export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { m
                         >
                             <div className="flex w-full min-w-0 flex-col gap-3 py-2">
                                 <div className="min-h-12 w-full min-w-0 rounded-md border border-dashed border-border p-3" aria-label="Thoughts">
-                                    {hasNestedMessages ? nestedMessages : <Spinner className="size-3.5 text-muted-foreground" />}
+                                    {hasNestedMessages ? nestedMessages : <ToolNestedStepsPlaceholder />}
                                 </div>
                                 {hasUnits && (
                                     <div className="min-w-0 w-full max-w-full overflow-hidden">
