@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import type { CreateProjectChatSessionMessageDebugContext } from "@/modules/project-chat/types";
 import { BugPlay, Check } from "lucide-react";
 import * as React from "react";
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import {
@@ -55,15 +55,19 @@ function shouldShowDebugStartedDisclaimer(): boolean {
 export function ConversationDebugSessionProvider({ children }: { children: React.ReactNode }) {
     const { pathname, search } = useLocation();
     const navigate = useNavigate();
-    const heldDebugRef = useRef<ConversationDebugFromUrl | null>(null);
 
     const [disclaimerOpen, setDisclaimerOpen] = useState(false);
+    const [heldDebug, setHeldDebug] = useState<ConversationDebugFromUrl | null>(null);
 
     const debugFromSearch = useMemo(() => parseConversationDebugFromSearch(search), [search]);
-    if (debugFromSearch != null) {
-        heldDebugRef.current = debugFromSearch;
-    }
-    const parsedFromUrl = debugFromSearch ?? heldDebugRef.current;
+
+    useLayoutEffect(() => {
+        if (debugFromSearch == null) return;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- retain last parsed debug after URL strips `debug`
+        setHeldDebug(debugFromSearch);
+    }, [debugFromSearch]);
+
+    const parsedFromUrl = debugFromSearch ?? heldDebug;
 
     const isDebugSendActive = parsedFromUrl != null;
 

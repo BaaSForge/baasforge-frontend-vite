@@ -490,3 +490,59 @@ input[type="search"]::-webkit-search-cancel-button {
         @apply bg-background text-foreground;
     }
 }
+
+::highlight(scoped-text-search-others) {
+    background-color: rgba(250, 204, 21, 0.58);
+}
+
+::highlight(scoped-text-search-active) {
+    background-color: rgba(251, 146, 60, 0.78);
+    color: #fff;
+    box-shadow: 0 0 0 2px rgba(154, 52, 18, 0.95);
+}
+
+html.dark-default ::highlight(scoped-text-search-others),
+html.dark-midnight ::highlight(scoped-text-search-others) {
+    background-color: rgba(146, 90, 22, 0.62);
+}
+
+html.dark-default ::highlight(scoped-text-search-active),
+html.dark-midnight ::highlight(scoped-text-search-active) {
+    background-color: rgba(251, 191, 36, 0.72);
+    color: #fff;
+    box-shadow: 0 0 0 2px rgb(253, 224, 71), 0 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+mark.scoped-text-search-hit {
+    background-color: rgba(250, 204, 21, 0.58);
+    color: inherit;
+    padding: 0;
+    border-radius: 2px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+mark.scoped-text-search-hit.scoped-text-search-hit-current {
+    background-color: rgba(251, 146, 60, 0.72);
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    box-shadow: 0 0 0 2px rgba(154, 52, 18, 0.95);
+}
+
+mark.scoped-text-search-hit.scoped-text-search-hit-current * {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+html.dark-default mark.scoped-text-search-hit,
+html.dark-midnight mark.scoped-text-search-hit {
+    background-color: rgba(146, 90, 22, 0.62);
+}
+
+html.dark-default mark.scoped-text-search-hit.scoped-text-search-hit-current,
+html.dark-midnight mark.scoped-text-search-hit.scoped-text-search-hit-current {
+    background-color: rgba(251, 191, 36, 0.68);
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    box-shadow: 0 0 0 2px rgb(253, 224, 71), 0 0 0 4px rgba(0, 0, 0, 0.8);
+}
