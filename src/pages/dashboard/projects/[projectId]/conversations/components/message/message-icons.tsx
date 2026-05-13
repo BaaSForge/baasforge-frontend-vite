@@ -4,6 +4,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { ChatMessageDeliveryStatus, ChatMessageStatus } from "@/modules/project-chat/types";
 
+import { AiStreamingStatusInline } from "./generating-inline-placeholders";
+
 export const MESSAGE_ICON_SIZE = "size-3.5 shrink-0";
 
 export function DeliveryStatusIcon({ status, className }: { status: ChatMessageDeliveryStatus; className?: string }) {
@@ -28,4 +30,30 @@ export function AiMessageStatusIcon({ status, className }: { status: ChatMessage
         case ChatMessageStatus.Completed:
             return <CheckCircle className={cn(MESSAGE_ICON_SIZE, "text-muted-foreground", className)} aria-label="Completed" />;
     }
+}
+
+export function AiMessageStatusIconWithText({ status, className }: { status: ChatMessageStatus; className?: string }) {
+    if (status === ChatMessageStatus.Generating)
+        return <AiStreamingStatusInline className={className} />;
+
+    const label =
+        status === ChatMessageStatus.Failed
+            ? "Failed"
+            : status === ChatMessageStatus.Stopped
+              ? "Stopped"
+              : "Completed";
+
+    return (
+        <div className={cn("flex min-w-0 items-center gap-2", className)} role="status">
+            <AiMessageStatusIcon status={status} />
+            <span
+                className={cn(
+                    "min-w-0 text-xs font-medium leading-snug",
+                    status === ChatMessageStatus.Failed ? "text-destructive" : "text-muted-foreground",
+                )}
+            >
+                {label}
+            </span>
+        </div>
+    );
 }

@@ -23,9 +23,8 @@ import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
 import { FailedPlannerRetryWithAlert, destructiveRetryButtonClass } from "./failed-planner-retry-button";
-import { AiGenerationFailedStatusAlert } from "./ai-generation-failed-status-alert";
 import { AiStreamingStatusInline, AiTextGeneratingPlaceholder } from "./generating-inline-placeholders";
-import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
+import { AiMessageStatusIconWithText, DeliveryStatusIcon } from "./message-icons";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
 
 export type TextMessageProps = {
@@ -198,14 +197,7 @@ export function TextMessage({
                 <div className={cn("flex min-h-6 flex-wrap items-center gap-x-2 gap-y-1", isUser ? "flex-row-reverse" : "flex-row")}>
                     {hasStatusStrip && (
                         <div className={cn("flex items-center gap-1.5", isUser && "flex-row-reverse")}>
-                            {showAiStatusIcon &&
-                                (message.status === ChatMessageStatus.Generating ? (
-                                    <AiStreamingStatusInline />
-                                ) : message.status === ChatMessageStatus.Failed ? (
-                                    <AiGenerationFailedStatusAlert />
-                                ) : (
-                                    <AiMessageStatusIcon status={message.status!} />
-                                ))}
+                            {showAiStatusIcon && <AiMessageStatusIconWithText status={message.status!} />}
                             {showUserDelivery && <DeliveryStatusIcon status={message.delivery_status} />}
                         </div>
                     )}
