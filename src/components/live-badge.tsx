@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { StatusPulseRingLayer } from "@/components/status-pulse-ring";
 
 export interface LiveBadgeProps {
     isOn: boolean;
@@ -35,7 +36,7 @@ export function LiveBadge({ isOn, offLabel, offTitle, onLabel, onTitle, classNam
             style={doubleCircleStyle}
             aria-hidden
         >
-            <span className="absolute inset-0 origin-center rounded-full bg-blue-500 animate-[status-pulse-ring_1.2s_ease-out_infinite]" aria-hidden />
+            <StatusPulseRingLayer className="rounded-full" />
             <span className={cn(circleClass, "bg-blue-500")} style={circleStyle} aria-hidden />
         </span>
     );

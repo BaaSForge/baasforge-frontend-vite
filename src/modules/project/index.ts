@@ -29,6 +29,8 @@ export {
     useProjectsQuery,
 } from "./queries";
 export { getRuntimeLiveReleaseId, pickProductionRuntime, releaseIsLiveOnProjectRuntimes } from "./runtime-release";
+export { ProjectUnitTypeSectionHeading } from "./components/project-unit-type-section-heading";
+export { UNIT_TYPE_ICONS } from "./unit-type-icons";
 export type {
     ApiUnitMetadata,
     QueueWorkerUnitMetadata,

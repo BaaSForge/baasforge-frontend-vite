@@ -162,15 +162,20 @@ export function useProjectModulesByContextsQuery(
 }
 
 function stableReleaseUnitsAllKey(body: ListReleaseUnitsAllRequest): string {
-    return JSON.stringify({
-        page: body.page,
-        page_size: body.page_size,
-        unit_types: [...body.unit_types].sort(),
-        context_slugs: [...body.context_slugs].sort(),
-        context_module_pairs: [...body.context_module_pairs]
+    const o: Record<string, unknown> = {};
+    if (body.page !== undefined) o.page = body.page;
+    if (body.page_size !== undefined) o.page_size = body.page_size;
+    if (body.unit_types !== undefined) o.unit_types = [...body.unit_types].sort();
+    if (body.context_slugs !== undefined) o.context_slugs = [...body.context_slugs].sort();
+    if (body.context_module_pairs !== undefined) {
+        o.context_module_pairs = [...body.context_module_pairs]
             .map((p) => ({ c: p.context_slug, m: p.module_slug }))
-            .sort((a, b) => a.c.localeCompare(b.c) || a.m.localeCompare(b.m)),
-    });
+            .sort((a, b) => a.c.localeCompare(b.c) || a.m.localeCompare(b.m));
+    }
+    if (body.units_paths != null && body.units_paths.length > 0) {
+        o.units_paths = [...body.units_paths].sort((a, b) => a.localeCompare(b));
+    }
+    return JSON.stringify(o);
 }
 
 export function useProjectReleaseUnitsAllQuery(
@@ -181,6 +186,30 @@ export function useProjectReleaseUnitsAllQuery(
 ) {
     const enabled = (options?.enabled ?? true) && !!projectId && !!releaseId && body != null;
     const requestKey = body != null ? stableReleaseUnitsAllKey(body) : "";
+    return useQuery({
+        queryKey: QueryKeys.projectReleaseUnitsAll(projectId ?? "", releaseId ?? "", requestKey),
+        queryFn: () => postListReleaseUnitsAll(projectId!, releaseId!, body!),
+        enabled,
+    });
+}
+
+/** Pinned paths: same `units/all` POST with `units_paths` (full units, unpaginated). */
+export function useProjectReleaseUnitsAllPinnedQuery(
+    projectId: string | undefined,
+    releaseId: string | undefined,
+    unitPaths: readonly string[],
+    options?: { enabled?: boolean },
+) {
+    const sortedPaths = useMemo(() => [...unitPaths].sort((a, b) => a.localeCompare(b)), [unitPaths]);
+    const body = useMemo((): ListReleaseUnitsAllRequest | undefined => {
+        if (sortedPaths.length === 0) return undefined;
+        return { units_paths: sortedPaths };
+    }, [sortedPaths]);
+
+    const enabledByOption = options?.enabled ?? true;
+    const enabled = enabledByOption && !!projectId && !!releaseId && body != null;
+    const requestKey = body != null ? stableReleaseUnitsAllKey(body) : "";
+
     return useQuery({
         queryKey: QueryKeys.projectReleaseUnitsAll(projectId ?? "", releaseId ?? "", requestKey),
         queryFn: () => postListReleaseUnitsAll(projectId!, releaseId!, body!),

@@ -49,11 +49,13 @@ export interface ContextModulePair {
 }
 
 export interface ListReleaseUnitsAllRequest {
-    page: number;
-    page_size: number;
-    unit_types: ProjectUnitType[];
-    context_slugs: string[];
-    context_module_pairs: ContextModulePair[];
+    page?: number;
+    page_size?: number;
+    unit_types?: ProjectUnitType[];
+    context_slugs?: string[];
+    context_module_pairs?: ContextModulePair[];
+    /** When set, returns units for these paths (no pagination). Omit other filter fields so none apply. */
+    units_paths?: string[];
 }
 
 export interface ListReleaseUnitsAllResponse {

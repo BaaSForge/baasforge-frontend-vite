@@ -16,19 +16,24 @@ import {
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ConfirmableButton } from "@/components/ui/confirmable-button";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
-import { UNIT_TYPE_ICONS } from "@/modules/project/components/unit-type-badge";
+import { ProjectUnitTypeSectionHeading } from "@/modules/project/components/project-unit-type-section-heading";
 import { DetailedUnitCard } from "@/modules/project/components/detailed-unit-card";
 import {
     useProjectModulesByContextsQuery,
     useProjectReleaseContextsQuery,
+    useProjectReleaseUnitsAllPinnedQuery,
     useProjectReleaseUnitsAllQuery,
 } from "@/modules/project/queries";
 import type { ContextModulePair, ListReleaseUnitsAllRequest, ProjectUnitResponse, ProjectUnitType } from "@/modules/project/types";
 import { STATIC_PROJECT_UNIT_TYPES } from "@/modules/project/types";
+import { projectUnitStablePath } from "@/modules/project/project-unit-stable-path";
+import { UNIT_TYPE_ICONS } from "@/modules/project/unit-type-icons";
+import { useAllUnitsPins } from "@/modules/project/use-all-units-pins";
 import { ChevronLeftIcon, ChevronRightIcon, LayersIcon, TextAlignJustifyIcon } from "lucide-react";
-import { Fragment, useEffect, useMemo } from "react";
+import { Fragment, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { groupUnitsByType } from "./group-units-by-type";
 import {
@@ -42,6 +47,7 @@ import {
 import { ReleaseUnitsContextsCombobox } from "./release-units-contexts-combobox";
 import { modulePairKey, parseModulePairKey, sortPairs } from "./release-units-module-pair-keys";
 import { ReleaseUnitsModulesCombobox } from "./release-units-modules-combobox";
+import { AllUnitsPinButton } from "./all-units-pin-button";
 
 function sameSortedStrings(a: string[], b: string[]): boolean {
     if (a.length !== b.length) return false;
@@ -58,17 +64,11 @@ function sameContextModulePairs(a: ContextModulePair[], b: ContextModulePair[]):
 }
 
 function UnitsGroupedByType({
-    projectId,
     units,
-    stageRuntimeId,
-    releaseIsStage,
-    releaseIsLive,
+    renderUnit,
 }: {
-    projectId?: string;
     units: ProjectUnitResponse[];
-    stageRuntimeId?: string;
-    releaseIsStage?: boolean;
-    releaseIsLive?: boolean;
+    renderUnit: (unit: ProjectUnitResponse) => ReactNode;
 }) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
     const sortedTypes = useMemo(() => [...grouped.keys()].sort((a, b) => a.localeCompare(b)), [grouped]);
@@ -77,18 +77,10 @@ function UnitsGroupedByType({
         <div className="space-y-6">
             {sortedTypes.map((unitType) => (
                 <div key={unitType}>
-                    <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
+                    <ProjectUnitTypeSectionHeading unitType={unitType} />
                     <div className="flex flex-col gap-4">
                         {grouped.get(unitType)?.map((unit) => (
-                            <DetailedUnitCard
-                                key={unit.id}
-                                projectId={projectId}
-                                unit={unit}
-                                showChatSessionOverflowMenu
-                                stageRuntimeId={stageRuntimeId}
-                                releaseIsStage={releaseIsStage}
-                                releaseIsLive={releaseIsLive}
-                            />
+                            <Fragment key={unit.id}>{renderUnit(unit)}</Fragment>
                         ))}
                     </div>
                 </div>
@@ -249,7 +241,47 @@ export function AllUnitsTab({
 
     const total = data?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
-    const units = data?.units ?? [];
+    const units = useMemo(() => data?.units ?? [], [data]);
+
+    const pinRuntimeKey = stageRuntimeId ?? "__production_runtime__";
+    const { pins, pathSet, pin, unpinPath, clearAll } = useAllUnitsPins(projectId, pinRuntimeKey);
+
+    const pinnedPathList = useMemo(() => pins.map((p) => p.path), [pins]);
+
+    const pinnedUnitsQuery = useProjectReleaseUnitsAllPinnedQuery(projectId, releaseId, pinnedPathList, {
+        enabled: tabActive && pins.length > 0,
+    });
+
+    const pinnedUnitsOrdered = useMemo(() => {
+        const raw = pinnedUnitsQuery.data?.units ?? [];
+        const rank = new Map(pins.map((p, i) => [p.path, i]));
+        return [...raw].sort((a, b) => {
+            const pa = projectUnitStablePath(a);
+            const pb = projectUnitStablePath(b);
+            return (rank.get(pa) ?? 1e9) - (rank.get(pb) ?? 1e9);
+        });
+    }, [pinnedUnitsQuery.data?.units, pins]);
+
+    const renderUnitCard = useCallback(
+        (unit: ProjectUnitResponse, cardPinned: boolean) => (
+            <DetailedUnitCard
+                projectId={projectId}
+                unit={unit}
+                showChatSessionOverflowMenu
+                stageRuntimeId={stageRuntimeId}
+                releaseIsStage={releaseIsStage}
+                releaseIsLive={releaseIsLive}
+                leadingHeaderToolbar={
+                    <AllUnitsPinButton
+                        pinned={cardPinned}
+                        onPin={() => void pin(unit)}
+                        onUnpin={() => void unpinPath(projectUnitStablePath(unit))}
+                    />
+                }
+            />
+        ),
+        [projectId, stageRuntimeId, releaseIsStage, releaseIsLive, pin, unpinPath],
+    );
 
     return (
         <div className="space-y-4">
@@ -371,36 +403,75 @@ export function AllUnitsTab({
                 </div>
             </div>
 
+            {pins.length > 0 ? (
+                <div
+                    className={cn(
+                        "border-primary/25 bg-primary/[0.06] ring-primary/15 space-y-4 rounded-lg border border-dashed p-4 shadow-sm ring-1 sm:p-5",
+                        "dark:bg-primary/10 dark:ring-primary/20",
+                    )}
+                >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
+                            <SectionTitle className="mb-0">Pinned units</SectionTitle>
+                        </div>
+                        <ConfirmableButton
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-muted-foreground shrink-0"
+                            confirmationTooltip="Re-click to confirm"
+                            onClick={() => {
+                                void clearAll();
+                            }}
+                            confirmChildren={<span>Unpin all</span>}
+                        >
+                            <span>Unpin all</span>
+                        </ConfirmableButton>
+                    </div>
+                    {pinnedUnitsQuery.isError ? (
+                        <div className="text-destructive text-center text-sm">Failed to load pinned units.</div>
+                    ) : pinnedUnitsQuery.isLoading ? (
+                        <div className="text-muted-foreground text-center text-sm">Loading pinned units…</div>
+                    ) : pinnedUnitsOrdered.length === 0 && pins.length > 0 ? (
+                        <div className="text-muted-foreground text-center text-sm">No pinned units in this release.</div>
+                    ) : groupMode === "ungrouped" ? (
+                        <div className="flex flex-col gap-4">
+                            {pinnedUnitsOrdered.map((unit) => (
+                                <Fragment key={projectUnitStablePath(unit)}>{renderUnitCard(unit, true)}</Fragment>
+                            ))}
+                        </div>
+                    ) : (
+                        <UnitsGroupedByType
+                            units={pinnedUnitsOrdered}
+                            renderUnit={(unit) => renderUnitCard(unit, true)}
+                        />
+                    )}
+                </div>
+            ) : null}
+
             {isLoading ? (
                 <div className="text-muted-foreground p-6 text-center text-sm">Loading units…</div>
             ) : error ? (
                 <div className="text-destructive p-6 text-center text-sm">Failed to load combined units.</div>
-            ) : units.length === 0 ? (
+            ) : units.length === 0 && pins.length === 0 ? (
                 <div className="text-muted-foreground border-border rounded-lg border border-dashed p-8 text-center text-sm">
                     No units match the current filters for this page.
                 </div>
+            ) : units.length === 0 && pins.length > 0 ? (
+                <div className="text-muted-foreground p-4 text-center text-sm">No additional units on this page.</div>
             ) : groupMode === "ungrouped" ? (
                 <div className={cn("flex flex-col gap-4", isFetching && "opacity-70")}>
                     {units.map((unit) => (
-                        <DetailedUnitCard
-                            key={unit.id}
-                            projectId={projectId}
-                            unit={unit}
-                            showChatSessionOverflowMenu
-                            stageRuntimeId={stageRuntimeId}
-                            releaseIsStage={releaseIsStage}
-                            releaseIsLive={releaseIsLive}
-                        />
+                        <Fragment key={unit.id}>
+                            {renderUnitCard(unit, pathSet.has(projectUnitStablePath(unit)))}
+                        </Fragment>
                     ))}
                 </div>
             ) : (
                 <div className={cn(isFetching && "opacity-70")}>
                     <UnitsGroupedByType
-                        projectId={projectId}
                         units={units}
-                        stageRuntimeId={stageRuntimeId}
-                        releaseIsStage={releaseIsStage}
-                        releaseIsLive={releaseIsLive}
+                        renderUnit={(unit) => renderUnitCard(unit, pathSet.has(projectUnitStablePath(unit)))}
                     />
                 </div>
             )}

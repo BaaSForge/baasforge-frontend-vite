@@ -14,7 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { Maximize2, TriangleAlert } from "lucide-react";
 import { scheduleScalarHttpTestAiNudgeInboxSync } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
 import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
@@ -54,6 +54,7 @@ export type DetailedUnitCardProps = {
     unit: ProjectUnitResponse;
     projectId?: string;
     chatSessionId?: string;
+    leadingHeaderToolbar?: ReactNode;
     className?: string;
     unitRefreshPending?: boolean;
     showChatSessionOverflowMenu?: boolean;
@@ -70,6 +71,7 @@ export function DetailedUnitCard({
     unit,
     projectId,
     chatSessionId,
+    leadingHeaderToolbar,
     className,
     unitRefreshPending,
     showChatSessionOverflowMenu,
@@ -175,6 +177,9 @@ export function DetailedUnitCard({
                         <div className="flex min-w-0 flex-wrap items-center gap-2">{badges}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-0.5 self-end sm:self-auto">
+                        {leadingHeaderToolbar != null ? (
+                            <div className="flex shrink-0 items-center">{leadingHeaderToolbar}</div>
+                        ) : null}
                         <Button
                             type="button"
                             variant="ghost"

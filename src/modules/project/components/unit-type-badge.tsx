@@ -1,17 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
-import type { LucideIcon } from "lucide-react";
-import { Bot, GitMerge, Inbox, Plug2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { NEUTRAL_PROJECT_UNIT_TYPE_BADGE_CLASS } from "../unit-type-badge-class";
+import { UNIT_TYPE_ICONS } from "../unit-type-icons";
 import type { ProjectUnitType } from "../types";
-
-export const UNIT_TYPE_ICONS = {
-    api: Plug2,
-    actor: Bot,
-    workflow: GitMerge,
-    queue_worker: Inbox,
-} as const satisfies Record<ProjectUnitType, LucideIcon>;
 
 export function UnitTypeBadge({
     unitType,
@@ -33,3 +25,5 @@ export function UnitTypeBadge({
         </Badge>
     );
 }
+
+export { UNIT_TYPE_ICONS } from "../unit-type-icons";

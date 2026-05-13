@@ -1,8 +1,7 @@
-import { SectionTitle } from "@/components/section-title";
+import { ProjectUnitTypeSectionHeading } from "@/modules/project/components/project-unit-type-section-heading";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
-import { capitalizeFirstLetter } from "@/lib/utils";
 import { postReleaseUnitPreviousByFullIds } from "@/modules/project/api";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
 import type { ProjectUnitResponse } from "@/modules/project/types";
@@ -43,7 +42,7 @@ function UnitsGroupedByType({
         <div className="space-y-6">
             {sortedTypes.map((unitType) => (
                 <div key={unitType}>
-                    <SectionTitle>{capitalizeFirstLetter(unitType)}</SectionTitle>
+                    <ProjectUnitTypeSectionHeading unitType={unitType} />
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {grouped.get(unitType)?.map((unit) => (
                             <UnitCardCompact
