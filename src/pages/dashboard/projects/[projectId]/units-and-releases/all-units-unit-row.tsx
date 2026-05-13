@@ -1,0 +1,66 @@
+"use client";
+
+import { DetailedUnitCard } from "@/modules/project/components/detailed-unit-card";
+import { projectUnitStablePath } from "@/modules/project/project-unit-stable-path";
+import type { ProjectUnitResponse } from "@/modules/project/types";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { AllUnitsFlagTestedIconButton } from "./all-units-flag-tested-icon-button";
+import { AllUnitsPinButton } from "./all-units-pin-button";
+import { useAllUnitsUnitFlagTested } from "./use-all-units-unit-flag-tested";
+
+export type AllUnitsUnitRowProps = {
+    projectId: string;
+    unit: ProjectUnitResponse;
+    cardPinned: boolean;
+    stageRuntimeId?: string;
+    releaseIsStage?: boolean;
+    releaseIsLive?: boolean;
+    onPin: (unit: ProjectUnitResponse) => void;
+    onUnpinPath: (path: string) => void;
+};
+
+export function AllUnitsUnitRow({
+    projectId,
+    unit,
+    cardPinned,
+    stageRuntimeId,
+    releaseIsStage,
+    releaseIsLive = true,
+    onPin,
+    onUnpinPath,
+}: AllUnitsUnitRowProps) {
+    const { flagged, toggle } = useAllUnitsUnitFlagTested(projectId, unit);
+    const [emphasisPanels, setEmphasisPanels] = useState(false);
+
+    return (
+        <div
+            className={cn(
+                "w-full min-w-0",
+                flagged && "transition-opacity duration-150",
+                flagged && !emphasisPanels && "opacity-50 hover:opacity-100 focus-within:opacity-100",
+                flagged && emphasisPanels && "opacity-100",
+            )}
+        >
+            <DetailedUnitCard
+                projectId={projectId}
+                unit={unit}
+                showChatSessionOverflowMenu
+                stageRuntimeId={stageRuntimeId}
+                releaseIsStage={releaseIsStage}
+                releaseIsLive={releaseIsLive}
+                onPanelEmphasisChange={setEmphasisPanels}
+                leadingHeaderToolbar={
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
+                        <AllUnitsPinButton
+                            pinned={cardPinned}
+                            onPin={() => void onPin(unit)}
+                            onUnpin={() => void onUnpinPath(projectUnitStablePath(unit))}
+                        />
+                        <AllUnitsFlagTestedIconButton flagged={flagged} onToggle={() => void toggle()} />
+                    </div>
+                }
+            />
+        </div>
+    );
+}

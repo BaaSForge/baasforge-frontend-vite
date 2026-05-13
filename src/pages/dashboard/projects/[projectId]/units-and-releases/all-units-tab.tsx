@@ -20,7 +20,6 @@ import { ConfirmableButton } from "@/components/ui/confirmable-button";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { ProjectUnitTypeSectionHeading } from "@/modules/project/components/project-unit-type-section-heading";
-import { DetailedUnitCard } from "@/modules/project/components/detailed-unit-card";
 import {
     useProjectModulesByContextsQuery,
     useProjectReleaseContextsQuery,
@@ -47,7 +46,7 @@ import {
 import { ReleaseUnitsContextsCombobox } from "./release-units-contexts-combobox";
 import { modulePairKey, parseModulePairKey, sortPairs } from "./release-units-module-pair-keys";
 import { ReleaseUnitsModulesCombobox } from "./release-units-modules-combobox";
-import { AllUnitsPinButton } from "./all-units-pin-button";
+import { AllUnitsUnitRow } from "./all-units-unit-row";
 
 function sameSortedStrings(a: string[], b: string[]): boolean {
     if (a.length !== b.length) return false;
@@ -264,20 +263,15 @@ export function AllUnitsTab({
 
     const renderUnitCard = useCallback(
         (unit: ProjectUnitResponse, cardPinned: boolean) => (
-            <DetailedUnitCard
+            <AllUnitsUnitRow
                 projectId={projectId}
                 unit={unit}
-                showChatSessionOverflowMenu
+                cardPinned={cardPinned}
                 stageRuntimeId={stageRuntimeId}
                 releaseIsStage={releaseIsStage}
                 releaseIsLive={releaseIsLive}
-                leadingHeaderToolbar={
-                    <AllUnitsPinButton
-                        pinned={cardPinned}
-                        onPin={() => void pin(unit)}
-                        onUnpin={() => void unpinPath(projectUnitStablePath(unit))}
-                    />
-                }
+                onPin={pin}
+                onUnpinPath={unpinPath}
             />
         ),
         [projectId, stageRuntimeId, releaseIsStage, releaseIsLive, pin, unpinPath],

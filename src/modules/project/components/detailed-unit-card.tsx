@@ -65,6 +65,8 @@ export type DetailedUnitCardProps = {
     /** From the open release (`is_stage`); picks stage vs production trigger URL. */
     releaseIsStage?: boolean;
     releaseIsLive?: boolean;
+    /** When live interaction or dependencies panel is expanded (for host-driven chrome, e.g. opacity). */
+    onPanelEmphasisChange?: (emphasis: boolean) => void;
 };
 
 export function DetailedUnitCard({
@@ -80,6 +82,7 @@ export function DetailedUnitCard({
     stageRuntimeId,
     releaseIsStage,
     releaseIsLive = true,
+    onPanelEmphasisChange,
 }: DetailedUnitCardProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
@@ -105,6 +108,13 @@ export function DetailedUnitCard({
         scheduleScalarHttpTestAiNudgeInboxSync();
     }, [releaseIsLive]);
     const hasDependencies = useMemo(() => hasUnitDependsOn(unit.depends_on), [unit.depends_on]);
+
+    const panelEmphasis =
+        (releaseIsLive === true && interactionOpen) || (hasDependencies === true && dependenciesOpen);
+    useEffect(() => {
+        onPanelEmphasisChange?.(panelEmphasis);
+    }, [onPanelEmphasisChange, panelEmphasis]);
+
     const panelToggleValue = useMemo(() => {
         const v: string[] = [];
         if (explanationOpen) v.push("explanation");
