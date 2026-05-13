@@ -9,6 +9,7 @@ import type { AnyApiReferenceConfiguration } from "@scalar/types/api-reference";
 import { buildOpenApiDocument } from "./build-openapi-document";
 import { resolveOperationUrl } from "./resolve-operation-url";
 import { ensureScalarApiReferenceStylesLoaded } from "./scalar-api-reference-styles";
+import { acquireScalarHistoryUrlSyncBlock } from "./scalar-history-url-sync-block";
 import { scalarSiteEmbedConfiguration } from "./scalar-site-embed";
 import { useScalarHttpTestAiNudge } from "./scalar-http-test-ai-nudge";
 
@@ -42,6 +43,10 @@ function ScalarApiHostWithPaintGate({
     const shellRef = useRef<HTMLDivElement>(null);
     const [paintDone, setPaintDone] = useState(false);
     const finishedRef = useRef(false);
+
+    useEffect(() => {
+        return acquireScalarHistoryUrlSyncBlock();
+    }, []);
 
     useEffect(() => {
         const shell = shellRef.current;
