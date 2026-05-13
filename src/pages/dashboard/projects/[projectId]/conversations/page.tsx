@@ -119,7 +119,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const { search: locationSearch } = useLocation();
     const conversationDebug = useConversationDebugSession();
     const messageDebugContext = useMemo(() => getConversationDebugSendContext(conversationDebug), [conversationDebug]);
-    const { parsedFromUrl: debugParsedFromUrl } = conversationDebug;
+    const { debugFromSearch } = conversationDebug;
 
     const queryClient = useQueryClient();
     const messageInputRef = useRef<ChatRichTextEditorHandle | null>(null);
@@ -169,13 +169,13 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         writeChatComposerDraft(composerDraftStorageKey, messageInput);
     }, [composerDraftStorageKey, messageInput]);
 
-    /** With `?debug=`, strip release/trace chips, then debug release (and traces) first, two line breaks, then remaining text. */
+    /** With `?debug=` still in the URL: merge release/trace chips into the draft once (URL is then replaced in the provider). */
     useEffect(() => {
-        if (!debugParsedFromUrl || projectId == null || projectId === "") return;
+        if (!debugFromSearch || projectId == null || projectId === "") return;
 
-        const release = releaseResponseFromConversationDebug(debugParsedFromUrl, projectId);
+        const release = releaseResponseFromConversationDebug(debugFromSearch, projectId);
         const releaseToken = buildInlineToken("release", JSON.stringify(release));
-        const traceIdList = debugParsedFromUrl.trace_ids ?? [];
+        const traceIdList = debugFromSearch.trace_ids ?? [];
         const traceTokens = traceIdList.map((id) => {
             const ref: ChatComposerTraceReference = { release, traceID: id.trim() };
             return buildInlineToken("trace", JSON.stringify(ref));
@@ -188,7 +188,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                     : composeDebugReleaseDraft(prev, releaseToken);
             return next === prev ? prev : next;
         });
-    }, [debugParsedFromUrl, projectId, conversationId]);
+    }, [debugFromSearch, projectId, conversationId]);
 
     const title = conversationId ? "Conversation" : "New conversation";
 

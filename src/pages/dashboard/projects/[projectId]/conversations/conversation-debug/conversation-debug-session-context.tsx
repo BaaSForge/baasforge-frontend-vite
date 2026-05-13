@@ -11,17 +11,20 @@ import { cn } from "@/lib/utils";
 import type { CreateProjectChatSessionMessageDebugContext } from "@/modules/project-chat/types";
 import { BugPlay, Check } from "lucide-react";
 import * as React from "react";
-import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router";
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 
 import {
     type ConversationDebugFromUrl,
     parseConversationDebugFromSearch,
+    searchStringWithoutDebugParam,
 } from "./parse-conversation-debug-search";
 
 type ConversationDebugSessionContextValue = {
-    /** Parsed `debug` query when present and valid. */
+    /** Last valid debug payload from this visit (URL or retained after `debug` is stripped from the address bar). */
     parsedFromUrl: ConversationDebugFromUrl | null;
+    /** Parsed `debug` only while it is still in the URL; `null` after it is replaced away. */
+    debugFromSearch: ConversationDebugFromUrl | null;
     /** Include release in API calls for new user messages when `debug` is present. */
     isDebugSendActive: boolean;
 };
@@ -50,13 +53,26 @@ function shouldShowDebugStartedDisclaimer(): boolean {
 }
 
 export function ConversationDebugSessionProvider({ children }: { children: React.ReactNode }) {
-    const { search } = useLocation();
+    const { pathname, search } = useLocation();
+    const navigate = useNavigate();
+    const heldDebugRef = useRef<ConversationDebugFromUrl | null>(null);
 
     const [disclaimerOpen, setDisclaimerOpen] = useState(false);
 
-    const parsedFromUrl = useMemo(() => parseConversationDebugFromSearch(search), [search]);
+    const debugFromSearch = useMemo(() => parseConversationDebugFromSearch(search), [search]);
+    if (debugFromSearch != null) {
+        heldDebugRef.current = debugFromSearch;
+    }
+    const parsedFromUrl = debugFromSearch ?? heldDebugRef.current;
 
     const isDebugSendActive = parsedFromUrl != null;
+
+    useEffect(() => {
+        if (debugFromSearch == null) return;
+        const nextSearch = searchStringWithoutDebugParam(search);
+        if (nextSearch === search) return;
+        navigate({ pathname, search: nextSearch }, { replace: true });
+    }, [debugFromSearch, navigate, pathname, search]);
 
     useEffect(() => {
         startTransition(() => {
@@ -80,9 +96,10 @@ export function ConversationDebugSessionProvider({ children }: { children: React
     const value = useMemo(
         (): ConversationDebugSessionContextValue => ({
             parsedFromUrl,
+            debugFromSearch,
             isDebugSendActive,
         }),
-        [parsedFromUrl, isDebugSendActive],
+        [parsedFromUrl, debugFromSearch, isDebugSendActive],
     );
 
     return (

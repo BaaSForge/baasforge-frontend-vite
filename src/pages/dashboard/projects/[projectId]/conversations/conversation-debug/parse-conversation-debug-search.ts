@@ -107,6 +107,16 @@ export function extractRawDebugQueryValue(search: string): string | null {
     return null;
 }
 
+export function searchStringWithoutDebugParam(search: string): string {
+    const raw = search.startsWith("?") ? search.slice(1) : search;
+    if (!raw) return "";
+    const params = new URLSearchParams(raw);
+    if (!params.has("debug")) return search.startsWith("?") ? search : `?${raw}`;
+    params.delete("debug");
+    const qs = params.toString();
+    return qs === "" ? "" : `?${qs}`;
+}
+
 export function parseConversationDebugFromSearch(search: string): ConversationDebugFromUrl | null {
     const raw = extractRawDebugQueryValue(search);
     if (raw == null) return null;
