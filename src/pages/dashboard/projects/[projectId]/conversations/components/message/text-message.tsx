@@ -23,6 +23,7 @@ import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { InverseMessageCard } from "./inverse-message-card.tsx";
 import { ExploringToolCallsMessage } from "./exploring-tool-calls-message";
 import { FailedPlannerRetryWithAlert, destructiveRetryButtonClass } from "./failed-planner-retry-button";
+import { AiGenerationFailedStatusAlert } from "./ai-generation-failed-status-alert";
 import { AiStreamingStatusInline, AiTextGeneratingPlaceholder } from "./generating-inline-placeholders";
 import { AiMessageStatusIcon, DeliveryStatusIcon } from "./message-icons";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";
@@ -200,6 +201,8 @@ export function TextMessage({
                             {showAiStatusIcon &&
                                 (message.status === ChatMessageStatus.Generating ? (
                                     <AiStreamingStatusInline />
+                                ) : message.status === ChatMessageStatus.Failed ? (
+                                    <AiGenerationFailedStatusAlert />
                                 ) : (
                                     <AiMessageStatusIcon status={message.status!} />
                                 ))}
