@@ -68,6 +68,7 @@ import { ConversationStaleBaseReleaseTitleBadge } from "./components/conversatio
 import { buildComposerPrefillFromUserTextMessage, type ChatComposerPrefill } from "./chat-composer-prefill";
 import type { ChatRichTextEditorHandle } from "@/components/chat-rich-text-editor";
 import Controls from "./components/controls";
+import { GenerationSessionEndBanner } from "./components/generation-session-end-banner";
 import { Message, MessageBranch } from "./components/message";
 import { LiveProductionTimelineProvider } from "./components/message/live-production-timeline-context";
 import { partitionMessagesByInvokingParent } from "./components/message/partition-invoked-messages";
@@ -610,14 +611,10 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                             />
                                         )}
                                         {lastAiEndStatus === "failed" && !isGenerating && (
-                                            <div className="mt-4 mb-6 flex w-full min-w-0 items-center gap-3">
-                                                <div className="h-px min-w-0 flex-1 bg-border" aria-hidden />
-                                                <p className="shrink-0 text-xs text-destructive">Generation has some failures.</p>
-                                                <div className="h-px min-w-0 flex-1 bg-border" aria-hidden />
-                                            </div>
+                                            <GenerationSessionEndBanner variant="failed" />
                                         )}
                                         {lastAiEndStatus === "stopped" && !isGenerating && (
-                                            <div className="py-1 text-sm text-muted-foreground">Generation stopped.</div>
+                                            <GenerationSessionEndBanner variant="stopped" />
                                         )}
                                         {(isGenerating || placeholderVisible) && (
                                             <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />
