@@ -98,6 +98,13 @@ html.dark-midnight .scalar-http-operation-client.scalar-app {
     display: none !important;
 }
 
+.scalar-http-operation-client [data-testid="lazy-container"][data-placeholder="true"][id$="/description/introduction"] {
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden;
+    pointer-events: none;
+}
+
 body .scalar.scalar-app.z-overlay {
     z-index: 50;
 }
