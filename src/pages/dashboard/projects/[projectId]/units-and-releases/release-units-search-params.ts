@@ -78,6 +78,17 @@ function parsePairsFromParams(searchParams: URLSearchParams): ContextModulePair[
     }
 }
 
+function getStoredAllUnitPagesSize(): number {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.ALL_UNIT_PAGES_SIZE);
+        if (raw == null || raw === "") return DEFAULT_ALL_UNITS_PAGE_SIZE;
+        const n = Number.parseInt(raw, 10);
+        return isAllowedPageSize(n) ? n : DEFAULT_ALL_UNITS_PAGE_SIZE;
+    } catch {
+        return DEFAULT_ALL_UNITS_PAGE_SIZE;
+    }
+}
+
 /** URL `group` when set; otherwise the same localStorage key as the New units tab. */
 export function getEffectiveGroupMode(searchParams: URLSearchParams): AllUnitsGroupMode {
     const raw = searchParams.get("group");
@@ -106,7 +117,11 @@ export function readReleaseUnitsSearchParams(searchParams: URLSearchParams): {
     const unitsTab: UnitsTabValue = tabRaw === "all" ? "all" : "new";
 
     const page = parsePositiveInt(searchParams.get("page"), DEFAULT_ALL_UNITS_PAGE);
-    const pageSizeRaw = parsePositiveInt(searchParams.get("pageSize"), DEFAULT_ALL_UNITS_PAGE_SIZE);
+    const pageSizeParam = searchParams.get("pageSize");
+    const pageSizeRaw =
+        pageSizeParam == null || pageSizeParam === ""
+            ? getStoredAllUnitPagesSize()
+            : parsePositiveInt(pageSizeParam, DEFAULT_ALL_UNITS_PAGE_SIZE);
     const pageSize = isAllowedPageSize(pageSizeRaw) ? pageSizeRaw : DEFAULT_ALL_UNITS_PAGE_SIZE;
 
     return {
@@ -175,6 +190,11 @@ export function mergeAllUnitsSearchParams(
     }
 
     if (patch.pageSize != null) {
+        try {
+            localStorage.setItem(STORAGE_KEYS.ALL_UNIT_PAGES_SIZE, String(patch.pageSize));
+        } catch {
+            // ignore
+        }
         if (patch.pageSize === DEFAULT_ALL_UNITS_PAGE_SIZE) next.delete("pageSize");
         else next.set("pageSize", String(patch.pageSize));
     }
