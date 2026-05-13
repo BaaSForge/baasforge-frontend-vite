@@ -3,18 +3,14 @@ export const UNIFIED_KEYBOARD_SCOPES = {
     SECONDARY_SIDEBAR: "secondary-sidebar",
     FOCUS_CHAT: "focus-chat",
     OPEN_PREVIOUS_CONVERSATIONS: "open-previous-conversations",
-    FALLBACK_KEY: "fallback-key",
     OPEN_SHORTCUTS_MODAL: "open-shortcuts-modal",
 } as const;
 
 export type UnifiedKeyboardScope = (typeof UNIFIED_KEYBOARD_SCOPES)[keyof typeof UNIFIED_KEYBOARD_SCOPES];
 
 type Handler = () => void;
-type FallbackHandler = (key: string) => void;
 
-type Handlers = Partial<{
-    [K in UnifiedKeyboardScope]: K extends typeof UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY ? FallbackHandler : Handler;
-}>;
+type Handlers = Partial<Record<UnifiedKeyboardScope, Handler>>;
 
 const mod = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
 
@@ -107,15 +103,6 @@ function handleKeyDown(e: KeyboardEvent): void {
         (handler as Handler)();
         return;
     }
-
-    // Fallback: single printable key → focus chat and type it (never for "?" or "/").
-    if (!inInput && handlers[UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY] && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const key = e.key;
-        if (key.length === 1 && key !== "?" && key !== "/") {
-            e.preventDefault();
-            (handlers[UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY] as FallbackHandler)(key);
-        }
-    }
 }
 
 function attach(): void {
@@ -130,8 +117,8 @@ function detach(): void {
     window.removeEventListener("keydown", handleKeyDown, false);
 }
 
-export function register(scope: UnifiedKeyboardScope, handler: Handler | FallbackHandler): void {
-    (handlers as Record<string, Handler | FallbackHandler>)[scope] = handler;
+export function register(scope: UnifiedKeyboardScope, handler: Handler): void {
+    handlers[scope] = handler;
     attach();
 }
 

@@ -132,15 +132,9 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     useRegisterSecondarySidebarShortcut();
     useEffect(() => {
         const onFocusChat = () => messageInputRef.current?.focus();
-        const onFallbackKey = (key: string) => {
-            messageInputRef.current?.focus();
-            messageInputRef.current?.appendPlainText(key);
-        };
         register(UNIFIED_KEYBOARD_SCOPES.FOCUS_CHAT, onFocusChat);
-        register(UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY, onFallbackKey);
         return () => {
             unregister(UNIFIED_KEYBOARD_SCOPES.FOCUS_CHAT);
-            unregister(UNIFIED_KEYBOARD_SCOPES.FALLBACK_KEY);
         };
     }, [messageInputRef]);
     const { conversationId, projectId } = useParams<{
