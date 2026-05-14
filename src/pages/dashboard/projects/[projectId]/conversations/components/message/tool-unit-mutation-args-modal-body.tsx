@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
 import { Markdown } from "@/components/markdown";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,18 @@ function readRawArgumentsFromPayloadRaw(payloadRaw: unknown): unknown | undefine
     if (payloadRaw == null || typeof payloadRaw !== "object" || Array.isArray(payloadRaw)) return undefined;
     if (!Object.prototype.hasOwnProperty.call(payloadRaw, "raw_arguments")) return undefined;
     return (payloadRaw as ToolMessagePayloadRaw).raw_arguments;
+}
+
+function rawArgumentsObject(payloadRaw: unknown): Record<string, unknown> | null {
+    const raw = readRawArgumentsFromPayloadRaw(payloadRaw);
+    if (raw != null && typeof raw === "object" && !Array.isArray(raw)) return raw as Record<string, unknown>;
+    return null;
+}
+
+function nonEmptyString(value: unknown): string | null {
+    if (value == null) return null;
+    const s = String(value).trim();
+    return s.length > 0 ? s : null;
 }
 
 function rawArgumentsJsonString(raw: unknown): string | null {
@@ -48,6 +61,17 @@ function RawArgumentsFallback({ payloadRaw }: { payloadRaw: unknown }) {
 
 function EmptyPlaceholder() {
     return <p className="text-muted-foreground text-sm">No arguments</p>;
+}
+
+function UnitIdArgValue({ unitId }: { unitId: string }) {
+    return (
+        <CopyableEntityIdBadge
+            id={unitId}
+            className="max-w-full self-start"
+            truncate={false}
+            title="Click to copy unit id"
+        />
+    );
 }
 
 function ExplanationNoteField({ explanation }: { explanation: string }) {
@@ -105,20 +129,36 @@ export function RemoveUnitArgsModalBody({
     args: ToolRemoveUnitPayload["args"] | undefined;
     payloadRaw: unknown;
 }) {
-    const hasUnitId = args?.unit_id != null && String(args.unit_id).trim() !== "";
-    if (!hasUnitId) {
+    const rawObj = rawArgumentsObject(payloadRaw);
+    const unitIdFromArgs = nonEmptyString(args?.unit_id);
+    const unitId = unitIdFromArgs ?? nonEmptyString(rawObj?.unit_id);
+    const rawHasKeysBeyondUnitId =
+        rawObj != null &&
+        Object.keys(rawObj).some((k) => {
+            if (k === "unit_id") return false;
+            const v = rawObj[k];
+            if (v == null) return false;
+            if (typeof v === "string") return v.trim() !== "";
+            return true;
+        });
+
+    if (unitId != null) {
         return (
             <div className="flex flex-col gap-4">
-                <RawArgumentsFallback payloadRaw={payloadRaw} />
-                {!readRawArgumentsFromPayloadRaw(payloadRaw) && <EmptyPlaceholder />}
+                <ArgField label="Unit id">
+                    <UnitIdArgValue unitId={unitId} />
+                </ArgField>
+                {unitIdFromArgs == null && rawHasKeysBeyondUnitId ? (
+                    <RawArgumentsFallback payloadRaw={payloadRaw} />
+                ) : null}
             </div>
         );
     }
+
     return (
         <div className="flex flex-col gap-4">
-            <ArgField label="Unit id">
-                <p className="font-mono text-foreground text-sm leading-relaxed">{String(args!.unit_id)}</p>
-            </ArgField>
+            <RawArgumentsFallback payloadRaw={payloadRaw} />
+            {!readRawArgumentsFromPayloadRaw(payloadRaw) && <EmptyPlaceholder />}
         </div>
     );
 }
@@ -130,13 +170,37 @@ export function ModifyUnitArgsModalBody({
     args: ToolModifyUnitPayload["args"] | undefined;
     payloadRaw: unknown;
 }) {
-    const hasUnitId = args?.unit_id != null && String(args.unit_id).trim() !== "";
+    const rawObj = rawArgumentsObject(payloadRaw);
+    const unitIdFromArgs = nonEmptyString(args?.unit_id);
+    const unitIdFromRaw = nonEmptyString(rawObj?.unit_id);
+    const unitId = unitIdFromArgs ?? unitIdFromRaw;
+    const hasUnitId = unitId != null;
     const hasRevision = args?.revision != null && String(args.revision).trim() !== "";
     const hasCode = args?.code != null && String(args.code).trim() !== "";
     const hasExplanation = args?.explanation != null && String(args.explanation).trim() !== "";
     const structured = hasUnitId || hasRevision || hasCode || hasExplanation;
 
+    const rawHasKeysBeyondUnitId =
+        rawObj != null &&
+        Object.keys(rawObj).some((k) => {
+            if (k === "unit_id") return false;
+            const v = rawObj[k];
+            if (v == null) return false;
+            if (typeof v === "string") return v.trim() !== "";
+            return true;
+        });
+
     if (!structured) {
+        if (unitId != null) {
+            return (
+                <div className="flex flex-col gap-4">
+                    <ArgField label="Unit id">
+                        <UnitIdArgValue unitId={unitId} />
+                    </ArgField>
+                    {unitIdFromArgs == null && rawHasKeysBeyondUnitId ? <RawArgumentsFallback payloadRaw={payloadRaw} /> : null}
+                </div>
+            );
+        }
         return (
             <div className="flex flex-col gap-4">
                 <RawArgumentsFallback payloadRaw={payloadRaw} />
@@ -149,7 +213,7 @@ export function ModifyUnitArgsModalBody({
         <div className="flex flex-col gap-4">
             {hasUnitId ? (
                 <ArgField label="Unit id">
-                    <p className="font-mono text-foreground text-sm leading-relaxed">{String(args!.unit_id)}</p>
+                    <UnitIdArgValue unitId={unitId} />
                 </ArgField>
             ) : null}
             {hasRevision ? (
