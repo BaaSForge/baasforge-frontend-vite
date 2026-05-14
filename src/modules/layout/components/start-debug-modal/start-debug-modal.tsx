@@ -376,6 +376,10 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                     bodyScroll={false}
                     showCloseButton
                     decorator={<StartDebugModalBgIllustration />}
+                    onOpenAutoFocus={(e) => {
+                        e.preventDefault();
+                        releaseRevisionInputRef.current?.focus();
+                    }}
                 >
                     <CentricModalHeader className="bg-transparent">
                         <CentricModalTitle>Start Debug</CentricModalTitle>
