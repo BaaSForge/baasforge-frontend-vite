@@ -4,6 +4,8 @@ import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
 import { Markdown } from "@/components/markdown";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { UnitTypeBadge } from "@/modules/project/components/unit-type-badge";
+import { STATIC_PROJECT_UNIT_TYPES, type ProjectUnitType } from "@/modules/project/types";
 import { UnitExplanationCurrentViewer } from "@/modules/project-chat/components/unit-explanation-current-viewer";
 import type {
     ToolCreateUnitPayload,
@@ -28,6 +30,11 @@ function nonEmptyString(value: unknown): string | null {
     if (value == null) return null;
     const s = String(value).trim();
     return s.length > 0 ? s : null;
+}
+
+function parseProjectUnitType(value: unknown): ProjectUnitType | null {
+    if (typeof value !== "string") return null;
+    return (STATIC_PROJECT_UNIT_TYPES as readonly string[]).includes(value) ? (value as ProjectUnitType) : null;
 }
 
 function rawArgumentsJsonString(raw: unknown): string | null {
@@ -84,6 +91,19 @@ function ExplanationNoteField({ explanation }: { explanation: string }) {
     );
 }
 
+function UnitTypeArgField({ unitTypeRaw }: { unitTypeRaw: string }) {
+    const parsed = parseProjectUnitType(unitTypeRaw);
+    return (
+        <ArgField label="Unit type">
+            {parsed != null ? (
+                <UnitTypeBadge unitType={parsed} />
+            ) : (
+                <p className="text-foreground text-sm leading-relaxed">{unitTypeRaw}</p>
+            )}
+        </ArgField>
+    );
+}
+
 export function CreateUnitArgsModalBody({
     args,
     payloadRaw,
@@ -91,27 +111,38 @@ export function CreateUnitArgsModalBody({
     args: ToolCreateUnitPayload["args"] | undefined;
     payloadRaw: unknown;
 }) {
+    const rawObj = rawArgumentsObject(payloadRaw);
     const hasUnitType = args?.unit_type != null && String(args.unit_type).trim() !== "";
     const hasCode = args?.code != null && String(args.code).trim() !== "";
     const hasExplanation = args?.explanation != null && String(args.explanation).trim() !== "";
     const structured = hasUnitType || hasCode || hasExplanation;
 
     if (!structured) {
+        const unitTypeRaw = nonEmptyString(args?.unit_type) ?? nonEmptyString(rawObj?.unit_type);
+        const rawHasKeysBeyondUnitType =
+            rawObj != null &&
+            Object.keys(rawObj).some((k) => {
+                if (k === "unit_type") return false;
+                const v = rawObj[k];
+                if (v == null) return false;
+                if (typeof v === "string") return v.trim() !== "";
+                return true;
+            });
+        const rawPresent = readRawArgumentsFromPayloadRaw(payloadRaw) != null;
+        const showRawBlock = rawHasKeysBeyondUnitType || (rawPresent && unitTypeRaw == null);
+
         return (
             <div className="flex flex-col gap-4">
-                <RawArgumentsFallback payloadRaw={payloadRaw} />
-                {!readRawArgumentsFromPayloadRaw(payloadRaw) && <EmptyPlaceholder />}
+                {unitTypeRaw != null ? <UnitTypeArgField unitTypeRaw={unitTypeRaw} /> : null}
+                {showRawBlock ? <RawArgumentsFallback payloadRaw={payloadRaw} /> : null}
+                {!rawPresent && unitTypeRaw == null ? <EmptyPlaceholder /> : null}
             </div>
         );
     }
 
     return (
         <div className="flex flex-col gap-4">
-            {hasUnitType ? (
-                <ArgField label="Unit type">
-                    <p className="text-foreground text-sm leading-relaxed">{String(args!.unit_type)}</p>
-                </ArgField>
-            ) : null}
+            {hasUnitType ? <UnitTypeArgField unitTypeRaw={String(args!.unit_type)} /> : null}
             {hasCode ? (
                 <ArgField label="Code">
                     <UnitExplanationCurrentViewer code={String(args!.code)} language="typescript" plainText={false} />
