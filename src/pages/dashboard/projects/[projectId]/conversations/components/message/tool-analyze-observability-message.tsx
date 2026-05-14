@@ -1,12 +1,12 @@
 import { Activity, ChevronDownIcon, Package } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { useParams } from "react-router";
 
 import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardChip } from "@/modules/project";
@@ -19,10 +19,13 @@ import {
 import { useChatSessionEmbeddedUnitsLatestRevisions } from "@/modules/project-chat/use-chat-session-embedded-units-latest-revisions";
 
 import { ToolNestedStepsPlaceholder } from "./generating-inline-placeholders";
-import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
-import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
+import { ToolAnalyzeObservabilityArgsModalBody } from "./tool-analyze-tool-args-modal-bodies";
+import { ToolDetailModalExpandButton, ToolDetailModalLayout } from "./tool-detail-modal-shell";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
+
+const ARGS_MODAL_TITLE = "Observability analysis";
 
 function getRelatedUnits(message: ChatMessageWithDeliveryStatus): ProjectUnitResponse[] {
     const p = message.payload as ToolAnalyzeObservabilityPayload | ProjectUnitResponse[] | undefined | null;
@@ -46,14 +49,6 @@ function getDetailedReport(message: ChatMessageWithDeliveryStatus): string {
     return typeof s === "string" ? s : "";
 }
 
-function formatAnalyzeObservabilityArgs(args: ToolAnalyzeObservabilityPayload["args"]): string {
-    const parts: string[] = [];
-    if (args?.brief != null && args.brief !== "") parts.push(`brief: ${String(args.brief)}`);
-    if (args?.trace_id != null && String(args.trace_id).trim() !== "") parts.push(`trace_id: ${String(args.trace_id)}`);
-    if (args?.release_id != null && String(args.release_id).trim() !== "") parts.push(`release_id: ${String(args.release_id)}`);
-    return parts.length ? parts.join(", ") : "—";
-}
-
 function trimArgString(value: unknown): string | null {
     if (value == null) return null;
     const s = String(value).trim();
@@ -61,6 +56,7 @@ function trimArgString(value: unknown): string | null {
 }
 
 export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { message: ChatMessageWithDeliveryStatus; nestedMessages?: ReactNode }) {
+    const [argsModalOpen, setArgsModalOpen] = useState(false);
     const { projectId, conversationId: chatSessionId } = useParams<{ projectId: string; conversationId?: string }>();
     const units = getRelatedUnits(message);
     const shouldRefreshFromHistory = message.status !== ChatMessageStatus.Generating;
@@ -73,7 +69,6 @@ export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { m
     const hasDetailedReport = detailedReport.trim().length > 0;
     const hasNestedMessages = nestedMessages != null;
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
-    const formattedArgs = args ? formatAnalyzeObservabilityArgs(args) : "—";
     const traceIdLabel = trimArgString(args?.trace_id);
     const releaseIdLabel = trimArgString(args?.release_id);
     const argIdChips: { kind: "trace" | "release"; id: string }[] = [];
@@ -87,25 +82,24 @@ export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { m
                 <div className="flex w-full min-w-0 max-w-full justify-start overflow-hidden">
                     <Collapsible defaultOpen className="group/tool-obs w-full min-w-0 max-w-full overflow-hidden">
                         <div className="flex min-w-0 flex-col gap-1.5">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <CollapsibleTrigger className="inline-flex max-w-full min-w-0 items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
-                                        <span className="shrink-0">
-                                            <AiMessageStatusIcon status={status} />
+                            <div className="flex min-w-0 max-w-full items-center gap-1">
+                                <CollapsibleTrigger className="inline-flex max-w-full min-w-0 flex-1 items-center gap-2 py-3 pr-2 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
+                                    <span className="shrink-0">
+                                        <AiMessageStatusIcon status={status} />
+                                    </span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status)}>Analyzing observability</span>
+                                    {hasUnits && (
+                                        <span className="text-muted-foreground text-xs">
+                                            {unitCount} {unitCount === 1 ? "unit" : "units"}
                                         </span>
-                                        <span className={toolHeaderPrimaryTitleClassName(status)}>Analyzing observability</span>
-                                        {hasUnits && (
-                                            <span className="text-muted-foreground text-xs">
-                                                {unitCount} {unitCount === 1 ? "unit" : "units"}
-                                            </span>
-                                        )}
-                                        <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-obs:rotate-180" />
-                                    </CollapsibleTrigger>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" align="start" className="max-w-xs">
-                                    <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
-                                </TooltipContent>
-                            </Tooltip>
+                                    )}
+                                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-obs:rotate-180" />
+                                </CollapsibleTrigger>
+                                <ToolDetailModalExpandButton
+                                    onClick={() => setArgsModalOpen(true)}
+                                    ariaLabel={`View ${ARGS_MODAL_TITLE} details`}
+                                />
+                            </div>
                             {hasArgIdChips && (
                                 <div className="flex min-w-0 max-w-full flex-wrap content-start gap-x-2 gap-y-2 pr-3 pb-1">
                                     {argIdChips.map(({ kind, id }) => (
@@ -128,6 +122,9 @@ export function ToolAnalyzeObservabilityMessage({ message, nestedMessages }: { m
                                 </div>
                             )}
                         </div>
+                        <ToolDetailModalLayout open={argsModalOpen} onOpenChange={setArgsModalOpen} title={ARGS_MODAL_TITLE}>
+                            <ToolAnalyzeObservabilityArgsModalBody args={args} payloadRaw={message.payload_raw} />
+                        </ToolDetailModalLayout>
                         <CollapsibleContent
                             className={cn(
                                 "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",

@@ -1,11 +1,10 @@
 import { ChevronDownIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { useState } from "react";
 
 import { Markdown } from "@/components/markdown";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { truncateToWords } from "@/utils/truncate-to-words";
 import {
     ChatMessageStatus,
     getToolPayloadErrorString,
@@ -14,10 +13,13 @@ import {
 } from "@/modules/project-chat/types";
 
 import { ToolNestedStepsPlaceholder } from "./generating-inline-placeholders";
-import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { AiMessageStatusIcon } from "./message-icons";
-import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
+import { ToolImplementSolutionArgsModalBody } from "./tool-analyze-tool-args-modal-bodies";
+import { ToolDetailModalExpandButton, ToolDetailModalLayout } from "./tool-detail-modal-shell";
+import { toolHeaderPrimaryTitleClassName } from "./tool-header-generating-text";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
+
+const ARGS_MODAL_TITLE = "Implement solution";
 
 function parseToolImplementSolutionPayload(message: ChatMessageWithDeliveryStatus): ToolImplementSolutionPayload | null {
     const raw = message.payload;
@@ -25,15 +27,8 @@ function parseToolImplementSolutionPayload(message: ChatMessageWithDeliveryStatu
     return raw as ToolImplementSolutionPayload;
 }
 
-const DIRECTIVE_TOOLTIP_MAX_WORDS = 50;
-
-function formatArgsTooltip(args: ToolImplementSolutionPayload["args"] | undefined): string {
-    const d = args?.directive;
-    if (d != null && d !== "") return `directive: ${truncateToWords(String(d), DIRECTIVE_TOOLTIP_MAX_WORDS)}`;
-    return "—";
-}
-
 export function ToolImplementSolutionMessage({ message, nestedMessages }: { message: ChatMessageWithDeliveryStatus; nestedMessages?: ReactNode }) {
+    const [argsModalOpen, setArgsModalOpen] = useState(false);
     const payload = parseToolImplementSolutionPayload(message);
     const args = payload?.args;
     const detailedReport = typeof payload?.detailed_report === "string" ? payload.detailed_report : "";
@@ -42,27 +37,28 @@ export function ToolImplementSolutionMessage({ message, nestedMessages }: { mess
     const hasDetailedReport = detailedReport.trim().length > 0;
     const hasNestedMessages = nestedMessages != null;
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
-    const formattedArgs = formatArgsTooltip(args);
 
     return (
         <>
             <div className="w-full min-w-0 max-w-full">
                 <div className="flex w-full min-w-0 max-w-full justify-start overflow-hidden">
                     <Collapsible defaultOpen className="group/tool-impl w-full min-w-0 max-w-full overflow-hidden">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <CollapsibleTrigger className="inline-flex max-w-full items-center gap-2 py-3 pr-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
-                                    <span className="shrink-0">
-                                        <AiMessageStatusIcon status={status} />
-                                    </span>
-                                    <span className={toolHeaderPrimaryTitleClassName(status)}>Implementing solution</span>
-                                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-impl:rotate-180" />
-                                </CollapsibleTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-xs">
-                                <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
-                            </TooltipContent>
-                        </Tooltip>
+                        <div className="flex w-full min-w-0 max-w-full items-center gap-1">
+                            <CollapsibleTrigger className="inline-flex min-w-0 max-w-full flex-1 items-center gap-2 py-3 pr-2 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
+                                <span className="shrink-0">
+                                    <AiMessageStatusIcon status={status} />
+                                </span>
+                                <span className={toolHeaderPrimaryTitleClassName(status)}>Implementing solution</span>
+                                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-impl:rotate-180" />
+                            </CollapsibleTrigger>
+                            <ToolDetailModalExpandButton
+                                onClick={() => setArgsModalOpen(true)}
+                                ariaLabel={`View ${ARGS_MODAL_TITLE} details`}
+                            />
+                        </div>
+                        <ToolDetailModalLayout open={argsModalOpen} onOpenChange={setArgsModalOpen} title={ARGS_MODAL_TITLE}>
+                            <ToolImplementSolutionArgsModalBody args={args} payloadRaw={message.payload_raw} />
+                        </ToolDetailModalLayout>
                         <CollapsibleContent
                             className={cn(
                                 "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2",
