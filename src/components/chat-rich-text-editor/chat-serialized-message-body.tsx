@@ -34,7 +34,7 @@ export function ChatSerializedMessageBody({
 
     if (!hasInlines) {
         return (
-            <div className={className}>
+            <div className={cn("text-start", className)}>
                 <Markdown theme={markdownTheme} embeddedOnInverse={embeddedOnInverse}>
                     {serialized}
                 </Markdown>
@@ -43,7 +43,10 @@ export function ChatSerializedMessageBody({
     }
 
     return (
-        <div className={cn("flex min-w-0 flex-wrap items-baseline gap-x-0.5 gap-y-1 text-left", className)}>
+        <div
+            dir="auto"
+            className={cn("flex min-w-0 flex-wrap items-baseline gap-x-0.5 gap-y-1 text-start", className)}
+        >
             {segments.map((seg, i) => {
                 if (seg.type === "text") {
                     if (seg.text === "") return null;

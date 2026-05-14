@@ -61,14 +61,14 @@ export function markdownPreWithFader(faderFromClassName: string): NonNullable<Co
                     className="my-2 min-w-0 max-w-full"
                     faderFromClassName={faderFromClassName}
                 >
-                    {innerPre}
+                    <div dir="ltr">{innerPre}</div>
                 </FadedScrollArea>
             );
         }
 
         return (
             <SetMarkdownCodeCopy.Provider value={register}>
-                <div className="relative w-full min-w-0 max-w-full min-h-12 my-2">
+                <div dir="ltr" className="relative w-full min-w-0 max-w-full min-h-12 my-2">
                     <div className="pointer-events-none absolute right-1 top-1 z-10 sm:right-1.5 sm:top-1.5">
                         <div className="pointer-events-auto">
                             <CodeSnippetActions textToCopy={copyText} />
@@ -80,7 +80,7 @@ export function markdownPreWithFader(faderFromClassName: string): NonNullable<Co
                         className="min-h-0 w-full min-w-0 max-w-full"
                         faderFromClassName={faderFromClassName}
                     >
-                        {innerPre}
+                        <div dir="ltr">{innerPre}</div>
                     </FadedScrollArea>
                 </div>
             </SetMarkdownCodeCopy.Provider>

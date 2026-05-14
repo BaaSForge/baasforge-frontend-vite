@@ -58,6 +58,7 @@ export function Markdown({ children, className, theme: themeProp, embeddedOnInve
                     <>
                         <MarkdownRegisterCodeCopy text={blockSource} />
                         <div
+                            dir="ltr"
                             className={cn(
                                 "relative w-full min-w-0 max-w-full min-h-12 rounded-md p-2 sm:p-3",
                                 themeProp != null && embeddedOnInverse && resolvedAppTheme === "dark-midnight"
@@ -99,9 +100,12 @@ export function Markdown({ children, className, theme: themeProp, embeddedOnInve
         embeddedOnInverse && themeProp !== undefined
             ? "[&_blockquote]:border-inverse-foreground/25 [&_hr]:border-inverse-foreground/20 [&_tr]:border-inverse-foreground/20 [&_th]:text-inverse-foreground/95 [&_td]:text-inverse-foreground/90"
             : undefined;
-    const needsWrapper = Boolean(className || embeddedToneClass);
     const wrapperClass = cn(embeddedToneClass, className);
-    return needsWrapper ? <div className={wrapperClass}>{content}</div> : content;
+    return (
+        <div dir="auto" className={wrapperClass || undefined}>
+            {content}
+        </div>
+    );
 }
 
 export { MarkdownPlainPreview, type MarkdownPlainPreviewProps } from "./markdown-plain-preview";
