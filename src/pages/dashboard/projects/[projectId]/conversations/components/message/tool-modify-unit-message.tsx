@@ -9,6 +9,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { ToolUnitMutationLayout } from "./tool-unit-mutation-layout";
+import { ModifyUnitArgsModalBody } from "./tool-unit-mutation-args-modal-body";
 import type { UnitSubTask } from "./unit-sub-task-checklist";
 
 function parseToolModifyUnitPayload(payload: unknown): ToolModifyUnitPayload | null {
@@ -18,22 +19,6 @@ function parseToolModifyUnitPayload(payload: unknown): ToolModifyUnitPayload | n
 
 function modifyStatusLine(status: ChatMessageStatus): string {
     return status === ChatMessageStatus.Completed ? "Modified unit" : "Modifying unit";
-}
-
-function formatModifyUnitArgs(args: ToolModifyUnitPayload["args"] | undefined): string {
-    if (!args) return "—";
-    const parts: string[] = [];
-    if (args.unit_id != null) parts.push(`unit_id: ${String(args.unit_id)}`);
-    if (args.revision != null) parts.push(`revision: ${String(args.revision)}`);
-    if (args.code != null && String(args.code).trim() !== "") {
-        const c = String(args.code);
-        parts.push(c.length > 120 ? `code: ${c.slice(0, 120)}…` : `code: ${c}`);
-    }
-    if (args.explanation != null && String(args.explanation).trim() !== "") {
-        const ex = String(args.explanation);
-        parts.push(ex.length > 120 ? `explanation: ${ex.slice(0, 120)}…` : `explanation: ${ex}`);
-    }
-    return parts.length ? parts.join(", ") : "—";
 }
 
 function buildModifyUnitSubTasks(payload: ToolModifyUnitPayload | null): UnitSubTask[] {
@@ -64,7 +49,8 @@ export function ToolModifyUnitMessage({
             message={message}
             nestedMessages={nestedMessages}
             statusLine={statusLine}
-            argsTooltip={formatModifyUnitArgs(payload?.args)}
+            argsModalTitle="Modify unit"
+            argsModalContent={<ModifyUnitArgsModalBody args={payload?.args} payloadRaw={message.payload_raw} />}
             unit={unit}
             payloadError={payloadError}
             subTasks={subTasks}

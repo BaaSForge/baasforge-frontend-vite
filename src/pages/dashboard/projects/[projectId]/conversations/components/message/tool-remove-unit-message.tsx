@@ -9,6 +9,7 @@ import {
 } from "@/modules/project-chat/types";
 
 import { ToolUnitMutationLayout } from "./tool-unit-mutation-layout";
+import { RemoveUnitArgsModalBody } from "./tool-unit-mutation-args-modal-body";
 import type { UnitSubTask } from "./unit-sub-task-checklist";
 
 function parseToolRemoveUnitPayload(payload: unknown): ToolRemoveUnitPayload | null {
@@ -18,11 +19,6 @@ function parseToolRemoveUnitPayload(payload: unknown): ToolRemoveUnitPayload | n
 
 function removeStatusLine(status: ChatMessageStatus): string {
     return status === ChatMessageStatus.Completed ? "Removed unit" : "Removing unit";
-}
-
-function formatRemoveUnitArgs(args: ToolRemoveUnitPayload["args"] | undefined): string {
-    if (args?.unit_id == null) return "—";
-    return `unit_id: ${String(args.unit_id)}`;
 }
 
 function buildRemoveUnitSubTasks(payload: ToolRemoveUnitPayload | null): UnitSubTask[] {
@@ -52,7 +48,8 @@ export function ToolRemoveUnitMessage({
             message={message}
             nestedMessages={nestedMessages}
             statusLine={statusLine}
-            argsTooltip={formatRemoveUnitArgs(payload?.args)}
+            argsModalTitle="Remove unit"
+            argsModalContent={<RemoveUnitArgsModalBody args={payload?.args} payloadRaw={message.payload_raw} />}
             unit={unit}
             payloadError={payloadError}
             subTasks={subTasks}
