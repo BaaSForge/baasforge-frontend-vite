@@ -67,7 +67,7 @@ export class InlineTraceNode extends DecoratorNode<JSX.Element> {
     decorate(editor: LexicalEditor, config: EditorConfig): JSX.Element {
         void editor;
         void config;
-        return <InlineTraceChatWidget trace={this.__trace} />;
+        return <InlineTraceChatWidget nodeKey={this.getKey()} trace={this.__trace} />;
     }
 
     getTrace(): ChatComposerTraceReference {

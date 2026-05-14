@@ -67,7 +67,7 @@ export class InlineReleaseNode extends DecoratorNode<JSX.Element> {
     decorate(editor: LexicalEditor, config: EditorConfig): JSX.Element {
         void editor;
         void config;
-        return <InlineReleaseChatWidget release={this.__release} />;
+        return <InlineReleaseChatWidget nodeKey={this.getKey()} release={this.__release} />;
     }
 
     getRelease(): ReleaseResponse {

@@ -66,7 +66,7 @@ export class InlineUnitNode extends DecoratorNode<JSX.Element> {
     decorate(editor: LexicalEditor, config: EditorConfig): JSX.Element {
         void editor;
         void config;
-        return <InlineUnitChatWidget unit={this.__unit} />;
+        return <InlineUnitChatWidget nodeKey={this.getKey()} unit={this.__unit} />;
     }
 
     getUnit(): ProjectUnitResponse {
