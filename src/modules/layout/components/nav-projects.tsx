@@ -29,8 +29,8 @@ const VISIBLE_CHAT_SESSIONS_COUNT = 5;
 export function NavProjects() {
     const { projectId } = useParams();
     const { pathname } = useLocation();
-    const { open } = useSidebar();
-    const isCollapsed = !open;
+    const { open, isMobile } = useSidebar();
+    const isCollapsed = !open && !isMobile;
     const projectIdOrUndefined = projectId ?? undefined;
     const { data: project } = useProjectQuery(projectIdOrUndefined);
     const { data: chatSessions } = useProjectChatSessionsQuery(projectIdOrUndefined);

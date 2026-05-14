@@ -144,10 +144,14 @@ export async function getProjectLiveReleaseByRevision(
     revision: number,
 ): Promise<ReleaseResponse | null> {
     const url = `${projectReleasesEndpoint(projectId)}/live-release-by-revision?environment=${encodeURIComponent(environment)}&revision=${encodeURIComponent(String(revision))}`;
-    const res = await apiClient.get<ApiResponse<ReleaseResponse>>(url, undefined, {
+    const res = await apiClient.get<ApiResponse<{ runtimes: ProjectRuntimeResponse[] }>>(url, undefined, {
         skipErrorToastForStatuses: [400, 404],
     });
-    return res.data ?? null;
+    const first = res.data?.runtimes?.[0];
+    const live = first?.live_release;
+    if (!first || !live) return null;
+    const id = first.live_release_id?.trim() || live.id;
+    return { ...live, id };
 }
 
 export type ReleaseUnitPreviousByFullIdsBody = {
