@@ -14,6 +14,8 @@ import {
     KEY_DOWN_COMMAND,
     KEY_ENTER_COMMAND,
     KEY_ESCAPE_COMMAND,
+    MOVE_TO_END,
+    MOVE_TO_START,
     PASTE_COMMAND,
     LineBreakNode,
     ParagraphNode,
@@ -25,8 +27,11 @@ import {
     $getSelection,
     $isParagraphNode,
     $isRangeSelection,
+    $normalizeSelection__EXPERIMENTAL,
+    mergeRegister,
     type LexicalEditor,
     type LexicalNode,
+    type RangeSelection,
 } from "lexical";
 import {
     forwardRef,
@@ -121,6 +126,72 @@ function HistoryPlugin(): null {
     useEffect(() => {
         const historyState = createEmptyHistoryState();
         return registerHistory(editor, historyState, 300);
+    }, [editor]);
+    return null;
+}
+
+function $extendComposerSelectionToDocumentEnd(sel: RangeSelection): void {
+    const root = $getRoot();
+    const lastTop = root.getLastChild();
+    if (lastTop == null || !$isParagraphNode(lastTop)) return;
+    const key = lastTop.getKey();
+    const offset = lastTop.getChildrenSize();
+    if (sel.isBackward()) {
+        sel.anchor.set(key, offset, "element");
+    } else {
+        sel.focus.set(key, offset, "element");
+    }
+    sel.dirty = true;
+    $normalizeSelection__EXPERIMENTAL(sel);
+}
+
+function LineBoundaryMetaArrowsPlugin(): null {
+    const [editor] = useLexicalComposerContext();
+    useEffect(() => {
+        return mergeRegister(
+            editor.registerCommand(
+                KEY_DOWN_COMMAND,
+                (event: KeyboardEvent) => {
+                    if (event.altKey) return false;
+                    if (!(event.metaKey || event.ctrlKey) || !event.shiftKey) return false;
+                    const toDocEnd = event.key === "End" || event.code === "End";
+                    const toLineEnd = event.key === "ArrowRight" || event.code === "ArrowRight";
+                    if (!toDocEnd && !toLineEnd) return false;
+                    const sel = $getSelection();
+                    if (!$isRangeSelection(sel)) return false;
+                    event.preventDefault();
+                    if (toDocEnd) {
+                        $extendComposerSelectionToDocumentEnd(sel);
+                    } else {
+                        sel.modify("extend", false, "lineboundary");
+                    }
+                    return true;
+                },
+                COMMAND_PRIORITY_HIGH,
+            ),
+            editor.registerCommand(
+                MOVE_TO_END,
+                (event: KeyboardEvent) => {
+                    const sel = $getSelection();
+                    if (!$isRangeSelection(sel)) return false;
+                    event.preventDefault();
+                    sel.modify("move", false, "lineboundary");
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW,
+            ),
+            editor.registerCommand(
+                MOVE_TO_START,
+                (event: KeyboardEvent) => {
+                    const sel = $getSelection();
+                    if (!$isRangeSelection(sel)) return false;
+                    event.preventDefault();
+                    sel.modify("move", true, "lineboundary");
+                    return true;
+                },
+                COMMAND_PRIORITY_LOW,
+            ),
+        );
     }, [editor]);
     return null;
 }
@@ -345,6 +416,7 @@ export const ChatRichTextEditor = forwardRef<ChatRichTextEditorHandle, ChatRichT
                         onAtGlyph={onAtGlyph}
                         onSlashGlyph={onSlashGlyph}
                     />
+                    <LineBoundaryMetaArrowsPlugin />
                     <ComposerPasteInlineTokensPlugin />
                     <ControlledValuePlugin value={value} onChange={onChange} />
                     <RichTextPlugin
