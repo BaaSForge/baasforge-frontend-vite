@@ -382,49 +382,6 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                     </CentricModalHeader>
                     <div className="flex w-full min-h-0 flex-1 flex-col justify-start sm:justify-center md:py-10">
                         <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-stretch sm:gap-x-6 sm:gap-y-0">
-                            <div className={`flex flex-col gap-3 ${PADDINGS}`}>
-                                <FreeformMultiCombobox
-                                    id="start-debug-trace-ids"
-                                    label="by trace id"
-                                    placeholder="Trace id, press Enter to add multiple"
-                                    value={traceIds}
-                                    onValueChange={setTraceIds}
-                                    className="gap-3"
-                                    chipsClassName="min-h-9 items-center"
-                                    labelRowClassName="flex h-7 shrink-0 items-center"
-                                    chipsEnd={
-                                        traceInputLoading ? (
-                                            <Loader2
-                                                className="text-muted-foreground size-4 shrink-0 animate-spin"
-                                                aria-hidden
-                                            />
-                                        ) : null
-                                    }
-                                />
-                                <div className="min-h-[2.75rem] shrink-0">
-                                    {traceFeedback?.kind === "text" ? (
-                                        <p className="text-destructive text-sm leading-snug" role="alert">
-                                            {traceFeedback.message}
-                                        </p>
-                                    ) : null}
-                                    {traceFeedback?.kind === "traces-available" ? (
-                                        <div className="text-green-600 dark:text-green-500 flex items-start gap-2 text-sm leading-snug">
-                                            <CheckCircle2 className="size-4 shrink-0 translate-y-px" aria-hidden />
-                                            <span>Traces loaded.</span>
-                                        </div>
-                                    ) : null}
-                                </div>
-                            </div>
-                            <div
-                                role="separator"
-                                aria-hidden
-                                className="border-border h-0 w-full shrink-0 border-t border-dashed sm:hidden"
-                            />
-                            <div
-                                role="separator"
-                                aria-hidden
-                                className="border-border hidden w-0 shrink-0 self-stretch border-l border-dashed sm:block"
-                            />
                             <div className={`flex min-w-0 flex-col gap-3 ${PADDINGS}`}>
                                 <div className="flex h-7 min-h-7 shrink-0 items-center justify-between gap-2">
                                     <Label className="text-muted-foreground shrink-0 text-xs font-medium">by release</Label>
@@ -486,6 +443,49 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                                         <div className="text-green-600 dark:text-green-500 flex items-start gap-2 text-sm leading-snug">
                                             <CheckCircle2 className="size-4 shrink-0 translate-y-px" aria-hidden />
                                             <span>The release is available.</span>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </div>
+                            <div
+                                role="separator"
+                                aria-hidden
+                                className="border-border h-0 w-full shrink-0 border-t border-dashed sm:hidden"
+                            />
+                            <div
+                                role="separator"
+                                aria-hidden
+                                className="border-border hidden w-0 shrink-0 self-stretch border-l border-dashed sm:block"
+                            />
+                            <div className={`flex flex-col gap-3 ${PADDINGS}`}>
+                                <FreeformMultiCombobox
+                                    id="start-debug-trace-ids"
+                                    label="by trace id"
+                                    placeholder="Trace id, press Enter to add multiple"
+                                    value={traceIds}
+                                    onValueChange={setTraceIds}
+                                    className="gap-3"
+                                    chipsClassName="min-h-9 items-center"
+                                    labelRowClassName="flex h-7 shrink-0 items-center"
+                                    chipsEnd={
+                                        traceInputLoading ? (
+                                            <Loader2
+                                                className="text-muted-foreground size-4 shrink-0 animate-spin"
+                                                aria-hidden
+                                            />
+                                        ) : null
+                                    }
+                                />
+                                <div className="min-h-[2.75rem] shrink-0">
+                                    {traceFeedback?.kind === "text" ? (
+                                        <p className="text-destructive text-sm leading-snug" role="alert">
+                                            {traceFeedback.message}
+                                        </p>
+                                    ) : null}
+                                    {traceFeedback?.kind === "traces-available" ? (
+                                        <div className="text-green-600 dark:text-green-500 flex items-start gap-2 text-sm leading-snug">
+                                            <CheckCircle2 className="size-4 shrink-0 translate-y-px" aria-hidden />
+                                            <span>Traces loaded.</span>
                                         </div>
                                     ) : null}
                                 </div>
