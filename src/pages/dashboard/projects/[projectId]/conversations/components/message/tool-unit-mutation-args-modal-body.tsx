@@ -32,6 +32,17 @@ function nonEmptyString(value: unknown): string | null {
     return s.length > 0 ? s : null;
 }
 
+function rawObjectHasNonEmptyKeyOutside(rawObj: Record<string, unknown> | null, exclude: ReadonlySet<string>): boolean {
+    if (rawObj == null) return false;
+    return Object.keys(rawObj).some((k) => {
+        if (exclude.has(k)) return false;
+        const v = rawObj[k];
+        if (v == null) return false;
+        if (typeof v === "string") return v.trim() !== "";
+        return true;
+    });
+}
+
 function parseProjectUnitType(value: unknown): ProjectUnitType | null {
     if (typeof value !== "string") return null;
     return (STATIC_PROJECT_UNIT_TYPES as readonly string[]).includes(value) ? (value as ProjectUnitType) : null;
@@ -85,7 +96,7 @@ function ExplanationNoteField({ explanation }: { explanation: string }) {
     return (
         <ArgField label="Explanation">
             <div className={cn("prose prose-sm dark:prose-invert max-w-none")}>
-                <Markdown>{explanation}</Markdown>
+                <Markdown className="max-w-none">{explanation}</Markdown>
             </div>
         </ArgField>
     );
@@ -114,28 +125,25 @@ export function CreateUnitArgsModalBody({
     const rawObj = rawArgumentsObject(payloadRaw);
     const hasUnitType = args?.unit_type != null && String(args.unit_type).trim() !== "";
     const hasCode = args?.code != null && String(args.code).trim() !== "";
-    const hasExplanation = args?.explanation != null && String(args.explanation).trim() !== "";
+    const explanationRaw = nonEmptyString(args?.explanation) ?? nonEmptyString(rawObj?.explanation);
+    const hasExplanation = explanationRaw != null;
     const structured = hasUnitType || hasCode || hasExplanation;
 
     if (!structured) {
         const unitTypeRaw = nonEmptyString(args?.unit_type) ?? nonEmptyString(rawObj?.unit_type);
-        const rawHasKeysBeyondUnitType =
-            rawObj != null &&
-            Object.keys(rawObj).some((k) => {
-                if (k === "unit_type") return false;
-                const v = rawObj[k];
-                if (v == null) return false;
-                if (typeof v === "string") return v.trim() !== "";
-                return true;
-            });
+        const surfaced = new Set<string>();
+        if (unitTypeRaw != null) surfaced.add("unit_type");
+        if (explanationRaw != null) surfaced.add("explanation");
+        const rawHasKeysBeyondSurfaced = rawObjectHasNonEmptyKeyOutside(rawObj, surfaced);
         const rawPresent = readRawArgumentsFromPayloadRaw(payloadRaw) != null;
-        const showRawBlock = rawHasKeysBeyondUnitType || (rawPresent && unitTypeRaw == null);
+        const showRawBlock = rawHasKeysBeyondSurfaced || (rawPresent && unitTypeRaw == null && explanationRaw == null);
 
         return (
             <div className="flex flex-col gap-4">
                 {unitTypeRaw != null ? <UnitTypeArgField unitTypeRaw={unitTypeRaw} /> : null}
+                {explanationRaw != null ? <ExplanationNoteField explanation={explanationRaw} /> : null}
                 {showRawBlock ? <RawArgumentsFallback payloadRaw={payloadRaw} /> : null}
-                {!rawPresent && unitTypeRaw == null ? <EmptyPlaceholder /> : null}
+                {!rawPresent && unitTypeRaw == null && explanationRaw == null ? <EmptyPlaceholder /> : null}
             </div>
         );
     }
@@ -148,7 +156,7 @@ export function CreateUnitArgsModalBody({
                     <UnitExplanationCurrentViewer code={String(args!.code)} language="typescript" plainText={false} />
                 </ArgField>
             ) : null}
-            {hasExplanation ? <ExplanationNoteField explanation={String(args!.explanation)} /> : null}
+            {hasExplanation ? <ExplanationNoteField explanation={explanationRaw} /> : null}
         </div>
     );
 }
@@ -208,18 +216,14 @@ export function ModifyUnitArgsModalBody({
     const hasUnitId = unitId != null;
     const hasRevision = args?.revision != null && String(args.revision).trim() !== "";
     const hasCode = args?.code != null && String(args.code).trim() !== "";
-    const hasExplanation = args?.explanation != null && String(args.explanation).trim() !== "";
+    const explanationRaw = nonEmptyString(args?.explanation) ?? nonEmptyString(rawObj?.explanation);
+    const hasExplanation = explanationRaw != null;
     const structured = hasUnitId || hasRevision || hasCode || hasExplanation;
 
-    const rawHasKeysBeyondUnitId =
-        rawObj != null &&
-        Object.keys(rawObj).some((k) => {
-            if (k === "unit_id") return false;
-            const v = rawObj[k];
-            if (v == null) return false;
-            if (typeof v === "string") return v.trim() !== "";
-            return true;
-        });
+    const excludeForRaw = new Set<string>();
+    if (unitId != null) excludeForRaw.add("unit_id");
+    if (explanationRaw != null) excludeForRaw.add("explanation");
+    const rawExtraAfterSurfaced = rawObjectHasNonEmptyKeyOutside(rawObj, excludeForRaw);
 
     if (!structured) {
         if (unitId != null) {
@@ -228,7 +232,8 @@ export function ModifyUnitArgsModalBody({
                     <ArgField label="Unit id">
                         <UnitIdArgValue unitId={unitId} />
                     </ArgField>
-                    {unitIdFromArgs == null && rawHasKeysBeyondUnitId ? <RawArgumentsFallback payloadRaw={payloadRaw} /> : null}
+                    {hasExplanation ? <ExplanationNoteField explanation={explanationRaw} /> : null}
+                    {rawExtraAfterSurfaced ? <RawArgumentsFallback payloadRaw={payloadRaw} /> : null}
                 </div>
             );
         }
@@ -257,7 +262,7 @@ export function ModifyUnitArgsModalBody({
                     <UnitExplanationCurrentViewer code={String(args!.code)} language="typescript" plainText={false} />
                 </ArgField>
             ) : null}
-            {hasExplanation ? <ExplanationNoteField explanation={String(args!.explanation)} /> : null}
+            {hasExplanation ? <ExplanationNoteField explanation={explanationRaw} /> : null}
         </div>
     );
 }
