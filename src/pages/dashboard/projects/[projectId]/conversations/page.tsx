@@ -74,6 +74,7 @@ import { LiveProductionTimelineProvider } from "./components/message/live-produc
 import { partitionMessagesByInvokingParent } from "./components/message/partition-invoked-messages";
 import { StickyMessageBars, StickyMessageGroupsProvider } from "./components/sticky-messages";
 import { MIDDLE_CONTENT_CLASSNAME } from "./constants";
+import { useFollowBottomOnNewMessages } from "./follow-bottom-scroll";
 import { applyStatusToMessageIdsInPages, useCaptureDocumentScroll } from "./hooks";
 import { SecondarySideBar } from "./secondary-side-bar";
 import {
@@ -515,6 +516,13 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
         }
     }, [isGenerating, chatSessionIdOrUndefined]);
 
+    const { pinnedToBottom: followScrollPinned, jumpToBottom: jumpFollowScrollToBottom } = useFollowBottomOnNewMessages({
+        conversationId: chatSessionIdOrUndefined,
+        isLoadingMessages: isLoadingChatSessionMessages,
+        messagesDep: chatSessionMessagesData,
+        extraScrollTrigger: isGenerating || placeholderVisible,
+    });
+
     const prevIsGeneratingRef = useRef(isGenerating);
 
     useLayoutEffect(() => {
@@ -629,6 +637,14 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                         isGenerating={isGenerating}
                                         isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
                                         mainSidebar={mainSidebar}
+                                        followScroll={
+                                            chatSessionIdOrUndefined
+                                                ? {
+                                                      pinnedToBottom: followScrollPinned,
+                                                      onJumpToLatest: jumpFollowScrollToBottom,
+                                                  }
+                                                : undefined
+                                        }
                                     />
                                 </Container>
                                 <AlertDialog

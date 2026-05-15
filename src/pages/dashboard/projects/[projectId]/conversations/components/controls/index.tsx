@@ -9,6 +9,7 @@ import { useState } from "react";
 import { ChatComposerAddMenu } from "../chat-composer-add-menu";
 import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 import { useConversationDebugSession } from "../../conversation-debug";
+import { FollowBottomScrollButton, type FollowBottomScrollControl } from "../../follow-bottom-scroll";
 import { ChatComposerSendButton } from "../chat-composer-send-button";
 
 type Sidebar = ReturnType<typeof useSidebar>;
@@ -25,6 +26,7 @@ type Props = {
     isGenerating?: boolean;
     isNewSession: boolean;
     mainSidebar?: Sidebar;
+    followScroll?: FollowBottomScrollControl;
 };
 
 export default function Controls({
@@ -38,6 +40,7 @@ export default function Controls({
     isGenerating = false,
     isNewSession,
     mainSidebar: passedMainSidebar,
+    followScroll,
 }: Props) {
     const useSidebarRes = useSidebar();
     const mainSidebar = passedMainSidebar ?? useSidebarRes;
@@ -92,7 +95,11 @@ export default function Controls({
                     verticalPositionClassName,
                 )}
             >
-                <div className={cn("flex w-full items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)} onClick={handleFocus}>
+                <div
+                    className={cn("relative flex w-full items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)}
+                    onClick={handleFocus}
+                >
+                    <FollowBottomScrollButton control={followScroll} />
                     <InputGroup
                         className={cn(
                             "w-full shadow-2xl flex flex-col !bg-background transition-shadow duration-300",
