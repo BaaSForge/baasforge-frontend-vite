@@ -619,7 +619,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                             <GenerationSessionEndBanner variant="stopped" />
                                         )}
                                         {(isGenerating || placeholderVisible) && (
-                                            <div ref={responsePlaceholderRef} className="h-[60vh] w-full shrink-0 relative" />
+                                            <div ref={responsePlaceholderRef} className="h-[30vh] w-full shrink-0 relative" />
                                         )}
                                     </div>
                                     <Controls
