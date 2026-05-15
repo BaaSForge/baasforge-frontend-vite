@@ -16,12 +16,8 @@ import { SessionLastMessageRow } from "./session-last-message-row";
 import { SessionOwnershipChipsRow } from "./session-ownership-chips";
 import { useChatSessionsModal, useChatSessionsModalState } from "./store";
 
-function revisionForApi(raw: string): number | string {
-    const t = raw.trim();
-    if (t.length === 0) return t;
-    const n = Number(t);
-    if (Number.isFinite(n)) return n;
-    return t;
+function revisionForApi(raw: string): string {
+    return raw.trim();
 }
 
 function buildListFilters(stageRevisions: string[], productionRevisions: string[], unitPaths: string[]): ProjectChatSessionsListFilters {

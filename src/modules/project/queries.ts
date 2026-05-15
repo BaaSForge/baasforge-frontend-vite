@@ -32,12 +32,16 @@ export function useProjectsQuery() {
 export function useProjectLiveReleaseByRevisionQuery(
     projectId: string | undefined,
     environment: PlatformEnvironmentType | undefined,
-    revision: number | undefined,
+    revision: string | undefined,
 ) {
     return useQuery({
-        queryKey: QueryKeys.projectLiveReleaseByRevision(projectId ?? "", environment ?? PlatformEnvironmentType.stage, revision ?? NaN),
+        queryKey: QueryKeys.projectLiveReleaseByRevision(
+            projectId ?? "",
+            environment ?? PlatformEnvironmentType.stage,
+            revision ?? "",
+        ),
         queryFn: () => getProjectLiveReleaseByRevision(projectId!, environment!, revision!),
-        enabled: !!projectId && environment != null && revision != null && Number.isFinite(revision),
+        enabled: !!projectId && environment != null && revision != null && revision.trim() !== "",
         retry: false,
         staleTime: 15_000,
     });

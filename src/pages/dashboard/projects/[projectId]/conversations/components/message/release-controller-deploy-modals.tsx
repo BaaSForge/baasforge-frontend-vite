@@ -36,7 +36,7 @@ export function ReleaseControllerDeployModals({
     const {
         stageRelease,
         prodRelease,
-        stageRevisionNum,
+        stageRevision,
         stageReleaseId,
         stageRedeployMutation,
         prodRedeployMutation,
@@ -146,14 +146,14 @@ export function ReleaseControllerDeployModals({
                 </AlertDialogContent>
             </AlertDialog>
 
-            {stageRevisionNum != null && stageReleaseId != null && chatSessionId != null && (
+            {stageRevision != null && stageRevision !== "" && stageReleaseId != null && chatSessionId != null && (
                 <DeployReleaseToRuntimeModal
                     open={stageDeployRuntimePickOpen}
                     onOpenChange={setStageDeployRuntimePickOpen}
                     projectId={projectId}
                     releaseId={stageReleaseId}
                     chatSessionIdForDetach={stageRelease?.chat_session_id ?? chatSessionId}
-                    revision={stageRevisionNum}
+                    revision={stageRevision}
                     revisionLabel={stageRelease != null ? String(stageRelease.revision) : ""}
                     onDeployRuntime={(runtimeId) => stageRedeployMutation.mutate(runtimeId)}
                     deployingRuntimeId={stageRedeployMutation.isPending ? stageRedeployMutation.variables ?? null : null}

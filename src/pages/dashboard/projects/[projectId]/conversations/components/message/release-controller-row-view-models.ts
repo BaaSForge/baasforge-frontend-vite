@@ -9,8 +9,8 @@ export function prodReleaseDisabledTooltip(reason: "stage-first" | "rejected" | 
 export type StageReleaseRowView =
     | { kind: "live-badge" }
     | { kind: "none" }
-    | { kind: "no-runtimes"; revision: number }
-    | { kind: "deploy"; revision: number; disabled: boolean; pending: boolean }
+    | { kind: "no-runtimes"; revision: string }
+    | { kind: "deploy"; revision: string; disabled: boolean; pending: boolean }
     | { kind: "disabled-release"; reason: "missing-context" | "rejected" }
     | { kind: "open-stage-modal" };
 
@@ -20,14 +20,14 @@ export function stageReleaseRowView(actions: ReleaseControllerActions, projectId
         disabledDueToReject,
         stageRuntimes,
         isStageReleaseLiveOnRuntime,
-        stageRevisionNum,
+        stageRevision,
         stageRedeployMutation,
         canOpenStageReleaseModal,
     } = actions;
 
     if (stageRelease != null) {
         if (isStageReleaseLiveOnRuntime) return { kind: "live-badge" };
-        if (projectId == null || stageRevisionNum == null) return { kind: "none" };
+        if (projectId == null || stageRevision == null) return { kind: "none" };
         if (stageRuntimes.length === 0) return { kind: "no-runtimes", revision: stageRelease.revision };
         return {
             kind: "deploy",
@@ -44,8 +44,8 @@ export function stageReleaseRowView(actions: ReleaseControllerActions, projectId
 export type ProdReleaseRowView =
     | { kind: "live-badge" }
     | { kind: "none" }
-    | { kind: "no-runtimes"; revision: number }
-    | { kind: "deploy"; revision: number; disabled: boolean; pending: boolean }
+    | { kind: "no-runtimes"; revision: string }
+    | { kind: "deploy"; revision: string; disabled: boolean; pending: boolean }
     | { kind: "disabled-release"; reason: "stage-first" | "rejected" | "missing-context" }
     | { kind: "open-production-confirm"; pending: boolean };
 
@@ -56,7 +56,7 @@ export function prodReleaseRowView(actions: ReleaseControllerActions, projectId:
         disabledDueToReject,
         prodRuntimes,
         isProdReleaseLiveOnRuntime,
-        prodRevisionNum,
+        prodRevision,
         prodRedeployMutation,
         productionReleaseMutation,
         canCallProductionRelease,
@@ -64,7 +64,7 @@ export function prodReleaseRowView(actions: ReleaseControllerActions, projectId:
 
     if (prodRelease != null) {
         if (isProdReleaseLiveOnRuntime) return { kind: "live-badge" };
-        if (projectId == null || prodRevisionNum == null) return { kind: "none" };
+        if (projectId == null || prodRevision == null) return { kind: "none" };
         if (prodRuntimes.length === 0) return { kind: "no-runtimes", revision: prodRelease.revision };
         return {
             kind: "deploy",

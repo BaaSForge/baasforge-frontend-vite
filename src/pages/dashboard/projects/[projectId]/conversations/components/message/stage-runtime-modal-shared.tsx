@@ -172,7 +172,7 @@ function StageRuntimeRow({
 
 /** What we connect after detach — drives confirmation copy; parent maps this to `DetachRuntimeLiveReleaseBody`. */
 export type StageRuntimeSwapConnectTarget =
-    | { mode: "deploy_revision"; revision: number; releaseId: string }
+    | { mode: "deploy_revision"; revision: string; releaseId: string }
     | { mode: "release_from_controller"; chatSessionId: string; releaseControllerMessageId: string };
 
 export type StageRuntimePickerModalProps = {

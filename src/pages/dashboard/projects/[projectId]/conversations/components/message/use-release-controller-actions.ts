@@ -35,8 +35,8 @@ export function useReleaseControllerActions(
     const { stageRuntimes, prodRuntimes, isStageReleaseLiveOnRuntime, isProdReleaseLiveOnRuntime } =
         useReleaseControllerRuntimeLiveFlags(projectId, stageRelease, prodRelease);
 
-    const stageRevisionNum = stageRelease?.revision ?? null;
-    const prodRevisionNum = prodRelease?.revision ?? null;
+    const stageRevision = stageRelease?.revision ?? null;
+    const prodRevision = prodRelease?.revision ?? null;
     const stageReleaseId = stageRelease?.id ?? null;
     const prodReleaseId = prodRelease?.id ?? null;
 
@@ -54,9 +54,9 @@ export function useReleaseControllerActions(
         mutationFn: async (runtimeId: string) => {
             if (projectId == null) throw new Error("Missing project");
             if (chatSessionId == null) throw new Error("Missing chat session");
-            if (stageRevisionNum == null) throw new Error("Missing stage revision");
+            if (stageRevision == null) throw new Error("Missing stage revision");
             const sessionForDeploy = stageRelease?.chat_session_id ?? chatSessionId;
-            const body = { revision: stageRevisionNum, chat_session_id: sessionForDeploy };
+            const body = { revision: stageRevision, chat_session_id: sessionForDeploy };
             await postRuntimeDeployStageRelease(projectId, runtimeId, body);
         },
         onSuccess: async () => {
@@ -73,10 +73,10 @@ export function useReleaseControllerActions(
         mutationFn: async (runtimeId: string) => {
             if (projectId == null) throw new Error("Missing project");
             if (chatSessionId == null) throw new Error("Missing chat session");
-            if (prodRevisionNum == null) throw new Error("Missing production revision");
+            if (prodRevision == null) throw new Error("Missing production revision");
             if (prodReleaseId == null) throw new Error("Missing production release id");
             const sessionForDeploy = prodRelease?.chat_session_id ?? chatSessionId;
-            const body = { revision: prodRevisionNum, chat_session_id: sessionForDeploy };
+            const body = { revision: prodRevision, chat_session_id: sessionForDeploy };
             const prodRt = prodRuntimes.find((r) => r.id === runtimeId);
             const liveId = prodRt?.live_release?.id ?? null;
             const swapOtherLive = liveId != null && liveId !== prodReleaseId;
@@ -140,8 +140,8 @@ export function useReleaseControllerActions(
         prodRuntimes,
         isStageReleaseLiveOnRuntime,
         isProdReleaseLiveOnRuntime,
-        stageRevisionNum,
-        prodRevisionNum,
+        stageRevision,
+        prodRevision,
         stageReleaseId,
         prodReleaseId,
         stageRedeployMutation,

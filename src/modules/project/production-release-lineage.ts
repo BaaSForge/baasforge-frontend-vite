@@ -1,3 +1,4 @@
+import { compareReleaseRevisions } from "./release-revision";
 import type { ReleaseResponse } from "./types";
 
 function visitReleaseTree(r: ReleaseResponse | null | undefined, into: Map<string, ReleaseResponse>) {
@@ -39,7 +40,7 @@ export function listProductionReleasesSortedForSidebar(
     const byId = collectReleaseIndex(releases);
     const lineageIds = getLiveProductionLineageIdSet(liveReleaseId, byId);
     const ordered = Array.from(byId.values()).sort((a, b) => {
-        if (a.revision !== b.revision) return b.revision - a.revision;
+        if (a.revision !== b.revision) return compareReleaseRevisions(b.revision, a.revision);
         const byTime = b.created_at.localeCompare(a.created_at);
         if (byTime !== 0) return byTime;
         return b.id.localeCompare(a.id);

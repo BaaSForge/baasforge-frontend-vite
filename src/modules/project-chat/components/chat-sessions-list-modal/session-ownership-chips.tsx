@@ -3,6 +3,7 @@
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { cn } from "@/lib/utils";
 import { CompactReleaseBadge, releaseIsLiveOnProjectRuntimes, useProjectRuntimesQuery } from "@/modules/project";
+import { compareReleaseRevisions } from "@/modules/project/release-revision";
 import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
 import { useMemo } from "react";
 import { isUnitRevisionStale } from "@/modules/project/unit-revision-stale";
@@ -65,7 +66,7 @@ export function SessionOwnershipChipsRow({
             const aLive = releaseIsLiveOnProjectRuntimes(a, runtimes);
             const bLive = releaseIsLiveOnProjectRuntimes(b, runtimes);
             if (aLive !== bLive) return aLive ? -1 : 1;
-            if (a.revision !== b.revision) return b.revision - a.revision;
+            if (a.revision !== b.revision) return compareReleaseRevisions(b.revision, a.revision);
             return b.created_at.localeCompare(a.created_at);
         });
     }, [ownedReleases, runtimes]);

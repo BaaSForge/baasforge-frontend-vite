@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { GitCommit } from "lucide-react";
 
 export interface ReleaseRevisionBadgeProps {
-    revision: number;
+    revision: string;
     className?: string;
 }
 

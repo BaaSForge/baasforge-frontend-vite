@@ -55,7 +55,7 @@ export type UnitPreviousByFullIdsResponse = {
 
 export type ChatSessionListReleaseFilter = {
     env: "prod" | "stage";
-    revision: number | string;
+    revision: string;
 };
 
 export type ListProjectChatSessionsParams = {

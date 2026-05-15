@@ -1,4 +1,5 @@
 import type { ChatComposerTraceReference } from "@/modules/project-chat/types";
+import { coerceReleaseResponse } from "@/modules/project/release-revision";
 import type { ProjectUnitResponse, ReleaseResponse } from "@/modules/project/types";
 
 import { BAAL_INLINE_TOKEN_RE, base64UrlToUtf8 } from "./composer-inline-format";
@@ -27,11 +28,12 @@ export function parseSerializedTextIntoSegments(serialized: string): SerializedT
             const json = base64UrlToUtf8(rawData);
             const payload: unknown = JSON.parse(json);
             if (kind === "release") {
-                segments.push({ type: "release", release: payload as ReleaseResponse });
+                segments.push({ type: "release", release: coerceReleaseResponse(payload as ReleaseResponse) });
             } else if (kind === "unit") {
                 segments.push({ type: "unit", unit: payload as ProjectUnitResponse });
             } else {
-                segments.push({ type: "trace", trace: payload as ChatComposerTraceReference });
+                const trace = payload as ChatComposerTraceReference;
+                segments.push({ type: "trace", trace: { ...trace, release: coerceReleaseResponse(trace.release) } });
             }
         } catch {
             segments.push({ type: "raw_token", token: m[0] });

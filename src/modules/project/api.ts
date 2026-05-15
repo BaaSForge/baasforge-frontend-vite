@@ -1,6 +1,7 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
 import type { ChatMessageResponse } from "@/modules/project-chat/types";
+import { coerceProjectRuntimeResponse, coerceReleaseResponse } from "./release-revision";
 import {
     type ContextModulesByContextRow,
     type ListReleaseUnitsAllRequest,
@@ -52,14 +53,14 @@ const projectRuntimeDeployProductionReleaseEndpoint = (projectId: string, runtim
     `${PROJECTS_ENDPOINT}/${projectId}/runtimes/${runtimeId}/deploy-production-release`;
 
 /** Point the runtime at an existing stage/production release by revision + owning chat session (revision is not unique per project). */
-export type DeployReleaseBody = { revision: number; chat_session_id: string };
+export type DeployReleaseBody = { revision: string; chat_session_id: string };
 
 export interface ProductionReleaseControllerBody {
     stage_release_id: string;
 }
 
 /** After detach: connect an existing release by revision + owning chat session (same shape as runtime deploy endpoints). */
-export type DetachRuntimeLiveReleaseDeployBody = { revision: number; chat_session_id: string };
+export type DetachRuntimeLiveReleaseDeployBody = { revision: string; chat_session_id: string };
 
 /** After detach: connect the stage release for this release-controller message scope (same scope as stage-release from message). */
 export type DetachRuntimeLiveReleaseFromControllerBody = {
@@ -135,15 +136,17 @@ export function getLastNotDisabledReleaseControllerMessage(
 
 export function getReleases(projectId: string, environment: PlatformEnvironmentType): Promise<ReleaseResponse[]> {
     const url = `${projectReleasesEndpoint(projectId)}?environment=${encodeURIComponent(environment)}`;
-    return apiClient.get<ApiResponse<ReleaseResponse[]>>(url).then((res) => res.data ?? []);
+    return apiClient
+        .get<ApiResponse<ReleaseResponse[]>>(url)
+        .then((res) => (res.data ?? []).map((r) => coerceReleaseResponse(r)));
 }
 
 export async function getProjectLiveReleaseByRevision(
     projectId: string,
     environment: PlatformEnvironmentType,
-    revision: number,
+    revision: string,
 ): Promise<ReleaseResponse | null> {
-    const url = `${projectReleasesEndpoint(projectId)}/live-release-by-revision?environment=${encodeURIComponent(environment)}&revision=${encodeURIComponent(String(revision))}`;
+    const url = `${projectReleasesEndpoint(projectId)}/live-release-by-revision?environment=${encodeURIComponent(environment)}&revision=${encodeURIComponent(revision.trim())}`;
     const res = await apiClient.get<ApiResponse<{ runtimes: ProjectRuntimeResponse[] }>>(url, undefined, {
         skipErrorToastForStatuses: [400, 404],
     });
@@ -151,7 +154,7 @@ export async function getProjectLiveReleaseByRevision(
     const live = first?.live_release;
     if (!first || !live) return null;
     const id = first.live_release_id?.trim() || live.id;
-    return { ...live, id };
+    return coerceReleaseResponse({ ...live, id });
 }
 
 export type ReleaseUnitPreviousByFullIdsBody = {
@@ -210,7 +213,9 @@ export function postListReleaseUnitsAll(
 }
 
 export function getProjectRuntimes(projectId: string): Promise<ProjectRuntimeResponse[]> {
-    return apiClient.get<ApiResponse<ProjectRuntimeResponse[]>>(projectRuntimesEndpoint(projectId)).then((res) => res.data ?? []);
+    return apiClient
+        .get<ApiResponse<ProjectRuntimeResponse[]>>(projectRuntimesEndpoint(projectId))
+        .then((res) => (res.data ?? []).map((r) => coerceProjectRuntimeResponse(r)));
 }
 
 /** One row from POST `.../traces/by-ids` (API uses camelCase for this payload). */
@@ -235,11 +240,21 @@ function normalizeLoadedTraceEntry(raw: unknown): LoadedProjectTraceEntry | null
     const o = raw as Record<string, unknown>;
     const traceId = readTraceId(o);
     if (!traceId) return null;
+    const rawRelease = o.release;
+    const release =
+        rawRelease != null && typeof rawRelease === "object" && !Array.isArray(rawRelease)
+            ? coerceReleaseResponse(rawRelease as ReleaseResponse)
+            : null;
+    const rawRuntime = o.runtime;
+    const runtime =
+        rawRuntime != null && typeof rawRuntime === "object" && !Array.isArray(rawRuntime)
+            ? coerceProjectRuntimeResponse(rawRuntime as ProjectRuntimeResponse)
+            : null;
     return {
         traceId,
         trace: o.trace,
-        release: (o.release ?? null) as ReleaseResponse | null,
-        runtime: (o.runtime ?? null) as ProjectRuntimeResponse | null,
+        release,
+        runtime,
         unit: (o.unit ?? null) as ProjectUnitResponse | null,
     };
 }

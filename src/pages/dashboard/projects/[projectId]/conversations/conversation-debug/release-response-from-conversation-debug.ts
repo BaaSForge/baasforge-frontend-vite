@@ -7,10 +7,9 @@ import { PlatformEnvironmentType } from "@/modules/project/types";
  * Full release metadata is not fetched here — only what the chip UI needs.
  */
 export function releaseResponseFromConversationDebug(parsed: ConversationDebugFromUrl, projectId: string): ReleaseResponse {
-    let revision = 0;
-    if (parsed.release_revision != null && parsed.release_revision !== "") {
-        const n = parseFloat(parsed.release_revision);
-        revision = Number.isFinite(n) ? n : 0;
+    let revision = "0";
+    if (parsed.release_revision != null && parsed.release_revision.trim() !== "") {
+        revision = parsed.release_revision.trim();
     }
     return {
         id: parsed.release_id,

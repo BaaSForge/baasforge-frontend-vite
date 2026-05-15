@@ -130,8 +130,8 @@ export interface ReleaseResponse {
     /** Short summary for lists and cards; full text is `notes`. */
     brief_note: string | null;
     notes: string | null;
-    /** Release row revision (API: float). */
-    revision: number;
+    /** Release row revision (major.minor string, e.g. `1`, `1.12`, `10.2`). */
+    revision: string;
     is_stage: boolean;
     created_at: string;
     base_production_release_id: string | null;

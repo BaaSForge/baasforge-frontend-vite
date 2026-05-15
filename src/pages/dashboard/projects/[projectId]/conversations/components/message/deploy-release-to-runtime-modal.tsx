@@ -20,8 +20,8 @@ export function DeployReleaseToRuntimeModal({
     releaseId: string;
     /** Owning chat session for detach-live-release / ByRevision (API does not accept release_id). */
     chatSessionIdForDetach: string;
-    /** Display only (revision can duplicate across chat sessions). */
-    revision: number;
+    /** Deploy body + display (revision can duplicate across chat sessions). */
+    revision: string;
     revisionLabel: string;
     onDeployRuntime: (runtimeId: string) => void;
     deployingRuntimeId: string | null;

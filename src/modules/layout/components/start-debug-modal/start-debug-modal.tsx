@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { getApiErrorMessage } from "@/lib/errors";
 import { useProjectLiveReleaseByRevisionQuery, useProjectTracesByIdsQuery } from "@/modules/project/queries";
+import { isValidReleaseRevisionString } from "@/modules/project/release-revision";
 import type { ReleaseResponse } from "@/modules/project/types";
 import { PlatformEnvironmentType } from "@/modules/project/types";
 
@@ -44,13 +45,6 @@ const RELEASE_LOOKUP_DEBOUNCE_MS = 1000;
 const TRACE_LOOKUP_DEBOUNCE_MS = 1000;
 const PADDINGS = "md:pb-4 md:pt-6";
 
-function parseRevisionForLookup(trimmed: string): number | undefined {
-    if (!trimmed) return undefined;
-    const n = Number(trimmed);
-    return Number.isFinite(n) ? n : undefined;
-}
-
-/** True when the user is already in a specific chat and navigation would move them away from it. */
 function shouldConfirmLeavingCurrentChat(params: {
     currentConversationId: string | undefined;
     releaseEnv: "production" | "stage";
@@ -135,9 +129,10 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
     const [debouncedRevision] = useDebounce(revisionTrimmed, RELEASE_LOOKUP_DEBOUNCE_MS);
     const revisionForQuery = React.useMemo(() => {
         if (!revisionTrimmed) return undefined;
-        // Do not query while the current input is invalid — debounced value may still be a stale valid number.
-        if (parseRevisionForLookup(revisionTrimmed) === undefined) return undefined;
-        return parseRevisionForLookup(debouncedRevision);
+        if (!isValidReleaseRevisionString(revisionTrimmed)) return undefined;
+        const debouncedTrimmed = debouncedRevision.trim();
+        if (!isValidReleaseRevisionString(debouncedTrimmed)) return undefined;
+        return debouncedTrimmed;
     }, [revisionTrimmed, debouncedRevision]);
 
     const releaseQuery = useProjectLiveReleaseByRevisionQuery(projectId, platformEnvironment, revisionForQuery);
@@ -154,8 +149,8 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
         if (!revisionTrimmed) {
             return { kind: "text", tone: "destructive", message: SAMPLE_RELEASE_ERROR };
         }
-        const parsedNow = parseRevisionForLookup(revisionTrimmed);
-        if (parsedNow === undefined) {
+        const parsedNow = isValidReleaseRevisionString(revisionTrimmed);
+        if (!parsedNow) {
             return { kind: "text", tone: "destructive", message: "Enter a valid release revision." };
         }
         if (!projectId) {
@@ -425,7 +420,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                                         ref={releaseRevisionInputRef}
                                         value={releaseRevision}
                                         onChange={(e) => setReleaseRevision(e.target.value)}
-                                        placeholder="release revision e.g. 1.0"
+                                        placeholder="e.g. 1 or 1.12"
                                         className="w-full pr-9"
                                         autoComplete="off"
                                         aria-busy={releaseInputLoading}
