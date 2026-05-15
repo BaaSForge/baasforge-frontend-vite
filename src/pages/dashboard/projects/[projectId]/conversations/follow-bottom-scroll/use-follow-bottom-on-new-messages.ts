@@ -27,12 +27,16 @@ export function useFollowBottomOnNewMessages({
     }, []);
 
     useEffect(() => {
-        followRef.current = true;
-        setPinnedToBottom(true);
+        queueMicrotask(() => {
+            followRef.current = true;
+            setPinnedToBottom(true);
+        });
     }, [conversationId]);
 
     useEffect(() => {
-        syncPinnedFromScroll();
+        queueMicrotask(() => {
+            syncPinnedFromScroll();
+        });
         window.addEventListener("scroll", syncPinnedFromScroll, { passive: true, capture: true });
         return () => window.removeEventListener("scroll", syncPinnedFromScroll, { capture: true });
     }, [syncPinnedFromScroll]);

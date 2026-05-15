@@ -41,7 +41,9 @@ export function FollowBottomScrollButton({ control }: FollowBottomScrollButtonPr
             return;
         }
 
-        setScrollIdleHidden(false);
+        queueMicrotask(() => {
+            setScrollIdleHidden(false);
+        });
 
         const onScroll = () => {
             setScrollIdleHidden(false);
