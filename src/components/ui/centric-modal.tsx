@@ -204,27 +204,34 @@ function CentricModalContent({
     children,
     showCloseButton = true,
     fillViewport = false,
+    fillViewportOnMobile = false,
     bodyScroll = true,
     tallMobileSheet = false,
     decorator,
+    footerShellClassName,
     ...props
 }: React.ComponentProps<typeof DialogContent> & {
     showCloseButton?: boolean;
     fillViewport?: boolean;
+    /** Mobile drawer only: fixed sheet height for sticky footer; desktop stays content-sized. */
+    fillViewportOnMobile?: boolean;
     /** When false, the modal body does not create its own scrollport (avoids nested scrollbars). */
     bodyScroll?: boolean;
     /** Mobile drawer only: use a tall fixed sheet (~95dvh); desktop unchanged. */
     tallMobileSheet?: boolean;
     /** Renders behind header, body, and footer; use for full-bleed backgrounds (covers the whole modal shell). */
     decorator?: React.ReactNode;
+    /** Desktop dialog only: classes on the footer shell (padding around {@link CentricModalFooter}). */
+    footerShellClassName?: string;
 }) {
     assertCentricModalContentClassName(className, "CentricModalContent");
 
     const isMobile = useIsMobile();
     const { header, footer, body } = splitCentricModalChildren(children);
+    const shellFillViewport = isMobile ? fillViewport || fillViewportOnMobile : fillViewport;
 
     const bodyRegion = (
-        <CentricModalBodyScroll isDesktop={!isMobile} fillViewport={fillViewport} bodyScroll={bodyScroll}>
+        <CentricModalBodyScroll isDesktop={!isMobile} fillViewport={shellFillViewport} bodyScroll={bodyScroll}>
             {body}
         </CentricModalBodyScroll>
     );
@@ -235,7 +242,7 @@ function CentricModalContent({
         );
 
     if (isMobile) {
-        const mobileDrawerShell = fillViewport
+        const mobileDrawerShell = shellFillViewport
             ? CENTRIC_MODAL_SHELL_VIEWPORT_FILL_MOBILE
             : tallMobileSheet
               ? CENTRIC_MODAL_SHELL_TALL_MOBILE_SHEET
@@ -254,7 +261,7 @@ function CentricModalContent({
                 <div
                     className={cn(
                         "relative z-10 flex min-w-0 flex-col px-4",
-                        (fillViewport || tallMobileSheet || !bodyScroll) && "min-h-0 flex-1",
+                        (shellFillViewport || tallMobileSheet || !bodyScroll) && "min-h-0 flex-1",
                     )}
                 >
                     {header}
@@ -288,7 +295,7 @@ function CentricModalContent({
             ) : null}
             <div className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col">{bodyShell}</div>
             {footer ? (
-                <div className="relative z-10 shrink-0 px-4 pt-3 pb-4 sm:pb-5">{footer}</div>
+                <div className={cn("relative z-10 shrink-0 px-4 pt-3 pb-4 sm:pb-5", footerShellClassName)}>{footer}</div>
             ) : null}
         </DialogContent>
     );
