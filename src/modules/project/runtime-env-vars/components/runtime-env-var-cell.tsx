@@ -7,7 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { revealRuntimeEnvVar } from "../api";
 
 const AUTO_HIDE_MS = 10_000;
@@ -34,14 +34,12 @@ function CopyableEnvValue({ value, className }: { value: string; className?: str
 
 function RevealedAutoHide({ children, onHide }: { children: ReactNode; onHide: () => void }) {
     const [isHovered, setIsHovered] = useState(false);
-    const onHideRef = useRef(onHide);
-    onHideRef.current = onHide;
 
     useEffect(() => {
         if (isHovered) return;
-        const id = window.setTimeout(() => onHideRef.current(), AUTO_HIDE_MS);
+        const id = window.setTimeout(() => onHide(), AUTO_HIDE_MS);
         return () => window.clearTimeout(id);
-    }, [isHovered]);
+    }, [isHovered, onHide]);
 
     return (
         <div
