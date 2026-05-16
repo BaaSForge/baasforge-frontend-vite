@@ -44,6 +44,26 @@ export interface ToolFetchRelevantUnitsPayload {
     error?: string;
 }
 
+export interface ToolFetchLatestSpecificProductionReleaseUnitsPayload {
+    args: {
+        unit_paths?: string[];
+    };
+    units?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
+export interface ToolFetchSpecificProductionReleaseUnitsPayload {
+    args: {
+        unit_ids?: string[];
+    };
+    units?: unknown[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
 export interface ToolFetchLatestReleasesPayload {
     args: {
         limit?: number | null;

@@ -9,6 +9,8 @@ export enum ChatSessionRoleType {
 export enum ChatMessageType {
     Text = "text",
     ToolFetchRelevantUnits = "tool_fetch_relevant_units",
+    ToolFetchLatestSpecificProductionReleaseUnits = "tool_fetch_latest_specific_production_release_units",
+    ToolFetchSpecificProductionReleaseUnits = "tool_fetch_specific_production_release_units",
     ToolFetchLatestReleases = "tool_fetch_latest_releases",
     ToolFetchReleaseTraces = "tool_fetch_release_traces",
     ToolListUnitContexts = "tool_list_unit_contexts",
@@ -52,6 +54,8 @@ export type {
     ToolFetchLatestReleasesPayload,
     ToolFetchReleaseTracesPayload,
     ToolFetchRelevantUnitsPayload,
+    ToolFetchLatestSpecificProductionReleaseUnitsPayload,
+    ToolFetchSpecificProductionReleaseUnitsPayload,
     ToolListUnitContextsPayload,
     ToolListModulesForUnitContextsPayload,
     ToolAnalyzeArchitecturePayload,

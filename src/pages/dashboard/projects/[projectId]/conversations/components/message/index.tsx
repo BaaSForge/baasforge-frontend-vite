@@ -21,6 +21,8 @@ import { ToolImplementSolutionMessage } from "./tool-implement-solution-message"
 import { ToolFetchLatestReleasesMessage } from "./tool-fetch-latest-releases-message";
 import { ToolFetchReleaseTracesMessage } from "./tool-fetch-release-traces-message";
 import { ToolFetchRelevantUnitsMessage } from "./tool-fetch-relevant-units-message";
+import { ToolFetchLatestSpecificProductionReleaseUnitsMessage } from "./tool-fetch-latest-specific-production-release-units-message";
+import { ToolFetchSpecificProductionReleaseUnitsMessage } from "./tool-fetch-specific-production-release-units-message";
 import { ToolCreateUnitMessage } from "./tool-create-unit-message";
 import { ToolModifyUnitMessage } from "./tool-modify-unit-message";
 import { ToolRemoveUnitMessage } from "./tool-remove-unit-message";
@@ -73,6 +75,12 @@ function MessageContent({
     }
     if (message.type === ChatMessageType.ToolFetchRelevantUnits) {
         return <ToolFetchRelevantUnitsMessage message={message} nestedMessages={nestedMessages} />;
+    }
+    if (message.type === ChatMessageType.ToolFetchLatestSpecificProductionReleaseUnits) {
+        return <ToolFetchLatestSpecificProductionReleaseUnitsMessage message={message} nestedMessages={nestedMessages} />;
+    }
+    if (message.type === ChatMessageType.ToolFetchSpecificProductionReleaseUnits) {
+        return <ToolFetchSpecificProductionReleaseUnitsMessage message={message} nestedMessages={nestedMessages} />;
     }
     if (message.type === ChatMessageType.ToolFetchLatestReleases) {
         return <ToolFetchLatestReleasesMessage message={message} nestedMessages={nestedMessages} />;
@@ -132,6 +140,8 @@ function MessageContent({
 
 const toolMessageTypes = [
     ChatMessageType.ToolFetchRelevantUnits,
+    ChatMessageType.ToolFetchLatestSpecificProductionReleaseUnits,
+    ChatMessageType.ToolFetchSpecificProductionReleaseUnits,
     ChatMessageType.ToolFetchLatestReleases,
     ChatMessageType.ToolFetchReleaseTraces,
     ChatMessageType.ToolAnalyzeArchitecture,
