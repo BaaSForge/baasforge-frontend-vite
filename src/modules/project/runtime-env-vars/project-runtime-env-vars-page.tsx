@@ -17,7 +17,7 @@ export function ProjectRuntimeEnvVarsPage() {
         <>
             <PageTitleBox title="Runtime environment variables" />
             <Container className="flex flex-col gap-8">
-                <section>
+                <section className="w-full min-w-0 md:w-1/2">
                     <RuntimeEnvVarsTable
                         title="Encrypted variables"
                         projectId={projectIdForApi}
@@ -27,7 +27,7 @@ export function ProjectRuntimeEnvVarsPage() {
                         runtimesError={runtimesError}
                     />
                 </section>
-                <section>
+                <section className="w-full min-w-0 md:w-1/2">
                     <RuntimeEnvVarsTable
                         title="Non-encrypted variables"
                         projectId={projectIdForApi}

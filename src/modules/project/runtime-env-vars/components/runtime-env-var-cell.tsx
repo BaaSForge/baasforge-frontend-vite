@@ -27,7 +27,7 @@ function CopyableEnvValue({ value, className }: { value: string; className?: str
         <CopyableEntityIdBadge
             id={value}
             title="Click to copy value"
-            className={cn("max-w-[14rem] self-start", className)}
+            className={cn("max-w-full sm:max-w-[14rem]", className)}
         />
     );
 }

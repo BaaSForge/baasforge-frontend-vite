@@ -11,9 +11,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { PlatformEnvironmentBadge } from "@/components/platform-environment-badge";
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -33,6 +33,95 @@ export type RuntimeEnvVarsTableProps = {
     runtimesLoading: boolean;
     runtimesError: boolean;
 };
+
+type RuntimeEnvVarRowProps = {
+    row: RuntimeEnvVarListItem;
+    projectId: string;
+    isEncrypted: boolean;
+    sortedRuntimes: ProjectRuntimeResponse[];
+    onEdit: () => void;
+    onDelete: () => void;
+    deletePending: boolean;
+};
+
+function RuntimeEnvVarRow({
+    row,
+    projectId,
+    isEncrypted,
+    sortedRuntimes,
+    onEdit,
+    onDelete,
+    deletePending,
+}: RuntimeEnvVarRowProps) {
+    return (
+        <div className="overflow-hidden rounded-xl border bg-card">
+            <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-muted/25 px-4 py-3">
+                <p className="min-w-0 font-mono text-sm font-semibold tracking-tight truncate" title={row.key}>
+                    {row.key}
+                </p>
+                <div className="flex shrink-0 gap-1">
+                    <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} aria-label={`Edit ${row.key}`}>
+                        <Pencil />
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                aria-label={`Delete ${row.key}`}
+                                disabled={deletePending}
+                            >
+                                <Trash2 className="text-destructive" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Delete {row.key}?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This removes the variable from every runtime. This cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={onDelete}
+                                >
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            </div>
+            <ul className="flex flex-col gap-2 p-3">
+                {sortedRuntimes.map((runtime) => (
+                    <li
+                        key={runtime.id}
+                        className="grid min-w-0 gap-2 rounded-lg border border-border/50 bg-muted/15 p-3 sm:grid-cols-[minmax(0,10.5rem)_1fr] sm:items-center sm:gap-4"
+                    >
+                        <div className="flex min-w-0 flex-col gap-1">
+                            <span className="truncate text-sm font-medium" title={runtime.name}>
+                                {runtime.name}
+                            </span>
+                            <PlatformEnvironmentBadge environment={runtime.environment} className="w-fit text-xs" />
+                        </div>
+                        <div className="flex w-full min-w-0 items-center justify-end sm:w-auto">
+                            <RuntimeEnvVarCell
+                                projectId={projectId}
+                                envKey={row.key}
+                                runtimeId={runtime.id}
+                                listValue={runtimeValueFromListItem(row, runtime.id)}
+                                isEncrypted={isEncrypted}
+                            />
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
 
 export function RuntimeEnvVarsTable({
     title,
@@ -99,93 +188,26 @@ export function RuntimeEnvVarsTable({
     return (
         <>
             {headerRow}
-            <div className="overflow-x-auto rounded-xl border bg-card">
-                {rows.length === 0 ? (
-                    <p className="text-muted-foreground px-4 py-8 text-center text-sm">No variables yet.</p>
-                ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent">
-                                <TableHead className="sticky left-0 z-10 w-0 max-w-[10rem] bg-card ps-4">Key</TableHead>
-                                {sortedRuntimes.map((runtime) => (
-                                    <TableHead key={runtime.id} className="min-w-[12rem]">
-                                        <span className="font-medium">{runtime.name}</span>
-                                    </TableHead>
-                                ))}
-                                <TableHead className="w-[7rem] pe-4 text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {rows.map((row) => (
-                                <TableRow key={row.key} className="group">
-                                    <TableCell
-                                        className="sticky left-0 z-10 w-0 max-w-[10rem] bg-card ps-4 font-mono text-xs font-medium truncate group-hover:bg-muted"
-                                        title={row.key}
-                                    >
-                                        {row.key}
-                                    </TableCell>
-                                    {sortedRuntimes.map((runtime) => (
-                                        <TableCell key={runtime.id}>
-                                            <RuntimeEnvVarCell
-                                                projectId={projectId}
-                                                envKey={row.key}
-                                                runtimeId={runtime.id}
-                                                listValue={runtimeValueFromListItem(row, runtime.id)}
-                                                isEncrypted={isEncrypted}
-                                            />
-                                        </TableCell>
-                                    ))}
-                                    <TableCell className="pe-4 text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon-xs"
-                                                onClick={() => setEditRow(row)}
-                                                aria-label={`Edit ${row.key}`}
-                                            >
-                                                <Pencil />
-                                            </Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="icon-xs"
-                                                        aria-label={`Delete ${row.key}`}
-                                                        disabled={deleteMutation.isPending}
-                                                    >
-                                                        <Trash2 className="text-destructive" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Delete {row.key}?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This removes the variable from every runtime. This cannot be undone.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction
-                                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                                            onClick={() =>
-                                                                deleteMutation.mutate({ keys: [row.key] })
-                                                            }
-                                                        >
-                                                            Delete
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                )}
-            </div>
+            {rows.length === 0 ? (
+                <p className="text-muted-foreground rounded-xl border bg-card px-4 py-8 text-center text-sm">
+                    No variables yet.
+                </p>
+            ) : (
+                <div className="flex flex-col gap-6">
+                    {rows.map((row) => (
+                        <RuntimeEnvVarRow
+                            key={row.key}
+                            row={row}
+                            projectId={projectId}
+                            isEncrypted={isEncrypted}
+                            sortedRuntimes={sortedRuntimes}
+                            onEdit={() => setEditRow(row)}
+                            onDelete={() => deleteMutation.mutate({ keys: [row.key] })}
+                            deletePending={deleteMutation.isPending}
+                        />
+                    ))}
+                </div>
+            )}
             <RuntimeEnvVarFormModal
                 projectId={projectId}
                 open={addOpen}
