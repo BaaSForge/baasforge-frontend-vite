@@ -101,6 +101,7 @@ export function ProjectUnitsAndReleasesView({
         <>
             <PageTitleBox
                 title={pageTitle}
+                stackToolsOnMobile
                 {...(mainSidebar != null ? { mainSidebar } : {})}
                 tools={
                     <div className="flex min-w-0 shrink-0 items-center gap-2">

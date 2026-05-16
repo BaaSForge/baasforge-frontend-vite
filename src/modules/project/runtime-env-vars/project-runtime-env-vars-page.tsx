@@ -38,6 +38,7 @@ export function ProjectRuntimeEnvVarsPage() {
         <Tabs value={envTab} onValueChange={onEnvTabChange} className="gap-4">
             <PageTitleBox
                 title="Runtime environment variables"
+                stackToolsOnMobile
                 tools={
                     <TabsList>
                         <TabsTrigger value="plain">Non-encrypted</TabsTrigger>

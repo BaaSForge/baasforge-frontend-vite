@@ -3,7 +3,6 @@
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useProjectQuery } from "@/modules/project";
 import { Link, Outlet, useLocation, useParams } from "react-router";
 
 function useSettingsTab() {
@@ -14,18 +13,16 @@ function useSettingsTab() {
 
 export default function ProjectSettingsLayout() {
     const { projectId } = useParams<{ projectId: string }>();
-    const id = projectId ?? undefined;
     const tab = useSettingsTab();
-    const { data: project } = useProjectQuery(id);
 
     const basePath = `/dashboard/projects/${projectId}/settings`;
 
     return (
-        <>
-            <PageTitleBox title={project ? `Settings — ${project.name}` : "Project settings"} />
-            <Container>
-                <Tabs value={tab} className="flex flex-col gap-4">
-                    <TabsList className="w-fit">
+        <Tabs value={tab} className="gap-4">
+            <PageTitleBox
+                title="Project settings"
+                tools={
+                    <TabsList>
                         <TabsTrigger value="info" asChild>
                             <Link to={`${basePath}/info`}>Project info</Link>
                         </TabsTrigger>
@@ -33,14 +30,16 @@ export default function ProjectSettingsLayout() {
                             <Link to={`${basePath}/delete`}>Delete project</Link>
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="info" className="mt-0">
-                        <Outlet />
-                    </TabsContent>
-                    <TabsContent value="delete" className="mt-0">
-                        <Outlet />
-                    </TabsContent>
-                </Tabs>
+                }
+            />
+            <Container>
+                <TabsContent value="info" className="mt-0">
+                    <Outlet />
+                </TabsContent>
+                <TabsContent value="delete" className="mt-0">
+                    <Outlet />
+                </TabsContent>
             </Container>
-        </>
+        </Tabs>
     );
 }

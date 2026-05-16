@@ -9,7 +9,7 @@ import {
 } from "@/stores/breadcrumb";
 import * as React from "react";
 
-const DEFAULT_PAGE_TITLE_BOX_HEIGHT = 56;
+const DEFAULT_PAGE_TITLE_BOX_HEIGHT = 48;
 type Sidebar = ReturnType<typeof useSidebar>;
 
 export function PageTitleBoxPlaceholder() {
@@ -24,9 +24,17 @@ export interface PageTitleBoxProps {
     className?: string;
     mainSidebar?: Sidebar;
     children?: React.ReactNode;
+    stackToolsOnMobile?: boolean;
 }
 
-export function PageTitleBox({ title, tools, className, mainSidebar: passedSidebar, children }: PageTitleBoxProps) {
+export function PageTitleBox({
+    title,
+    tools,
+    className,
+    mainSidebar: passedSidebar,
+    children,
+    stackToolsOnMobile = false,
+}: PageTitleBoxProps) {
     const barRef = React.useRef<HTMLDivElement>(null);
     const stickyBarVisible = useStickyBreadcrumbBarVisible();
     const stickyBarHeight = useStickyBreadcrumbBarHeight();
@@ -53,6 +61,7 @@ export function PageTitleBox({ title, tools, className, mainSidebar: passedSideb
     }, [setPageTitleBoxHeight]);
 
     const top = stickyBarVisible ? stickyBarHeight : 0;
+    const stackTools = stackToolsOnMobile && tools != null;
 
     return (
         <>
@@ -61,8 +70,11 @@ export function PageTitleBox({ title, tools, className, mainSidebar: passedSideb
                 ref={barRef}
                 data-slot="page-title-box"
                 className={cn(
-                    "fixed right-0 z-[15] flex h-14 shrink-0 flex-row items-center justify-between gap-4 border-b px-4 py-4",
-                    "bg-background transition-all",
+                    "fixed right-0 z-[15] flex shrink-0 border-b px-3 bg-background transition-all",
+                    stackTools
+                        ? "min-h-12 h-auto flex-col items-stretch gap-2 py-2 md:h-14 md:flex-row md:items-center md:justify-between md:gap-4 md:py-0"
+                        : "h-12 flex-row items-center justify-between gap-2 md:h-14 md:gap-4",
+                    "md:px-4",
                     stickyBarTransition,
                     `top-[var(--top)]`,
                     pageTitleBoxLeftClassName,
@@ -74,8 +86,24 @@ export function PageTitleBox({ title, tools, className, mainSidebar: passedSideb
                     ...stickyBarTransitionStyles,
                 }}
             >
-                <div className="text-lg font-semibold tracking-tight">{title}</div>
-                {tools != null && <div className="flex shrink-0 items-center">{tools}</div>}
+                <div
+                    className={cn(
+                        "text-base font-semibold tracking-tight md:text-lg",
+                        stackTools ? "min-w-0 md:truncate" : "min-w-0 truncate",
+                    )}
+                >
+                    {title}
+                </div>
+                {tools != null && (
+                    <div
+                        className={cn(
+                            "flex items-center",
+                            stackTools ? "w-full shrink-0 justify-end gap-2 md:w-auto md:justify-start" : "shrink-0",
+                        )}
+                    >
+                        {tools}
+                    </div>
+                )}
                 {children}
             </div>
         </>
