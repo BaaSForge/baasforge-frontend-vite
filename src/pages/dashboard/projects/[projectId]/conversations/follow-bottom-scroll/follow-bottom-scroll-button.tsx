@@ -68,7 +68,7 @@ export function FollowBottomScrollButton({ control }: FollowBottomScrollButtonPr
                     variant="secondary"
                     size="icon-sm"
                     className={cn(
-                        "absolute right-4 z-30 shrink-0 rounded-full bottom-full mb-2 border transition-[background-color,border-color,box-shadow,opacity] duration-200 [&_svg]:size-4",
+                        "absolute right-4 z-30 shrink-0 rounded-md bottom-full mb-2 border transition-[background-color,border-color,box-shadow,opacity] duration-200 [&_svg]:size-4",
                         control.pinnedToBottom
                             ? "border-primary/60 bg-primary/15 shadow-md ring-1 ring-primary/35 dark:bg-primary/20"
                             : "border-border/80 bg-secondary shadow-sm",
