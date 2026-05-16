@@ -1,9 +1,11 @@
 import { SecondarySidebarProvider, useSidebar } from "@/components/secondary-sidebar";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { useProductionRuntimeQuery, useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import { getRuntimeLiveReleaseId, getServingRuntimeIdForRelease } from "@/modules/project/runtime-release";
 import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { useBreadcrumbActions } from "@/stores/breadcrumb";
+import { PackageIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { ProjectUnitsAndReleasesView } from "./project-units-and-releases-view";
@@ -37,22 +39,28 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
     const { data: productionRuntime, isLoading: isProductionRuntimeLoading } = useProductionRuntimeQuery(projectIdOrUndefined);
     const { data: runtimes } = useProjectRuntimesQuery(projectIdOrUndefined);
 
+    const liveReleaseId = useMemo(() => getRuntimeLiveReleaseId(productionRuntime), [productionRuntime]);
+
     useEffect(() => {
         if (releaseID != null) return;
-        if (releases == null || releases.length === 0) return;
         if (isProductionRuntimeLoading) return;
-
-        const liveId = getRuntimeLiveReleaseId(productionRuntime);
-        const targetId = liveId != null && releases.some((r) => r.id === liveId) ? liveId : releases[0].id;
+        if (liveReleaseId == null) return;
 
         navigate(
             {
-                pathname: `/dashboard/projects/${projectId}/units-releases/${targetId}`,
+                pathname: `/dashboard/projects/${projectId}/units-releases/${liveReleaseId}`,
                 search: location.search,
             },
             { replace: true },
         );
-    }, [releaseID, navigate, projectId, releases, location.search, productionRuntime, isProductionRuntimeLoading]);
+    }, [
+        releaseID,
+        navigate,
+        projectId,
+        liveReleaseId,
+        location.search,
+        isProductionRuntimeLoading,
+    ]);
 
     const selectedRelease: ReleaseResponse | undefined = useMemo(
         () => releases?.find((r) => r.id === releaseID),
@@ -60,7 +68,6 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
     );
     const releaseTitleLabel = selectedRelease != null ? String(selectedRelease.revision) : "…";
 
-    const liveReleaseId = getRuntimeLiveReleaseId(productionRuntime);
     const releaseIsLive =
         releaseID != null && liveReleaseId != null && releaseID === liveReleaseId;
 
@@ -80,6 +87,30 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
         }
         return () => clearSegmentLabel("releaseID");
     }, [releaseID, selectedRelease, setSegmentLabel, clearSegmentLabel]);
+
+    if (projectIdOrUndefined == null) {
+        return null;
+    }
+
+    if (releaseID == null && (isProductionRuntimeLoading || liveReleaseId != null)) {
+        return <div className="p-4 text-center text-sm text-muted-foreground">Loading production runtime…</div>;
+    }
+
+    if (releaseID == null && liveReleaseId == null) {
+        return (
+            <Empty className="border-none min-h-[50vh]">
+                <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                        <PackageIcon />
+                    </EmptyMedia>
+                    <EmptyTitle>No live release</EmptyTitle>
+                    <EmptyDescription>
+                        Production has no live release yet. Deploy or attach a release to browse units here.
+                    </EmptyDescription>
+                </EmptyHeader>
+            </Empty>
+        );
+    }
 
     return (
         <ProjectUnitsAndReleasesView
