@@ -12,7 +12,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PlatformEnvironmentBadge } from "@/components/platform-environment-badge";
-import { SectionTitle } from "@/components/section-title";
+import { CodeSnippetActions } from "@/components/syntax-highlight/code-snippet-actions";
 import { Button } from "@/components/ui/button";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -26,7 +26,6 @@ import { RuntimeEnvVarCell } from "./runtime-env-var-cell";
 import { RuntimeEnvVarFormModal } from "./runtime-env-var-form-modal";
 
 export type RuntimeEnvVarsTableProps = {
-    title: string;
     projectId: string;
     isEncrypted: boolean;
     runtimes: ProjectRuntimeResponse[];
@@ -59,7 +58,8 @@ function RuntimeEnvVarRow({
                 <p className="min-w-0 font-mono text-sm font-semibold tracking-tight truncate" title={row.key}>
                     {row.key}
                 </p>
-                <div className="flex shrink-0 gap-1">
+                <div className="flex shrink-0 items-center gap-1">
+                    <CodeSnippetActions textToCopy={row.key} tooltip="Copy key" />
                     <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} aria-label={`Edit ${row.key}`}>
                         <Pencil />
                     </Button>
@@ -124,7 +124,6 @@ function RuntimeEnvVarRow({
 }
 
 export function RuntimeEnvVarsTable({
-    title,
     projectId,
     isEncrypted,
     runtimes,
@@ -146,17 +145,14 @@ export function RuntimeEnvVarsTable({
     const canAdd =
         sortedRuntimes.length > 0 && !runtimesLoading && !isLoading && !runtimesError && !error;
 
-    const headerRow = (
-        <div className="mb-3 flex items-center justify-between gap-2">
-            <SectionTitle className="mb-0">{title}</SectionTitle>
-            {canAdd ? (
-                <Button type="button" size="sm" className="shrink-0" onClick={() => setAddOpen(true)}>
-                    <Plus className="size-4" />
-                    <span className="ml-1.5">Add variable</span>
-                </Button>
-            ) : null}
+    const headerRow = canAdd ? (
+        <div className="mb-3 flex justify-end">
+            <Button type="button" size="sm" className="shrink-0" onClick={() => setAddOpen(true)}>
+                <Plus className="size-4" />
+                <span className="ml-1.5">Add variable</span>
+            </Button>
         </div>
-    );
+    ) : null;
 
     if (runtimesLoading || isLoading) {
         return (
