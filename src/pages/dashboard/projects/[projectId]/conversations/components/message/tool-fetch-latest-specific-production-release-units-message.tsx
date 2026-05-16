@@ -5,7 +5,6 @@ import { useParams } from "react-router";
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { ProjectUnitResponse } from "@/modules/project";
 import { UnitCardChip } from "@/modules/project";
@@ -26,7 +25,6 @@ import {
     ToolFetchLatestSpecificProductionReleaseUnitsArgsModalBody,
     ToolFetchProductionReleaseUnitsArgChips,
 } from "./tool-fetch-production-release-units-args-modal-bodies";
-import { ToolMessageArgsTooltipBlocks } from "./tool-message-args-tooltip-blocks";
 import { ToolMessagePayloadError } from "./tool-message-payload-error";
 
 const ARGS_MODAL_TITLE = "Latest specific production release units";
@@ -47,11 +45,6 @@ function getArgs(
     const p = message.payload as ToolFetchLatestSpecificProductionReleaseUnitsPayload | undefined | null;
     if (!p || Array.isArray(p)) return null;
     return p.args ?? null;
-}
-
-function formatArgs(args: ToolFetchLatestSpecificProductionReleaseUnitsPayload["args"]): string {
-    const unitPaths = nonEmptyStringList(args.unit_paths);
-    return unitPaths.length > 0 ? `unit_paths: [${unitPaths.join(", ")}]` : "—";
 }
 
 export function ToolFetchLatestSpecificProductionReleaseUnitsMessage({
@@ -79,13 +72,6 @@ export function ToolFetchLatestSpecificProductionReleaseUnitsMessage({
     const hasUnits = unitCount > 0;
     const showInvokedConnector = Boolean(message.invoking_message_id);
     const payloadError = getToolPayloadErrorString(message.payload, message.payload_raw);
-    const formattedArgs = args ? formatArgs(args) : "—";
-
-    const headerTooltip = (
-        <TooltipContent side="top" className="max-w-xs">
-            <ToolMessageArgsTooltipBlocks formattedArgs={formattedArgs} payloadRaw={message.payload_raw} />
-        </TooltipContent>
-    );
 
     const expandButton = (
         <ToolDetailModalExpandButton
@@ -105,18 +91,13 @@ export function ToolFetchLatestSpecificProductionReleaseUnitsMessage({
                 {!hasUnits ? (
                     <div className="flex min-w-0 max-w-full flex-col gap-1.5 py-3 pr-3">
                         <div className="flex min-w-0 items-center gap-1">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex min-w-0 flex-1 items-center gap-2 text-left rounded-md">
-                                        <span className="shrink-0">
-                                            <AiMessageStatusIcon status={status} />
-                                        </span>
-                                        <span className={toolHeaderPrimaryTitleClassName(status)}>{HEADER_TITLE}</span>
-                                        <span className="text-muted-foreground text-xs">No content</span>
-                                    </div>
-                                </TooltipTrigger>
-                                {headerTooltip}
-                            </Tooltip>
+                            <div className="flex min-w-0 flex-1 items-center gap-2 text-left rounded-md">
+                                <span className="shrink-0">
+                                    <AiMessageStatusIcon status={status} />
+                                </span>
+                                <span className={toolHeaderPrimaryTitleClassName(status)}>{HEADER_TITLE}</span>
+                                <span className="text-muted-foreground text-xs">No content</span>
+                            </div>
                             {expandButton}
                         </div>
                         {hasArgChips && argChips}
@@ -125,21 +106,16 @@ export function ToolFetchLatestSpecificProductionReleaseUnitsMessage({
                     <Collapsible defaultOpen className="group/tool-units w-full min-w-0 max-w-full overflow-hidden">
                         <div className="flex min-w-0 flex-col gap-1.5">
                             <div className="flex min-w-0 items-center gap-1 pr-3">
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2 py-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
-                                            <span className="shrink-0">
-                                                <AiMessageStatusIcon status={status} />
-                                            </span>
-                                            <span className={toolHeaderPrimaryTitleClassName(status)}>{HEADER_TITLE}</span>
-                                            <span className="text-muted-foreground text-xs">
-                                                {unitCount} {unitCount === 1 ? "unit" : "units"}
-                                            </span>
-                                            <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-units:rotate-180" />
-                                        </CollapsibleTrigger>
-                                    </TooltipTrigger>
-                                    {headerTooltip}
-                                </Tooltip>
+                                <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2 py-3 text-left outline-none rounded-md hover:bg-muted/50 hover:pl-3 transition-all">
+                                    <span className="shrink-0">
+                                        <AiMessageStatusIcon status={status} />
+                                    </span>
+                                    <span className={toolHeaderPrimaryTitleClassName(status)}>{HEADER_TITLE}</span>
+                                    <span className="text-muted-foreground text-xs">
+                                        {unitCount} {unitCount === 1 ? "unit" : "units"}
+                                    </span>
+                                    <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/tool-units:rotate-180" />
+                                </CollapsibleTrigger>
                                 {expandButton}
                             </div>
                             {hasArgChips && argChips}
