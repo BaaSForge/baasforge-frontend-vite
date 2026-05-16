@@ -7,8 +7,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { revealRuntimeEnvVar } from "../api";
+
+const AUTO_HIDE_MS = 10_000;
 
 type RevealedState = { kind: "hidden" } | { kind: "revealed"; value: string | null } | { kind: "error"; message: string };
 
@@ -30,15 +32,31 @@ function CopyableEnvValue({ value, className }: { value: string; className?: str
     );
 }
 
+function RevealedAutoHide({ children, onHide }: { children: ReactNode; onHide: () => void }) {
+    const [isHovered, setIsHovered] = useState(false);
+    const onHideRef = useRef(onHide);
+    onHideRef.current = onHide;
+
+    useEffect(() => {
+        if (isHovered) return;
+        const id = window.setTimeout(() => onHideRef.current(), AUTO_HIDE_MS);
+        return () => window.clearTimeout(id);
+    }, [isHovered]);
+
+    return (
+        <div
+            className="flex min-w-0 items-center gap-1.5"
+            onPointerEnter={() => setIsHovered(true)}
+            onPointerLeave={() => setIsHovered(false)}
+        >
+            {children}
+        </div>
+    );
+}
+
 export function RuntimeEnvVarCell({ projectId, envKey, runtimeId, listValue, isEncrypted }: RuntimeEnvVarCellProps) {
     const [revealState, setRevealState] = useState<RevealedState>({ kind: "hidden" });
     const [isRevealing, setIsRevealing] = useState(false);
-
-    useEffect(() => {
-        return () => {
-            setRevealState({ kind: "hidden" });
-        };
-    }, []);
 
     const hide = useCallback(() => {
         setRevealState({ kind: "hidden" });
@@ -76,22 +94,22 @@ export function RuntimeEnvVarCell({ projectId, envKey, runtimeId, listValue, isE
     if (revealState.kind === "revealed") {
         if (revealState.value === null) {
             return (
-                <div className="flex min-w-0 items-center gap-1.5">
+                <RevealedAutoHide onHide={hide}>
                     <span className="text-muted-foreground text-sm">Not set</span>
                     <Button type="button" variant="ghost" size="icon-xs" onClick={hide} aria-label="Hide value">
                         <EyeOff className="size-3.5" />
                     </Button>
-                </div>
+                </RevealedAutoHide>
             );
         }
 
         return (
-            <div className="flex min-w-0 items-center gap-1.5">
+            <RevealedAutoHide onHide={hide}>
                 <CopyableEnvValue value={revealState.value} />
                 <Button type="button" variant="ghost" size="icon-xs" onClick={hide} aria-label="Hide value">
                     <EyeOff className="size-3.5" />
                 </Button>
-            </div>
+            </RevealedAutoHide>
         );
     }
 
