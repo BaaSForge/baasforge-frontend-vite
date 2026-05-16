@@ -28,6 +28,7 @@ import { ToolModifyUnitMessage } from "./tool-modify-unit-message";
 import { ToolRemoveUnitMessage } from "./tool-remove-unit-message";
 import { ToolListUnitContextsMessage } from "./tool-list-unit-contexts-message";
 import { ToolListModulesForUnitContextsMessage } from "./tool-list-modules-for-unit-contexts-message";
+import { ToolListProjectEnvKeysMessage } from "./tool-list-project-env-keys-message";
 import { ReleaseControllerBoxMessage } from "./release-controller-box-message";
 import { RejectControllerBoxMessage } from "./reject-controller-box-message";
 import { getStickyMessageGroupForMessage, useStickyMessageRegistration } from "../sticky-messages";
@@ -127,6 +128,9 @@ function MessageContent({
     if (message.type === ChatMessageType.ToolListModulesForUnitContexts) {
         return <ToolListModulesForUnitContextsMessage message={message} nestedMessages={nestedMessages} />;
     }
+    if (message.type === ChatMessageType.ToolListProjectEnvKeys) {
+        return <ToolListProjectEnvKeysMessage message={message} nestedMessages={nestedMessages} />;
+    }
     if (message.type === ChatMessageType.ReleaseControllerBox) {
         return <ReleaseControllerBoxMessage message={message} nestedMessages={nestedMessages} />;
     }
@@ -157,6 +161,7 @@ const toolMessageTypes = [
     ChatMessageType.ToolRemoveUnit,
     ChatMessageType.ToolListUnitContexts,
     ChatMessageType.ToolListModulesForUnitContexts,
+    ChatMessageType.ToolListProjectEnvKeys,
     ChatMessageType.ReleaseControllerBox,
     ChatMessageType.RejectControllerBox,
 ];

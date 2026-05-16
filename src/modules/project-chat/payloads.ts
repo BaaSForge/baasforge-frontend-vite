@@ -92,6 +92,19 @@ export interface ToolListUnitContextsPayload {
     error?: string;
 }
 
+export interface RuntimeEnvKeySummary {
+    key: string;
+    is_encrypted: boolean;
+}
+
+export interface ToolListProjectEnvKeysPayload {
+    args?: Record<string, unknown>;
+    env_vars?: RuntimeEnvKeySummary[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
 export interface ContextModulesEntry {
     context_slug: string;
     module_slugs: string[];
