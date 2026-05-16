@@ -54,7 +54,7 @@ function RuntimeEnvVarRow({
 }: RuntimeEnvVarRowProps) {
     return (
         <div className="overflow-hidden rounded-xl border bg-card">
-            <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-muted/25 px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-border/60 bg-muted/25 px-4 py-3">
                 <p className="min-w-0 font-mono text-sm font-semibold tracking-tight truncate" title={row.key}>
                     {row.key}
                 </p>
@@ -189,7 +189,7 @@ export function RuntimeEnvVarsTable({
                     No variables yet.
                 </p>
             ) : (
-                <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {rows.map((row) => (
                         <RuntimeEnvVarRow
                             key={row.key}

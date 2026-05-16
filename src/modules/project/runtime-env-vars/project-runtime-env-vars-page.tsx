@@ -46,7 +46,7 @@ export function ProjectRuntimeEnvVarsPage() {
                     </TabsList>
                 }
             />
-            <Container className="w-full min-w-0 md:w-1/2">
+            <Container className="w-full min-w-0 pt-0">
                 <TabsContent value="plain" className="mt-0">
                     <RuntimeEnvVarsTable isEncrypted={false} {...tableProps} />
                 </TabsContent>
