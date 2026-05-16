@@ -68,10 +68,10 @@ export function FollowBottomScrollButton({ control }: FollowBottomScrollButtonPr
                     variant="secondary"
                     size="icon-sm"
                     className={cn(
-                        "absolute right-4 z-30 shrink-0 rounded-md bottom-full mb-2 border transition-[background-color,border-color,box-shadow,opacity] duration-200 [&_svg]:size-4",
+                        "absolute right-4 z-30 shrink-0 origin-center rounded-md bottom-full mb-2 border transition-[background-color,border-color,box-shadow,opacity,transform] duration-200 [&_svg]:size-4",
                         control.pinnedToBottom
-                            ? "border-primary/60 bg-primary/15 shadow-md ring-1 ring-primary/35 dark:bg-primary/20"
-                            : "border-border/80 bg-secondary shadow-sm",
+                            ? "scale-[0.75] border-primary/35 bg-primary/8 shadow-sm dark:bg-primary/12"
+                            : "scale-100 border-border/80 bg-secondary shadow-sm",
                         scrollIdleHidden && "pointer-events-none opacity-0",
                     )}
                     aria-label={control.pinnedToBottom ? "Following, scroll up to pause" : "Scroll to end"}
@@ -82,7 +82,7 @@ export function FollowBottomScrollButton({ control }: FollowBottomScrollButtonPr
                     }}
                 >
                     {control.pinnedToBottom ? (
-                        <Lock className="stroke-[2.25] text-primary" aria-hidden />
+                        <Lock className="stroke-[2] text-primary/75" aria-hidden />
                     ) : (
                         <ChevronsDown className="stroke-[2.25] text-muted-foreground" aria-hidden />
                     )}
