@@ -9,7 +9,7 @@ import {
     CentricModalHeader,
     CentricModalTitle,
 } from "@/components/ui/centric-modal";
-import { Field, FieldContent, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { getApiErrorMessage } from "@/lib/errors";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
@@ -38,6 +38,9 @@ const FORM_PLACEHOLDERS = {
         value: "e.g. https://hooks.example.com/baal",
     },
 } as const;
+
+const RUNTIME_ENV_VAR_KEY_HINT =
+    "Use a clear, human-readable key so AI can find out what this variable is for (e.g. WEBHOOK_SIGNING_SECRET, not WH_SS).";
 
 export type RuntimeEnvVarFormModalProps = {
     projectId: string;
@@ -189,6 +192,7 @@ function RuntimeEnvVarFormFields() {
                             className="font-mono text-sm"
                             autoComplete="off"
                         />
+                        {!isEdit ? <FieldDescription>{RUNTIME_ENV_VAR_KEY_HINT}</FieldDescription> : null}
                     </FieldContent>
                 </Field>
                 {sortedRuntimes.map((runtime) => (
