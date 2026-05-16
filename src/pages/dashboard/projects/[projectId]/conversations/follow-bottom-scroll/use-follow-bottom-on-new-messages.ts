@@ -3,6 +3,18 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 
 const SCROLL_FOLLOW_BOTTOM_THRESHOLD_PX = 8;
 
+function getScrollRoot() {
+    return document.scrollingElement ?? document.documentElement;
+}
+
+function isNearDocumentBottom(root: Element) {
+    const maxScrollTop = Math.max(0, root.scrollHeight - root.clientHeight);
+    if (maxScrollTop <= SCROLL_FOLLOW_BOTTOM_THRESHOLD_PX) {
+        return true;
+    }
+    return root.scrollTop >= maxScrollTop - SCROLL_FOLLOW_BOTTOM_THRESHOLD_PX;
+}
+
 export function useFollowBottomOnNewMessages({
     conversationId,
     isLoadingMessages,
@@ -18,44 +30,62 @@ export function useFollowBottomOnNewMessages({
     const followRef = useRef(true);
     const [pinnedToBottom, setPinnedToBottom] = useState(true);
 
-    const syncPinnedFromScroll = useCallback(() => {
-        const root = document.scrollingElement ?? document.documentElement;
-        const near =
-            root.scrollTop + root.clientHeight >= root.scrollHeight - SCROLL_FOLLOW_BOTTOM_THRESHOLD_PX;
-        followRef.current = near;
-        setPinnedToBottom((prev) => (prev === near ? prev : near));
+    const setPinned = useCallback((pinned: boolean) => {
+        followRef.current = pinned;
+        setPinnedToBottom((prev) => (prev === pinned ? prev : pinned));
+    }, []);
+
+    const syncPinnedFromUserScroll = useCallback(() => {
+        setPinned(isNearDocumentBottom(getScrollRoot()));
+    }, [setPinned]);
+
+    const followBottomIfLocked = useCallback(() => {
+        if (!followRef.current) return;
+        scrollToBottom();
     }, []);
 
     useEffect(() => {
         queueMicrotask(() => {
-            followRef.current = true;
-            setPinnedToBottom(true);
+            setPinned(true);
         });
-    }, [conversationId]);
+    }, [conversationId, setPinned]);
 
     useEffect(() => {
-        queueMicrotask(() => {
-            syncPinnedFromScroll();
+        queueMicrotask(syncPinnedFromUserScroll);
+        const onScroll = (event: Event) => {
+            if (!event.isTrusted) return;
+            syncPinnedFromUserScroll();
+        };
+        window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+        return () => window.removeEventListener("scroll", onScroll, { capture: true });
+    }, [syncPinnedFromUserScroll]);
+
+    useEffect(() => {
+        if (conversationId == null || conversationId === "") return;
+        const body = document.body;
+        if (!body) return;
+
+        const ro = new ResizeObserver(() => {
+            if (isLoadingMessages) return;
+            followBottomIfLocked();
         });
-        window.addEventListener("scroll", syncPinnedFromScroll, { passive: true, capture: true });
-        return () => window.removeEventListener("scroll", syncPinnedFromScroll, { capture: true });
-    }, [syncPinnedFromScroll]);
+        ro.observe(body);
+        return () => ro.disconnect();
+    }, [conversationId, isLoadingMessages, followBottomIfLocked]);
 
     useLayoutEffect(() => {
         if (conversationId == null || conversationId === "") return;
         if (isLoadingMessages) return;
-        if (!followRef.current) return;
-        scrollToBottom();
-        requestAnimationFrame(syncPinnedFromScroll);
-    }, [messagesDep, conversationId, isLoadingMessages, extraScrollTrigger, syncPinnedFromScroll]);
+        followBottomIfLocked();
+    }, [messagesDep, conversationId, isLoadingMessages, extraScrollTrigger, followBottomIfLocked]);
 
     const jumpToBottom = useCallback(() => {
-        followRef.current = true;
+        setPinned(true);
         scrollToBottom(undefined, ScrollBehavior.Smooth);
         requestAnimationFrame(() => {
-            requestAnimationFrame(syncPinnedFromScroll);
+            requestAnimationFrame(syncPinnedFromUserScroll);
         });
-    }, [syncPinnedFromScroll]);
+    }, [setPinned, syncPinnedFromUserScroll]);
 
     return { pinnedToBottom, jumpToBottom };
 }

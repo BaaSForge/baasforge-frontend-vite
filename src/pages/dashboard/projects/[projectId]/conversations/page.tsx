@@ -43,6 +43,7 @@ import {
 } from "@/modules/project-chat/trim-messages-cache";
 import { useIsSessionGenerating, useProjectChatSessionDetailQuery, useProjectChatSessionMessagesQuery } from "@/modules/project-chat/queries";
 import {
+    ChatAgentType,
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
     type ChatComposerTraceReference,
@@ -494,10 +495,11 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     const isGenerating = isGeneratingFromWs || isGeneratingFromMessages;
 
     const lastAiEndStatus = useMemo((): "failed" | "stopped" | null => {
-        if (!lastAiMessages.length) return null;
-        const hasFailed = lastAiMessages.some((m) => m.status === ChatMessageStatus.Failed);
+        const plannerMessages = lastAiMessages.filter((m) => m.agent === ChatAgentType.Planner);
+        if (!plannerMessages.length) return null;
+        const hasFailed = plannerMessages.some((m) => m.status === ChatMessageStatus.Failed);
         if (hasFailed) return "failed";
-        const hasStopped = lastAiMessages.some((m) => m.status === ChatMessageStatus.Stopped);
+        const hasStopped = plannerMessages.some((m) => m.status === ChatMessageStatus.Stopped);
         if (hasStopped) return "stopped";
         return null;
     }, [lastAiMessages]);
