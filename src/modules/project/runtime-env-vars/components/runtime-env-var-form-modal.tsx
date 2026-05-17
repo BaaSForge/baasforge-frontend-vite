@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/centric-modal";
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorMessage } from "@/lib/errors";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
@@ -204,21 +205,39 @@ function RuntimeEnvVarFormFields() {
                             </span>
                         </FieldLabel>
                         <FieldContent>
-                            <Input
-                                id={`runtime-env-${runtime.id}`}
-                                value={values[runtime.id] ?? ""}
-                                onChange={(e) =>
-                                    setValues((prev) => ({
-                                        ...prev,
-                                        [runtime.id]: e.target.value,
-                                    }))
-                                }
-                                placeholder={placeholders.value}
-                                disabled={saveMutation.isPending}
-                                type={isEncrypted ? "password" : "text"}
-                                autoComplete="off"
-                                className="font-mono text-sm"
-                            />
+                            {isEncrypted ? (
+                                <Input
+                                    id={`runtime-env-${runtime.id}`}
+                                    value={values[runtime.id] ?? ""}
+                                    onChange={(e) =>
+                                        setValues((prev) => ({
+                                            ...prev,
+                                            [runtime.id]: e.target.value,
+                                        }))
+                                    }
+                                    placeholder={placeholders.value}
+                                    disabled={saveMutation.isPending}
+                                    type="password"
+                                    autoComplete="off"
+                                    className="font-mono text-sm"
+                                />
+                            ) : (
+                                <Textarea
+                                    id={`runtime-env-${runtime.id}`}
+                                    value={values[runtime.id] ?? ""}
+                                    onChange={(e) =>
+                                        setValues((prev) => ({
+                                            ...prev,
+                                            [runtime.id]: e.target.value,
+                                        }))
+                                    }
+                                    placeholder={placeholders.value}
+                                    disabled={saveMutation.isPending}
+                                    autoComplete="off"
+                                    rows={4}
+                                    className="font-mono text-sm"
+                                />
+                            )}
                         </FieldContent>
                     </Field>
                 ))}
