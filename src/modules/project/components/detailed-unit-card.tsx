@@ -17,7 +17,11 @@ import { scheduleScalarHttpTestAiNudgeInboxSync } from "@/components/scalar-http
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
-import { runtimeBaseUrlForUnitType, type ProjectUnitResponse } from "../types";
+import {
+    projectUnitTypeHasLiveInteraction,
+    runtimeBaseUrlForUnitType,
+    type ProjectUnitResponse,
+} from "../types";
 import { ActorUnitLiveInteraction } from "./actor-unit-live-interaction";
 import { ApiUnitLiveInteraction } from "./api-unit-live-interaction";
 import { QueueWorkerUnitLiveInteraction } from "./queue-worker-unit-live-interaction";
@@ -108,9 +112,11 @@ export function DetailedUnitCard({
         scheduleScalarHttpTestAiNudgeInboxSync();
     }, [releaseIsLive]);
     const hasDependencies = useMemo(() => hasUnitDependsOn(unit.depends_on), [unit.depends_on]);
+    const supportsLiveInteraction = projectUnitTypeHasLiveInteraction(unit.unit_type);
 
     const panelEmphasis =
-        (releaseIsLive === true && interactionOpen) || (hasDependencies === true && dependenciesOpen);
+        (supportsLiveInteraction && releaseIsLive === true && interactionOpen) ||
+        (hasDependencies === true && dependenciesOpen);
     useEffect(() => {
         onPanelEmphasisChange?.(panelEmphasis);
     }, [onPanelEmphasisChange, panelEmphasis]);
@@ -118,10 +124,10 @@ export function DetailedUnitCard({
     const panelToggleValue = useMemo(() => {
         const v: string[] = [];
         if (explanationOpen) v.push("explanation");
-        if (releaseIsLive && interactionOpen) v.push("interaction");
+        if (supportsLiveInteraction && releaseIsLive && interactionOpen) v.push("interaction");
         if (hasDependencies && dependenciesOpen) v.push("dependencies");
         return v;
-    }, [explanationOpen, interactionOpen, releaseIsLive, hasDependencies, dependenciesOpen]);
+    }, [explanationOpen, interactionOpen, releaseIsLive, supportsLiveInteraction, hasDependencies, dependenciesOpen]);
     const sourceChatSessionId = unit.chat_session_id?.trim() ?? "";
     const showHeaderMenu =
         showChatSessionOverflowMenu === true && projectId != null && projectId !== "";
@@ -237,7 +243,7 @@ export function DetailedUnitCard({
                             onValueChange={(next) => {
                                 const hadInteraction = panelToggleValue.includes("interaction");
                                 setExplanationOpen(next.includes("explanation"));
-                                if (releaseIsLive) {
+                                if (supportsLiveInteraction && releaseIsLive) {
                                     const willInteraction = next.includes("interaction");
                                     setInteractionOpen(willInteraction);
                                     if (willInteraction && !hadInteraction) {
@@ -255,21 +261,25 @@ export function DetailedUnitCard({
                             <ToggleGroupItem value="explanation" className="h-7 min-w-0 px-2.5 py-0 text-xs">
                                 Explanation note
                             </ToggleGroupItem>
-                            <ToggleGroupItem
-                                value="interaction"
-                                disabled={!releaseIsLive}
-                                className="h-7 min-w-0 px-2.5 py-0 text-xs"
-                                aria-label="Live interaction"
-                            >
-                                Live interaction
-                            </ToggleGroupItem>
+                            {supportsLiveInteraction ? (
+                                <ToggleGroupItem
+                                    value="interaction"
+                                    disabled={!releaseIsLive}
+                                    className="h-7 min-w-0 px-2.5 py-0 text-xs"
+                                    aria-label="Live interaction"
+                                >
+                                    Live interaction
+                                </ToggleGroupItem>
+                            ) : null}
                             {hasDependencies ? (
                                 <ToggleGroupItem value="dependencies" className="h-7 min-w-0 px-2.5 py-0 text-xs">
                                     Dependencies
                                 </ToggleGroupItem>
                             ) : null}
                         </ToggleGroup>
-                        {!releaseIsLive ? <LiveInteractionNotLiveWarningPopover /> : null}
+                        {supportsLiveInteraction && !releaseIsLive ? (
+                            <LiveInteractionNotLiveWarningPopover />
+                        ) : null}
                     </div>
                     <Collapsible open={explanationOpen}>
                         <CollapsibleContent className="min-h-0">
@@ -284,7 +294,7 @@ export function DetailedUnitCard({
                             </div>
                         </CollapsibleContent>
                     </Collapsible>
-                    {releaseIsLive ? (
+                    {supportsLiveInteraction && releaseIsLive ? (
                         <Collapsible open={interactionOpen}>
                             <CollapsibleContent className="min-h-0">
                                 <SectionTitle className="mb-2">Live interaction</SectionTitle>

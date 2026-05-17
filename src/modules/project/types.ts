@@ -24,7 +24,9 @@ export interface ProjectPatchRequest {
     name: string;
 }
 
-export type ProjectUnitType = "api" | "actor" | "workflow" | "queue_worker";
+export type ProjectUnitType = "api" | "actor" | "workflow" | "queue_worker" | "common";
+
+export type ProjectUnitTypeWithRuntime = Exclude<ProjectUnitType, "common">;
 
 /** Static ordering for filters and labels (matches backend `ProjectUnitType`). */
 export const STATIC_PROJECT_UNIT_TYPES: readonly ProjectUnitType[] = [
@@ -32,12 +34,20 @@ export const STATIC_PROJECT_UNIT_TYPES: readonly ProjectUnitType[] = [
     "actor",
     "workflow",
     "queue_worker",
+    "common",
 ] as const;
+
+export function projectUnitTypeHasLiveInteraction(
+    unitType: ProjectUnitType,
+): unitType is ProjectUnitTypeWithRuntime {
+    return unitType !== "common";
+}
 
 export function runtimeBaseUrlForUnitType(
     runtimes: ProjectRuntimesBaseUrls,
     unitType: ProjectUnitType,
 ): string | undefined {
+    if (!projectUnitTypeHasLiveInteraction(unitType)) return undefined;
     const raw = runtimes[unitType]?.trim() ?? "";
     if (raw.length === 0) return undefined;
     return raw.replace(/\/$/, "");
