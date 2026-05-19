@@ -3,6 +3,10 @@ import { useSubscribe } from "@/hooks/use-subscribe";
 import { envConfig } from "@/lib/env";
 import { isProductionLiveReleaseChangedEvent, isProjectDeletedEvent, isRuntimeCreatedEvent, userTopic } from "@/lib/ws-events";
 import { useAuth } from "@/modules/auth";
+import { getProjectRuntimes } from "@/modules/project/api";
+import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-project-queries";
+import { getLiveProductionReleaseOwnerChatSessionId } from "@/modules/project/runtime-release";
+import { PlatformEnvironmentType } from "@/modules/project/types";
 import { getProjectChatSessionDetail } from "@/modules/project-chat/api";
 import { handleChatSessionWsEvent, handleProjectUnitWsEvent } from "@/modules/project-chat/ws-cache-handler";
 import { STALE_BASE_RELEASE_CONVERSATION_MESSAGE } from "@/modules/project-chat/stale-base-release-conversation-message";
@@ -55,29 +59,39 @@ export function useSubscribeUserNotifications(): void {
             }
 
             if (isProductionLiveReleaseChangedEvent(data)) {
-                queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimes(data.project_id) });
-                if (
-                    routeProjectId != null &&
-                    routeConversationId != null &&
-                    data.project_id === routeProjectId
-                ) {
-                    const projectId = data.project_id;
+                const projectId = data.project_id;
+                void (async () => {
+                    await invalidateQueriesAfterRuntimeDeploy(
+                        queryClient,
+                        projectId,
+                        PlatformEnvironmentType.prod,
+                    );
+                    if (
+                        routeProjectId == null ||
+                        routeConversationId == null ||
+                        projectId !== routeProjectId
+                    ) {
+                        return;
+                    }
                     const conversationId = routeConversationId;
-                    void queryClient
-                        .fetchQuery({
+                    const [session, runtimes] = await Promise.all([
+                        queryClient.fetchQuery({
                             queryKey: QueryKeys.projectChatSessionDetail(projectId, conversationId),
                             queryFn: () => getProjectChatSessionDetail(projectId, conversationId),
-                        })
-                        .then((session) => {
-                            if (session?.stale_base_release === true) {
-                                toast.warning("Production changed — this chat's base is stale", {
-                                    position: TOAST_POSITION,
-                                    closeButton: true,
-                                    description: STALE_BASE_RELEASE_CONVERSATION_MESSAGE,
-                                });
-                            }
-                        });
-                }
+                        }),
+                        queryClient.fetchQuery({
+                            queryKey: QueryKeys.projectRuntimes(projectId),
+                            queryFn: () => getProjectRuntimes(projectId),
+                        }),
+                    ]);
+                    if (session?.stale_base_release !== true) return;
+                    if (getLiveProductionReleaseOwnerChatSessionId(runtimes) === conversationId) return;
+                    toast.warning("Production changed — this chat's base is stale", {
+                        position: TOAST_POSITION,
+                        closeButton: true,
+                        description: STALE_BASE_RELEASE_CONVERSATION_MESSAGE,
+                    });
+                })();
                 return;
             }
 

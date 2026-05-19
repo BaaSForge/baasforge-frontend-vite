@@ -23,6 +23,13 @@ export function getRuntimeLiveReleaseId(runtime: ProjectRuntimeResponse | null |
     return runtime.live_release_id ?? runtime.live_release?.id ?? null;
 }
 
+export function getLiveProductionReleaseOwnerChatSessionId(
+    runtimes: ProjectRuntimeResponse[] | undefined,
+): string | null {
+    const owner = pickProductionRuntime(runtimes)?.live_release?.chat_session_id?.trim();
+    return owner && owner !== "" ? owner : null;
+}
+
 export function getServingRuntimeIdForRelease(
     release: ReleaseResponse | undefined,
     runtimes: ProjectRuntimeResponse[] | undefined,
