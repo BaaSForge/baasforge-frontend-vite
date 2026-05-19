@@ -1,7 +1,15 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
+import {
+    invalidateDueToRejectOrEdit,
+    removeProjectDraftUnitsAsOfReleaseControllerQueries,
+} from "@/modules/project/invalidate-project-queries";
 import { type InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createProjectChatSession, createProjectChatSessionMessage, postRetryFailedPlannerMessage } from "./api";
+import {
+    collectReleaseControllerMessageIdsRemovedAfterMessage,
+    trimInfiniteMessagesCacheRemovingMessagesAfter,
+} from "./trim-messages-cache";
 import type { ChatMessageDTO, ChatMessageWithDeliveryStatus, CreateProjectChatSessionMessageMutationParams } from "./types";
 import { ChatMessageDeliveryStatus } from "./types";
 
@@ -97,9 +105,37 @@ export type RetryFailedPlannerMessageParams = {
 };
 
 export function useRetryFailedPlannerMessageMutation() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: ({ projectId, chatSessionId, messageId }: RetryFailedPlannerMessageParams) =>
             postRetryFailedPlannerMessage(projectId, chatSessionId, messageId),
-        onSuccess: () => {},
+        onMutate: async ({ projectId, chatSessionId, messageId }) => {
+            const messagesKey = QueryKeys.projectChatSessionMessages(projectId, chatSessionId);
+            const messagesBeforeTrim = queryClient.getQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(messagesKey);
+            const removedReleaseControllerIds = collectReleaseControllerMessageIdsRemovedAfterMessage(
+                messagesBeforeTrim,
+                messageId,
+            );
+            removeProjectDraftUnitsAsOfReleaseControllerQueries(
+                queryClient,
+                projectId,
+                chatSessionId,
+                removedReleaseControllerIds,
+            );
+            queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
+                messagesKey,
+                (old) => trimInfiniteMessagesCacheRemovingMessagesAfter(old, messageId) ?? old,
+            );
+            return { messagesBeforeTrim, messagesKey };
+        },
+        onSuccess: async (_, { projectId, chatSessionId }) => {
+            await invalidateDueToRejectOrEdit(queryClient, projectId, chatSessionId);
+        },
+        onError: (_err, _vars, context) => {
+            if (context?.messagesBeforeTrim != null && context.messagesKey != null) {
+                queryClient.setQueryData(context.messagesKey, context.messagesBeforeTrim);
+            }
+        },
     });
 }

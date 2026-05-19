@@ -1,5 +1,6 @@
 import { QueryKeys } from "@/constants/query-keys";
-import type { QueryClient } from "@tanstack/react-query";
+import { ChatMessageType, type ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
+import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { PlatformEnvironmentType } from "./types";
 
 export async function invalidateLastNotDisabledReleaseControllerMessageQueries(
@@ -19,15 +20,50 @@ export function removeProjectDraftUnitsAsOfReleaseControllerQueries(
     releaseControllerMessageIds: readonly string[],
 ) {
     for (const messageId of releaseControllerMessageIds) {
-        queryClient.removeQueries({
-            queryKey: QueryKeys.projectDraftUnitsAsOfReleaseControllerMessage(projectId, chatSessionId, messageId),
-        });
+        const queryKey = QueryKeys.projectDraftUnitsAsOfReleaseControllerMessage(projectId, chatSessionId, messageId);
+        void queryClient.cancelQueries({ queryKey });
+        queryClient.removeQueries({ queryKey });
     }
+}
+
+function releaseControllerMessageIdsInSession(
+    queryClient: QueryClient,
+    projectId: string,
+    chatSessionId: string,
+): string[] {
+    const data = queryClient.getQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
+        QueryKeys.projectChatSessionMessages(projectId, chatSessionId),
+    );
+    if (data == null) return [];
+    return data.pages
+        .flatMap((page) => page)
+        .filter((m) => m.type === ChatMessageType.ReleaseControllerBox)
+        .map((m) => m.id);
+}
+
+/** Refreshes draft-units-as-of only for release controllers still in the session cache (avoids 404s on truncated rows). */
+export async function invalidateProjectDraftUnitsAsOfRemainingReleaseControllers(
+    queryClient: QueryClient,
+    projectId: string,
+    chatSessionId: string,
+): Promise<void> {
+    const messageIds = releaseControllerMessageIdsInSession(queryClient, projectId, chatSessionId);
+    await Promise.all(
+        messageIds.map((messageId) =>
+            queryClient.invalidateQueries({
+                queryKey: QueryKeys.projectDraftUnitsAsOfReleaseControllerMessage(projectId, chatSessionId, messageId),
+            }),
+        ),
+    );
 }
 
 // NOTE: When user rejects or edit a message (which cause a truncate), some stage releases might be deleted so some runtimes might be disconnected
 // Also some units might be removed in truncate
-export async function invalidateDueToRejectOrEdit(queryClient: QueryClient, projectId: string) {
+export async function invalidateDueToRejectOrEdit(
+    queryClient: QueryClient,
+    projectId: string,
+    chatSessionId: string,
+) {
     // Some stage releases might be removed, so update the chat session list as it shows stage releases as badges for each session
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
 
@@ -47,10 +83,7 @@ export async function invalidateDueToRejectOrEdit(queryClient: QueryClient, proj
     // Some units might be removed in truncate, so update the draft units list
     await queryClient.invalidateQueries({ queryKey: QueryKeys.projectDraftUnitsByProject(projectId) });
 
-    // Some units might be removed in truncate, so update the draft units for the release controller
-    await queryClient.invalidateQueries({
-        queryKey: QueryKeys.projectDraftUnitsAsOfReleaseControllerMessageByProject(projectId),
-    });
+    await invalidateProjectDraftUnitsAsOfRemainingReleaseControllers(queryClient, projectId, chatSessionId);
 
     // Last-not-disabled release controller message may change (sidebar footer + thread)
     await invalidateLastNotDisabledReleaseControllerMessageQueries(queryClient, projectId);

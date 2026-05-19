@@ -145,8 +145,8 @@ export function RejectControllerBoxMessage({
         },
         onSuccess: async () => {
             setConfirmOpen(false);
-            if (projectId == null) return;
-            await invalidateDueToRejectOrEdit(queryClient, projectId);
+            if (projectId == null || chatSessionId == null) return;
+            await invalidateDueToRejectOrEdit(queryClient, projectId, chatSessionId);
             toast.success("Changes for this step were rejected.", { position: "top-center" });
         },
     });

@@ -313,11 +313,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 removedReleaseControllerIds,
             );
 
-            await invalidateDueToRejectOrEdit(queryClient, projectId);
             queryClient.setQueryData<InfiniteData<ChatMessageWithDeliveryStatus[]>>(
                 messagesKey,
                 (old) => trimInfiniteMessagesCacheRemovingMessageAndAfter(old, message.id) ?? old,
             );
+
+            await invalidateDueToRejectOrEdit(queryClient, projectId, chatSessionIdOrUndefined);
         },
         [projectId, chatSessionIdOrUndefined, queryClient],
     );
