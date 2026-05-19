@@ -1,12 +1,31 @@
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
+import { ensureToastPortalContainer, keepToastPortalOnTop } from "@/lib/toast-portal";
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from "lucide-react";
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
     const resolved = useResolvedTheme();
+    const [portalContainer, setPortalContainer] = React.useState<HTMLDivElement | null>(null);
 
-    return (
+    React.useEffect(() => {
+        const container = ensureToastPortalContainer();
+        const stopKeepingOnTop = keepToastPortalOnTop(container);
+        setPortalContainer(container);
+        return () => {
+            stopKeepingOnTop();
+            if (container.dataset.slot === "toast-portal") {
+                container.remove();
+            }
+        };
+    }, []);
+
+    if (!portalContainer) {
+        return null;
+    }
+
+    return createPortal(
         <Sonner
             theme={resolved}
             className="toaster group"
@@ -29,7 +48,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
                 descriptionClassName: "!text-muted-foreground",
             }}
             {...props}
-        />
+        />,
+        portalContainer,
     );
 };
 

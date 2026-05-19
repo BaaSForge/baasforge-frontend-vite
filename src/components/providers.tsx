@@ -36,9 +36,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={0}>
-                <Toaster />
                 {children}
                 {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />}
+                <Toaster />
             </TooltipProvider>
         </QueryClientProvider>
     );

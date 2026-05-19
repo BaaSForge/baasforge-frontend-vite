@@ -491,6 +491,11 @@ input[type="search"]::-webkit-search-cancel-button {
     }
 }
 
+#tldx-toast-container [data-sonner-toaster] {
+    z-index: 100 !important;
+    pointer-events: auto;
+}
+
 ::highlight(scoped-text-search-others) {
     background-color: rgba(250, 204, 21, 0.58);
 }
