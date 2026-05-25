@@ -27,7 +27,7 @@ function ToastIcon({
     return (
         <span
             className={cn(
-                "flex size-6 shrink-0 items-center justify-center rounded-full border-2 [&_svg]:size-3",
+                "flex size-6 shrink-0 items-center justify-center rounded-full border-2 [&_svg]:block [&_svg]:size-3",
                 toastIconVariants[variant],
             )}
         >
@@ -96,11 +96,16 @@ const Toaster = ({ visibleToasts = 2, expand = true, duration = 12_000, ...props
                     "--normal-text": "var(--popover-foreground)",
                     "--normal-border": "var(--border)",
                     "--border-radius": "var(--radius)",
+                    "--toast-icon-margin-start": "0px",
+                    "--toast-icon-margin-end": "0px",
+                    "--toast-svg-margin-start": "0px",
+                    "--toast-svg-margin-end": "0px",
                 } as React.CSSProperties
             }
             toastOptions={{
                 classNames: {
                     content: "!ps-2.5",
+                    icon: "!size-auto !justify-center !m-0 [&_svg]:!m-0",
                 },
                 descriptionClassName: "!text-muted-foreground",
             }}

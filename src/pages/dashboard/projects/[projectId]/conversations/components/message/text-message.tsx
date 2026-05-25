@@ -2,10 +2,10 @@ import { ChatSerializedMessageBody } from "@/components/chat-rich-text-editor/ch
 import { serializedTextToStickyPreview } from "@/components/chat-rich-text-editor/parse-serialized-inline-segments";
 import { type MarkdownTheme } from "@/components/markdown";
 import { useResolvedTheme } from "@/components/theme-provider/hooks";
+import { CopyButton } from "@/components/copy-button";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useClipboard } from "@/hooks/use-clipboard";
 import { cn } from "@/lib/utils";
 import {
     ChatAgentType,
@@ -15,8 +15,7 @@ import {
     type ChatMessageWithDeliveryStatus,
     type TextMessagePayload,
 } from "@/modules/project-chat/types";
-import { Copy, Pencil, RefreshCw, Undo2 } from "lucide-react";
-import { toast } from "sonner";
+import { Pencil, RefreshCw, Undo2 } from "lucide-react";
 
 import { useLiveProductionSessionGates } from "./live-production-timeline-context";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
@@ -70,7 +69,6 @@ export function TextMessage({
     isAnyMessageGenerating = false,
 }: TextMessageProps) {
     const resolvedTheme = useResolvedTheme();
-    const { copy } = useClipboard();
     const { rawText, isExploringPlaceholder, toolCallCount } = getTextMessageDisplay(message.payload);
     const isScrollHighlight = useIsMessageScrollHighlighted(message.id);
 
@@ -140,12 +138,6 @@ export function TextMessage({
         onRequestRevertToThisMessage &&
         message.is_optimistic !== true;
 
-    const handleCopy = async () => {
-        const { success } = await copy(rawText);
-        if (success) toast.success("Copied to clipboard", { position: "top-center" });
-        else toast.error("Failed to copy");
-    };
-
     const showUserDelivery = message.role === ChatSessionRoleType.User;
     const showAiStatusIcon =
         message.role === ChatSessionRoleType.Ai &&
@@ -205,21 +197,17 @@ export function TextMessage({
                     {hasActions && (
                         <div className={cn("flex items-center gap-2", isUser && "flex-row-reverse")}>
                             {showCopyAction && (
-                                <Button
-                                    type="button"
+                                <CopyButton
+                                    textToCopy={rawText}
+                                    copyId={message.id}
                                     variant="ghost"
                                     size="xs"
                                     className={cn(
-                                        "h-6 shrink-0 gap-1 px-2 text-xs font-medium",
                                         isUser
                                             ? "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                                             : "text-primary hover:bg-primary/10 hover:text-primary",
                                     )}
-                                    onClick={handleCopy}
-                                >
-                                    <Copy className="size-3" />
-                                    Copy
-                                </Button>
+                                />
                             )}
                             {showEditAction && (
                                 <>
