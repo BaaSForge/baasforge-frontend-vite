@@ -27,7 +27,7 @@ function ToastIcon({
     return (
         <span
             className={cn(
-                "flex size-7 shrink-0 items-center justify-center rounded-full border-2 [&_svg]:size-3.5",
+                "flex size-6 shrink-0 items-center justify-center rounded-full border-2 [&_svg]:size-3",
                 toastIconVariants[variant],
             )}
         >
