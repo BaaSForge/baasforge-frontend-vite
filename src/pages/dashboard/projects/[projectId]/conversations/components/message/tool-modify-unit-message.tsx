@@ -26,6 +26,7 @@ function buildModifyUnitSubTasks(payload: ToolModifyUnitPayload | null): UnitSub
     const tasks: UnitSubTask[] = [];
     if (payload.pre_check_sub_task != null) tasks.push({ label: "Pre-check", status: payload.pre_check_sub_task });
     if (payload.compiler_check_sub_task != null) tasks.push({ label: "Compiler check", status: payload.compiler_check_sub_task });
+    if (payload.lint_check_sub_task != null) tasks.push({ label: "Lint check", status: payload.lint_check_sub_task });
     if (payload.rule_check_sub_task != null) tasks.push({ label: "Rule check", status: payload.rule_check_sub_task });
     return tasks;
 }

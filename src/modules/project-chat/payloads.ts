@@ -238,6 +238,7 @@ export interface ToolCreateUnitPayload {
     error?: string;
     pre_check_sub_task?: UnitSubTaskStatus;
     compiler_check_sub_task?: UnitSubTaskStatus;
+    lint_check_sub_task?: UnitSubTaskStatus;
     rule_check_sub_task?: UnitSubTaskStatus;
 }
 
@@ -254,6 +255,7 @@ export interface ToolModifyUnitPayload {
     error?: string;
     pre_check_sub_task?: UnitSubTaskStatus;
     compiler_check_sub_task?: UnitSubTaskStatus;
+    lint_check_sub_task?: UnitSubTaskStatus;
     rule_check_sub_task?: UnitSubTaskStatus;
 }
 
