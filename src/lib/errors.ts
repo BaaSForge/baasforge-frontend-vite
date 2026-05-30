@@ -19,6 +19,10 @@ export function getApiErrorMessage(error: unknown): string {
 }
 
 export function showApiError(error: unknown, statusCode: number): void {
+    if (isApiErrorPayload(error) && error.error?.code === "PARSE_ERROR") {
+        return;
+    }
+
     const maybeError = error as ErrorWithPackageToPurchase | undefined;
     const needsToPurchasePackage = maybeError?.data?.most_complete_needed_package;
 
