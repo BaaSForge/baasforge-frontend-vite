@@ -54,7 +54,7 @@ export function UnitCardChip({
     return (
         <div
             className={cn(
-                "relative inline-block shrink-0 min-w-0 max-w-[20rem]",
+                "relative inline-block shrink-0 self-start min-w-0 max-w-[20rem]",
                 UNIT_CARD_ID_BADGE_RESERVE_CLASS,
                 className,
             )}

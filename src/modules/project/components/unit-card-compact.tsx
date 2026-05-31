@@ -78,7 +78,13 @@ export function UnitCardCompact({
     );
 
     return (
-        <div className={cn("relative inline-block w-full min-w-0", UNIT_CARD_ID_BADGE_RESERVE_CLASS, className)}>
+        <div
+            className={cn(
+                "relative inline-block w-full min-w-0 self-start",
+                UNIT_CARD_ID_BADGE_RESERVE_CLASS,
+                className,
+            )}
+        >
             {hasParent && (
                 <Card
                     className="pointer-events-none absolute top-[calc(0.75rem+0.375rem)] left-1.5 right-0 bottom-0 z-0 rounded-lg border bg-card p-0 shadow-none"
