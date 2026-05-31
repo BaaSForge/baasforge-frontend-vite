@@ -107,6 +107,13 @@ function $appendPlainTextAtEnd(text: string): void {
     }
 }
 
+function focusComposerAtEnd(editor: LexicalEditor): void {
+    editor.update(() => {
+        $getRoot().selectEnd();
+    });
+    editor.focus();
+}
+
 function $insertInlineAtEnd(nodes: LexicalNode[]): void {
     const root = $getRoot();
     const last = root.getLastChild();
@@ -309,7 +316,7 @@ function ControlledValuePlugin({ value, onChange }: Pick<ChatRichTextEditorProps
         /* Follow-up `value` updates are synced in the effect below (typing keeps value === lastEmittedRef). */
     }, [editor]); // eslint-disable-line react-hooks/exhaustive-deps -- Lexical editor mounts once; `value` is first-render snapshot
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!readyRef.current) return;
         if (value !== lastEmittedRef.current) {
             readyRef.current = false;
@@ -378,7 +385,10 @@ export const ChatRichTextEditor = forwardRef<ChatRichTextEditorHandle, ChatRichT
         useImperativeHandle(
             ref,
             () => ({
-                focus: () => editorRef.current?.focus(),
+                focus: () => {
+                    const editor = editorRef.current;
+                    if (editor) focusComposerAtEnd(editor);
+                },
                 blur: () => editorRef.current?.blur(),
                 appendPlainText: (text: string) => {
                     editorRef.current?.update(() => {

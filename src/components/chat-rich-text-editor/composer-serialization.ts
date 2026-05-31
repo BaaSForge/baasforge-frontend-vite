@@ -36,6 +36,7 @@ export function replaceComposerFromSerialized(editor: LexicalEditor, serialized:
     editor.update(
         () => {
             $replaceComposerFromSerialized(serialized);
+            $getRoot().selectEnd();
         },
         { discrete: true },
     );
