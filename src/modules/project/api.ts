@@ -34,7 +34,8 @@ const projectReleaseUnitPreviousByFullIdsEndpoint = (projectId: string, releaseI
 const projectReleaseContextsEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/contexts`;
 const projectReleaseModulesByContextsEndpoint = (projectId: string, releaseId: string) =>
     `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/modules-by-contexts`;
-const projectReleaseUnitsAllEndpoint = (projectId: string, releaseId: string) => `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units/all`;
+const projectReleaseUnitsAllEndpoint = (projectId: string, releaseId: string, excludeDeleted: boolean) =>
+    `${PROJECTS_ENDPOINT}/${projectId}/releases/${releaseId}/units/all?exclude_deleted=${excludeDeleted}`;
 const projectRuntimesEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/runtimes`;
 const projectTracesByIdsEndpoint = (projectId: string) => `${PROJECTS_ENDPOINT}/${projectId}/traces/by-ids`;
 const projectRuntimeDetachLiveReleaseEndpoint = (projectId: string, runtimeId: string) =>
@@ -204,7 +205,7 @@ export function postListReleaseUnitsAll(
     releaseId: string,
     body: ListReleaseUnitsAllRequest,
 ): Promise<ListReleaseUnitsAllResponse> {
-    return apiClient.post<ApiResponse<ListReleaseUnitsAllResponse>>(projectReleaseUnitsAllEndpoint(projectId, releaseId), body).then((res) => {
+    return apiClient.post<ApiResponse<ListReleaseUnitsAllResponse>>(projectReleaseUnitsAllEndpoint(projectId, releaseId, true), body).then((res) => {
         if (!res.data) {
             throw new Error("Release units (all) response missing data");
         }
