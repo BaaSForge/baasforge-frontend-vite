@@ -24,12 +24,12 @@ export function coerceProjectRuntimeResponse(runtime: ProjectRuntimeResponse): P
     };
 }
 
-export function isValidReleaseRevisionString(revision: string): boolean {
-    return RELEASE_REVISION_RE.test(revision.trim());
+export function isValidReleaseRevisionString(revision: string | number): boolean {
+    return RELEASE_REVISION_RE.test(coerceReleaseRevisionString(revision));
 }
 
-export function parseReleaseRevisionParts(revision: string): { major: number; minor: number } | null {
-    const t = revision.trim();
+export function parseReleaseRevisionParts(revision: string | number): { major: number; minor: number } | null {
+    const t = coerceReleaseRevisionString(revision);
     if (!RELEASE_REVISION_RE.test(t)) return null;
     const dot = t.indexOf(".");
     if (dot < 0) {
@@ -41,14 +41,16 @@ export function parseReleaseRevisionParts(revision: string): { major: number; mi
     return Number.isFinite(major) && Number.isFinite(minor) ? { major, minor } : null;
 }
 
-export function compareReleaseRevisions(a: string, b: string): number {
-    const pa = parseReleaseRevisionParts(a);
-    const pb = parseReleaseRevisionParts(b);
+export function compareReleaseRevisions(a: string | number, b: string | number): number {
+    const sa = coerceReleaseRevisionString(a);
+    const sb = coerceReleaseRevisionString(b);
+    const pa = parseReleaseRevisionParts(sa);
+    const pb = parseReleaseRevisionParts(sb);
     if (pa && pb) {
         if (pa.major !== pb.major) return pa.major - pb.major;
         return pa.minor - pb.minor;
     }
     if (pa && !pb) return 1;
     if (!pa && pb) return -1;
-    return a.trim().localeCompare(b.trim());
+    return sa.localeCompare(sb);
 }

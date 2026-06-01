@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
+import { coerceReleaseResponse } from "@/modules/project/release-revision";
 import type { PlatformEnvironmentType, ProjectUnitResponse } from "@/modules/project/types";
 import {
     ChatMessageDeliveryStatus,
@@ -72,6 +73,13 @@ export type ListProjectChatSessionsResponse = {
     page_size: number;
 };
 
+function coerceChatSessionResponse(session: ChatSessionResponse): ChatSessionResponse {
+    return {
+        ...session,
+        owned_releases: session.owned_releases?.map((r) => coerceReleaseResponse(r)),
+    };
+}
+
 export function getProjectChatSessions(
     projectId: string,
     params?: Partial<ListProjectChatSessionsParams>,
@@ -89,7 +97,7 @@ export function getProjectChatSessions(
     }
     const url = `${chatSessionsEndpoint(projectId)}?${searchParams.toString()}`;
     return apiClient.get<ApiResponse<ListProjectChatSessionsResponse>>(url).then((res) => ({
-        sessions: res.data?.sessions ?? [],
+        sessions: (res.data?.sessions ?? []).map(coerceChatSessionResponse),
         total: res.data?.total ?? 0,
         page: res.data?.page ?? page,
         page_size: res.data?.page_size ?? page_size,
@@ -97,11 +105,15 @@ export function getProjectChatSessions(
 }
 
 export function createProjectChatSession(projectId: string, title: string): Promise<ChatSessionResponse | undefined> {
-    return apiClient.post<ApiResponse<ChatSessionResponse>>(chatSessionsEndpoint(projectId), { title }).then((res) => res.data);
+    return apiClient
+        .post<ApiResponse<ChatSessionResponse>>(chatSessionsEndpoint(projectId), { title })
+        .then((res) => (res.data != null ? coerceChatSessionResponse(res.data) : undefined));
 }
 
 export function getProjectChatSessionDetail(projectId: string, chatSessionId: string): Promise<ChatSessionResponse | undefined> {
-    return apiClient.get<ApiResponse<ChatSessionResponse>>(chatSessionDetailEndpoint(projectId, chatSessionId)).then((res) => res.data);
+    return apiClient
+        .get<ApiResponse<ChatSessionResponse>>(chatSessionDetailEndpoint(projectId, chatSessionId))
+        .then((res) => (res.data != null ? coerceChatSessionResponse(res.data) : undefined));
 }
 
 export type ListChatMessagesParams = {
