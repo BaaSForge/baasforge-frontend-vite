@@ -66,6 +66,7 @@ export interface ListReleaseUnitsAllRequest {
     context_module_pairs?: ContextModulePair[];
     /** When set, returns units for these paths (no pagination). Omit other filter fields so none apply. */
     units_paths?: string[];
+    exclude_deleted?: boolean;
 }
 
 export interface ListReleaseUnitsAllResponse {
