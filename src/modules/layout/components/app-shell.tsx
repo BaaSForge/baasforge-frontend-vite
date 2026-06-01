@@ -6,7 +6,6 @@ import * as React from "react";
 import { Outlet } from "react-router";
 import { AppSidebar } from "./app-sidebar";
 import { ShortcutsModal } from "./shortcuts-modal";
-import { StartDebugModalProvider } from "./start-debug-modal";
 import { StickyBreadcrumbBar, StickyBreadcrumbBarPlaceholder } from "./sticky-breadcrumb-bar";
 
 const SIDEBAR_STORAGE_KEY = "sidebar_state";
@@ -47,18 +46,16 @@ export function AppShell() {
     }, [handleOpenShortcuts]);
 
     return (
-        <StartDebugModalProvider>
-            <SidebarProvider open={open} onOpenChange={handleOpenChange}>
-                <MainSidebarShortcutListener />
-                <AppSidebar onOpenShortcuts={handleOpenShortcuts} />
-                <SidebarInset>
-                    <StickyBreadcrumbBarPlaceholder />
-                    <StickyBreadcrumbBar />
-                    <Outlet />
-                </SidebarInset>
-                <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
-                <ScalarHttpTestAiNudgeGlobalHost />
-            </SidebarProvider>
-        </StartDebugModalProvider>
+        <SidebarProvider open={open} onOpenChange={handleOpenChange}>
+            <MainSidebarShortcutListener />
+            <AppSidebar onOpenShortcuts={handleOpenShortcuts} />
+            <SidebarInset>
+                <StickyBreadcrumbBarPlaceholder />
+                <StickyBreadcrumbBar />
+                <Outlet />
+            </SidebarInset>
+            <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+            <ScalarHttpTestAiNudgeGlobalHost />
+        </SidebarProvider>
     );
 }

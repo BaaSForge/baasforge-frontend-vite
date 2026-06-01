@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, register, unregister } from "@/lib/unified-keyboard";
 import { ChatSessionsListModal, useChatSessionsModal, useProjectChatSessionsQuery } from "@/modules/project-chat";
 import { useProjectQuery } from "@/modules/project/queries";
-import { useStartDebugModal } from "@/modules/layout";
+import { useStartDebugModal } from "./start-debug-modal";
 import { debugToolbarActiveToneClassName } from "@/pages/dashboard/projects/[projectId]/conversations/conversation-debug";
 import { cn } from "@/lib/utils";
 

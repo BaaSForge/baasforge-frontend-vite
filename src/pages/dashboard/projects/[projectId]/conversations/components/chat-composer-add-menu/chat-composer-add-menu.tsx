@@ -10,7 +10,7 @@ import {
 import { InputGroupButton } from "@/components/ui/input-group";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useStartDebugModal } from "@/modules/layout";
+import { useStartDebugModal } from "@/modules/layout/components/start-debug-modal";
 import { cn } from "@/lib/utils";
 import { Bug, FileText, Plus } from "lucide-react";
 import { useState } from "react";
