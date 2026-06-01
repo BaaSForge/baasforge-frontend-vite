@@ -5,7 +5,7 @@ import { Markdown } from "@/components/markdown";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { UnitTypeBadge } from "@/modules/project/components/unit-type-badge";
-import { STATIC_PROJECT_UNIT_TYPES, type ProjectUnitType } from "@/modules/project/types";
+import { SORTED_PROJECT_UNIT_TYPES, type ProjectUnitType } from "@/modules/project/types";
 import { UnitExplanationCurrentViewer } from "@/modules/project-chat/components/unit-explanation-current-viewer";
 import type {
     ToolCreateUnitPayload,
@@ -45,7 +45,7 @@ function rawObjectHasNonEmptyKeyOutside(rawObj: Record<string, unknown> | null, 
 
 function parseProjectUnitType(value: unknown): ProjectUnitType | null {
     if (typeof value !== "string") return null;
-    return (STATIC_PROJECT_UNIT_TYPES as readonly string[]).includes(value) ? (value as ProjectUnitType) : null;
+    return (SORTED_PROJECT_UNIT_TYPES as readonly string[]).includes(value) ? (value as ProjectUnitType) : null;
 }
 
 function rawArgumentsJsonString(raw: unknown): string | null {

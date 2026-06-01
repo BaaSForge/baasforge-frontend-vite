@@ -1,8 +1,8 @@
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import type { ContextModulePair, ProjectUnitType } from "@/modules/project/types";
-import { STATIC_PROJECT_UNIT_TYPES } from "@/modules/project/types";
+import { SORTED_PROJECT_UNIT_TYPES } from "@/modules/project/types";
 
-const VALID_UNIT_TYPES = new Set<string>(STATIC_PROJECT_UNIT_TYPES);
+const VALID_UNIT_TYPES = new Set<string>(SORTED_PROJECT_UNIT_TYPES);
 
 export type UnitsTabValue = "new" | "all";
 

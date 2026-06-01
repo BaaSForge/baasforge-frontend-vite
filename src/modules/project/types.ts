@@ -28,8 +28,8 @@ export type ProjectUnitType = "api" | "actor" | "workflow" | "queue_worker" | "c
 
 export type ProjectUnitTypeWithRuntime = Exclude<ProjectUnitType, "common">;
 
-/** Static ordering for filters and labels (matches backend `ProjectUnitType`). */
-export const STATIC_PROJECT_UNIT_TYPES: readonly ProjectUnitType[] = [
+/** Canonical sort order for unit types (matches backend `ProjectUnitType`). */
+export const SORTED_PROJECT_UNIT_TYPES: readonly ProjectUnitType[] = [
     "api",
     "actor",
     "workflow",

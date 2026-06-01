@@ -27,14 +27,14 @@ import {
     useProjectReleaseUnitsAllQuery,
 } from "@/modules/project/queries";
 import type { ContextModulePair, ListReleaseUnitsAllRequest, ProjectUnitResponse, ProjectUnitType } from "@/modules/project/types";
-import { STATIC_PROJECT_UNIT_TYPES } from "@/modules/project/types";
+import { SORTED_PROJECT_UNIT_TYPES } from "@/modules/project/types";
 import { projectUnitStablePath } from "@/modules/project/project-unit-stable-path";
 import { UNIT_TYPE_ICONS } from "@/modules/project/unit-type-icons";
 import { useAllUnitsPins } from "@/modules/project/use-all-units-pins";
 import { ChevronLeftIcon, ChevronRightIcon, LayersIcon, TextAlignJustifyIcon } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
-import { groupUnitsByType } from "./group-units-by-type";
+import { groupUnitsByType, sortedProjectUnitTypes } from "./group-units-by-type";
 import {
     DEFAULT_ALL_UNITS_PAGE,
     mergeAllUnitsSearchParams,
@@ -70,7 +70,7 @@ function UnitsGroupedByType({
     renderUnit: (unit: ProjectUnitResponse) => ReactNode;
 }) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
-    const sortedTypes = useMemo(() => [...grouped.keys()].sort((a, b) => a.localeCompare(b)), [grouped]);
+    const sortedTypes = useMemo(() => sortedProjectUnitTypes(grouped.keys()), [grouped]);
 
     return (
         <div className="space-y-6">
@@ -318,7 +318,7 @@ export function AllUnitsTab({
                         <Combobox
                             multiple
                             autoHighlight
-                            items={STATIC_PROJECT_UNIT_TYPES.slice()}
+                            items={SORTED_PROJECT_UNIT_TYPES.slice()}
                             value={unitTypes}
                             onValueChange={(next) => {
                                 const nextTypes = [...(next ?? [])] as ProjectUnitType[];

@@ -10,7 +10,7 @@ import { LayersIcon, TextAlignJustifyIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
-import { groupUnitsByType } from "./group-units-by-type";
+import { groupUnitsByType, sortedProjectUnitTypes } from "./group-units-by-type";
 import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type AllUnitsGroupMode } from "./release-units-search-params";
 
 function releaseNewUnitChangePairs(
@@ -36,7 +36,7 @@ function UnitsGroupedByType({
     preparingDiff: boolean;
 }) {
     const grouped = useMemo(() => groupUnitsByType(units), [units]);
-    const sortedTypes = useMemo(() => [...grouped.keys()].sort((a, b) => a.localeCompare(b)), [grouped]);
+    const sortedTypes = useMemo(() => sortedProjectUnitTypes(grouped.keys()), [grouped]);
 
     return (
         <div className="space-y-6">
