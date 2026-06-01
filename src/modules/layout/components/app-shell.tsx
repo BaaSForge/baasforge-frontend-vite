@@ -4,6 +4,7 @@ import { useSubscribeUserNotifications } from "@/hooks/use-subscribe-user-notifi
 import { register, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
 import * as React from "react";
 import { Outlet } from "react-router";
+import { StartDebugModalProvider } from "./start-debug-modal";
 import { AppSidebar } from "./app-sidebar";
 import { ShortcutsModal } from "./shortcuts-modal";
 import { StickyBreadcrumbBar, StickyBreadcrumbBarPlaceholder } from "./sticky-breadcrumb-bar";
@@ -46,16 +47,18 @@ export function AppShell() {
     }, [handleOpenShortcuts]);
 
     return (
-        <SidebarProvider open={open} onOpenChange={handleOpenChange}>
-            <MainSidebarShortcutListener />
-            <AppSidebar onOpenShortcuts={handleOpenShortcuts} />
-            <SidebarInset>
-                <StickyBreadcrumbBarPlaceholder />
-                <StickyBreadcrumbBar />
-                <Outlet />
-            </SidebarInset>
-            <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
-            <ScalarHttpTestAiNudgeGlobalHost />
-        </SidebarProvider>
+        <StartDebugModalProvider>
+            <SidebarProvider open={open} onOpenChange={handleOpenChange}>
+                <MainSidebarShortcutListener />
+                <AppSidebar onOpenShortcuts={handleOpenShortcuts} />
+                <SidebarInset>
+                    <StickyBreadcrumbBarPlaceholder />
+                    <StickyBreadcrumbBar />
+                    <Outlet />
+                </SidebarInset>
+                <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+                <ScalarHttpTestAiNudgeGlobalHost />
+            </SidebarProvider>
+        </StartDebugModalProvider>
     );
 }

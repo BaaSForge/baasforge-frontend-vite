@@ -1,6 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { StartDebugModalProvider } from "@/modules/layout/components/start-debug-modal";
 import { apiClient } from "@/lib/api-client";
 import { handleError, showApiError } from "@/lib/errors";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -37,11 +36,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={0}>
-                <StartDebugModalProvider>
-                    {children}
-                    {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />}
-                    <Toaster />
-                </StartDebugModalProvider>
+                {children}
+                {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />}
+                <Toaster />
             </TooltipProvider>
         </QueryClientProvider>
     );
