@@ -1,6 +1,6 @@
 "use client";
 
-import logo256 from "@public/logo-256x256.png";
+import logo256 from "/logo-256x256.png?url";
 import { cn } from "@/lib/utils";
 import type { ComponentPropsWithoutRef } from "react";
 

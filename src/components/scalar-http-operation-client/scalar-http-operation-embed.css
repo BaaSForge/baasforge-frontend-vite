@@ -200,6 +200,6 @@ body .scalar.scalar-app.z-overlay .ascii-art::after {
     display: block;
     width: 4.5rem;
     height: 4.5rem;
-    background: url("@public/logo-256x256.png") center / contain no-repeat;
+    background: url("/logo-256x256.png") center / contain no-repeat;
     opacity: 0.55;
 }
