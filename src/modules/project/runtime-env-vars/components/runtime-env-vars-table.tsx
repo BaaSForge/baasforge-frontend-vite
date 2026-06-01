@@ -76,8 +76,16 @@ function RuntimeEnvVarRow({
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Delete {row.key}?</AlertDialogTitle>
+                            <AlertDialogHeader className="min-w-0">
+                                <AlertDialogTitle className="flex min-w-0 items-baseline">
+                                    <span className="mr-1 shrink-0">Delete</span>
+                                    <span className="flex min-w-0 flex-1 items-baseline overflow-hidden">
+                                        <span className="min-w-0 truncate font-mono" title={row.key}>
+                                            {row.key}
+                                        </span>
+                                        <span className="shrink-0">?</span>
+                                    </span>
+                                </AlertDialogTitle>
                                 <AlertDialogDescription>
                                     This removes the variable from every runtime. This cannot be undone.
                                 </AlertDialogDescription>
