@@ -68,7 +68,10 @@ export default function Controls({
     const verticalPositionClassName =
         !isNewSession || isMobile ? "bottom-4" : "top-[calc(50%-3rem)]";
 
-    const handleFocus = () => {
+    const focusComposerFromChrome = (e: React.MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('[data-slot="input-group-control"]')) return;
+        if (target.closest("button, a, [role='menu'], [role='menuitem']")) return;
         messageInputRef.current?.focus();
     };
 
@@ -82,7 +85,7 @@ export default function Controls({
                         leftClassName,
                         rightClassName,
                     )}
-                    onClick={handleFocus}
+                    onClick={focusComposerFromChrome}
                 >
                     <h1 className={cn("text-3xl font-bold text-foreground", MIDDLE_CONTENT_CLASSNAME)}>What would you like to create?</h1>
                 </div>
@@ -97,7 +100,7 @@ export default function Controls({
             >
                 <div
                     className={cn("relative flex w-full items-stretch px-4", MIDDLE_CONTENT_CLASSNAME)}
-                    onClick={handleFocus}
+                    onClick={focusComposerFromChrome}
                 >
                     <FollowBottomScrollButton control={followScroll} />
                     <InputGroup
