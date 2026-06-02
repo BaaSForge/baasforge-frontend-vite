@@ -14,8 +14,17 @@ import {
 } from "./scalar-live-interaction-tabs";
 import type { ProjectUnitResponse, WorkflowUnitMetadata } from "../types";
 
-const INSTANCE_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
-const HANDLER_NAME_PATTERN = /^[A-Za-z0-9._:-]{1,256}$/;
+const WORKFLOW_INSTANCE_ID_MAX_LEN = 512;
+const WORKFLOW_HANDLER_NAME_MAX_LEN = 256;
+
+function isWorkflowInstanceIdValid(id: string): boolean {
+    return id.length >= 1 && id.length <= WORKFLOW_INSTANCE_ID_MAX_LEN;
+}
+
+function isWorkflowHandlerNameValid(name: string): boolean {
+    const trimmed = name.trim();
+    return trimmed.length >= 1 && trimmed.length <= WORKFLOW_HANDLER_NAME_MAX_LEN;
+}
 
 const HANDLER_REQUEST_FALLBACK_JSON_SCHEMA = JSON.stringify({
     type: "object",
@@ -153,9 +162,8 @@ function WorkflowUnitLiveInteractionBody({
         [unit, useStageTrigger, runtimeId],
     );
 
-    const instanceSegmentReady = INSTANCE_ID_PATTERN.test(instanceId);
-    const handlerSegmentReady =
-        instanceSegmentReady && HANDLER_NAME_PATTERN.test(handlerName.trim()) && handlerName.trim().length > 0;
+    const instanceSegmentReady = isWorkflowInstanceIdValid(instanceId);
+    const handlerSegmentReady = instanceSegmentReady && isWorkflowHandlerNameValid(handlerName);
 
     const handlerPath = useMemo(() => {
         if (!handlerSegmentReady) return null;
@@ -174,11 +182,8 @@ function WorkflowUnitLiveInteractionBody({
     const handlerResponseSchema =
         meta?.handlerOutputs?.[trimmedHandlerKey]?.jsonSchema ?? HANDLER_RESPONSE_FALLBACK_JSON_SCHEMA;
 
-    const instanceInvalid = instanceId.length > 0 && !INSTANCE_ID_PATTERN.test(instanceId);
-    const handlerNameInvalid =
-        handlerName.length > 0 &&
-        handlerName.trim().length > 0 &&
-        !HANDLER_NAME_PATTERN.test(handlerName.trim());
+    const instanceInvalid = instanceId.length > 0 && !isWorkflowInstanceIdValid(instanceId);
+    const handlerNameInvalid = handlerName.length > 0 && !isWorkflowHandlerNameValid(handlerName);
 
     return (
         <div className="flex flex-col gap-3">
@@ -197,8 +202,7 @@ function WorkflowUnitLiveInteractionBody({
                         spellCheck={false}
                     />
                     <p className="text-muted-foreground text-[11px] leading-snug">
-                        Required for handler, status, cancel, and result. Letters, digits,{" "}
-                        <code className="text-[10px]">._:-</code> (up to 512).
+                        Required for handler, status, cancel, and result. Up to 512 characters (URL-encoded in the path).
                     </p>
                     {instanceInvalid ? (
                         <p className="text-destructive text-xs" role="alert">
@@ -220,8 +224,8 @@ function WorkflowUnitLiveInteractionBody({
                         spellCheck={false}
                     />
                     <p className="text-muted-foreground text-[11px] leading-snug">
-                        Path segment for <code className="text-[10px]">/handlers/{"{name}"}</code>. Same character set
-                        (up to 256).
+                        Path segment for <code className="text-[10px]">/handlers/{"{name}"}</code>. Up to 256 characters
+                        (URL-encoded; leading/trailing spaces trimmed).
                     </p>
                     {handlerNameInvalid ? (
                         <p className="text-destructive text-xs" role="alert">

@@ -14,7 +14,11 @@ import {
 } from "./scalar-live-interaction-tabs";
 import type { ProjectUnitResponse, QueueWorkerUnitMetadata } from "../types";
 
-const RUN_ID_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const QUEUE_WORKER_RUN_ID_MAX_LEN = 512;
+
+function isQueueWorkerRunIdValid(id: string): boolean {
+    return id.length >= 1 && id.length <= QUEUE_WORKER_RUN_ID_MAX_LEN;
+}
 
 const ENQUEUE_RESPONSE_JSON_SCHEMA = JSON.stringify({
     type: "object",
@@ -108,7 +112,7 @@ type QueueWorkerTabsProps = {
 function runScopedPlaceholder() {
     return (
         <div className="text-muted-foreground flex min-h-[12rem] items-center justify-center rounded-md border border-dashed px-3 text-center text-xs">
-            Enter a valid run UUID above to call this endpoint.
+            Enter a run id above to call this endpoint.
         </div>
     );
 }
@@ -238,7 +242,7 @@ export function QueueWorkerUnitLiveInteraction({
     );
 
     const runIdTrimmed = runId.trim();
-    const runIdValid = RUN_ID_UUID.test(runIdTrimmed);
+    const runIdValid = isQueueWorkerRunIdValid(runIdTrimmed);
     const runIdInvalid = runIdTrimmed.length > 0 && !runIdValid;
 
     if (workerBase === "") {
@@ -252,7 +256,7 @@ export function QueueWorkerUnitLiveInteraction({
         <div className="flex flex-col gap-3">
             <div className="space-y-1.5">
                 <Label htmlFor={`queue-run-id-${unit.id}`} className="text-xs">
-                    Run id (UUID)
+                    Run id
                 </Label>
                 <Input
                     id={`queue-run-id-${unit.id}`}
@@ -264,11 +268,12 @@ export function QueueWorkerUnitLiveInteraction({
                     spellCheck={false}
                 />
                 <p className="text-muted-foreground text-[11px] leading-snug">
-                    Used for status, result, and cancel. Enqueue does not require a run id.
+                    Used for status, result, and cancel. Up to 512 characters (URL-encoded in the path). Enqueue does not
+                    require a run id.
                 </p>
                 {runIdInvalid ? (
                     <p className="text-destructive text-xs" role="alert">
-                        Enter a valid UUID run id for run-scoped operations.
+                        Invalid run id.
                     </p>
                 ) : null}
             </div>

@@ -14,7 +14,11 @@ import {
 } from "./scalar-live-interaction-tabs";
 import type { ActorUnitMetadata, ProjectUnitResponse } from "../types";
 
-const ACTOR_ID_PATTERN = /^[A-Za-z0-9._:-]{1,512}$/;
+const ACTOR_INSTANCE_ID_MAX_LEN = 512;
+
+function isActorInstanceIdValid(id: string): boolean {
+    return id.length >= 1 && id.length <= ACTOR_INSTANCE_ID_MAX_LEN;
+}
 const UNIT_SLUG_PATTERN = /^[a-z]+(-[a-z]+)*$/;
 
 function handlerMetadataKeyToPathSegment(metadataKey: string): string {
@@ -279,7 +283,7 @@ export function ActorUnitLiveInteraction({
     }, [unit, slugsOk, useStageTrigger, runtimeId]);
 
     const actorIdTrimmed = actorId.trim();
-    const actorIdOk = ACTOR_ID_PATTERN.test(actorIdTrimmed);
+    const actorIdOk = isActorInstanceIdValid(actorIdTrimmed);
 
     const pathPrefix = useMemo(() => {
         if (pathThroughUnitSlug == null || !actorIdOk) return null;
@@ -312,14 +316,14 @@ export function ActorUnitLiveInteraction({
                     id={`actor-id-${unit.id}`}
                     value={actorId}
                     onChange={(e) => setActorId(e.target.value)}
-                    placeholder="e.g. default, default-store, or a UUID"
+                    placeholder="anything"
                     className="h-8 text-xs"
                     autoComplete="off"
                     spellCheck={false}
                 />
                 <p className="text-muted-foreground text-[11px] leading-snug">
                     Path is <code className="text-[10px]">…/unit/{"{id}"}/{"{handler}"}</code> (handler segment is
-                    camelCase from metadata). Id: letters, digits, <code className="text-[10px]">-._:</code>, max 512.
+                    camelCase from metadata). Id: up to 512 characters (URL-encoded in the path).
                 </p>
                 {actorIdInvalid ? (
                     <p className="text-destructive text-xs" role="alert">
