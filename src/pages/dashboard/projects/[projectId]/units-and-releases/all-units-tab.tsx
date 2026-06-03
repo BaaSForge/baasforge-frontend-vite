@@ -14,10 +14,8 @@ import {
     useComboboxAnchor,
 } from "@/components/ui/combobox";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ConfirmableButton } from "@/components/ui/confirmable-button";
-import { STORAGE_KEYS } from "@/constants/storage-keys";
+import { FreeformMultiCombobox } from "@/components/ui/freeform-multi-combobox";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
 import { ProjectUnitTypeSectionHeading } from "@/modules/project/components/project-unit-type-section-heading";
 import {
@@ -31,7 +29,7 @@ import { SORTED_PROJECT_UNIT_TYPES } from "@/modules/project/types";
 import { projectUnitStablePath } from "@/modules/project/project-unit-stable-path";
 import { UNIT_TYPE_ICONS } from "@/modules/project/unit-type-icons";
 import { useAllUnitsPins } from "@/modules/project/use-all-units-pins";
-import { ChevronLeftIcon, ChevronRightIcon, LayersIcon, TextAlignJustifyIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { groupUnitsByType, sortedProjectUnitTypes } from "./group-units-by-type";
@@ -41,7 +39,6 @@ import {
     pairsCompatibleWithContexts,
     readReleaseUnitsSearchParams,
     isAllowedPageSize,
-    type AllUnitsGroupMode,
 } from "./release-units-search-params";
 import { ReleaseUnitsContextsCombobox } from "./release-units-contexts-combobox";
 import { modulePairKey, parseModulePairKey, sortPairs } from "./release-units-module-pair-keys";
@@ -105,7 +102,7 @@ export function AllUnitsTab({
     const { unitsTab, allUnits } = readReleaseUnitsSearchParams(searchParams);
     const tabActive = unitsTab === "all";
 
-    const { page, pageSize, groupMode, contexts, unitTypes, contextModulePairs } = allUnits;
+    const { page, pageSize, groupMode, contexts, unitTypes, contextModulePairs, unitsPaths } = allUnits;
     const pairs = useMemo(() => pairsCompatibleWithContexts(contexts, contextModulePairs), [contexts, contextModulePairs]);
 
     const { data: contextSlugs = [], isLoading: contextsLoading } = useProjectReleaseContextsQuery(projectId, releaseId, {
@@ -125,8 +122,9 @@ export function AllUnitsTab({
             unit_types: unitTypes,
             context_slugs: contexts,
             context_module_pairs: pairs,
+            ...(unitsPaths.length > 0 ? { units_paths: unitsPaths } : {}),
         }),
-        [page, pageSize, unitTypes, contexts, pairs],
+        [page, pageSize, unitTypes, contexts, pairs, unitsPaths],
     );
 
     const unitsQuery = useProjectReleaseUnitsAllQuery(projectId, releaseId, listBody, { enabled: tabActive });
@@ -195,13 +193,6 @@ export function AllUnitsTab({
     ]);
 
     const patchUrl = (patch: Parameters<typeof mergeAllUnitsSearchParams>[1]) => {
-        if (patch.groupMode != null) {
-            try {
-                localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, patch.groupMode);
-            } catch {
-                // ignore
-            }
-        }
         setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), patch));
     };
 
@@ -225,7 +216,10 @@ export function AllUnitsTab({
     );
 
     const hasActiveFilters =
-        contexts.length > 0 || contextModulePairs.length > 0 || unitTypes.length > 0;
+        contexts.length > 0 ||
+        contextModulePairs.length > 0 ||
+        unitTypes.length > 0 ||
+        unitsPaths.length > 0;
 
     const modulesComboboxDisabled = contexts.length === 0;
 
@@ -234,6 +228,7 @@ export function AllUnitsTab({
             contexts: [],
             contextModulePairs: [],
             unitTypes: [],
+            unitsPaths: [],
             page: DEFAULT_ALL_UNITS_PAGE,
         });
     };
@@ -279,9 +274,9 @@ export function AllUnitsTab({
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
                 <div className="flex min-h-9 min-w-0 flex-wrap items-start gap-2">
-                    <div className="min-w-40 max-w-56 flex-[1_1_10rem]">
+                    <div className="min-w-40 flex-1 basis-40">
                         <ReleaseUnitsContextsCombobox
                             releaseId={releaseId}
                             sortedContextOptions={sortedContextOptions}
@@ -294,7 +289,7 @@ export function AllUnitsTab({
                         />
                     </div>
 
-                    <div className="min-w-40 max-w-56 flex-[1_1_10rem]">
+                    <div className="min-w-40 flex-1 basis-40">
                         <ReleaseUnitsModulesCombobox
                             releaseId={releaseId}
                             moduleItemKeys={moduleItemKeys}
@@ -314,7 +309,7 @@ export function AllUnitsTab({
                         />
                     </div>
 
-                    <div className="min-w-40 max-w-56 flex-[1_1_10rem]">
+                    <div className="min-w-40 flex-1 basis-40">
                         <Combobox
                             multiple
                             autoHighlight
@@ -360,40 +355,18 @@ export function AllUnitsTab({
                             </ComboboxContent>
                         </Combobox>
                     </div>
-
-                    {hasActiveFilters ? <FilterClearButton onClear={clearFilters} /> : null}
                 </div>
 
-                <div className="flex w-full min-w-0 justify-end">
-                    <ToggleGroup
-                        type="single"
-                        value={groupMode}
-                        onValueChange={(v) => v != null && v !== "" && patchUrl({ groupMode: v as AllUnitsGroupMode })}
-                        variant="outline"
-                        size="sm"
-                        className="shrink-0"
-                    >
-                        <ToggleGroupItem value="ungrouped">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <span>
-                                        <TextAlignJustifyIcon />
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom">Ungrouped view</TooltipContent>
-                            </Tooltip>
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="grouped">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <span>
-                                        <LayersIcon />
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom">Group by type</TooltipContent>
-                            </Tooltip>
-                        </ToggleGroupItem>
-                    </ToggleGroup>
+                <div className="flex min-h-9 min-w-0 items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                        <FreeformMultiCombobox
+                            placeholder="Unit paths or ids"
+                            value={unitsPaths}
+                            onValueChange={(next) => patchUrl({ unitsPaths: next, page: DEFAULT_ALL_UNITS_PAGE })}
+                            chipsClassName="h-auto min-h-8 w-full min-w-0 py-1"
+                        />
+                    </div>
+                    {hasActiveFilters ? <FilterClearButton onClear={clearFilters} /> : null}
                 </div>
             </div>
 

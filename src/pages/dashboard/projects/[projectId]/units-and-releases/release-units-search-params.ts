@@ -36,8 +36,8 @@ function parseUnitTypesFromParams(searchParams: URLSearchParams): ProjectUnitTyp
     return out;
 }
 
-function parseContextsFromParams(searchParams: URLSearchParams): string[] {
-    const raw = searchParams.getAll("ctx");
+function parseStringListFromParams(searchParams: URLSearchParams, key: string): string[] {
+    const raw = searchParams.getAll(key);
     const seen = new Set<string>();
     const out: string[] = [];
     for (const r of raw) {
@@ -48,6 +48,10 @@ function parseContextsFromParams(searchParams: URLSearchParams): string[] {
         }
     }
     return out;
+}
+
+function parseContextsFromParams(searchParams: URLSearchParams): string[] {
+    return parseStringListFromParams(searchParams, "ctx");
 }
 
 function parsePairsFromParams(searchParams: URLSearchParams): ContextModulePair[] {
@@ -111,6 +115,7 @@ export function readReleaseUnitsSearchParams(searchParams: URLSearchParams): {
         contexts: string[];
         unitTypes: ProjectUnitType[];
         contextModulePairs: ContextModulePair[];
+        unitsPaths: string[];
     };
 } {
     const tabRaw = searchParams.get("unitsTab");
@@ -133,6 +138,7 @@ export function readReleaseUnitsSearchParams(searchParams: URLSearchParams): {
             contexts: parseContextsFromParams(searchParams),
             unitTypes: parseUnitTypesFromParams(searchParams),
             contextModulePairs: parsePairsFromParams(searchParams),
+            unitsPaths: parseStringListFromParams(searchParams, "units_paths"),
         },
     };
 }
@@ -172,6 +178,7 @@ export function mergeAllUnitsSearchParams(
         contexts: string[];
         unitTypes: ProjectUnitType[];
         contextModulePairs: ContextModulePair[];
+        unitsPaths: string[];
     }>,
 ): URLSearchParams {
     const next = new URLSearchParams(prev);
@@ -214,6 +221,10 @@ export function mergeAllUnitsSearchParams(
 
     if (patch.contextModulePairs != null) {
         writePairsParam(next, patch.contextModulePairs);
+    }
+
+    if (patch.unitsPaths != null) {
+        setMultiParam(next, "units_paths", patch.unitsPaths);
     }
 
     return next;

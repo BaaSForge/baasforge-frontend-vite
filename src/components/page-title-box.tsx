@@ -49,6 +49,8 @@ export function PageTitleBox({
         mainSidebar.open && !mainSidebar.isMobile ? "!left-[var(--sidebar-width)]" : mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]";
     const pageTitleBoxRightClassName = secondarySidebar && secondarySidebar.open && !secondarySidebar.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
 
+    const stackToolsLayout = stackToolsOnMobile && tools != null;
+
     React.useLayoutEffect(() => {
         const el = barRef.current;
         if (!el) return;
@@ -58,10 +60,9 @@ export function PageTitleBox({
         ro.observe(el);
         setPageTitleBoxHeight(el.getBoundingClientRect().height);
         return () => ro.disconnect();
-    }, [setPageTitleBoxHeight]);
+    }, [setPageTitleBoxHeight, stackToolsLayout]);
 
     const top = stickyBarVisible ? stickyBarHeight : 0;
-    const stackTools = stackToolsOnMobile && tools != null;
 
     return (
         <>
@@ -70,11 +71,10 @@ export function PageTitleBox({
                 ref={barRef}
                 data-slot="page-title-box"
                 className={cn(
-                    "fixed right-0 z-[15] flex shrink-0 border-b px-3 bg-background transition-all",
-                    stackTools
-                        ? "min-h-12 h-auto flex-col items-stretch gap-2 py-2 md:h-14 md:flex-row md:items-center md:justify-between md:gap-4 md:py-0"
-                        : "h-12 flex-row items-center justify-between gap-2 md:h-14 md:gap-4",
-                    "md:px-4",
+                    "fixed right-0 z-[15] shrink-0 border-b bg-background transition-all",
+                    stackToolsLayout
+                        ? "grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 max-sm:grid-cols-1 max-sm:h-auto max-sm:items-stretch max-sm:gap-2 max-sm:py-2 md:h-14 md:gap-4 md:px-4"
+                        : "flex h-12 flex-row items-center justify-between gap-2 px-3 md:h-14 md:gap-4 md:px-4",
                     stickyBarTransition,
                     `top-[var(--top)]`,
                     pageTitleBoxLeftClassName,
@@ -88,8 +88,8 @@ export function PageTitleBox({
             >
                 <div
                     className={cn(
-                        "text-base font-semibold tracking-tight md:text-lg",
-                        stackTools ? "min-w-0 md:truncate" : "min-w-0 truncate",
+                        "min-w-0 text-base font-semibold tracking-tight md:text-lg",
+                        stackToolsLayout ? "max-sm:whitespace-normal sm:truncate" : "truncate",
                     )}
                 >
                     {title}
@@ -97,8 +97,8 @@ export function PageTitleBox({
                 {tools != null && (
                     <div
                         className={cn(
-                            "flex items-center",
-                            stackTools ? "w-full shrink-0 justify-end gap-2 md:w-auto md:justify-start" : "shrink-0",
+                            "flex items-center gap-2",
+                            stackToolsLayout ? "max-sm:w-full max-sm:justify-end sm:shrink-0" : "shrink-0",
                         )}
                     >
                         {tools}

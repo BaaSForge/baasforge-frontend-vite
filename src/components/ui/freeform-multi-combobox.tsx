@@ -30,7 +30,7 @@ export function FreeformMultiCombobox({
     chipsEnd,
 }: {
     id?: string;
-    label: string;
+    label?: string;
     placeholder: string;
     value: string[];
     onValueChange: (next: string[]) => void;
@@ -63,15 +63,16 @@ export function FreeformMultiCombobox({
         e.currentTarget.value = "";
     };
 
-    const labelEl = (
-        <Label htmlFor={id} className="text-muted-foreground text-xs font-medium">
-            {label}
-        </Label>
-    );
+    const labelEl =
+        label != null && label !== "" ? (
+            <Label htmlFor={id} className="text-muted-foreground text-xs font-medium">
+                {label}
+            </Label>
+        ) : null;
 
     return (
-        <div className={cn("flex min-w-0 flex-col gap-1.5", className)}>
-            {labelRowClassName ? <div className={labelRowClassName}>{labelEl}</div> : labelEl}
+        <div className={cn(labelEl != null ? "flex min-w-0 flex-col gap-1.5" : "min-w-0", className)}>
+            {labelEl != null ? (labelRowClassName ? <div className={labelRowClassName}>{labelEl}</div> : labelEl) : null}
             <Combobox
                 multiple
                 autoHighlight

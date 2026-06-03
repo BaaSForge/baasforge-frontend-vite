@@ -21,6 +21,7 @@ import { AllUnitsTab } from "./all-units-tab";
 import { NewUnitsTab } from "./new-units-tab";
 import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type UnitsTabValue } from "./release-units-search-params";
 import { SecondarySideBar } from "./secondary-side-bar";
+import { UnitsGroupModeToggle } from "./units-group-mode-toggle";
 
 type Sidebar = ReturnType<typeof useSidebar>;
 
@@ -66,10 +67,13 @@ export function ProjectUnitsAndReleasesView({
     };
 
     const tabsControls = (
-        <TabsList>
-            <TabsTrigger value="new">New units</TabsTrigger>
-            <TabsTrigger value="all">All units</TabsTrigger>
-        </TabsList>
+        <>
+            <UnitsGroupModeToggle />
+            <TabsList>
+                <TabsTrigger value="new">New units</TabsTrigger>
+                <TabsTrigger value="all">All units</TabsTrigger>
+            </TabsList>
+        </>
     );
 
     const titleTools = showSecondaryReleaseSidebar ? (
@@ -124,7 +128,7 @@ export function ProjectUnitsAndReleasesView({
     );
 
     return (
-        <Tabs value={unitsTab} onValueChange={onUnitsTabChange} className="gap-4">
+        <Tabs value={unitsTab} onValueChange={onUnitsTabChange}>
             {showSecondaryReleaseSidebar && mainSidebar != null ? (
                 <NestedMainSidebarProvider mainSidebar={mainSidebar}>{body}</NestedMainSidebarProvider>
             ) : (

@@ -64,7 +64,7 @@ export interface ListReleaseUnitsAllRequest {
     unit_types?: ProjectUnitType[];
     context_slugs?: string[];
     context_module_pairs?: ContextModulePair[];
-    /** When set, returns units for these paths (no pagination). Omit other filter fields so none apply. */
+    /** When set alone (pinned lookup), returns units for these paths without pagination. */
     units_paths?: string[];
     exclude_deleted?: boolean;
 }

@@ -47,7 +47,7 @@ export function ReleaseUnitsModulesCombobox({
         >
             <ComboboxChips
                 ref={modulesAnchor}
-                className={cn("h-auto min-h-8 w-full min-w-0 max-w-[14rem] py-1", disabled && "opacity-50")}
+                className={cn("h-auto min-h-8 w-full min-w-0 py-1", disabled && "opacity-50")}
             >
                 <ComboboxValue>
                     {(values: string[]) => (

@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from "@/constants/storage-keys";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { SECONDARY_SIDEBAR_SHEET_BREAKPOINT, useIsBelowBreakpoint } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useStickyBreadcrumbBarHeight, useStickyBreadcrumbBarTransition, useStickyBreadcrumbBarVisible } from "@/stores/breadcrumb";
 import React, { useCallback, useMemo, useState } from "react";
@@ -15,7 +15,7 @@ type Props = {
 export function SecondarySidebarProvider({ children, storageKey, defaultOpen }: Props) {
     const defaultValue = storageKey ? localStorage.getItem(storageKey) === "true" : defaultOpen;
 
-    const isMobile = useIsMobile();
+    const isSheetViewport = useIsBelowBreakpoint(SECONDARY_SIDEBAR_SHEET_BREAKPOINT);
     const [sidebarOpen, setSidebarOpen] = useState(defaultValue);
 
     const handleOpenChange = (open: boolean) => {
@@ -47,9 +47,10 @@ export function SecondarySidebarProvider({ children, storageKey, defaultOpen }: 
             <SidebarProvider
                 open={sidebarOpen}
                 onOpenChange={handleOpenChange}
+                mobileBreakpoint={SECONDARY_SIDEBAR_SHEET_BREAKPOINT}
                 className={cn(
                     "flex-col min-w-0 transition-width duration-200 min-h-none",
-                    isMobile || !sidebarOpen ? "w-full" : "w-[calc(100%-var(--sidebar-width))]",
+                    isSheetViewport || !sidebarOpen ? "w-full" : "w-[calc(100%-var(--sidebar-width))]",
                 )}
             >
                 {children}

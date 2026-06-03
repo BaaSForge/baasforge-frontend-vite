@@ -1,17 +1,13 @@
 import { ProjectUnitTypeSectionHeading } from "@/modules/project/components/project-unit-type-section-heading";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { postReleaseUnitPreviousByFullIds } from "@/modules/project/api";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { ChatSessionViewChangesModal, type ChatSessionUnitChangePair } from "@/modules/project-chat";
-import { LayersIcon, TextAlignJustifyIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import { groupUnitsByType, sortedProjectUnitTypes } from "./group-units-by-type";
-import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type AllUnitsGroupMode } from "./release-units-search-params";
+import { readReleaseUnitsSearchParams } from "./release-units-search-params";
 
 function releaseNewUnitChangePairs(
     afterUnits: ProjectUnitResponse[],
@@ -75,7 +71,7 @@ export function NewUnitsTab({
     isLoading: boolean;
     error: unknown;
 }) {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const { allUnits } = readReleaseUnitsSearchParams(searchParams);
     const groupMode = allUnits.groupMode;
 
@@ -110,49 +106,8 @@ export function NewUnitsTab({
 
     const expandDiff = expandDiffEligible ? openReleaseNewUnitsDiff : undefined;
 
-    const setGroupMode = (v: AllUnitsGroupMode) => {
-        try {
-            localStorage.setItem(STORAGE_KEYS.UNITS_AND_RELEASES_GROUP_MODE, v);
-        } catch {
-            // ignore
-        }
-        setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), { groupMode: v }));
-    };
-
     return (
         <div className="space-y-4">
-            <div className="flex justify-end">
-                <ToggleGroup
-                    type="single"
-                    value={groupMode}
-                    onValueChange={(v) => v != null && v !== "" && setGroupMode(v as AllUnitsGroupMode)}
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                >
-                    <ToggleGroupItem value="ungrouped">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <TextAlignJustifyIcon />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">Ungrouped view</TooltipContent>
-                        </Tooltip>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="grouped">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span>
-                                    <LayersIcon />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">Group by type</TooltipContent>
-                        </Tooltip>
-                    </ToggleGroupItem>
-                </ToggleGroup>
-            </div>
-
             {isLoading ? (
                 <div className="text-muted-foreground p-4 text-center text-sm">Loading new units…</div>
             ) : error ? (

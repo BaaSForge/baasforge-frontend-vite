@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { MOBILE_BREAKPOINT, useIsBelowBreakpoint } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -43,6 +43,7 @@ function SidebarProvider({
     defaultOpen = true,
     open: openProp,
     onOpenChange: setOpenProp,
+    mobileBreakpoint = MOBILE_BREAKPOINT,
     className,
     style,
     children,
@@ -51,8 +52,10 @@ function SidebarProvider({
     defaultOpen?: boolean;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
+    /** Viewport width below which the sidebar renders as an overlay sheet. */
+    mobileBreakpoint?: number;
 }) {
-    const isMobile = useIsMobile();
+    const isMobile = useIsBelowBreakpoint(mobileBreakpoint);
     const [openMobile, setOpenMobile] = React.useState(false);
 
     // This is the internal state of the sidebar.
