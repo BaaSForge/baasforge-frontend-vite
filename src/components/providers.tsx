@@ -3,7 +3,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { apiClient } from "@/lib/api-client";
 import { handleError, showApiError } from "@/lib/errors";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useState } from "react";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -37,7 +36,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={0}>
                 {children}
-                {import.meta.env.DEV && <ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />}
                 <Toaster />
             </TooltipProvider>
         </QueryClientProvider>
