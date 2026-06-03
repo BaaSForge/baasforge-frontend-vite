@@ -1,3 +1,6 @@
+import { ContentEmptyState } from "@/components/content-empty-state";
+import { ContentErrorState } from "@/components/content-error-state";
+import { ContentLoadingState } from "@/components/content-loading-state";
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
 import { FilterClearButton } from "@/components/ui/filter-clear-button";
@@ -396,9 +399,12 @@ export function AllUnitsTab({
                         </ConfirmableButton>
                     </div>
                     {pinnedUnitsQuery.isError ? (
-                        <div className="text-destructive text-center text-sm">Failed to load pinned units.</div>
+                        <ContentErrorState
+                            title="Failed to load pinned units."
+                            subtitle="Try refreshing the page and try again."
+                        />
                     ) : pinnedUnitsQuery.isLoading ? (
-                        <div className="text-muted-foreground text-center text-sm">Loading pinned units…</div>
+                        <ContentLoadingState label="Loading pinned units…" />
                     ) : pinnedUnitsOrdered.length === 0 && pins.length > 0 ? (
                         <div className="text-muted-foreground text-center text-sm">No pinned units in this release.</div>
                     ) : groupMode === "ungrouped" ? (
@@ -417,15 +423,22 @@ export function AllUnitsTab({
             ) : null}
 
             {isLoading ? (
-                <div className="text-muted-foreground p-6 text-center text-sm">Loading units…</div>
+                <ContentLoadingState label="Loading units…" />
             ) : error ? (
-                <div className="text-destructive p-6 text-center text-sm">Failed to load combined units.</div>
+                <ContentErrorState
+                    title="Failed to load all units."
+                    subtitle="Try changing the filters and try again."
+                />
             ) : units.length === 0 && pins.length === 0 ? (
-                <div className="text-muted-foreground border-border rounded-lg border border-dashed p-8 text-center text-sm">
-                    No units match the current filters for this page.
-                </div>
+                <ContentEmptyState
+                    title="No units found"
+                    description="No units match the current filters for this page."
+                />
             ) : units.length === 0 && pins.length > 0 ? (
-                <div className="text-muted-foreground p-4 text-center text-sm">No additional units on this page.</div>
+                <ContentEmptyState
+                    title="No additional units"
+                    description="No units match your current filters on this page. Try adjusting or clearing filters to see more."
+                />
             ) : groupMode === "ungrouped" ? (
                 <div className={cn("flex flex-col gap-4", isFetching && "opacity-70")}>
                     {units.map((unit) => (

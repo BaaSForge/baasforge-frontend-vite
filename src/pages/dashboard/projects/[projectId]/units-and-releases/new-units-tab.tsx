@@ -1,3 +1,6 @@
+import { ContentEmptyState } from "@/components/content-empty-state";
+import { ContentErrorState } from "@/components/content-error-state";
+import { ContentLoadingState } from "@/components/content-loading-state";
 import { ProjectUnitTypeSectionHeading } from "@/modules/project/components/project-unit-type-section-heading";
 import { postReleaseUnitPreviousByFullIds } from "@/modules/project/api";
 import { UnitCardCompact } from "@/modules/project/components/unit-card-compact";
@@ -109,9 +112,17 @@ export function NewUnitsTab({
     return (
         <div className="space-y-4">
             {isLoading ? (
-                <div className="text-muted-foreground p-4 text-center text-sm">Loading new units…</div>
+                <ContentLoadingState label="Loading new units…" />
             ) : error ? (
-                <div className="text-destructive p-4 text-center text-sm">Failed to load new units.</div>
+                <ContentErrorState
+                    title="Failed to load new units."
+                    subtitle="Try refreshing the page and try again."
+                />
+            ) : orderedAfterUnits.length === 0 ? (
+                <ContentEmptyState
+                    title="No new units found"
+                    description="This release has no new units to show."
+                />
             ) : groupMode === "ungrouped" ? (
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {releaseUnits?.map((unit) => (
