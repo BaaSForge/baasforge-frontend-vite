@@ -98,6 +98,20 @@ jobs:
           envs: IMAGE,CONTAINER_NAME,GHCR_USER,GHCR_TOKEN
           script: |
             set -euo pipefail
+
+            if command -v systemctl >/dev/null 2>&1; then
+              systemctl enable docker
+              systemctl start docker
+            fi
+
+            if docker info 2>/dev/null | grep -qi rootless; then
+              if ! loginctl show-user "$(id -un)" -p Linger 2>/dev/null | grep -q "Linger=yes"; then
+                echo "Rootless Docker needs linger enabled or containers stop when SSH ends."
+                echo "Run: sudo loginctl enable-linger $(id -un)"
+                exit 1
+              fi
+            fi
+
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             docker pull "$IMAGE"
             docker stop "$CONTAINER_NAME" 2>/dev/null || true
@@ -107,4 +121,19 @@ jobs:
               --restart unless-stopped \
               -p 1200:1200 \
               "$IMAGE"
+            docker update --restart unless-stopped "$CONTAINER_NAME"
+
+            RESTART_POLICY=$(docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' "$CONTAINER_NAME")
+            if [ "$RESTART_POLICY" != "unless-stopped" ]; then
+              echo "Restart policy not applied (got: $RESTART_POLICY)"
+              exit 1
+            fi
+
+            if [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME")" != "true" ]; then
+              echo "Container failed to start"
+              docker logs "$CONTAINER_NAME" 2>&1 | tail -50
+              exit 1
+            fi
+
             docker image prune -f
+            echo "Running with restart policy: $RESTART_POLICY"
