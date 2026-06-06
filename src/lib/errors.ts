@@ -8,7 +8,7 @@ type ErrorWithPackageToPurchase = {
     status?: number;
 };
 
-function isApiErrorPayload(x: unknown): x is { error?: { message?: string }; message?: string } {
+function isApiErrorPayload(x: unknown): x is { error?: { message?: string; code?: string }; message?: string } {
     return typeof x === "object" && x !== null;
 }
 
