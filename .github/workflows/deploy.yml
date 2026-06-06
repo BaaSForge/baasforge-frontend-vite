@@ -119,7 +119,10 @@ jobs:
             docker run -d \
               --name "$CONTAINER_NAME" \
               --restart unless-stopped \
-              -p 1200:1200 \
+              -p 80:80 \
+              -p 443:443 \
+              -v /etc/letsencrypt/live/baasforge.com:/etc/letsencrypt/live/baasforge.com:ro \
+              -v /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro \
               "$IMAGE"
             docker update --restart unless-stopped "$CONTAINER_NAME"
 
