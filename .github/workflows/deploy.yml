@@ -3,26 +3,41 @@ name: Deploy
 on:
   push:
     tags:
-      - "v*-*-prod.*"
-      - "v*-*-stage.*"
+      - "v*-prod.*"
+      - "v*-stage.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to deploy (e.g. v0.0.1-prod.0)"
+        required: true
+        type: string
 
 permissions:
   contents: read
   packages: write
 
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && format('manual-{0}', github.event.inputs.tag) || github.ref }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  resolve:
     runs-on: ubuntu-latest
-    environment: ${{ startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-prod.') && 'production' || 'staging' }}
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      image: ${{ steps.meta.outputs.image }}
+      app_env: ${{ steps.meta.outputs.app_env }}
+      container_name: ${{ steps.meta.outputs.container_name }}
+      environment: ${{ steps.meta.outputs.environment }}
     steps:
       - name: Resolve environment
         id: meta
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
           if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-prod\.[0-9]+$ ]]; then
             echo "environment=production" >> "$GITHUB_OUTPUT"
             echo "app_env=PROD" >> "$GITHUB_OUTPUT"
@@ -38,8 +53,15 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "image=ghcr.io/${GITHUB_REPOSITORY,,}:$TAG" >> "$GITHUB_OUTPUT"
 
+  deploy:
+    needs: resolve
+    runs-on: ubuntu-latest
+    environment: ${{ needs.resolve.outputs.environment }}
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -56,17 +78,17 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.image }}
+          tags: ${{ needs.resolve.outputs.image }}
           build-args: |
-            APP_ENV=${{ steps.meta.outputs.app_env }}
+            APP_ENV=${{ needs.resolve.outputs.app_env }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Deploy to DigitalOcean
         uses: appleboy/ssh-action@v1.2.2
         env:
-          IMAGE: ${{ steps.meta.outputs.image }}
-          CONTAINER_NAME: ${{ steps.meta.outputs.container_name }}
+          IMAGE: ${{ needs.resolve.outputs.image }}
+          CONTAINER_NAME: ${{ needs.resolve.outputs.container_name }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
