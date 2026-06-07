@@ -56,8 +56,7 @@ export default defineConfig(({ mode }) => {
                     // Manual Chunks to separate vendor code
                     manualChunks(id) {
                         if (id.includes("node_modules")) {
-                            // Split out Tailwind CSS
-                            if (id.includes("tailwind")) {
+                            if (/node_modules\/(@tailwindcss\/|tailwindcss(?:-|$|\/)|tailwind-merge)/.test(id)) {
                                 return "vendor-tailwindcss";
                             }
                             // Split out utility libraries
