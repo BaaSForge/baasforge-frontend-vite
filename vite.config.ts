@@ -63,23 +63,10 @@ export default defineConfig(({ mode }) => {
                             if (id.includes("qr-code-styling")) {
                                 return "vendor-utils";
                             }
-                            // Split out Animation libraries (Heavy)
-                            if (id.includes("motion")) {
-                                return "vendor-motion";
-                            }
                             // Split out Data fetching
                             if (id.includes("@tanstack")) {
                                 return "vendor-query";
                             }
-                            // Split out non Core react libraries
-                            if (id.includes("react-dropzone") || id.includes("react-easy-crop") || id.includes("input-otp")) {
-                                return "vendor-react-non-core";
-                            }
-                            // Split out React and Router (Core)
-                            if (id.includes("react") || id.includes("react-router") || id.includes("react-dom")) {
-                                return "vendor-react";
-                            }
-                            // Everything else in node_modules goes to a general vendor chunk
                             return "vendor-general";
                         }
                     },
