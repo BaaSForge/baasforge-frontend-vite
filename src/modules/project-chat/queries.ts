@@ -1,6 +1,7 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
+    fillPackageTypeDefinitionFileContents,
     fillPackagesTypeDefinitionFiles,
     getProjectChatSessionDetail,
     getProjectChatSessionMessages,
@@ -118,5 +119,18 @@ export function usePackagesTypeDefinitionFilesQuery(
         enabled: userEnabled && packages.length > 0,
         queryKey: QueryKeys.packagesTypeDefinitionFiles(packagesKey),
         queryFn: () => fillPackagesTypeDefinitionFiles([...packages]),
+    });
+}
+
+export function usePackageTypeDefinitionFileContentsQuery(
+    files: readonly string[],
+    options?: { enabled?: boolean },
+) {
+    const filesKey = [...files].sort().join(",");
+    const userEnabled = options?.enabled ?? true;
+    return useQuery({
+        enabled: userEnabled && files.length > 0,
+        queryKey: QueryKeys.packageTypeDefinitionFileContents(filesKey),
+        queryFn: () => fillPackageTypeDefinitionFileContents([...files]),
     });
 }

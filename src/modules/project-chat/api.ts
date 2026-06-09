@@ -8,6 +8,7 @@ import {
     type ChatMessageResponse,
     type ChatMessageWithDeliveryStatus,
     type ChatSessionResponse,
+    type ToolGetPackageTypeDefinitionFileContentsPayload,
     type ToolGetPackagesTypeDefinitionFilesPayload,
 } from "./types";
 
@@ -31,6 +32,7 @@ const chatSessionUserMessageTruncateBelowEndpoint = (projectId: string, chatSess
 const chatSessionMessageRetryPlannerEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages/${messageId}/retry-planner`;
 const packagesTypeDefinitionFilesEndpoint = () => "/v1/platform/packages-type-definition-files";
+const packageTypeDefinitionFileContentsEndpoint = () => "/v1/platform/package-type-definition-file-contents";
 
 /** Matches backend `UnitPathsBody`: each string is the unit path (full id without the trailing `.<revision>` segment). */
 export type UnitPathsBody = {
@@ -261,6 +263,24 @@ export function fillPackagesTypeDefinitionFiles(packages: string[]): Promise<Too
         .then((res) => {
             if (!res.data) {
                 throw new Error("Packages type definition files response missing data");
+            }
+            return res.data;
+        });
+}
+
+export type PackageTypeDefinitionFileContentsFillBody = {
+    files: string[];
+};
+
+export function fillPackageTypeDefinitionFileContents(
+    files: string[],
+): Promise<ToolGetPackageTypeDefinitionFileContentsPayload> {
+    const body: PackageTypeDefinitionFileContentsFillBody = { files };
+    return apiClient
+        .post<ApiResponse<ToolGetPackageTypeDefinitionFileContentsPayload>>(packageTypeDefinitionFileContentsEndpoint(), body)
+        .then((res) => {
+            if (!res.data) {
+                throw new Error("Package type definition file contents response missing data");
             }
             return res.data;
         });

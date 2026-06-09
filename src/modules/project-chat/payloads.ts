@@ -121,6 +121,22 @@ export interface ToolGetPackagesTypeDefinitionFilesPayload {
     error?: string;
 }
 
+export interface PackageTypeDefinitionFileContentEntry {
+    path: string;
+    content: string;
+}
+
+export interface ToolGetPackageTypeDefinitionFileContentsPayload {
+    args?: {
+        files?: string[];
+    };
+    package_type_definition_file_contents?: PackageTypeDefinitionFileContentEntry[];
+    unknown_files?: string[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
 export interface ContextModulesEntry {
     context_slug: string;
     module_slugs: string[];

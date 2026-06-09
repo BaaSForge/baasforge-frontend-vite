@@ -76,4 +76,6 @@ export const QueryKeys = {
         ["project", "traces", "by-ids", projectId, traceIdsKey] as const,
     packagesTypeDefinitionFiles: (packagesKey: string) =>
         ["platform", "packages-type-definition-files", packagesKey] as const,
+    packageTypeDefinitionFileContents: (filesKey: string) =>
+        ["platform", "package-type-definition-file-contents", filesKey] as const,
 };
