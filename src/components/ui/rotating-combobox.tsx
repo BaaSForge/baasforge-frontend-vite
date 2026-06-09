@@ -33,6 +33,8 @@ export type RotatingComboboxProps<T extends string> = {
     tooltipHintDuration?: number;
     /** Same as `TooltipContent` `side` (shadcn / Radix). Default `top`. */
     tooltipSide?: React.ComponentProps<typeof TooltipContent>["side"];
+    /** Same as `PopoverContent` `align` (shadcn / Radix). Default `end`. */
+    contentAlign?: React.ComponentProps<typeof PopoverContent>["align"];
     contentClassName?: string;
     disabled?: boolean;
 };
@@ -53,6 +55,7 @@ export function RotatingCombobox<T extends string>({
     tooltipOpenDelay = 1000,
     tooltipHintDuration = 3200,
     tooltipSide = "top",
+    contentAlign = "end",
     contentClassName,
     disabled,
 }: RotatingComboboxProps<T>) {
@@ -168,7 +171,7 @@ export function RotatingCombobox<T extends string>({
         <Popover open={open} onOpenChange={setOpen}>
             {anchor}
             <PopoverContent
-                align="center"
+                align={contentAlign}
                 sideOffset={4}
                 onOpenAutoFocus={(e) => {
                     e.preventDefault();

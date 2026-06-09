@@ -5,6 +5,7 @@ import type { Theme } from "@/components/theme-provider/hooks";
 import { useTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
 import { RotatingCombobox, type RotatingComboboxOption } from "@/components/ui/rotating-combobox";
+import { cn } from "@/lib/utils";
 
 const THEME_ORDER = ["light", "dark-midnight", "dark-default", "system"] as const satisfies readonly Theme[];
 
@@ -27,7 +28,11 @@ function getNextTheme(current: Theme): Theme {
     return THEME_ORDER[(i + 1) % THEME_ORDER.length];
 }
 
-export function ModeToggle() {
+type ModeToggleProps = {
+    label?: string;
+};
+
+export function ModeToggle({ label }: ModeToggleProps) {
     const { theme, setTheme } = useTheme();
     const nextTheme = getNextTheme(theme);
 
@@ -50,14 +55,17 @@ export function ModeToggle() {
             onValueChange={setTheme}
             options={options}
             tooltipSide="left"
-            renderTrigger={(p, { open }) => (
+            contentAlign="end"
+            renderTrigger={({ className, ...triggerProps }, { open }) => (
                 <Button
-                    {...p}
+                    {...triggerProps}
                     variant="outline"
-                    size="icon"
+                    size={label ? "default" : "icon"}
+                    className={cn(label && "gap-2", className)}
                     aria-label={`Theme: ${THEME_LABELS[theme]}. ${open ? `Rotate to ${THEME_LABELS[nextTheme]}` : "Open theme menu"}.`}
                 >
                     <Icon className="h-[1.2rem] w-[1.2rem]" />
+                    {label ? <span>{label}</span> : null}
                 </Button>
             )}
         />
