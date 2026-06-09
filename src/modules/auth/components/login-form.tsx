@@ -63,17 +63,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <form action={googleInitiateAction} method="post" className="contents">
                     <Button variant="outline" type="submit" className="h-11 w-full">
                         <GoogleIcon className="size-4" />
-                        Login with Google
+                        Sign in with Google
                     </Button>
                 </form>
                 <Button
                     variant="outline"
                     type="button"
-                    className="h-11 w-full"
-                    onClick={() => toast.info("GitHub sign-in is coming soon.")}
+                    className="h-11 w-full border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-muted-foreground"
+                    onClick={() => toast.info("GitHub sign-in is coming soon.", { position: "top-center" })}
                 >
                     <Github className="size-4" />
-                    Login with GitHub
+                    Sign in with GitHub
                 </Button>
             </CardContent>
         </Card>
