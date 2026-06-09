@@ -1,30 +1,55 @@
 import { GalleryVerticalEnd } from "lucide-react";
 import { useSearchParams } from "react-router";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
-import { LOGGED_IN_FROM_PARAM } from "../constants";
+import { AUTH_ERROR_PARAM, LOGGED_IN_FROM_PARAM } from "../constants";
 import { getGoogleInitiateFormAction } from "../lib/google-auth";
+
+function formatProviderName(provider: string): string {
+    return provider.charAt(0).toUpperCase() + provider.slice(1);
+}
+
+function getAuthErrorMessage(authError: string, provider: string | null): string {
+    const providerName = provider ? formatProviderName(provider) : null;
+
+    if (authError === "access_denied") {
+        return providerName
+            ? `${providerName} sign-in was cancelled or denied. Please try again.`
+            : "Sign-in was cancelled or denied. Please try again.";
+    }
+
+    return providerName ? `${providerName} sign-in failed. Please try again.` : "Sign-in failed. Please try again.";
+}
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
     const [searchParams] = useSearchParams();
+    const authError = searchParams.get(AUTH_ERROR_PARAM);
+    const loggedInFrom = searchParams.get(LOGGED_IN_FROM_PARAM);
     const callbackUrlParam = searchParams.get("callback-url");
 
     let callbackUrl: string;
     if (callbackUrlParam) {
         const decodedUrl = decodeURIComponent(callbackUrlParam);
         const url = new URL(decodedUrl, window.location.origin);
-        url.searchParams.set(LOGGED_IN_FROM_PARAM, "google");
+        url.searchParams.set(LOGGED_IN_FROM_PARAM, loggedInFrom ?? "google");
         callbackUrl = url.toString();
     } else {
-        callbackUrl = `${window.location.origin}/dashboard?${LOGGED_IN_FROM_PARAM}=google`;
+        callbackUrl = `${window.location.origin}/dashboard?${LOGGED_IN_FROM_PARAM}=${loggedInFrom ?? "google"}`;
     }
 
     const googleInitiateAction = getGoogleInitiateFormAction(callbackUrl);
 
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
+            {authError ? (
+                <Alert variant="destructive">
+                    <AlertTitle>Sign-in failed</AlertTitle>
+                    <AlertDescription>{getAuthErrorMessage(authError, loggedInFrom)}</AlertDescription>
+                </Alert>
+            ) : null}
             <FieldGroup>
                 <div className="flex flex-col items-center gap-2 text-center">
                     <a href="#" className="flex flex-col items-center gap-2 font-medium">
