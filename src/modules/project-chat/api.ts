@@ -8,6 +8,7 @@ import {
     type ChatMessageResponse,
     type ChatMessageWithDeliveryStatus,
     type ChatSessionResponse,
+    type ToolGetPackagesTypeDefinitionFilesPayload,
 } from "./types";
 
 const GET_MESSAGES_QUERY_LIMIT = 100;
@@ -29,6 +30,7 @@ const chatSessionUserMessageTruncateBelowEndpoint = (projectId: string, chatSess
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/user-messages/${messageId}/truncate-below`;
 const chatSessionMessageRetryPlannerEndpoint = (projectId: string, chatSessionId: string, messageId: string) =>
     `/v1/platform/projects/${projectId}/chat-sessions/${chatSessionId}/messages/${messageId}/retry-planner`;
+const packagesTypeDefinitionFilesEndpoint = () => "/v1/platform/packages-type-definition-files";
 
 /** Matches backend `UnitPathsBody`: each string is the unit path (full id without the trailing `.<revision>` segment). */
 export type UnitPathsBody = {
@@ -246,4 +248,20 @@ export function postChatSessionUnitPreviousByFullIds(
             body,
         )
         .then((res) => res.data ?? { units: [] });
+}
+
+export type PackagesTypeDefinitionFilesFillBody = {
+    packages: string[];
+};
+
+export function fillPackagesTypeDefinitionFiles(packages: string[]): Promise<ToolGetPackagesTypeDefinitionFilesPayload> {
+    const body: PackagesTypeDefinitionFilesFillBody = { packages };
+    return apiClient
+        .post<ApiResponse<ToolGetPackagesTypeDefinitionFilesPayload>>(packagesTypeDefinitionFilesEndpoint(), body)
+        .then((res) => {
+            if (!res.data) {
+                throw new Error("Packages type definition files response missing data");
+            }
+            return res.data;
+        });
 }

@@ -105,6 +105,22 @@ export interface ToolListProjectEnvKeysPayload {
     error?: string;
 }
 
+export interface PackageTypeDefinitionFilesEntry {
+    package: string;
+    files: string[];
+}
+
+export interface ToolGetPackagesTypeDefinitionFilesPayload {
+    args?: {
+        packages?: string[];
+    };
+    package_type_definition_files?: PackageTypeDefinitionFilesEntry[];
+    unknown_packages?: string[];
+    tool_call_id?: string;
+    tool_name?: string;
+    error?: string;
+}
+
 export interface ContextModulesEntry {
     context_slug: string;
     module_slugs: string[];

@@ -1,6 +1,7 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
+    fillPackagesTypeDefinitionFiles,
     getProjectChatSessionDetail,
     getProjectChatSessionMessages,
     getProjectChatSessions,
@@ -104,5 +105,18 @@ export function useProjectChatSessionMessagesQuery(projectId?: string, chatSessi
 
             return firstMessage.id;
         },
+    });
+}
+
+export function usePackagesTypeDefinitionFilesQuery(
+    packages: readonly string[],
+    options?: { enabled?: boolean },
+) {
+    const packagesKey = [...packages].sort().join(",");
+    const userEnabled = options?.enabled ?? true;
+    return useQuery({
+        enabled: userEnabled && packages.length > 0,
+        queryKey: QueryKeys.packagesTypeDefinitionFiles(packagesKey),
+        queryFn: () => fillPackagesTypeDefinitionFiles([...packages]),
     });
 }
