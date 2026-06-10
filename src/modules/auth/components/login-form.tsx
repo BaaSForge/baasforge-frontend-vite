@@ -2,7 +2,6 @@ import { Github } from "lucide-react";
 
 import { GoogleIcon } from "@/components/icons/google-icon";
 import { useSearchParams } from "react-router";
-import { toast } from "sonner";
 
 import { AppLogoSquare } from "@/components/logo/app-logo-square";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { AUTH_ERROR_PARAM, LOGGED_IN_FROM_PARAM } from "../constants";
+import { getGithubInitiateFormAction } from "../lib/github-auth";
 import { getGoogleInitiateFormAction } from "../lib/google-auth";
 
 function formatProviderName(provider: string): string {
@@ -28,23 +28,28 @@ function getAuthErrorMessage(authError: string, provider: string | null): string
     return providerName ? `${providerName} sign-in failed. Please try again.` : "Sign-in failed. Please try again.";
 }
 
+function getCallbackUrl(callbackUrlParam: string | null, loggedInFrom: string | null, provider: string): string {
+    if (callbackUrlParam) {
+        const decodedUrl = decodeURIComponent(callbackUrlParam);
+        const url = new URL(decodedUrl, window.location.origin);
+        url.searchParams.set(LOGGED_IN_FROM_PARAM, loggedInFrom ?? provider);
+        return url.toString();
+    }
+    return `${window.location.origin}/dashboard?${LOGGED_IN_FROM_PARAM}=${loggedInFrom ?? provider}`;
+}
+
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
     const [searchParams] = useSearchParams();
     const authError = searchParams.get(AUTH_ERROR_PARAM);
     const loggedInFrom = searchParams.get(LOGGED_IN_FROM_PARAM);
     const callbackUrlParam = searchParams.get("callback-url");
 
-    let callbackUrl: string;
-    if (callbackUrlParam) {
-        const decodedUrl = decodeURIComponent(callbackUrlParam);
-        const url = new URL(decodedUrl, window.location.origin);
-        url.searchParams.set(LOGGED_IN_FROM_PARAM, loggedInFrom ?? "google");
-        callbackUrl = url.toString();
-    } else {
-        callbackUrl = `${window.location.origin}/dashboard?${LOGGED_IN_FROM_PARAM}=${loggedInFrom ?? "google"}`;
-    }
-
-    const googleInitiateAction = getGoogleInitiateFormAction(callbackUrl);
+    const googleInitiateAction = getGoogleInitiateFormAction(
+        getCallbackUrl(callbackUrlParam, loggedInFrom, "google"),
+    );
+    const githubInitiateAction = getGithubInitiateFormAction(
+        getCallbackUrl(callbackUrlParam, loggedInFrom, "github"),
+    );
 
     return (
         <Card className={cn("w-full", className)} {...props}>
@@ -66,15 +71,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                         Sign in with Google
                     </Button>
                 </form>
-                <Button
-                    variant="outline"
-                    type="button"
-                    className="h-11 w-full border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-muted-foreground"
-                    onClick={() => toast.info("GitHub sign-in is coming soon.", { position: "top-center" })}
-                >
-                    <Github className="size-4" />
-                    Sign in with GitHub
-                </Button>
+                <form action={githubInitiateAction} method="post" className="contents">
+                    <Button variant="outline" type="submit" className="h-11 w-full">
+                        <Github className="size-4" />
+                        Sign in with GitHub
+                    </Button>
+                </form>
             </CardContent>
         </Card>
     );

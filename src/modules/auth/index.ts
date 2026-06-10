@@ -6,6 +6,7 @@ export { AuthProvider } from "./components/auth-provider";
 export { LoginForm } from "./components/login-form";
 export { useAuth } from "./hooks";
 export type { UseAuthReturn } from "./hooks";
+export { getGithubInitiateFormAction } from "./lib/github-auth";
 export { getGoogleInitiateFormAction } from "./lib/google-auth";
 export { useDeleteTokensMutation, useLogoutMutation } from "./mutations";
 export { useCurrentUserQuery, useGetTokensQuery } from "./queries";
