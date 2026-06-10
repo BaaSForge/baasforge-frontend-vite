@@ -13,7 +13,7 @@ function Navbar() {
                     <div className="flex size-7 items-center justify-center rounded-lg bg-primary">
                         <Zap className="size-4 text-primary-foreground" />
                     </div>
-                    <span className="text-lg font-semibold tracking-tight">BAAL</span>
+                    <span className="text-lg font-semibold tracking-tight">BaaS Forge</span>
                 </Link>
 
                 <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
@@ -84,7 +84,7 @@ function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
                 >
-                    Write your business logic in plain, human-readable language. BAAL turns it into deployed, monitored, and auto-scaled backend units&mdash;no
+                    Write your business logic in plain, human-readable language. BaaS Forge turns it into deployed, monitored, and auto-scaled backend units&mdash;no
                     code, no configuration, no limits on scale.
                 </motion.p>
 
@@ -117,7 +117,7 @@ function HeroSection() {
                             <div className="size-2.5 rounded-full bg-foreground/10" />
                             <div className="size-2.5 rounded-full bg-foreground/10" />
                         </div>
-                        <span className="ml-2 text-xs text-muted-foreground">baal</span>
+                        <span className="ml-2 text-xs text-muted-foreground">baasforge</span>
                     </div>
                     <div className="p-5 text-left font-mono text-sm leading-relaxed">
                         <div className="text-muted-foreground">
@@ -157,7 +157,7 @@ const features = [
         icon: Scale,
         title: "Built for large-scale applications",
         description:
-            "Structure complex systems into manageable, composable units. BAAL is designed for production-grade applications that grow with your business.",
+            "Structure complex systems into manageable, composable units. BaaS Forge is designed for production-grade applications that grow with your business.",
     },
     {
         icon: Rocket,
@@ -168,7 +168,7 @@ const features = [
     {
         icon: Eye,
         title: "Monitored & auto-scaled",
-        description: "Every deployed unit is monitored out of the box. Traffic spikes? BAAL scales your units automatically based on real usage.",
+        description: "Every deployed unit is monitored out of the box. Traffic spikes? BaaS Forge scales your units automatically based on real usage.",
     },
 ];
 
@@ -224,12 +224,12 @@ const steps = [
     {
         step: "02",
         title: "We create your units",
-        description: "BAAL turns your descriptions into deployed backend units\u2014each one a self-contained, manageable piece of your application.",
+        description: "BaaS Forge turns your descriptions into deployed backend units\u2014each one a self-contained, manageable piece of your application.",
     },
     {
         step: "03",
         title: "Monitor & scale automatically",
-        description: "Every unit is monitored in real time. As your traffic grows, BAAL scales each unit independently based on actual usage.",
+        description: "Every unit is monitored in real time. As your traffic grows, BaaS Forge scales each unit independently based on actual usage.",
     },
 ];
 
@@ -284,7 +284,7 @@ function CTASection() {
                     <BookOpenText className="mx-auto mb-6 size-10 text-muted-foreground/50" />
                     <h2 className="mb-4 text-2xl font-bold tracking-tight sm:text-3xl">Your logic speaks for itself</h2>
                     <p className="mx-auto mb-8 max-w-md text-muted-foreground">
-                        Focus on your business rules. BAAL deploys, monitors, and scales your backend\u2014so you never think about infrastructure again.
+                        Focus on your business rules. BaaS Forge deploys, monitors, and scales your backend\u2014so you never think about infrastructure again.
                     </p>
                     <Button size="lg" asChild>
                         <Link to="/login">
@@ -306,9 +306,9 @@ function Footer() {
                     <div className="flex size-5 items-center justify-center rounded bg-primary">
                         <Zap className="size-3 text-primary-foreground" />
                     </div>
-                    BAAL
+                    BaaS Forge
                 </div>
-                <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} BAAL. All rights reserved.</p>
+                <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} BaaS Forge. All rights reserved.</p>
             </div>
         </footer>
     );

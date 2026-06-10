@@ -55,7 +55,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         <Card className={cn("w-full", className)} {...props}>
             <CardHeader className="flex flex-col items-center text-center">
                 <AppLogoSquare className="mx-auto size-16" />
-                <CardTitle className="text-xl">Welcome to BaaSForge</CardTitle>
+                <CardTitle className="text-xl">Welcome to BaaS Forge</CardTitle>
                 <CardDescription>Sign in to continue to your workspace</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">

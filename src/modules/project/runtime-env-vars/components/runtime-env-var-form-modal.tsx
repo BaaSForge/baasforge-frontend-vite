@@ -36,7 +36,7 @@ const FORM_PLACEHOLDERS = {
     },
     plain: {
         key: "e.g. EXTERNAL_CALLBACK_URL",
-        value: "e.g. https://hooks.example.com/baal",
+        value: "e.g. https://hooks.example.com/baasforge",
     },
 } as const;
 

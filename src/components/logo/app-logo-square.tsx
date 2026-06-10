@@ -13,7 +13,7 @@ export function AppLogoSquare({
         <img
             {...props}
             src={logo256}
-            alt="BAAL"
+            alt="BaaS Forge"
             draggable={false}
             className={cn("aspect-square shrink-0 object-contain", grayscale && "grayscale", className)}
         />
