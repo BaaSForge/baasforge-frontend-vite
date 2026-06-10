@@ -1,3 +1,6 @@
+import { ContentEmptyState } from "@/components/content-empty-state";
+import { ContentErrorState } from "@/components/content-error-state";
+import { ContentLoadingState } from "@/components/content-loading-state";
 import {
     SecondarySidebarContent,
     SecondarySidebarStickyHeader,
@@ -149,23 +152,25 @@ export function SecondarySideBar() {
             }
         >
             {projectId == null || chatSessionId == null ? (
-                <div className="text-sm text-muted-foreground">Start the conversation to generate draft units by using AI.</div>
+                <ContentEmptyState
+                    size="compact"
+                    title="No draft units yet"
+                    description="Start the conversation to generate draft units by using AI."
+                />
             ) : isLoading ? (
-                <div className="flex flex-col gap-2" aria-busy="true">
-                    <p className="sr-only">Loading draft units</p>
-                    {[0, 1, 2].map((i) => (
-                        <div
-                            key={i}
-                            className="flex min-h-[5.5rem] items-center justify-center rounded-lg border border-dashed border-muted-foreground/25 bg-muted/20"
-                        >
-                            <Spinner className="size-4 text-muted-foreground" aria-hidden />
-                        </div>
-                    ))}
-                </div>
+                <ContentLoadingState size="compact" label="Loading draft units…" />
             ) : error ? (
-                <div className="text-sm text-destructive">Failed to load draft units.</div>
+                <ContentErrorState
+                    size="compact"
+                    title="Failed to load draft units."
+                    subtitle="Try refreshing the page and try again."
+                />
             ) : draftUnits == null || draftUnits.length === 0 ? (
-                <div className="text-sm text-muted-foreground">No draft units in this conversation.</div>
+                <ContentEmptyState
+                    size="compact"
+                    title="No draft units"
+                    description="No draft units in this conversation yet."
+                />
             ) : (
                 <div className="flex flex-col gap-2">
                     {draftUnits.map((unit) => (

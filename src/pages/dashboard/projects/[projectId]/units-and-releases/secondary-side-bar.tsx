@@ -1,3 +1,6 @@
+import { ContentEmptyState } from "@/components/content-empty-state";
+import { ContentErrorState } from "@/components/content-error-state";
+import { ContentLoadingState } from "@/components/content-loading-state";
 import {
     SecondarySidebarContent,
     SecondarySidebarStickyHeader,
@@ -96,7 +99,11 @@ export function SecondarySideBar() {
     if (projectIdOrUndefined == null) {
         return (
             <SecondarySidebarContent>
-                <div className="text-sm text-muted-foreground">No project selected.</div>
+                <ContentEmptyState
+                    size="compact"
+                    title="No project selected"
+                    description="Open a project to browse its releases."
+                />
             </SecondarySidebarContent>
         );
     }
@@ -104,7 +111,7 @@ export function SecondarySideBar() {
     if (isLoading || isRuntimesLoading) {
         return (
             <SecondarySidebarContent>
-                <div className="text-sm text-muted-foreground">Loading releases or runtimes…</div>
+                <ContentLoadingState size="compact" label="Loading releases…" />
             </SecondarySidebarContent>
         );
     }
@@ -112,7 +119,11 @@ export function SecondarySideBar() {
     if (error || isRuntimesError) {
         return (
             <SecondarySidebarContent>
-                <div className="text-sm text-destructive">Failed to load releases or runtimes.</div>
+                <ContentErrorState
+                    size="compact"
+                    title="Failed to load releases."
+                    subtitle="Try refreshing the page and try again."
+                />
             </SecondarySidebarContent>
         );
     }
@@ -120,7 +131,11 @@ export function SecondarySideBar() {
     if (releases == null || releases.length === 0 || orderedReleases.length === 0 || runtimes == null || runtimes.length === 0) {
         return (
             <SecondarySidebarContent>
-                <div className="text-sm text-muted-foreground">No releases yet.</div>
+                <ContentEmptyState
+                    size="compact"
+                    title="No releases yet"
+                    description="Deploy a release to production to see it here."
+                />
             </SecondarySidebarContent>
         );
     }
