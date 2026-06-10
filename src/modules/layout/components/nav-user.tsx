@@ -20,7 +20,6 @@ import {
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Progress } from "@/components/ui/progress";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { usePrevious } from "@/hooks/use-previous";
 import { useUpdateEffect } from "@/hooks/use-updated";
 import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
@@ -98,8 +97,7 @@ type NavUserProps = {
 };
 
 export function NavUser({ onOpenShortcuts }: NavUserProps) {
-    const { isMobile, open, openMobile, setOpenMobile } = useSidebar();
-    const previousOpenMobile = usePrevious(openMobile);
+    const { isMobile, open, setOpenMobile } = useSidebar();
     const { user, isLoading, logout } = useAuth();
     const { data: packages = [] } = usePackagesQuery();
     const { data: paidData } = usePaidPackagesQuery();
@@ -113,11 +111,8 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
     const location = useLocation();
 
     useUpdateEffect(() => {
-        if (previousOpenMobile !== openMobile && openMobile) {
-            return;
-        }
         setOpenMobile(false);
-    }, [location.pathname, setOpenMobile, openMobile, previousOpenMobile]);
+    }, [location.pathname, setOpenMobile]);
 
     if (isLoading) {
         return (
