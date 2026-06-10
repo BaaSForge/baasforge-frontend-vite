@@ -13,9 +13,7 @@ import { STALE_BASE_RELEASE_CONVERSATION_MESSAGE } from "@/modules/project-chat/
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router";
 import { useRef } from "react";
-import { toast } from "sonner";
-
-const TOAST_POSITION = "top-center" as const;
+import { toast } from "@/lib/toast";
 
 export function useSubscribeUserNotifications(): void {
     const { user } = useAuth();
@@ -43,8 +41,6 @@ export function useSubscribeUserNotifications(): void {
             }
             if (isProjectDeletedEvent(data)) {
                 toast.error("Project has been deleted", {
-                    position: TOAST_POSITION,
-                    closeButton: true,
                     description: "A project you had access to has been deleted.",
                 });
 
@@ -87,8 +83,6 @@ export function useSubscribeUserNotifications(): void {
                     if (session?.stale_base_release !== true) return;
                     if (getLiveProductionReleaseOwnerChatSessionId(runtimes) === conversationId) return;
                     toast.warning("Production changed — this chat's base is stale", {
-                        position: TOAST_POSITION,
-                        closeButton: true,
                         description: STALE_BASE_RELEASE_CONVERSATION_MESSAGE,
                     });
                 })();
@@ -97,8 +91,6 @@ export function useSubscribeUserNotifications(): void {
 
             if (isRuntimeCreatedEvent(data)) {
                 toast.success("Runtime ready", {
-                    position: TOAST_POSITION,
-                    closeButton: true,
                     description: `A new runtime is available.`,
                 });
             }

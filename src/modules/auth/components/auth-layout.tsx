@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { LOGGED_IN_FROM_PARAM } from "../constants";
 
@@ -15,7 +15,7 @@ export function AuthLayout() {
         if (from == null || from === "" || handledRef.current) return;
 
         handledRef.current = true;
-        toast.success(`Welcome back! You've signed in from ${from}.`, { position: "top-center" });
+        toast.success(`Welcome back! You've signed in from ${from}.`);
 
         searchParams.delete(LOGGED_IN_FROM_PARAM);
         const nextSearch = searchParams.toString();

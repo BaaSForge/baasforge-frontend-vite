@@ -36,7 +36,14 @@ function ToastIcon({
     );
 }
 
-const Toaster = ({ visibleToasts = 2, expand = true, duration = 12_000, ...props }: ToasterProps) => {
+const Toaster = ({
+    visibleToasts = 2,
+    expand = true,
+    duration = 12_000,
+    position = "top-center",
+    closeButton = true,
+    ...props
+}: ToasterProps) => {
     const resolved = useResolvedTheme();
     const [portalContainer, setPortalContainer] = React.useState<HTMLDivElement | null>(null);
 
@@ -62,6 +69,8 @@ const Toaster = ({ visibleToasts = 2, expand = true, duration = 12_000, ...props
             visibleToasts={visibleToasts}
             expand={expand}
             duration={duration}
+            position={position}
+            closeButton={closeButton}
             className="toaster group"
             icons={{
                 success: (

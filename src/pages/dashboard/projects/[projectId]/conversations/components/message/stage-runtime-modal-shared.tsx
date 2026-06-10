@@ -34,7 +34,7 @@ import type { ProjectRuntimeResponse } from "@/modules/project/types";
 import { PlatformEnvironmentType } from "@/modules/project/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, FlaskConical, Rocket } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export type StageRuntimeSwapMutationVariables = { runtimeId: string; body: DetachRuntimeLiveReleaseBody };
 
@@ -49,10 +49,10 @@ export function useStageRuntimeDetachMutation(projectId: string | undefined) {
             await queryClient.invalidateQueries({
                 queryKey: QueryKeys.projectReleases(projectId, PlatformEnvironmentType.stage),
             });
-            toast.success("Stage runtime live release was updated.", { position: "top-center" });
+            toast.success("Stage runtime live release was updated.");
         },
         onError: () => {
-            toast.error("Could not swap the stage live release.", { position: "top-center" });
+            toast.error("Could not swap the stage live release.");
         },
     });
 }

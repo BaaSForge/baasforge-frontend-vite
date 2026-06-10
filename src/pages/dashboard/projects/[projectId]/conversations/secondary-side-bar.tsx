@@ -18,7 +18,7 @@ import { AlignJustify, Columns2, FileCode } from "lucide-react";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 function uniqueUnitPathsFromDraftUnits(units: { id: string }[]): string[] {
     const seen = new Set<string>();

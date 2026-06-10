@@ -4,7 +4,7 @@ import { postReleaseControllerStageRelease } from "@/modules/project/api";
 import { invalidateQueriesAfterRuntimeDeploy } from "@/modules/project/invalidate-project-queries";
 import { PlatformEnvironmentType } from "@/modules/project/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { StageRuntimePickerModal, useStageRuntimeDetachMutation } from "./stage-runtime-modal-shared";
 
 export function ReleaseStageRuntimeModal({
@@ -31,10 +31,10 @@ export function ReleaseStageRuntimeModal({
         onSuccess: async () => {
             await invalidateQueriesAfterRuntimeDeploy(queryClient, projectId!, PlatformEnvironmentType.stage);
             onOpenChange(false);
-            toast.success("Deploying has started.", { position: "top-center" });
+            toast.success("Deploying has started.");
         },
         onError: () => {
-            toast.error("Could not start stage deploy.", { position: "top-center" });
+            toast.error("Could not start stage deploy.");
         },
     });
 

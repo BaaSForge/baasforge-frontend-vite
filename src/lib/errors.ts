@@ -1,5 +1,5 @@
 import { router } from "@/pages/router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 type ErrorWithPackageToPurchase = {
     data?: {
@@ -32,8 +32,6 @@ export function showApiError(error: unknown, statusCode: number): void {
         const errorTitle = "Purchase required!";
 
         toast.error(errorTitle, {
-            position: "top-center",
-            closeButton: true,
             duration: 10_000,
             descriptionClassName: "!text-muted-foreground",
             description: errorMessage,
@@ -47,7 +45,7 @@ export function showApiError(error: unknown, statusCode: number): void {
 
         return;
     } else {
-        toast.error(errorMessage, { position: "top-center", closeButton: true });
+        toast.error(errorMessage);
     }
 }
 

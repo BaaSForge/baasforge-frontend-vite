@@ -1,6 +1,6 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { deleteRuntimeEnvVars, putRuntimeEnvVars } from "./api";
 import type { DeleteRuntimeEnvVarsRequest, SaveRuntimeEnvVarsRequest } from "./types";
 
@@ -11,7 +11,7 @@ export function useSaveRuntimeEnvVarsMutation(projectId: string) {
         mutationFn: (body: SaveRuntimeEnvVarsRequest) => putRuntimeEnvVars(projectId, body),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimeEnvVarsByProject(projectId) });
-            toast.success("Environment variables saved.", { position: "top-center" });
+            toast.success("Environment variables saved.");
         },
     });
 }
@@ -23,7 +23,7 @@ export function useDeleteRuntimeEnvVarsMutation(projectId: string) {
         mutationFn: (body: DeleteRuntimeEnvVarsRequest) => deleteRuntimeEnvVars(projectId, body),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimeEnvVarsByProject(projectId) });
-            toast.success("Environment variable removed.", { position: "top-center" });
+            toast.success("Environment variable removed.");
         },
     });
 }

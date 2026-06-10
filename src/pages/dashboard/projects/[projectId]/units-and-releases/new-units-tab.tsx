@@ -8,7 +8,7 @@ import type { ProjectUnitResponse } from "@/modules/project/types";
 import { ChatSessionViewChangesModal, type ChatSessionUnitChangePair } from "@/modules/project-chat";
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { groupUnitsByType, sortedProjectUnitTypes } from "./group-units-by-type";
 import { readReleaseUnitsSearchParams } from "./release-units-search-params";
 

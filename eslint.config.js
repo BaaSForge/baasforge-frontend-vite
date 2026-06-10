@@ -31,6 +31,17 @@ export default defineConfig([
     },
     rules: {
       'react-refresh/only-export-components': 'off',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'sonner',
+              message: 'Import from "@/lib/toast" instead of using "sonner" directly.',
+            },
+          ],
+        },
+      ],
     },
   },
 ])

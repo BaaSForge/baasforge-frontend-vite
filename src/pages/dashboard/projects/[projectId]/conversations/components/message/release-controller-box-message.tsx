@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import { AlignJustify, Columns2, FileCode } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useAreBothSidebarsOpen } from "@/components/secondary-sidebar";
 import { useIsMessageScrollHighlighted } from "../sticky-messages";
 import { ScrollHighlightOverlay } from "./scroll-highlight-overlay";

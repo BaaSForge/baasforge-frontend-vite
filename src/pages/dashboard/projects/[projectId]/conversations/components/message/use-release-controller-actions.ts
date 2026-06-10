@@ -11,7 +11,7 @@ import { PlatformEnvironmentType } from "@/modules/project/types";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { getReleaseControllerPayload, useReleaseControllerRuntimeLiveFlags } from "./release-controller-box-shared";
 
 export function useReleaseControllerActions(
@@ -62,10 +62,10 @@ export function useReleaseControllerActions(
         onSuccess: async () => {
             await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.stage);
             setStageDeployRuntimePickOpen(false);
-            toast.success("Stage deploy has started.", { position: "top-center" });
+            toast.success("Stage deploy has started.");
         },
         onError: () => {
-            toast.error("Could not start stage deploy.", { position: "top-center" });
+            toast.error("Could not start stage deploy.");
         },
     });
 
@@ -90,10 +90,10 @@ export function useReleaseControllerActions(
             setProductionRedeployConfirmOpen(false);
             setProdRedeployRuntimeId(null);
             await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
-            toast.success("Production deploy has started.", { position: "top-center" });
+            toast.success("Production deploy has started.");
         },
         onError: () => {
-            toast.error("Could not start production deploy.", { position: "top-center" });
+            toast.error("Could not start production deploy.");
         },
     });
 
@@ -107,10 +107,10 @@ export function useReleaseControllerActions(
         onSuccess: async () => {
             setProductionConfirmOpen(false);
             await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
-            toast.success("Production release process has started.", { position: "top-center" });
+            toast.success("Production release process has started.");
         },
         onError: () => {
-            toast.error("Could not start production release.", { position: "top-center" });
+            toast.error("Could not start production release.");
         },
     });
 

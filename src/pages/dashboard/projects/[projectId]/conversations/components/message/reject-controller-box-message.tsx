@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 import { FadedScrollArea } from "@/components/faded-scroll-area";
 import {
@@ -147,7 +147,7 @@ export function RejectControllerBoxMessage({
             setConfirmOpen(false);
             if (projectId == null || chatSessionId == null) return;
             await invalidateDueToRejectOrEdit(queryClient, projectId, chatSessionId);
-            toast.success("Changes for this step were rejected.", { position: "top-center" });
+            toast.success("Changes for this step were rejected.");
         },
     });
 

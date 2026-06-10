@@ -31,7 +31,7 @@ import { isUndeployedProductionLeaf } from "@/modules/project/undeployed-product
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export function SecondarySideBar() {
     const navigate = useNavigate();
@@ -86,10 +86,10 @@ export function SecondarySideBar() {
                 projectIdOrUndefined,
                 PlatformEnvironmentType.prod,
             );
-            toast.success("Production deploy has started.", { position: "top-center" });
+            toast.success("Production deploy has started.");
         },
         onError: () => {
-            toast.error("Could not start production deploy.", { position: "top-center" });
+            toast.error("Could not start production deploy.");
         },
     });
 

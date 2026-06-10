@@ -53,7 +53,7 @@ import {
 import type { InfiniteData } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SidebarIcon } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { buildInlineToken, stripInlineReleaseTokens, stripInlineTraceTokens } from "@/components/chat-rich-text-editor/composer-inline-format";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
@@ -341,9 +341,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                 requestAnimationFrame(() => messageInputRef.current?.focus());
             }
         } catch {
-            toast.error(mode === "edit" ? "Could not prepare edit." : "Could not revert to this point.", {
-                position: "top-center",
-            });
+            toast.error(mode === "edit" ? "Could not prepare edit." : "Could not revert to this point.");
         } finally {
             setTruncatingBranchMessageId(null);
         }
