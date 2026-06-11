@@ -6,6 +6,7 @@ import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router";
 import ProjectRuntimesPage from "./dashboard/projects/[projectId]/runtimes/page";
 import ProjectRuntimeEnvVarsPage from "./dashboard/projects/[projectId]/runtime-env-vars/page";
+import ProjectRuntimePage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/page";
 import ProjectRuntimeUnitsAndReleasesPage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/units-releases/page";
 import ProjectUnitsAndReleasesPage from "./dashboard/projects/[projectId]/units-and-releases/page";
 import { RootLayout } from "./root-layout";
@@ -140,6 +141,10 @@ export const router = createBrowserRouter([
                                                                     {
                                                                         path: "runtime-env-vars",
                                                                         element: <ProjectRuntimeEnvVarsPage />,
+                                                                    },
+                                                                    {
+                                                                        path: "runtimes/:runtimeId",
+                                                                        element: <ProjectRuntimePage />,
                                                                     },
                                                                     {
                                                                         path: "runtimes/:runtimeId/units-releases",
