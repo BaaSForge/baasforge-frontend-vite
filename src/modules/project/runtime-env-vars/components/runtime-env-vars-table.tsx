@@ -11,11 +11,14 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ContentEmptyState } from "@/components/content-empty-state";
+import { ContentErrorState } from "@/components/content-error-state";
+import { ContentLoadingState } from "@/components/content-loading-state";
 import { PlatformEnvironmentBadge } from "@/components/platform-environment-badge";
 import { CodeSnippetActions } from "@/components/syntax-highlight/code-snippet-actions";
 import { Button } from "@/components/ui/button";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDeleteRuntimeEnvVarsMutation } from "../mutations";
 import { useProjectRuntimeEnvVarsQuery } from "../queries";
@@ -29,8 +32,6 @@ export type RuntimeEnvVarsTableProps = {
     projectId: string;
     isEncrypted: boolean;
     runtimes: ProjectRuntimeResponse[];
-    runtimesLoading: boolean;
-    runtimesError: boolean;
 };
 
 type RuntimeEnvVarRowProps = {
@@ -131,13 +132,7 @@ function RuntimeEnvVarRow({
     );
 }
 
-export function RuntimeEnvVarsTable({
-    projectId,
-    isEncrypted,
-    runtimes,
-    runtimesLoading,
-    runtimesError,
-}: RuntimeEnvVarsTableProps) {
+export function RuntimeEnvVarsTable({ projectId, isEncrypted, runtimes }: RuntimeEnvVarsTableProps) {
     const sortedRuntimes = useMemo(() => sortRuntimesForEnvVars(runtimes), [runtimes]);
     const { data: rows = [], isLoading, error } = useProjectRuntimeEnvVarsQuery(projectId, isEncrypted);
     const deleteMutation = useDeleteRuntimeEnvVarsMutation(projectId);
@@ -150,8 +145,7 @@ export function RuntimeEnvVarsTable({
         if (!open) setEditRow(undefined);
     };
 
-    const canAdd =
-        sortedRuntimes.length > 0 && !runtimesLoading && !isLoading && !runtimesError && !error;
+    const canAdd = sortedRuntimes.length > 0 && !isLoading && !error;
 
     const headerRow = canAdd ? (
         <div className="mb-3 flex justify-end">
@@ -162,29 +156,23 @@ export function RuntimeEnvVarsTable({
         </div>
     ) : null;
 
-    if (runtimesLoading || isLoading) {
+    if (isLoading) {
         return (
             <>
                 {headerRow}
-                <p className="text-muted-foreground py-6 text-center text-sm">Loading…</p>
+                <ContentLoadingState label="Loading environment variables…" />
             </>
         );
     }
 
-    if (runtimesError || error) {
+    if (error) {
         return (
             <>
                 {headerRow}
-                <p className="text-destructive py-6 text-center text-sm">Failed to load environment variables.</p>
-            </>
-        );
-    }
-
-    if (sortedRuntimes.length === 0) {
-        return (
-            <>
-                {headerRow}
-                <p className="text-muted-foreground py-6 text-center text-sm">No runtimes in this project yet.</p>
+                <ContentErrorState
+                    title="Failed to load environment variables"
+                    subtitle="Try refreshing the page and try again."
+                />
             </>
         );
     }
@@ -193,9 +181,11 @@ export function RuntimeEnvVarsTable({
         <>
             {headerRow}
             {rows.length === 0 ? (
-                <p className="text-muted-foreground rounded-xl border bg-card px-4 py-8 text-center text-sm">
-                    No variables yet.
-                </p>
+                <ContentEmptyState
+                    title="No variables yet"
+                    description="Add a variable to configure values across runtimes."
+                    icon={KeyRound}
+                />
             ) : (
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {rows.map((row) => (

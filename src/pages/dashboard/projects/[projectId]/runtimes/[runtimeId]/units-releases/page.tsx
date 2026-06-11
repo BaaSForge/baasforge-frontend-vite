@@ -1,9 +1,11 @@
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { ContentEmptyState } from "@/components/content-empty-state";
+import { ContentErrorState } from "@/components/content-error-state";
+import { ContentLoadingState } from "@/components/content-loading-state";
 import { useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
 import { getRuntimeLiveReleaseId } from "@/modules/project/runtime-release";
 import { type ReleaseResponse, PlatformEnvironmentType } from "@/modules/project/types";
 import { useBreadcrumbActions } from "@/stores/breadcrumb";
-import { PackageIcon } from "lucide-react";
+import { PackageIcon, ServerIcon } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useParams } from "react-router";
 import { ProjectUnitsAndReleasesView } from "../../../units-and-releases/project-units-and-releases-view";
@@ -56,40 +58,35 @@ export default function ProjectRuntimeUnitsAndReleasesPage() {
     }
 
     if (isRuntimesLoading) {
-        return <div className="p-4 text-center text-sm text-muted-foreground">Loading runtime…</div>;
+        return <ContentLoadingState label="Loading runtime…" />;
     }
 
     if (runtimesError != null) {
-        return <div className="p-4 text-center text-sm text-destructive">Failed to load runtimes.</div>;
+        return (
+            <ContentErrorState
+                title="Failed to load runtime"
+                subtitle="Try refreshing the page and try again."
+            />
+        );
     }
 
     if (runtime == null) {
         return (
-            <Empty className="border-none min-h-[50vh]">
-                <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                        <PackageIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>Runtime not found</EmptyTitle>
-                    <EmptyDescription>This runtime is not part of the project or the link is invalid.</EmptyDescription>
-                </EmptyHeader>
-            </Empty>
+            <ContentEmptyState
+                title="Runtime not found"
+                description="This runtime is not part of the project or the link is invalid."
+                icon={ServerIcon}
+            />
         );
     }
 
     if (liveReleaseId == null) {
         return (
-            <Empty className="border-none min-h-[50vh]">
-                <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                        <PackageIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>No live release</EmptyTitle>
-                    <EmptyDescription>
-                        This runtime has no live release yet. Deploy or attach a release to browse units here.
-                    </EmptyDescription>
-                </EmptyHeader>
-            </Empty>
+            <ContentEmptyState
+                title="No live release"
+                description="This runtime has no live release yet. Deploy or attach a release to browse units here."
+                icon={PackageIcon}
+            />
         );
     }
 
