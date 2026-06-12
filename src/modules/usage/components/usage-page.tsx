@@ -100,9 +100,14 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
 
                     <div className="min-w-0 sm:max-w-md sm:text-right">
                         {costLoading ? (
-                            <ContentLoadingState label="Calculating usage cost…" />
+                            <ContentLoadingState size="compact" label="Calculating usage cost…" className="sm:justify-end" />
                         ) : costError ? (
-                            <ContentErrorState title="Failed to load usage cost." subtitle="Try adjusting the period and try again." />
+                            <ContentErrorState
+                                size="compact"
+                                title="Failed to load usage cost."
+                                subtitle="Try adjusting the period and try again."
+                                className="sm:ml-auto"
+                            />
                         ) : costSummary ? (
                             <div className={costFetching ? "opacity-70" : undefined}>
                                 <div className="flex flex-col gap-1 sm:items-end">
@@ -121,7 +126,15 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                                     </div>
                                 ) : null}
                             </div>
-                        ) : null}
+                        ) : (
+                            <ContentEmptyState
+                                size="compact"
+                                title="No usage cost"
+                                description="No usage recorded for this period."
+                                icon={Gauge}
+                                className="sm:ml-auto"
+                            />
+                        )}
                     </div>
                 </div>
 
