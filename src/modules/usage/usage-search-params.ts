@@ -13,16 +13,47 @@ export function parsePositiveInt(raw: string | null, fallback: number): number {
     return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+export function startOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+export function startOfMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+export function startOfNextMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 1);
+}
+
+/** Exclusive upper bound for API `to` — includes the full selected calendar day. */
+export function endOfDayExclusive(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+}
+
 export function getDefaultUsagePeriod(): { from: Date; to: Date } {
     const now = new Date();
-    const from = new Date(now.getFullYear(), now.getMonth(), 1);
-    return { from, to: now };
+    return {
+        from: startOfMonth(now),
+        to: startOfNextMonth(now),
+    };
 }
 
 function parseIsoDate(raw: string | null): Date | null {
     if (raw == null || raw === "") return null;
     const d = new Date(raw);
     return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function normalizePeriodBounds(from: Date, to: Date): { from: Date; to: Date } {
+    const normalizedFrom = startOfDay(from);
+    const toDayStart = startOfDay(to);
+    const normalizedTo = to.getTime() === toDayStart.getTime() ? to : endOfDayExclusive(to);
+
+    if (normalizedFrom >= normalizedTo) {
+        return getDefaultUsagePeriod();
+    }
+
+    return { from: normalizedFrom, to: normalizedTo };
 }
 
 export function readUsageSearchParams(searchParams: URLSearchParams): {
@@ -32,8 +63,9 @@ export function readUsageSearchParams(searchParams: URLSearchParams): {
     pageSize: number;
 } {
     const defaults = getDefaultUsagePeriod();
-    const from = parseIsoDate(searchParams.get("from")) ?? defaults.from;
-    const to = parseIsoDate(searchParams.get("to")) ?? defaults.to;
+    const parsedFrom = parseIsoDate(searchParams.get("from")) ?? defaults.from;
+    const parsedTo = parseIsoDate(searchParams.get("to")) ?? defaults.to;
+    const { from, to } = normalizePeriodBounds(parsedFrom, parsedTo);
     const page = parsePositiveInt(searchParams.get("page"), DEFAULT_USAGE_PAGE);
     const pageSizeRaw = parsePositiveInt(searchParams.get("pageSize"), DEFAULT_USAGE_PAGE_SIZE);
     const pageSize = isAllowedUsagePageSize(pageSizeRaw) ? pageSizeRaw : DEFAULT_USAGE_PAGE_SIZE;
@@ -41,28 +73,11 @@ export function readUsageSearchParams(searchParams: URLSearchParams): {
     return { from, to, page, pageSize };
 }
 
-export function startOfDay(date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function isSameCalendarDay(a: Date, b: Date): boolean {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
+/** Map stored API bounds (exclusive `to`) to inclusive calendar days for the picker. */
 export function periodToDateRange(from: Date, to: Date): { from: Date; to: Date } {
     const fromDay = startOfDay(from);
-    const toDayStart = startOfDay(to);
-
-    if (to.getTime() !== toDayStart.getTime()) {
-        return { from: fromDay, to: toDayStart };
-    }
-
-    const inclusiveEnd = new Date(toDayStart);
+    const inclusiveEnd = new Date(startOfDay(to));
     inclusiveEnd.setDate(inclusiveEnd.getDate() - 1);
-    if (inclusiveEnd.getTime() < fromDay.getTime()) {
-        return { from: fromDay, to: toDayStart };
-    }
-
     return { from: fromDay, to: inclusiveEnd };
 }
 
@@ -70,13 +85,7 @@ export function dateRangeToPeriod(range: { from?: Date; to?: Date }): { from: Da
     if (!range.from || !range.to) return null;
 
     const from = startOfDay(range.from);
-    let to: Date;
-
-    if (isSameCalendarDay(range.to, new Date())) {
-        to = new Date();
-    } else {
-        to = new Date(range.to.getFullYear(), range.to.getMonth(), range.to.getDate() + 1);
-    }
+    const to = endOfDayExclusive(range.to);
 
     if (from >= to) return null;
     return { from, to };
@@ -95,10 +104,12 @@ export function mergeUsageSearchParams(
     const defaults = getDefaultUsagePeriod();
 
     if (patch.from != null) {
-        next.set("from", patch.from.toISOString());
+        next.set("from", startOfDay(patch.from).toISOString());
     }
     if (patch.to != null) {
-        next.set("to", patch.to.toISOString());
+        const toDayStart = startOfDay(patch.to);
+        const exclusiveTo = patch.to.getTime() === toDayStart.getTime() ? patch.to : endOfDayExclusive(patch.to);
+        next.set("to", exclusiveTo.toISOString());
     }
 
     if (patch.page != null) {
