@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Box, Bug, ChevronRight, KeyRound, MessageSquareText, ServerCrash, Settings } from "lucide-react";
+import { Bot, Box, Bug, ChevronRight, Gauge, KeyRound, MessageSquareText, ServerCrash, Settings } from "lucide-react";
 import { useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router";
 
@@ -63,6 +63,9 @@ export function NavProjects() {
 
     const runtimeEnvVarsUrl = `/dashboard/projects/${projectId ?? ""}/runtime-env-vars`;
     const isRuntimeEnvVarsActive = pathname.startsWith(runtimeEnvVarsUrl);
+
+    const usageUrl = `/dashboard/projects/${projectId ?? ""}/usage`;
+    const isUsageActive = pathname.startsWith(usageUrl);
 
     return (
         <>
@@ -211,6 +214,14 @@ export function NavProjects() {
                             <Link to={runtimeEnvVarsUrl}>
                                 <KeyRound />
                                 <span>Environment variables</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton asChild isActive={isUsageActive} tooltip="Usage">
+                            <Link to={usageUrl}>
+                                <Gauge />
+                                <span>Usage</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

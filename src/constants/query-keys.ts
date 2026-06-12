@@ -1,5 +1,6 @@
 import type { ChatMessageResponse, ChatSessionResponse } from "@/modules/project-chat/types";
 import type { PlatformEnvironmentType, ProjectResponse, ReleaseResponse } from "@/modules/project/types";
+import type { ListUsageEntriesParams, UsageCostParams } from "@/modules/usage/types";
 
 type ProjectId = ProjectResponse["id"];
 type ChatSessionId = ChatSessionResponse["id"];
@@ -78,4 +79,16 @@ export const QueryKeys = {
         ["platform", "packages-type-definition-files", packagesKey] as const,
     packageTypeDefinitionFileContents: (filesKey: string) =>
         ["platform", "package-type-definition-file-contents", filesKey] as const,
+    usageEntries: (params: ListUsageEntriesParams) =>
+        [
+            "usage",
+            "entries",
+            params.project_id ?? "all",
+            params.from ?? "",
+            params.to ?? "",
+            params.page ?? 1,
+            params.page_size ?? 20,
+        ] as const,
+    usageCost: (params: UsageCostParams) =>
+        ["usage", "cost", params.project_id ?? "all", params.from ?? "", params.to ?? ""] as const,
 };

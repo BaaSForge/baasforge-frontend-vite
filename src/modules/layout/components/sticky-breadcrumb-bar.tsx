@@ -26,6 +26,7 @@ const SEGMENT_LABELS: Record<string, string> = {
     delete: "Delete",
     runtimes: "Runtimes",
     "runtime-env-vars": "Environment variables",
+    usage: "Usage",
     "units-releases": "Units & releases",
 };
 

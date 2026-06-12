@@ -6,6 +6,7 @@ import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router";
 import ProjectRuntimesPage from "./dashboard/projects/[projectId]/runtimes/page";
 import ProjectRuntimeEnvVarsPage from "./dashboard/projects/[projectId]/runtime-env-vars/page";
+import ProjectUsagePage from "./dashboard/projects/[projectId]/usage/page";
 import ProjectRuntimePage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/page";
 import ProjectRuntimeUnitsAndReleasesPage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/units-releases/page";
 import ProjectUnitsAndReleasesPage from "./dashboard/projects/[projectId]/units-and-releases/page";
@@ -18,6 +19,7 @@ const ServerErrorPage = lazy(() => import("./errors/server/page"));
 const DashboardPage = lazy(() => import("./dashboard/page"));
 const DashboardPackagesPage = lazy(() => import("./dashboard/packages/page"));
 const DashboardPaymentsPage = lazy(() => import("./dashboard/payments/page"));
+const DashboardOverallUsagePage = lazy(() => import("./dashboard/usage/page"));
 const DashboardTokensPage = lazy(() => import("./dashboard/tokens/page"));
 const ShellLayout = lazy(() => import("./dashboard/shell-layout"));
 const ProjectsIndexPage = lazy(() => import("./dashboard/projects/page"));
@@ -70,6 +72,10 @@ export const router = createBrowserRouter([
                                                     {
                                                         path: "payments",
                                                         element: <DashboardPaymentsPage />,
+                                                    },
+                                                    {
+                                                        path: "usage",
+                                                        element: <DashboardOverallUsagePage />,
                                                     },
                                                     {
                                                         path: "tokens",
@@ -141,6 +147,10 @@ export const router = createBrowserRouter([
                                                                     {
                                                                         path: "runtime-env-vars",
                                                                         element: <ProjectRuntimeEnvVarsPage />,
+                                                                    },
+                                                                    {
+                                                                        path: "usage",
+                                                                        element: <ProjectUsagePage />,
                                                                     },
                                                                     {
                                                                         path: "runtimes/:runtimeId",

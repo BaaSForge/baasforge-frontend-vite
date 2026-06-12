@@ -1,4 +1,4 @@
-import { ChevronsUpDown, Clock, CreditCard, Github, Keyboard, LogOut, Package, Sparkles } from "lucide-react";
+import { ChevronsUpDown, Clock, CreditCard, Gauge, Github, Keyboard, LogOut, Package, Sparkles } from "lucide-react";
 
 import { GoogleIcon } from "@/components/icons/google-icon";
 import { Link, useLocation } from "react-router";
@@ -310,6 +310,12 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
                                 <Link to="/dashboard/payments">
                                     <CreditCard />
                                     Payments
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link to="/dashboard/usage">
+                                    <Gauge />
+                                    Overall usage
                                 </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
