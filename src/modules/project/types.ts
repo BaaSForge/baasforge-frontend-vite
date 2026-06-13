@@ -13,6 +13,7 @@ export interface ProjectRuntimesBaseUrls {
 
 export type ProjectDetailResponse = ProjectResponse & {
     runtimes: ProjectRuntimesBaseUrls;
+    private_runtimes: ProjectRuntimesBaseUrls;
 };
 
 export interface ProjectRequest {
@@ -45,10 +46,12 @@ export function projectUnitTypeHasLiveInteraction(
 
 export function runtimeBaseUrlForUnitType(
     runtimes: ProjectRuntimesBaseUrls,
+    privateRuntimes: ProjectRuntimesBaseUrls,
     unitType: ProjectUnitType,
 ): string | undefined {
     if (!projectUnitTypeHasLiveInteraction(unitType)) return undefined;
-    const raw = runtimes[unitType]?.trim() ?? "";
+    const baseUrls = unitType === "api" ? runtimes : privateRuntimes;
+    const raw = baseUrls[unitType]?.trim() ?? "";
     if (raw.length === 0) return undefined;
     return raw.replace(/\/$/, "");
 }

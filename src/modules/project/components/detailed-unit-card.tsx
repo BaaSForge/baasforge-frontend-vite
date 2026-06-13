@@ -135,8 +135,9 @@ export function DetailedUnitCard({
     const { data: projectDetail } = useProjectQuery(projectId);
     const unitRuntimeBaseUrl = useMemo(() => {
         const r = projectDetail?.runtimes;
-        if (r == null) return undefined;
-        return runtimeBaseUrlForUnitType(r, unit.unit_type);
+        const pr = projectDetail?.private_runtimes;
+        if (r == null || pr == null) return undefined;
+        return runtimeBaseUrlForUnitType(r, pr, unit.unit_type);
     }, [projectDetail, unit.unit_type]);
 
     const headerActionIconButtonClassName =
