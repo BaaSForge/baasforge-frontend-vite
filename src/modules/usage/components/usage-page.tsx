@@ -19,7 +19,7 @@ import { useSearchParams } from "react-router";
 import { formatUsageCost, formatUsageDetails, formatUsageKind } from "../format";
 import type { UsageCostSummary } from "../types";
 import { useUsageCostQuery, useUsageEntriesQuery } from "../queries";
-import { UsageCostBreakdownChart, hasUsageCostBreakdown } from "./usage-cost-breakdown-chart";
+import { UsageCostBreakdownChart } from "./usage-cost-breakdown-chart";
 import { UsagePeriodPresetChips } from "./usage-period-preset-chips";
 import { UsagePeriodRangePicker } from "./usage-period-range-picker";
 import {
@@ -98,7 +98,7 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
     const total = entriesPage?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const entries = entriesPage?.entries ?? [];
-    const hasBreakdown = costSummary != null && hasUsageCostBreakdown(costSummary);
+    const showChartPanel = costLoading || costSummary != null;
     const hasActiveFilters = !isDefaultUsagePeriod(from, to);
     const stackedLayout = usePreferStackedLayout();
 
@@ -120,8 +120,8 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                     <div
                         className={cn(
                             "flex min-w-0 flex-col items-start gap-4 rounded-xl border bg-card p-4 sm:p-5",
-                            stackedLayout || !hasBreakdown ? "w-full" : "w-1/2",
-                            costFetching && !hasBreakdown && "opacity-70",
+                            stackedLayout || !showChartPanel ? "w-full" : "w-1/2",
+                            costFetching && !showChartPanel && "opacity-70",
                         )}
                     >
                         <div className="flex w-full min-w-0 flex-col gap-2">
@@ -145,20 +145,23 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                                 costSummary={costSummary}
                                 costLoading={costLoading}
                                 costError={costError}
-                                costFetching={costFetching && !hasBreakdown}
+                                costFetching={costFetching && !showChartPanel}
                             />
                         </div>
                     </div>
 
-                    {hasBreakdown ? (
+                    {showChartPanel ? (
                         <div
                             className={cn(
                                 "flex min-w-0 flex-col rounded-xl border bg-card p-4 sm:p-5",
                                 stackedLayout ? "w-full" : "w-1/2",
-                                costFetching && "opacity-70",
+                                costFetching && !costLoading && "opacity-70",
                             )}
                         >
-                            <UsageCostBreakdownChart costSummary={costSummary!} />
+                            <UsageCostBreakdownChart
+                                costSummary={costSummary}
+                                isLoading={costLoading}
+                            />
                         </div>
                     ) : null}
                 </div>

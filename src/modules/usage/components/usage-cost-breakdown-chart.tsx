@@ -1,7 +1,10 @@
 "use client";
 
+import { ContentEmptyState } from "@/components/content-empty-state";
+import { ContentLoadingState } from "@/components/content-loading-state";
 import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
+import { Gauge } from "lucide-react";
 import { useMemo } from "react";
 import { Pie, PieChart } from "recharts";
 import { formatUsageCost, formatUsageCostSegment } from "../format";
@@ -31,16 +34,24 @@ export function hasUsageCostBreakdown(summary: UsageCostSummary): boolean {
     return COST_SEGMENTS.some(({ getCost }) => getCost(summary) > 0);
 }
 
+const CHART_SIZE_CLASSNAME =
+    "aspect-auto h-[min(260px,60vw)] w-full shrink-0 sm:min-h-[260px] sm:h-[260px]";
+
 type UsageCostBreakdownChartProps = {
-    costSummary: UsageCostSummary;
+    costSummary?: UsageCostSummary;
+    isLoading?: boolean;
     className?: string;
 };
 
-export function UsageCostBreakdownChart({ costSummary, className }: UsageCostBreakdownChartProps) {
+export function UsageCostBreakdownChart({ costSummary, isLoading = false, className }: UsageCostBreakdownChartProps) {
     const { chartData, chartConfig } = useMemo(() => {
         const config: ChartConfig = {
             cost: { label: "Cost" },
         };
+
+        if (!costSummary) {
+            return { chartData: [], chartConfig: config };
+        }
 
         const segments = COST_SEGMENTS.map(({ kind, getCost }) => ({ kind, cost: getCost(costSummary) })).filter(
             (segment) => segment.cost > 0,
@@ -70,14 +81,31 @@ export function UsageCostBreakdownChart({ costSummary, className }: UsageCostBre
         return rows;
     }, [chartData]);
 
+    if (isLoading) {
+        return (
+            <ContentLoadingState
+                className={cn(CHART_SIZE_CLASSNAME, className)}
+                label="Calculating cost breakdown…"
+            />
+        );
+    }
+
     if (chartData.length === 0) {
-        return null;
+        return (
+            <ContentEmptyState
+                className={cn(CHART_SIZE_CLASSNAME, "justify-center", className)}
+                size="compact"
+                title="No cost breakdown"
+                description="No usage costs were recorded for this period."
+                icon={Gauge}
+            />
+        );
     }
 
     return (
         <ChartContainer
             config={chartConfig}
-            className={cn("aspect-auto h-[min(260px,60vw)] w-full shrink-0 sm:min-h-[260px] sm:h-[260px]", className)}
+            className={cn(CHART_SIZE_CLASSNAME, className)}
         >
             <PieChart>
                 <ChartTooltip
