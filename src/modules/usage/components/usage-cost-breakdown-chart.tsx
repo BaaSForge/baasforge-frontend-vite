@@ -11,6 +11,8 @@ const CHART_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var
 
 const COST_SEGMENTS = [
     { kind: "compute_cost", getCost: (summary: UsageCostSummary) => summary.compute_cost },
+    { kind: "llm_input_cost", getCost: (summary: UsageCostSummary) => summary.llm_input_cost },
+    { kind: "llm_output_cost", getCost: (summary: UsageCostSummary) => summary.llm_output_cost },
     { kind: "storage_cold_cost", getCost: (summary: UsageCostSummary) => summary.storage_cold_cost },
     { kind: "storage_hot_cost", getCost: (summary: UsageCostSummary) => summary.storage_hot_cost },
 ] as const;
@@ -53,7 +55,10 @@ export function UsageCostBreakdownChart({ costSummary, className }: UsageCostBre
     return (
         <ChartContainer
             config={chartConfig}
-            className={cn("aspect-auto h-[min(200px,50vw)] w-full max-w-[200px] shrink-0 sm:h-[188px] sm:max-w-[188px]", className)}
+            className={cn(
+                "aspect-auto h-[min(220px,55vw)] w-full max-w-[300px] shrink-0 sm:h-[220px] sm:max-w-[300px]",
+                className,
+            )}
         >
             <PieChart>
                 <ChartTooltip
@@ -65,8 +70,19 @@ export function UsageCostBreakdownChart({ costSummary, className }: UsageCostBre
                         />
                     }
                 />
-                <Pie data={chartData} dataKey="cost" nameKey="kind" innerRadius="40%" strokeWidth={2} />
-                <ChartLegend content={<ChartLegendContent nameKey="kind" className="pt-1 *:gap-1.5" />} />
+                <Pie
+                    data={chartData}
+                    dataKey="cost"
+                    nameKey="kind"
+                    cx="50%"
+                    cy="42%"
+                    innerRadius={30}
+                    outerRadius={74}
+                    strokeWidth={2}
+                />
+                <ChartLegend
+                    content={<ChartLegendContent nameKey="kind" className="flex-wrap justify-center gap-x-4 gap-y-1.5 pt-1 *:gap-1.5" />}
+                />
             </PieChart>
         </ChartContainer>
     );

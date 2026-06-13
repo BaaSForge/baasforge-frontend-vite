@@ -99,7 +99,11 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
     const entries = entriesPage?.entries ?? [];
     const hasBreakdown =
         costSummary != null &&
-        (costSummary.compute_cost > 0 || costSummary.storage_cold_cost > 0 || costSummary.storage_hot_cost > 0);
+        (costSummary.compute_cost > 0 ||
+            costSummary.llm_input_cost > 0 ||
+            costSummary.llm_output_cost > 0 ||
+            costSummary.storage_cold_cost > 0 ||
+            costSummary.storage_hot_cost > 0);
     const hasActiveFilters = !isDefaultUsagePeriod(from, to);
     const stackedLayout = usePreferStackedLayout();
 

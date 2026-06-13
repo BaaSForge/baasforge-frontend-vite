@@ -26,6 +26,8 @@ export interface UsageCostSummary {
     byte_hours_active: number;
     byte_hours_retained: number;
     compute_cost: number;
+    llm_input_cost: number;
+    llm_output_cost: number;
     package_tier: number;
     period: UsagePeriod;
     storage_cold_cost: number;
