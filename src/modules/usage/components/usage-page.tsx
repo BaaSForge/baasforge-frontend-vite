@@ -5,16 +5,20 @@ import { ContentErrorState } from "@/components/content-error-state";
 import { ContentLoadingState } from "@/components/content-loading-state";
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
-import { Badge } from "@/components/ui/badge";
+import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTimeMedium } from "@/utils/time";
+import { cn } from "@/lib/utils";
+import { usePreferStackedLayout } from "@/hooks/use-prefer-stacked-layout";
 import { ChevronLeftIcon, ChevronRightIcon, Gauge } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 import { formatUsageCost, formatUsageDetails, formatUsageKind } from "../format";
+import type { UsageCostSummary } from "../types";
 import { useUsageCostQuery, useUsageEntriesQuery } from "../queries";
+import { UsageCostBreakdownChart } from "./usage-cost-breakdown-chart";
 import { UsagePeriodRangePicker } from "./usage-period-range-picker";
 import {
     DEFAULT_USAGE_PAGE,
@@ -90,56 +94,49 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
     const total = entriesPage?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const entries = entriesPage?.entries ?? [];
+    const hasBreakdown = (costSummary?.breakdown.length ?? 0) > 0;
+    const stackedLayout = usePreferStackedLayout();
 
     return (
         <>
             <PageTitleBox title={title} />
             <Container className="flex flex-col gap-4">
-                <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 sm:flex-row sm:items-start sm:justify-between">
-                    <UsagePeriodRangePicker from={from} to={to} onPeriodChange={applyPeriod} />
-
-                    <div className="min-w-0 sm:max-w-md sm:text-right">
-                        {costLoading ? (
-                            <ContentLoadingState size="compact" label="Calculating usage cost…" className="sm:justify-end" />
-                        ) : costError ? (
-                            <ContentErrorState
-                                size="compact"
-                                title="Failed to load usage cost."
-                                subtitle="Try adjusting the period and try again."
-                                className="sm:ml-auto"
-                            />
-                        ) : costSummary ? (
-                            <div className={costFetching ? "opacity-70" : undefined}>
-                                <div className="flex flex-col gap-1 sm:items-end">
-                                    <p className="text-muted-foreground text-sm">Total cost</p>
-                                    <p className="text-3xl font-semibold tracking-tight">{formatUsageCost(costSummary.total_cost)}</p>
-                                    <p className="text-muted-foreground text-xs">Package tier {costSummary.package_tier}</p>
-                                </div>
-                                {costSummary.breakdown.length > 0 ? (
-                                    <div className="mt-4 flex flex-wrap gap-2 sm:justify-end">
-                                        {costSummary.breakdown.map((item) => (
-                                            <Badge key={item.kind} variant="secondary" className="gap-1.5 px-2.5 py-1 text-xs">
-                                                <span>{formatUsageKind(item.kind)}</span>
-                                                <span className="text-foreground font-medium">{formatUsageCost(item.cost)}</span>
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                ) : null}
-                            </div>
-                        ) : (
-                            <ContentEmptyState
-                                size="compact"
-                                title="No usage cost"
-                                description="No usage recorded for this period."
-                                icon={Gauge}
-                                className="sm:ml-auto"
-                            />
+                <div className="rounded-xl border bg-card p-4 sm:p-5">
+                    <div
+                        className={cn(
+                            "flex flex-col gap-4",
+                            !stackedLayout && "flex-row items-center justify-between gap-6",
                         )}
+                    >
+                        <UsagePeriodRangePicker
+                            from={from}
+                            to={to}
+                            onPeriodChange={applyPeriod}
+                            className={stackedLayout ? undefined : "max-w-xs shrink-0"}
+                        />
+
+                        <div
+                            className={cn(
+                                "flex items-center gap-4",
+                                stackedLayout ? (hasBreakdown ? "justify-between" : undefined) : "ml-auto gap-6",
+                                !stackedLayout && !hasBreakdown && "justify-end",
+                                costFetching && hasBreakdown && "opacity-70",
+                            )}
+                        >
+                            <UsageCostSummaryPanel
+                                costSummary={costSummary}
+                                costLoading={costLoading}
+                                costError={costError}
+                                costFetching={costFetching && !hasBreakdown}
+                                alignEnd={!stackedLayout}
+                            />
+                            {hasBreakdown ? <UsageCostBreakdownChart breakdown={costSummary!.breakdown} /> : null}
+                        </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
-                    <h2 className="text-sm font-medium">Usage entries</h2>
+                    <SectionTitle className="mb-0 text-foreground">Usage entries</SectionTitle>
                     <div className="overflow-x-auto">
                         {entriesLoading ? (
                             <ContentLoadingState label="Loading usage entries…" />
@@ -241,5 +238,50 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                 </div>
             </Container>
         </>
+    );
+}
+
+type UsageCostSummaryPanelProps = {
+    costSummary?: UsageCostSummary;
+    costLoading: boolean;
+    costError: boolean;
+    costFetching: boolean;
+    alignEnd?: boolean;
+};
+
+function UsageCostSummaryPanel({ costSummary, costLoading, costError, costFetching, alignEnd = false }: UsageCostSummaryPanelProps) {
+    if (costLoading) {
+        return <ContentLoadingState size="compact" label="Calculating usage cost…" className={alignEnd ? "items-end" : undefined} />;
+    }
+
+    if (costError) {
+        return (
+            <ContentErrorState
+                size="compact"
+                title="Failed to load usage cost."
+                subtitle="Try adjusting the period and try again."
+                className={alignEnd ? "items-end text-right" : undefined}
+            />
+        );
+    }
+
+    if (!costSummary) {
+        return (
+            <ContentEmptyState
+                size="compact"
+                title="No usage cost"
+                description="No usage recorded for this period."
+                icon={Gauge}
+                className={alignEnd ? "items-end text-right" : undefined}
+            />
+        );
+    }
+
+    return (
+        <div className={cn("flex flex-col gap-1", alignEnd && "items-end text-right", costFetching && "opacity-70")}>
+            <p className="text-muted-foreground text-sm">Total cost</p>
+            <p className={cn("text-2xl font-semibold tracking-tight", alignEnd && "text-3xl")}>{formatUsageCost(costSummary.total_cost)}</p>
+            <p className="text-muted-foreground text-xs">Package tier {costSummary.package_tier}</p>
+        </div>
     );
 }
