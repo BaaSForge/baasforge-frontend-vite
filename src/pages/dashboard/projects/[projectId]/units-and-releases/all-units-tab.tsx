@@ -20,6 +20,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { ConfirmableButton } from "@/components/ui/confirmable-button";
 import { FreeformMultiCombobox } from "@/components/ui/freeform-multi-combobox";
 import { capitalizeFirstLetter, cn } from "@/lib/utils";
+import { DocumentationShareBlock } from "@/modules/project/documentation-share/documentation-share-block";
 import { ProjectUnitTypeSectionHeading } from "@/modules/project/components/project-unit-type-section-heading";
 import {
     useProjectModulesByContextsQuery,
@@ -277,6 +278,7 @@ export function AllUnitsTab({
 
     return (
         <div className="space-y-4">
+            <DocumentationShareBlock projectId={projectId} />
             <div className="flex flex-col gap-2">
                 <div className="flex min-h-9 min-w-0 flex-wrap items-start gap-2">
                     <div className="min-w-40 flex-1 basis-40">
