@@ -38,6 +38,11 @@ export function getDefaultUsagePeriod(): { from: Date; to: Date } {
     };
 }
 
+export function isDefaultUsagePeriod(from: Date, to: Date): boolean {
+    const { from: defaultFrom, to: defaultTo } = getDefaultUsagePeriod();
+    return from.getTime() === defaultFrom.getTime() && to.getTime() === defaultTo.getTime();
+}
+
 function parseIsoDate(raw: string | null): Date | null {
     if (raw == null || raw === "") return null;
     const d = new Date(raw);

@@ -7,6 +7,7 @@ import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
+import { FilterClearButton } from "@/components/ui/filter-clear-button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTimeMedium } from "@/utils/time";
@@ -22,7 +23,9 @@ import { UsageCostBreakdownChart } from "./usage-cost-breakdown-chart";
 import { UsagePeriodRangePicker } from "./usage-period-range-picker";
 import {
     DEFAULT_USAGE_PAGE,
+    getDefaultUsagePeriod,
     isAllowedUsagePageSize,
+    isDefaultUsagePeriod,
     mergeUsageSearchParams,
     readUsageSearchParams,
 } from "../usage-search-params";
@@ -97,7 +100,13 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
     const hasBreakdown =
         costSummary != null &&
         (costSummary.compute_cost > 0 || costSummary.storage_cold_cost > 0 || costSummary.storage_hot_cost > 0);
+    const hasActiveFilters = !isDefaultUsagePeriod(from, to);
     const stackedLayout = usePreferStackedLayout();
+
+    const clearFilters = () => {
+        const defaults = getDefaultUsagePeriod();
+        patchUrl({ from: defaults.from, to: defaults.to, page: DEFAULT_USAGE_PAGE });
+    };
 
     return (
         <>
@@ -110,12 +119,15 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                             !stackedLayout && "flex-row items-center justify-between gap-6",
                         )}
                     >
-                        <UsagePeriodRangePicker
-                            from={from}
-                            to={to}
-                            onPeriodChange={applyPeriod}
-                            className={stackedLayout ? undefined : "max-w-xs shrink-0"}
-                        />
+                        <div className={cn("flex min-w-0 items-end gap-2", !stackedLayout && "max-w-xs shrink-0")}>
+                            <UsagePeriodRangePicker
+                                from={from}
+                                to={to}
+                                onPeriodChange={applyPeriod}
+                                className="min-w-0 flex-1"
+                            />
+                            {hasActiveFilters ? <FilterClearButton size="icon" onClear={clearFilters} /> : null}
+                        </div>
 
                         <div
                             className={cn(
