@@ -36,7 +36,7 @@ export default function DocumentationSharePage() {
     if (projectId == null || releaseId == null) {
         return (
             <DocumentationSharePageShell>
-                <ContentErrorState title="Invalid link" description="This documentation share link is malformed." />
+                <ContentErrorState title="Invalid link" subtitle="This documentation share link is malformed." />
             </DocumentationSharePageShell>
         );
     }
@@ -46,7 +46,7 @@ export default function DocumentationSharePage() {
             <DocumentationSharePageShell>
                 <ContentErrorState
                     title="Missing share secret"
-                    description="Add the share secret to the URL query string to view this documentation."
+                    subtitle="Add the share secret to the URL query string to view this documentation."
                 />
             </DocumentationSharePageShell>
         );
