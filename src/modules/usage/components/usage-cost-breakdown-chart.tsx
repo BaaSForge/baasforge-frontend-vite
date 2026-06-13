@@ -5,22 +5,32 @@ import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { Pie, PieChart } from "recharts";
 import { formatUsageCost, formatUsageKind } from "../format";
-import type { UsageCostKindBreakdown } from "../types";
+import type { UsageCostSummary } from "../types";
 
 const CHART_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"] as const;
 
+const COST_SEGMENTS = [
+    { kind: "compute_cost", getCost: (summary: UsageCostSummary) => summary.compute_cost },
+    { kind: "storage_cold_cost", getCost: (summary: UsageCostSummary) => summary.storage_cold_cost },
+    { kind: "storage_hot_cost", getCost: (summary: UsageCostSummary) => summary.storage_hot_cost },
+] as const;
+
 type UsageCostBreakdownChartProps = {
-    breakdown: UsageCostKindBreakdown[];
+    costSummary: UsageCostSummary;
     className?: string;
 };
 
-export function UsageCostBreakdownChart({ breakdown, className }: UsageCostBreakdownChartProps) {
+export function UsageCostBreakdownChart({ costSummary, className }: UsageCostBreakdownChartProps) {
     const { chartData, chartConfig } = useMemo(() => {
         const config: ChartConfig = {
             cost: { label: "Cost" },
         };
 
-        const data = breakdown.map((item, index) => {
+        const segments = COST_SEGMENTS.map(({ kind, getCost }) => ({ kind, cost: getCost(costSummary) })).filter(
+            (segment) => segment.cost > 0,
+        );
+
+        const data = segments.map((item, index) => {
             const color = CHART_COLORS[index % CHART_COLORS.length];
             config[item.kind] = {
                 label: formatUsageKind(item.kind),
@@ -34,23 +44,23 @@ export function UsageCostBreakdownChart({ breakdown, className }: UsageCostBreak
         });
 
         return { chartData: data, chartConfig: config };
-    }, [breakdown]);
+    }, [costSummary]);
 
-    if (breakdown.length === 0) {
+    if (chartData.length === 0) {
         return null;
     }
 
     return (
         <ChartContainer
             config={chartConfig}
-            className={cn("aspect-auto h-[min(160px,40vw)] w-full max-w-[160px] shrink-0 sm:h-[150px] sm:max-w-[150px]", className)}
+            className={cn("aspect-auto h-[min(200px,50vw)] w-full max-w-[200px] shrink-0 sm:h-[188px] sm:max-w-[188px]", className)}
         >
             <PieChart>
                 <ChartTooltip
                     content={
                         <ChartTooltipContent
-                            hideLabel
                             nameKey="kind"
+                            labelKey="kind"
                             formatter={(value) => <span className="font-mono font-medium tabular-nums">{formatUsageCost(Number(value))}</span>}
                         />
                     }

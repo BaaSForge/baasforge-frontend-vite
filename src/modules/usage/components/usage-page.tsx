@@ -94,7 +94,9 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
     const total = entriesPage?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const entries = entriesPage?.entries ?? [];
-    const hasBreakdown = (costSummary?.breakdown.length ?? 0) > 0;
+    const hasBreakdown =
+        costSummary != null &&
+        (costSummary.compute_cost > 0 || costSummary.storage_cold_cost > 0 || costSummary.storage_hot_cost > 0);
     const stackedLayout = usePreferStackedLayout();
 
     return (
@@ -130,7 +132,7 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                                 costFetching={costFetching && !hasBreakdown}
                                 alignEnd={!stackedLayout}
                             />
-                            {hasBreakdown ? <UsageCostBreakdownChart breakdown={costSummary!.breakdown} /> : null}
+                            {hasBreakdown ? <UsageCostBreakdownChart costSummary={costSummary!} /> : null}
                         </div>
                     </div>
                 </div>

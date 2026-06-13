@@ -22,15 +22,15 @@ export interface UsageEntriesPage {
     period: UsagePeriod;
 }
 
-export interface UsageCostKindBreakdown {
-    kind: string;
-    cost: number;
-}
-
 export interface UsageCostSummary {
+    byte_hours_active: number;
+    byte_hours_retained: number;
+    compute_cost: number;
     package_tier: number;
     period: UsagePeriod;
-    breakdown: UsageCostKindBreakdown[];
+    storage_cold_cost: number;
+    storage_hot_cost: number;
+    sum_gb_ms: number;
     total_cost: number;
 }
 

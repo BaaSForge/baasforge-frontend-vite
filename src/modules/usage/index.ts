@@ -4,7 +4,6 @@ export { useUsageCostQuery, useUsageEntriesQuery } from "./queries";
 export type {
     ListUsageEntriesParams,
     ProjectUsageEntry,
-    UsageCostKindBreakdown,
     UsageCostParams,
     UsageCostSummary,
     UsageEntriesPage,
