@@ -35,7 +35,6 @@ export interface UsageCostSummary {
     storage_cold_cost: number;
     storage_hot_cost: number;
     subscription_cost: number;
-    subscription_entity_seconds: number;
     sum_gb_ms: number;
     total_cost: number;
     unit_cost: number;
