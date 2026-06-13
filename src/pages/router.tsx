@@ -32,8 +32,20 @@ const ProjectSettingsDeletePage = lazy(() => import("./dashboard/projects/[proje
 const ProjectConversationsPage = lazy(() => import("./dashboard/projects/[projectId]/conversations/page"));
 const HomePage = lazy(() => import("./home/page"));
 const LoginPage = lazy(() => import("./login/page"));
+const DocumentationSharePage = lazy(() => import("./projects/documentation/[projectId]/share/[releaseId]/page"));
 
 export const router = createBrowserRouter([
+    {
+        path: "/projects/documentation/:projectId/share/:releaseId",
+        element: <RootLayout />,
+        errorElement: <GeneralErrorPage />,
+        children: [
+            {
+                index: true,
+                element: <DocumentationSharePage />,
+            },
+        ],
+    },
     {
         path: "/",
         element: (

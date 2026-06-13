@@ -9,10 +9,11 @@ import { DocumentationShareModal } from "./documentation-share-modal";
 
 type DocumentationShareBlockProps = {
     projectId: string;
+    releaseId: string;
     className?: string;
 };
 
-export function DocumentationShareBlock({ projectId, className }: DocumentationShareBlockProps) {
+export function DocumentationShareBlock({ projectId, releaseId, className }: DocumentationShareBlockProps) {
     const [modalOpen, setModalOpen] = useState(false);
 
     return (
@@ -32,7 +33,12 @@ export function DocumentationShareBlock({ projectId, className }: DocumentationS
                     </Button>
                 </ItemActions>
             </Item>
-            <DocumentationShareModal projectId={projectId} open={modalOpen} onOpenChange={setModalOpen} />
+            <DocumentationShareModal
+                projectId={projectId}
+                releaseId={releaseId}
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+            />
         </>
     );
 }

@@ -73,6 +73,22 @@ export const QueryKeys = {
         ["project", "runtime-env-vars", projectId, isEncrypted] as const,
     projectRuntimeEnvVarsByProject: (projectId: ProjectId) => ["project", "runtime-env-vars", projectId] as const,
     projectDocumentationShareKey: (projectId: ProjectId) => ["project", "documentation-share-key", projectId] as const,
+    documentationShareProjectDetail: (projectId: ProjectId, shareSecret: string) =>
+        ["documentation-share", "project-detail", projectId, shareSecret] as const,
+    documentationShareReleaseContexts: (projectId: ProjectId, releaseId: ReleaseId, shareSecret: string) =>
+        ["documentation-share", "release-contexts", projectId, releaseId, shareSecret] as const,
+    documentationShareModulesByContexts: (
+        projectId: ProjectId,
+        releaseId: ReleaseId,
+        shareSecret: string,
+        contextSlugsKey: ContextSlugsKey,
+    ) => ["documentation-share", "modules-by-contexts", projectId, releaseId, shareSecret, contextSlugsKey] as const,
+    documentationShareReleaseUnitsAll: (
+        projectId: ProjectId,
+        releaseId: ReleaseId,
+        shareSecret: string,
+        requestKey: RequestKey,
+    ) => ["documentation-share", "release-units-all", projectId, releaseId, shareSecret, requestKey] as const,
     /** POST `.../traces/by-ids`: sorted trace id list for stable cache keys. */
     projectTracesByIds: (projectId: ProjectId, traceIdsKey: string) =>
         ["project", "traces", "by-ids", projectId, traceIdsKey] as const,

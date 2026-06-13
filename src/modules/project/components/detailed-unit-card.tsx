@@ -17,6 +17,7 @@ import { scheduleScalarHttpTestAiNudgeInboxSync } from "@/components/scalar-http
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
+import { useShareDocumentationViewer, useShareProjectRuntimeDetail } from "../documentation-share/share-project-runtime-context";
 import {
     projectUnitTypeHasLiveInteraction,
     runtimeBaseUrlForUnitType,
@@ -132,7 +133,10 @@ export function DetailedUnitCard({
     const showHeaderMenu =
         showChatSessionOverflowMenu === true && projectId != null && projectId !== "";
 
-    const { data: projectDetail } = useProjectQuery(projectId);
+    const isShareViewer = useShareDocumentationViewer();
+    const shareProjectDetail = useShareProjectRuntimeDetail();
+    const { data: authProjectDetail } = useProjectQuery(isShareViewer ? undefined : projectId);
+    const projectDetail = shareProjectDetail ?? authProjectDetail;
     const unitRuntimeBaseUrl = useMemo(() => {
         const r = projectDetail?.runtimes;
         const pr = projectDetail?.private_runtimes;

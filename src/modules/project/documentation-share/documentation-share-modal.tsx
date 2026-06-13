@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { CheckIcon, CopyIcon, RefreshCwIcon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 import {
-    buildDocumentationShareUrl,
+    buildDocumentationSharePageUrl,
     documentationShareExpiresAtForPreset,
     formatShareExpiryAbsolute,
     formatShareExpiryChipLabel,
@@ -51,6 +51,7 @@ import type { DocumentationShareExpiryPresetId } from "./types";
 
 type DocumentationShareModalProps = {
     projectId: string;
+    releaseId: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
@@ -76,7 +77,7 @@ function PendingActionButton({
     );
 }
 
-export function DocumentationShareModal({ projectId, open, onOpenChange }: DocumentationShareModalProps) {
+export function DocumentationShareModal({ projectId, releaseId, open, onOpenChange }: DocumentationShareModalProps) {
     const [expiryPreset, setExpiryPreset] = useState<DocumentationShareExpiryPresetId>("1m");
     const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
     const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
@@ -88,7 +89,7 @@ export function DocumentationShareModal({ projectId, open, onOpenChange }: Docum
 
     const shareKey = shareKeyQuery.data?.documentation_share_key?.trim() ?? "";
     const hasShareKey = shareKey.length > 0;
-    const shareUrl = hasShareKey ? buildDocumentationShareUrl(shareKey) : "";
+    const shareUrl = hasShareKey ? buildDocumentationSharePageUrl(projectId, releaseId, shareKey) : "";
     const actionPending = generateMutation.isPending || revokeMutation.isPending;
     const isCopied = copied === "documentation-share-url";
     const currentExpiryChipLabel = formatShareExpiryChipLabel(shareKeyQuery.data?.expires_at);

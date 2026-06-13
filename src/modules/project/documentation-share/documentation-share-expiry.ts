@@ -28,9 +28,9 @@ export function documentationShareExpiresAtForPreset(presetId: DocumentationShar
     }
 }
 
-export function buildDocumentationShareUrl(shareKey: string): string {
-    const url = new URL("/share/documentation", window.location.origin);
-    url.searchParams.set("share", shareKey);
+export function buildDocumentationSharePageUrl(projectId: string, releaseId: string, shareSecret: string): string {
+    const url = new URL(`/projects/documentation/${projectId}/share/${releaseId}`, window.location.origin);
+    url.searchParams.set("share-secret", shareSecret);
     return url.toString();
 }
 

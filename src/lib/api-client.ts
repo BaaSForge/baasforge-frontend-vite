@@ -50,6 +50,10 @@ export type ExtendedOptions = {
     skipErrorToast?: boolean;
     /** Do not invoke the global API error handler for these HTTP status codes only (e.g. expected 404). */
     skipErrorToastForStatuses?: readonly number[];
+    /** Public documentation share key sent as `x-share-secret`. */
+    shareSecret?: string;
+    /** Do not attempt auth refresh or session-expired redirect on 401. */
+    skipSessionRefresh?: boolean;
 };
 
 class ApiClient {
@@ -127,12 +131,15 @@ class ApiClient {
 
         const isFormData = init.body instanceof FormData;
         const defaultHeaders: HeadersInit = isFormData ? {} : { "Content-Type": "application/json" };
+        const shareSecret = extendedOptions.shareSecret?.trim();
+        const shareHeaders: HeadersInit =
+            shareSecret != null && shareSecret.length > 0 ? { "x-share-secret": shareSecret } : {};
 
         const config: RequestInit = {
             ...init,
             signal: controller.signal,
-            credentials: "include",
-            headers: { ...defaultHeaders, ...init.headers },
+            credentials: extendedOptions.skipSessionRefresh ? "omit" : "include",
+            headers: { ...defaultHeaders, ...shareHeaders, ...init.headers },
         };
 
         let response: Response;
@@ -161,7 +168,7 @@ class ApiClient {
         }
 
         if (!response.ok || responseData?.isSuccess === false) {
-            if (response.status === 401) {
+            if (response.status === 401 && !extendedOptions.skipSessionRefresh) {
                 if (isNeedsRefreshBody(responseData)) {
                     await this.refreshToken();
                     return this.request<T>(endpoint, init, extendedOptions);
