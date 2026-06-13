@@ -19,7 +19,7 @@ import { useSearchParams } from "react-router";
 import { formatUsageCost, formatUsageDetails, formatUsageKind } from "../format";
 import type { UsageCostSummary } from "../types";
 import { useUsageCostQuery, useUsageEntriesQuery } from "../queries";
-import { UsageCostBreakdownChart } from "./usage-cost-breakdown-chart";
+import { UsageCostBreakdownChart, hasUsageCostBreakdown } from "./usage-cost-breakdown-chart";
 import { UsagePeriodRangePicker } from "./usage-period-range-picker";
 import {
     DEFAULT_USAGE_PAGE,
@@ -97,13 +97,7 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
     const total = entriesPage?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const entries = entriesPage?.entries ?? [];
-    const hasBreakdown =
-        costSummary != null &&
-        (costSummary.compute_cost > 0 ||
-            costSummary.llm_input_cost > 0 ||
-            costSummary.llm_output_cost > 0 ||
-            costSummary.storage_cold_cost > 0 ||
-            costSummary.storage_hot_cost > 0);
+    const hasBreakdown = costSummary != null && hasUsageCostBreakdown(costSummary);
     const hasActiveFilters = !isDefaultUsagePeriod(from, to);
     const stackedLayout = usePreferStackedLayout();
 
@@ -116,14 +110,20 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
         <>
             <PageTitleBox title={title} />
             <Container className="flex flex-col gap-4">
-                <div className="rounded-xl border bg-card p-4 sm:p-5">
+                <div
+                    className={cn(
+                        "flex gap-4",
+                        stackedLayout ? "flex-col" : "flex-row items-stretch",
+                    )}
+                >
                     <div
                         className={cn(
-                            "flex flex-col gap-4",
-                            !stackedLayout && "flex-row items-center justify-between gap-6",
+                            "flex min-w-0 flex-col items-start gap-4 rounded-xl border bg-card p-4 sm:p-5",
+                            stackedLayout || !hasBreakdown ? "w-full" : "w-[40%]",
+                            costFetching && !hasBreakdown && "opacity-70",
                         )}
                     >
-                        <div className={cn("flex min-w-0 items-end gap-2", !stackedLayout && "max-w-xs shrink-0")}>
+                        <div className="flex w-full min-w-0 items-start gap-2 sm:max-w-xs">
                             <UsagePeriodRangePicker
                                 from={from}
                                 to={to}
@@ -133,24 +133,27 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                             {hasActiveFilters ? <FilterClearButton size="icon" onClear={clearFilters} /> : null}
                         </div>
 
-                        <div
-                            className={cn(
-                                "flex items-center gap-4",
-                                stackedLayout ? (hasBreakdown ? "justify-between" : undefined) : "ml-auto gap-6",
-                                !stackedLayout && !hasBreakdown && "justify-end",
-                                costFetching && hasBreakdown && "opacity-70",
-                            )}
-                        >
+                        <div className="mt-6 w-full">
                             <UsageCostSummaryPanel
                                 costSummary={costSummary}
                                 costLoading={costLoading}
                                 costError={costError}
                                 costFetching={costFetching && !hasBreakdown}
-                                alignEnd={!stackedLayout}
                             />
-                            {hasBreakdown ? <UsageCostBreakdownChart costSummary={costSummary!} /> : null}
                         </div>
                     </div>
+
+                    {hasBreakdown ? (
+                        <div
+                            className={cn(
+                                "flex min-w-0 flex-col rounded-xl border bg-card p-4 sm:p-5",
+                                stackedLayout ? "w-full" : "w-[60%]",
+                                costFetching && "opacity-70",
+                            )}
+                        >
+                            <UsageCostBreakdownChart costSummary={costSummary!} />
+                        </div>
+                    ) : null}
                 </div>
 
                 <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
@@ -264,12 +267,11 @@ type UsageCostSummaryPanelProps = {
     costLoading: boolean;
     costError: boolean;
     costFetching: boolean;
-    alignEnd?: boolean;
 };
 
-function UsageCostSummaryPanel({ costSummary, costLoading, costError, costFetching, alignEnd = false }: UsageCostSummaryPanelProps) {
+function UsageCostSummaryPanel({ costSummary, costLoading, costError, costFetching }: UsageCostSummaryPanelProps) {
     if (costLoading) {
-        return <ContentLoadingState size="compact" label="Calculating usage cost…" className={alignEnd ? "items-end" : undefined} />;
+        return <ContentLoadingState size="compact" label="Calculating usage cost…" />;
     }
 
     if (costError) {
@@ -278,7 +280,6 @@ function UsageCostSummaryPanel({ costSummary, costLoading, costError, costFetchi
                 size="compact"
                 title="Failed to load usage cost."
                 subtitle="Try adjusting the period and try again."
-                className={alignEnd ? "items-end text-right" : undefined}
             />
         );
     }
@@ -290,15 +291,14 @@ function UsageCostSummaryPanel({ costSummary, costLoading, costError, costFetchi
                 title="No usage cost"
                 description="No usage recorded for this period."
                 icon={Gauge}
-                className={alignEnd ? "items-end text-right" : undefined}
             />
         );
     }
 
     return (
-        <div className={cn("flex flex-col gap-1", alignEnd && "items-end text-right", costFetching && "opacity-70")}>
+        <div className={cn("flex flex-col gap-1", costFetching && "opacity-70")}>
             <p className="text-muted-foreground text-sm">Total cost</p>
-            <p className={cn("text-2xl font-semibold tracking-tight", alignEnd && "text-3xl")}>{formatUsageCost(costSummary.total_cost)}</p>
+            <p className="text-2xl font-semibold tracking-tight">{formatUsageCost(costSummary.total_cost)}</p>
             <p className="text-muted-foreground text-xs">Package tier {costSummary.package_tier}</p>
         </div>
     );

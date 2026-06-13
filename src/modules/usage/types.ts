@@ -30,10 +30,15 @@ export interface UsageCostSummary {
     llm_output_cost: number;
     package_tier: number;
     period: UsagePeriod;
+    project_cost: number;
+    stage_runtime_cost: number;
     storage_cold_cost: number;
     storage_hot_cost: number;
+    subscription_cost: number;
+    subscription_entity_seconds: number;
     sum_gb_ms: number;
     total_cost: number;
+    unit_cost: number;
 }
 
 export interface ListUsageEntriesParams {

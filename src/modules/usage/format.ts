@@ -14,6 +14,14 @@ export function formatUsageKind(kind: string) {
         .join(" ");
 }
 
+export function formatUsageCostSegment(kind: string) {
+    return kind
+        .split(/[._-]/)
+        .filter((part) => part !== "cost")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+}
+
 export function formatUsageDetails(details: Record<string, unknown>): string {
     if (Object.keys(details).length === 0) return "—";
     try {
