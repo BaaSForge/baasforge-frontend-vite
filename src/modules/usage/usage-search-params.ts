@@ -43,6 +43,34 @@ export function isDefaultUsagePeriod(from: Date, to: Date): boolean {
     return from.getTime() === defaultFrom.getTime() && to.getTime() === defaultTo.getTime();
 }
 
+export type UsagePeriodPresetId = "day" | "week" | "month" | "two-months";
+
+const USAGE_PERIOD_PRESET_DAYS: Record<UsagePeriodPresetId, number> = {
+    day: 1,
+    week: 7,
+    month: 30,
+    "two-months": 60,
+};
+
+export const USAGE_PERIOD_PRESETS: { id: UsagePeriodPresetId; label: string }[] = [
+    { id: "day", label: "Last day" },
+    { id: "week", label: "Last week" },
+    { id: "month", label: "Last month" },
+    { id: "two-months", label: "Last two months" },
+];
+
+export function getUsagePeriodPreset(id: UsagePeriodPresetId): { from: Date; to: Date } {
+    const now = new Date();
+    const to = endOfDayExclusive(now);
+    const from = startOfDay(now);
+    from.setDate(from.getDate() - (USAGE_PERIOD_PRESET_DAYS[id] - 1));
+    return { from, to };
+}
+
+export function isSameUsagePeriod(a: { from: Date; to: Date }, b: { from: Date; to: Date }): boolean {
+    return a.from.getTime() === b.from.getTime() && a.to.getTime() === b.to.getTime();
+}
+
 function parseIsoDate(raw: string | null): Date | null {
     if (raw == null || raw === "") return null;
     const d = new Date(raw);

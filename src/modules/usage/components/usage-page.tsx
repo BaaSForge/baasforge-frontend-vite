@@ -20,6 +20,7 @@ import { formatUsageCost, formatUsageDetails, formatUsageKind } from "../format"
 import type { UsageCostSummary } from "../types";
 import { useUsageCostQuery, useUsageEntriesQuery } from "../queries";
 import { UsageCostBreakdownChart, hasUsageCostBreakdown } from "./usage-cost-breakdown-chart";
+import { UsagePeriodPresetChips } from "./usage-period-preset-chips";
 import { UsagePeriodRangePicker } from "./usage-period-range-picker";
 import {
     DEFAULT_USAGE_PAGE,
@@ -119,18 +120,24 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                     <div
                         className={cn(
                             "flex min-w-0 flex-col items-start gap-4 rounded-xl border bg-card p-4 sm:p-5",
-                            stackedLayout || !hasBreakdown ? "w-full" : "w-[40%]",
+                            stackedLayout || !hasBreakdown ? "w-full" : "w-1/2",
                             costFetching && !hasBreakdown && "opacity-70",
                         )}
                     >
-                        <div className="flex w-full min-w-0 items-start gap-2 sm:max-w-xs">
-                            <UsagePeriodRangePicker
-                                from={from}
-                                to={to}
-                                onPeriodChange={applyPeriod}
-                                className="min-w-0 flex-1"
-                            />
-                            {hasActiveFilters ? <FilterClearButton size="icon" onClear={clearFilters} /> : null}
+                        <div className="flex w-full min-w-0 flex-col gap-2">
+                            <SectionTitle id="usage-period-range-label" className="mb-0 text-base text-foreground">
+                                Period
+                            </SectionTitle>
+                            <div className="flex w-full items-center gap-2">
+                                <UsagePeriodRangePicker
+                                    from={from}
+                                    to={to}
+                                    onPeriodChange={applyPeriod}
+                                    showLabel={false}
+                                />
+                                {hasActiveFilters ? <FilterClearButton size="icon" onClear={clearFilters} /> : null}
+                            </div>
+                            <UsagePeriodPresetChips from={from} to={to} onPeriodChange={applyPeriod} />
                         </div>
 
                         <div className="mt-6 w-full">
@@ -147,7 +154,7 @@ export function UsagePage({ projectId, title }: UsagePageProps) {
                         <div
                             className={cn(
                                 "flex min-w-0 flex-col rounded-xl border bg-card p-4 sm:p-5",
-                                stackedLayout ? "w-full" : "w-[60%]",
+                                stackedLayout ? "w-full" : "w-1/2",
                                 costFetching && "opacity-70",
                             )}
                         >
