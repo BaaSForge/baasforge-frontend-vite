@@ -2,7 +2,7 @@
 
 import { ContentEmptyState } from "@/components/content-empty-state";
 import { ContentLoadingState } from "@/components/content-loading-state";
-import { ChartContainer, ChartLegend, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { Gauge } from "lucide-react";
 import { useMemo } from "react";
@@ -34,8 +34,98 @@ export function hasUsageCostBreakdown(summary: UsageCostSummary): boolean {
     return COST_SEGMENTS.some(({ getCost }) => getCost(summary) > 0);
 }
 
-const CHART_SIZE_CLASSNAME =
+const CHART_WRAPPER_CLASSNAME = "@container w-full";
+
+const PIE_CHART_SIZE_CLASSNAME = "aspect-auto h-[182px] w-full shrink-0";
+
+const CHART_PLACEHOLDER_CLASSNAME =
     "aspect-auto h-[min(260px,60vw)] w-full shrink-0 sm:min-h-[260px] sm:h-[260px]";
+
+type CostBreakdownLegendProps = {
+    chartData: { kind: string; cost: number; fill: string }[];
+    chartConfig: ChartConfig;
+    legendRows: { left: { kind: string; cost: number; fill: string }; right?: { kind: string; cost: number; fill: string } }[];
+};
+
+function UsageCostBreakdownLegend({ chartData, chartConfig, legendRows }: CostBreakdownLegendProps) {
+    return (
+        <div className="flex w-full justify-center pt-1">
+            <div className="hidden w-[500px] max-w-full min-w-[450px] shrink-0 @[450px]:block">
+                <table className="w-full table-fixed border-collapse border-0 text-xs [&_td]:border-0 [&_th]:border-0">
+                    <colgroup>
+                        <col />
+                        <col style={{ width: "5.75rem" }} />
+                        <col style={{ width: "0.75rem" }} />
+                        <col style={{ width: "2.5rem" }} />
+                        <col style={{ width: "0.75rem" }} />
+                        <col />
+                        <col style={{ width: "5.75rem" }} />
+                    </colgroup>
+                    <tbody>
+                        {legendRows.map(({ left, right }) => (
+                            <tr key={left.kind}>
+                                <td className="py-0.5 text-right text-muted-foreground whitespace-nowrap">
+                                    {chartConfig[left.kind]?.label}:
+                                </td>
+                                <td className="py-0.5 text-right font-mono font-medium tabular-nums whitespace-nowrap">
+                                    {formatUsageCost(left.cost)}
+                                </td>
+                                <td className="py-0.5 pl-1.5 align-middle">
+                                    <div
+                                        className="ml-auto h-2 w-2 rounded-[2px]"
+                                        style={{ backgroundColor: chartConfig[left.kind]?.color }}
+                                    />
+                                </td>
+                                <td className="py-0.5" aria-hidden />
+                                <td className="py-0.5 pr-1.5 align-middle">
+                                    {right ? (
+                                        <div
+                                            className="h-2 w-2 rounded-[2px]"
+                                            style={{ backgroundColor: chartConfig[right.kind]?.color }}
+                                        />
+                                    ) : null}
+                                </td>
+                                <td className="py-0.5 text-left text-muted-foreground whitespace-nowrap">
+                                    {right ? `${chartConfig[right.kind]?.label}:` : null}
+                                </td>
+                                <td className="py-0.5 text-left font-mono font-medium tabular-nums whitespace-nowrap">
+                                    {right ? formatUsageCost(right.cost) : null}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div className="@[450px]:hidden">
+                <table className="w-auto max-w-full table-fixed border-collapse border-0 text-xs [&_td]:border-0 [&_th]:border-0">
+                    <colgroup>
+                        <col />
+                        <col style={{ width: "5.75rem" }} />
+                        <col style={{ width: "0.75rem" }} />
+                    </colgroup>
+                    <tbody>
+                        {chartData.map((item) => (
+                            <tr key={item.kind}>
+                                <td className="py-0.5 text-right text-muted-foreground whitespace-nowrap">
+                                    {chartConfig[item.kind]?.label}:
+                                </td>
+                                <td className="py-0.5 text-right font-mono font-medium tabular-nums whitespace-nowrap">
+                                    {formatUsageCost(item.cost)}
+                                </td>
+                                <td className="py-0.5 pl-1.5 align-middle">
+                                    <div
+                                        className="ml-auto h-2 w-2 rounded-[2px]"
+                                        style={{ backgroundColor: chartConfig[item.kind]?.color }}
+                                    />
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
 
 type UsageCostBreakdownChartProps = {
     costSummary?: UsageCostSummary;
@@ -84,7 +174,7 @@ export function UsageCostBreakdownChart({ costSummary, isLoading = false, classN
     if (isLoading) {
         return (
             <ContentLoadingState
-                className={cn(CHART_SIZE_CLASSNAME, className)}
+                className={cn(CHART_PLACEHOLDER_CLASSNAME, className)}
                 label="Calculating cost breakdown…"
             />
         );
@@ -93,7 +183,7 @@ export function UsageCostBreakdownChart({ costSummary, isLoading = false, classN
     if (chartData.length === 0) {
         return (
             <ContentEmptyState
-                className={cn(CHART_SIZE_CLASSNAME, "justify-center", className)}
+                className={cn(CHART_PLACEHOLDER_CLASSNAME, "justify-center", className)}
                 size="compact"
                 title="No cost breakdown"
                 description="No usage costs were recorded for this period."
@@ -103,97 +193,47 @@ export function UsageCostBreakdownChart({ costSummary, isLoading = false, classN
     }
 
     return (
-        <ChartContainer
-            config={chartConfig}
-            className={cn(CHART_SIZE_CLASSNAME, className)}
-        >
-            <PieChart>
-                <ChartTooltip
-                    content={
-                        <ChartTooltipContent
-                            hideLabel
-                            nameKey="kind"
-                            formatter={(value, name, item) => {
-                                const label = chartConfig[String(name)]?.label ?? formatUsageCostSegment(String(name));
-                                const indicatorColor = item.payload?.fill ?? item.color;
+        <div className={cn(CHART_WRAPPER_CLASSNAME, "flex flex-col", className)}>
+            <ChartContainer config={chartConfig} className={PIE_CHART_SIZE_CLASSNAME}>
+                <PieChart>
+                    <ChartTooltip
+                        content={
+                            <ChartTooltipContent
+                                hideLabel
+                                nameKey="kind"
+                                formatter={(value, name, item) => {
+                                    const label = chartConfig[String(name)]?.label ?? formatUsageCostSegment(String(name));
+                                    const indicatorColor = item.payload?.fill ?? item.color;
 
-                                return (
-                                    <div className="flex w-full items-center gap-2">
-                                        <div
-                                            className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
-                                            style={{ backgroundColor: indicatorColor }}
-                                        />
-                                        <span>
-                                            <span className="text-muted-foreground">{label}:</span>{" "}
-                                            <span className="font-mono font-medium tabular-nums">{formatUsageCost(Number(value))}</span>
-                                        </span>
-                                    </div>
-                                );
-                            }}
-                        />
-                    }
-                />
-                <Pie
-                    data={chartData}
-                    dataKey="cost"
-                    nameKey="kind"
-                    cx="50%"
-                    cy="42%"
-                    innerRadius={30}
-                    outerRadius={74}
-                    strokeWidth={2}
-                />
-                <ChartLegend
-                    content={
-                        <div className="flex justify-center pt-1">
-                            <table className="w-[500px] max-w-full table-fixed border-collapse border-0 text-xs [&_td]:border-0 [&_th]:border-0">
-                            <colgroup>
-                                <col />
-                                <col style={{ width: "5.75rem" }} />
-                                <col style={{ width: "0.75rem" }} />
-                                <col style={{ width: "2.5rem" }} />
-                                <col style={{ width: "0.75rem" }} />
-                                <col />
-                                <col style={{ width: "5.75rem" }} />
-                            </colgroup>
-                            <tbody>
-                                {legendRows.map(({ left, right }) => (
-                                    <tr key={left.kind}>
-                                        <td className="py-0.5 text-right text-muted-foreground whitespace-nowrap">
-                                            {chartConfig[left.kind]?.label}:
-                                        </td>
-                                        <td className="py-0.5 text-right font-mono font-medium tabular-nums whitespace-nowrap">
-                                            {formatUsageCost(left.cost)}
-                                        </td>
-                                        <td className="py-0.5 pl-1.5 align-middle">
+                                    return (
+                                        <div className="flex w-full items-center gap-2">
                                             <div
-                                                className="ml-auto h-2 w-2 rounded-[2px]"
-                                                style={{ backgroundColor: left.fill }}
+                                                className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                                                style={{ backgroundColor: indicatorColor }}
                                             />
-                                        </td>
-                                        <td className="py-0.5" aria-hidden />
-                                        <td className="py-0.5 pr-1.5 align-middle">
-                                            {right ? (
-                                                <div
-                                                    className="h-2 w-2 rounded-[2px]"
-                                                    style={{ backgroundColor: right.fill }}
-                                                />
-                                            ) : null}
-                                        </td>
-                                        <td className="py-0.5 text-left text-muted-foreground whitespace-nowrap">
-                                            {right ? `${chartConfig[right.kind]?.label}:` : null}
-                                        </td>
-                                        <td className="py-0.5 text-left font-mono font-medium tabular-nums whitespace-nowrap">
-                                            {right ? formatUsageCost(right.cost) : null}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                            </table>
-                        </div>
-                    }
-                />
-            </PieChart>
-        </ChartContainer>
+                                            <span>
+                                                <span className="text-muted-foreground">{label}:</span>{" "}
+                                                <span className="font-mono font-medium tabular-nums">{formatUsageCost(Number(value))}</span>
+                                            </span>
+                                        </div>
+                                    );
+                                }}
+                            />
+                        }
+                    />
+                    <Pie
+                        data={chartData}
+                        dataKey="cost"
+                        nameKey="kind"
+                        cx="50%"
+                        cy="42%"
+                        innerRadius={30}
+                        outerRadius={74}
+                        strokeWidth={2}
+                    />
+                </PieChart>
+            </ChartContainer>
+            <UsageCostBreakdownLegend chartData={chartData} chartConfig={chartConfig} legendRows={legendRows} />
+        </div>
     );
 }
