@@ -1,6 +1,7 @@
 "use client";
 
 import { PlatformEnvironmentBadge } from "@/components/platform-environment-badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
     CentricModal,
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorMessage } from "@/lib/errors";
 import type { ProjectRuntimeResponse } from "@/modules/project/types";
+import { Info } from "lucide-react";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { buildRuntimeEnvVarSaveItem } from "../build-save-item";
 import { useSaveRuntimeEnvVarsMutation } from "../mutations";
@@ -23,25 +25,31 @@ import {
     isValidRuntimeEnvVarKey,
     normalizeRuntimeEnvVarKey,
     RUNTIME_ENV_VAR_KEY_VALIDATION_MESSAGE,
+    runtimeHasConfiguredValue,
     runtimeValuesFromListItem,
     sanitizeRuntimeEnvVarKeyInput,
 } from "../types";
+import { EncryptedRuntimeEnvVarValueField } from "./encrypted-runtime-env-var-value-field";
 
 const RUNTIME_ENV_VAR_FORM_ID = "runtime-env-var-form";
 
 const FORM_PLACEHOLDERS = {
     encrypted: {
-        key: "e.g. WEBHOOK_SIGNING_SECRET",
-        value: "e.g. whsec_…",
+        key: "WEBHOOK_SIGNING_SECRET",
+        value: "Type or paste",
     },
     plain: {
-        key: "e.g. EXTERNAL_CALLBACK_URL",
-        value: "e.g. https://hooks.example.com/baasforge",
+        key: "EXTERNAL_CALLBACK_URL",
+        value: "https://…",
     },
 } as const;
 
 const RUNTIME_ENV_VAR_KEY_HINT =
     "Use a clear, human-readable key so AI can find out what this variable is for (e.g. WEBHOOK_SIGNING_SECRET, not WH_SS).";
+
+const ENCRYPTED_VALUE_ADD_ALERT = "Type or paste. Reveal to preview.";
+const ENCRYPTED_VALUE_EDIT_ALERT = "Paste while hidden, or reveal to type.";
+const ENCRYPTED_VALUE_EDIT_ALERT_SUFFIX = " Empty keeps the current value.";
 
 export type RuntimeEnvVarFormModalProps = {
     projectId: string;
@@ -56,8 +64,12 @@ function emptyFormValues(runtimeIds: readonly string[]): Record<string, string> 
     return Object.fromEntries(runtimeIds.map((id) => [id, ""]));
 }
 
-function initialFormValues(initialRow: RuntimeEnvVarListItem | undefined, runtimeIds: readonly string[]): Record<string, string> {
-    if (!initialRow) return emptyFormValues(runtimeIds);
+function initialFormValues(
+    initialRow: RuntimeEnvVarListItem | undefined,
+    runtimeIds: readonly string[],
+    isEncrypted: boolean,
+): Record<string, string> {
+    if (!initialRow || isEncrypted) return emptyFormValues(runtimeIds);
     const fromRow = runtimeValuesFromListItem(initialRow, runtimeIds);
     return Object.fromEntries(
         runtimeIds.map((id) => {
@@ -68,12 +80,17 @@ function initialFormValues(initialRow: RuntimeEnvVarListItem | undefined, runtim
 }
 
 type RuntimeEnvVarFormContextValue = {
+    projectId: string;
     isEncrypted: boolean;
     sortedRuntimes: ProjectRuntimeResponse[];
     key: string;
     setKey: (value: string) => void;
     values: Record<string, string>;
     setValues: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+    encryptedTouchedRuntimes: ReadonlySet<string>;
+    markEncryptedRuntimeTouched: (runtimeId: string) => void;
+    clearEncryptedRuntimeTouched: (runtimeId: string) => void;
+    initialRow?: RuntimeEnvVarListItem;
     validationError: string | null;
     saveMutation: ReturnType<typeof useSaveRuntimeEnvVarsMutation>;
     title: string;
@@ -107,9 +124,26 @@ function RuntimeEnvVarFormProvider({ projectId, isEncrypted, runtimes, initialRo
     const isEdit = initialRow != null;
 
     const [key, setKeyState] = useState(() => initialRow?.key ?? "");
-    const [values, setValues] = useState(() => initialFormValues(initialRow, runtimeIds));
+    const [values, setValues] = useState(() => initialFormValues(initialRow, runtimeIds, isEncrypted));
+    const [encryptedTouchedRuntimes, setEncryptedTouchedRuntimes] = useState<ReadonlySet<string>>(() => new Set());
     const [validationError, setValidationError] = useState<string | null>(null);
     const saveMutation = useSaveRuntimeEnvVarsMutation(projectId);
+
+    const markEncryptedRuntimeTouched = useCallback((runtimeId: string) => {
+        setEncryptedTouchedRuntimes((current) => {
+            if (current.has(runtimeId)) return current;
+            return new Set(current).add(runtimeId);
+        });
+    }, []);
+
+    const clearEncryptedRuntimeTouched = useCallback((runtimeId: string) => {
+        setEncryptedTouchedRuntimes((current) => {
+            if (!current.has(runtimeId)) return current;
+            const next = new Set(current);
+            next.delete(runtimeId);
+            return next;
+        });
+    }, []);
 
     const setKey = useCallback((value: string) => {
         setKeyState(sanitizeRuntimeEnvVarKeyInput(value));
@@ -130,7 +164,14 @@ function RuntimeEnvVarFormProvider({ projectId, isEncrypted, runtimes, initialRo
             }
 
             setValidationError(null);
-            const item = buildRuntimeEnvVarSaveItem(trimmedKey, isEncrypted, values, initialRow, runtimeIds);
+            const item = buildRuntimeEnvVarSaveItem(
+                trimmedKey,
+                isEncrypted,
+                values,
+                initialRow,
+                runtimeIds,
+                isEncrypted ? encryptedTouchedRuntimes : undefined,
+            );
             if (item == null) {
                 onClose();
                 return;
@@ -143,17 +184,22 @@ function RuntimeEnvVarFormProvider({ projectId, isEncrypted, runtimes, initialRo
                 },
             );
         },
-        [key, runtimeIds, values, isEncrypted, initialRow, onClose, saveMutation],
+        [key, runtimeIds, values, isEncrypted, initialRow, onClose, saveMutation, encryptedTouchedRuntimes],
     );
 
     const value = useMemo<RuntimeEnvVarFormContextValue>(
         () => ({
+            projectId,
             isEncrypted,
             sortedRuntimes,
             key,
             setKey,
             values,
             setValues,
+            encryptedTouchedRuntimes,
+            markEncryptedRuntimeTouched,
+            clearEncryptedRuntimeTouched,
+            initialRow,
             validationError,
             saveMutation,
             title,
@@ -161,7 +207,7 @@ function RuntimeEnvVarFormProvider({ projectId, isEncrypted, runtimes, initialRo
             handleSubmit,
             onClose,
         }),
-        [isEncrypted, sortedRuntimes, key, setKey, values, validationError, saveMutation, title, isEdit, handleSubmit, onClose],
+        [projectId, isEncrypted, sortedRuntimes, key, setKey, values, encryptedTouchedRuntimes, markEncryptedRuntimeTouched, clearEncryptedRuntimeTouched, initialRow, validationError, saveMutation, title, isEdit, handleSubmit, onClose],
     );
 
     return <RuntimeEnvVarFormContext.Provider value={value}>{children}</RuntimeEnvVarFormContext.Provider>;
@@ -173,8 +219,22 @@ function RuntimeEnvVarFormTitle() {
 }
 
 function RuntimeEnvVarFormFields() {
-    const { isEncrypted, sortedRuntimes, key, setKey, values, setValues, validationError, saveMutation, isEdit, handleSubmit } =
-        useRuntimeEnvVarFormContext();
+    const {
+        projectId,
+        isEncrypted,
+        isEdit,
+        sortedRuntimes,
+        key,
+        setKey,
+        values,
+        setValues,
+        markEncryptedRuntimeTouched,
+        clearEncryptedRuntimeTouched,
+        initialRow,
+        validationError,
+        saveMutation,
+        handleSubmit,
+    } = useRuntimeEnvVarFormContext();
     const placeholders = isEncrypted ? FORM_PLACEHOLDERS.encrypted : FORM_PLACEHOLDERS.plain;
 
     return (
@@ -188,12 +248,20 @@ function RuntimeEnvVarFormFields() {
                             value={key}
                             onChange={(e) => setKey(e.target.value)}
                             placeholder={placeholders.key}
-                            disabled={saveMutation.isPending || isEdit}
-                            readOnly={isEdit}
+                            disabled={saveMutation.isPending}
                             className="font-mono text-sm"
                             autoComplete="off"
                         />
-                        {!isEdit ? <FieldDescription>{RUNTIME_ENV_VAR_KEY_HINT}</FieldDescription> : null}
+                        <FieldDescription>{RUNTIME_ENV_VAR_KEY_HINT}</FieldDescription>
+                        {isEncrypted ? (
+                            <Alert className="mt-3">
+                                <Info />
+                                <AlertDescription>
+                                    {isEdit ? ENCRYPTED_VALUE_EDIT_ALERT : ENCRYPTED_VALUE_ADD_ALERT}
+                                    {isEdit ? ENCRYPTED_VALUE_EDIT_ALERT_SUFFIX : null}
+                                </AlertDescription>
+                            </Alert>
+                        ) : null}
                     </FieldContent>
                 </Field>
                 {sortedRuntimes.map((runtime) => (
@@ -206,20 +274,30 @@ function RuntimeEnvVarFormFields() {
                         </FieldLabel>
                         <FieldContent>
                             {isEncrypted ? (
-                                <Input
+                                <EncryptedRuntimeEnvVarValueField
                                     id={`runtime-env-${runtime.id}`}
                                     value={values[runtime.id] ?? ""}
-                                    onChange={(e) =>
+                                    onChange={(next) =>
                                         setValues((prev) => ({
                                             ...prev,
-                                            [runtime.id]: e.target.value,
+                                            [runtime.id]: next,
                                         }))
                                     }
+                                    onTouched={() => markEncryptedRuntimeTouched(runtime.id)}
+                                    onRevealedFromServer={() => clearEncryptedRuntimeTouched(runtime.id)}
                                     placeholder={placeholders.value}
                                     disabled={saveMutation.isPending}
-                                    type="password"
-                                    autoComplete="off"
-                                    className="font-mono text-sm"
+                                    isEdit={isEdit}
+                                    hasExistingValue={isEdit && initialRow != null && runtimeHasConfiguredValue(initialRow, runtime.id)}
+                                    revealContext={
+                                        isEdit && initialRow != null
+                                            ? {
+                                                  projectId,
+                                                  envKey: normalizeRuntimeEnvVarKey(initialRow.key),
+                                                  runtimeId: runtime.id,
+                                              }
+                                            : undefined
+                                    }
                                 />
                             ) : (
                                 <Textarea

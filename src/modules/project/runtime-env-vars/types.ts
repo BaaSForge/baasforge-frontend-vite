@@ -10,6 +10,7 @@ export type RuntimeEnvVarListItem = {
 
 export type RuntimeEnvVarSaveItem = {
     key: string;
+    previousKey?: string;
     isEncrypted?: boolean;
 } & Record<string, string | null | boolean | undefined>;
 
@@ -44,6 +45,10 @@ export function runtimeValueFromListItem(item: RuntimeEnvVarListItem, runtimeId:
     if (raw === undefined || raw === null) return null;
     if (typeof raw === "string") return raw;
     return null;
+}
+
+export function runtimeHasConfiguredValue(item: RuntimeEnvVarListItem, runtimeId: string): boolean {
+    return runtimeValueFromListItem(item, runtimeId) !== null;
 }
 
 export function runtimeValuesFromListItem(

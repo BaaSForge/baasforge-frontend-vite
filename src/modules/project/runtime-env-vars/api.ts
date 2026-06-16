@@ -33,9 +33,17 @@ export function getRuntimeEnvVars(projectId: string, query: ListRuntimeEnvVarsQu
 
 export function putRuntimeEnvVars(projectId: string, body: SaveRuntimeEnvVarsRequest): Promise<SaveRuntimeEnvVarsResponse> {
     const payload: SaveRuntimeEnvVarsRequest = {
-        items: body.items.map((item) => ({ ...item, key: normalizeRuntimeEnvVarKey(item.key) })),
+        items: body.items.map((item) => ({
+            ...item,
+            key: normalizeRuntimeEnvVarKey(item.key),
+            ...(item.previousKey != null ? { previousKey: normalizeRuntimeEnvVarKey(item.previousKey) } : {}),
+        })),
     };
-    return apiClient.put<ApiResponse<SaveRuntimeEnvVarsResponse>>(projectRuntimeEnvVarsEndpoint(projectId), payload).then((res) => {
+    return apiClient
+        .put<ApiResponse<SaveRuntimeEnvVarsResponse>>(projectRuntimeEnvVarsEndpoint(projectId), payload, undefined, {
+            skipErrorToastForStatuses: [409],
+        })
+        .then((res) => {
         if (!res.data) {
             throw new Error("Save runtime env vars response missing data");
         }
