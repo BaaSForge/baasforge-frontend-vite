@@ -160,7 +160,7 @@ export function RuntimeEnvVarsTable({ projectId, isEncrypted, runtimes }: Runtim
         return (
             <>
                 {headerRow}
-                <ContentLoadingState label="Loading environment variables…" />
+                <ContentLoadingState label="Loading variables…" />
             </>
         );
     }
@@ -170,7 +170,7 @@ export function RuntimeEnvVarsTable({ projectId, isEncrypted, runtimes }: Runtim
             <>
                 {headerRow}
                 <ContentErrorState
-                    title="Failed to load environment variables"
+                    title="Failed to load variables"
                     subtitle="Try refreshing the page and try again."
                 />
             </>

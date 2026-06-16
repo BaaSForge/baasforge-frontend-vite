@@ -210,10 +210,10 @@ export function NavProjects() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild isActive={isRuntimeEnvVarsActive} tooltip="Environment variables">
+                        <SidebarMenuButton asChild isActive={isRuntimeEnvVarsActive} tooltip="Variables">
                             <Link to={runtimeEnvVarsUrl}>
                                 <KeyRound />
-                                <span>Environment variables</span>
+                                <span>Variables</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

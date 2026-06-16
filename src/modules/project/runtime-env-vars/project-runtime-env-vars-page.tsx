@@ -38,16 +38,16 @@ export function ProjectRuntimeEnvVarsPage() {
 
     const tableContent =
         runtimesLoading ? (
-            <ContentLoadingState label="Loading environment variables…" />
+            <ContentLoadingState label="Loading variables…" />
         ) : runtimesError ? (
             <ContentErrorState
-                title="Failed to load environment variables"
+                title="Failed to load variables"
                 subtitle="Try refreshing the page and try again."
             />
         ) : (runtimes ?? []).length === 0 ? (
             <ContentEmptyState
                 title="No runtimes yet"
-                description="Add a runtime to this project before setting environment variables."
+                description="Add a runtime to this project before setting variables."
                 icon={ServerIcon}
             />
         ) : (
@@ -64,7 +64,7 @@ export function ProjectRuntimeEnvVarsPage() {
     return (
         <Tabs value={envTab} onValueChange={onEnvTabChange} className="gap-4">
             <PageTitleBox
-                title="Runtime environment variables"
+                title="Runtime variables"
                 stackToolsOnMobile
                 tools={
                     <TabsList>

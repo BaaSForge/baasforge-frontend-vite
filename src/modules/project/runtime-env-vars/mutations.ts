@@ -11,7 +11,7 @@ export function useSaveRuntimeEnvVarsMutation(projectId: string) {
         mutationFn: (body: SaveRuntimeEnvVarsRequest) => putRuntimeEnvVars(projectId, body),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimeEnvVarsByProject(projectId) });
-            toast.success("Environment variables saved.");
+            toast.success("Variable saved.");
         },
     });
 }
@@ -23,7 +23,7 @@ export function useDeleteRuntimeEnvVarsMutation(projectId: string) {
         mutationFn: (body: DeleteRuntimeEnvVarsRequest) => deleteRuntimeEnvVars(projectId, body),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: QueryKeys.projectRuntimeEnvVarsByProject(projectId) });
-            toast.success("Environment variable removed.");
+            toast.success("Variable removed.");
         },
     });
 }

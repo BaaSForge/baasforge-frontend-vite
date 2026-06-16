@@ -1,16 +1,16 @@
 "use client";
 
 import { CopyableEntityIdBadge } from "@/components/copyable-entity-id-badge";
+import { TimedSwitchButton } from "@/components/timed-switch-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { getApiErrorMessage } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useState } from "react";
 import { revealRuntimeEnvVar } from "../api";
 
-const AUTO_HIDE_MS = 10_000;
+const REVEAL_DURATION_SECONDS = 10;
 
 type RevealedState = { kind: "hidden" } | { kind: "revealed"; value: string | null } | { kind: "error"; message: string };
 
@@ -32,26 +32,6 @@ function CopyableEnvValue({ value, className }: { value: string; className?: str
     );
 }
 
-function RevealedAutoHide({ children, onHide }: { children: ReactNode; onHide: () => void }) {
-    const [isHovered, setIsHovered] = useState(false);
-
-    useEffect(() => {
-        if (isHovered) return;
-        const id = window.setTimeout(() => onHide(), AUTO_HIDE_MS);
-        return () => window.clearTimeout(id);
-    }, [isHovered, onHide]);
-
-    return (
-        <div
-            className="flex min-w-0 items-center gap-1.5"
-            onPointerEnter={() => setIsHovered(true)}
-            onPointerLeave={() => setIsHovered(false)}
-        >
-            {children}
-        </div>
-    );
-}
-
 export function RuntimeEnvVarCell({ projectId, envKey, runtimeId, listValue, isEncrypted }: RuntimeEnvVarCellProps) {
     const [revealState, setRevealState] = useState<RevealedState>({ kind: "hidden" });
     const [isRevealing, setIsRevealing] = useState(false);
@@ -62,7 +42,6 @@ export function RuntimeEnvVarCell({ projectId, envKey, runtimeId, listValue, isE
 
     const reveal = useCallback(async () => {
         setIsRevealing(true);
-        setRevealState({ kind: "hidden" });
         try {
             const res = await revealRuntimeEnvVar(projectId, envKey, runtimeId);
             setRevealState({ kind: "revealed", value: res.value });
@@ -72,6 +51,8 @@ export function RuntimeEnvVarCell({ projectId, envKey, runtimeId, listValue, isE
             setIsRevealing(false);
         }
     }, [projectId, envKey, runtimeId]);
+
+    const isRevealed = revealState.kind === "revealed";
 
     if (listValue === null) {
         return <span className="text-muted-foreground text-sm">Not set</span>;
@@ -89,43 +70,29 @@ export function RuntimeEnvVarCell({ projectId, envKey, runtimeId, listValue, isE
         return <CopyableEnvValue value={listValue} />;
     }
 
-    if (revealState.kind === "revealed") {
-        if (revealState.value === null) {
-            return (
-                <RevealedAutoHide onHide={hide}>
-                    <span className="text-muted-foreground text-sm">Not set</span>
-                    <Button type="button" variant="ghost" size="icon-xs" onClick={hide} aria-label="Hide value">
-                        <EyeOff className="size-3.5" />
-                    </Button>
-                </RevealedAutoHide>
-            );
-        }
-
-        return (
-            <RevealedAutoHide onHide={hide}>
-                <CopyableEnvValue value={revealState.value} />
-                <Button type="button" variant="ghost" size="icon-xs" onClick={hide} aria-label="Hide value">
-                    <EyeOff className="size-3.5" />
-                </Button>
-            </RevealedAutoHide>
-        );
-    }
-
     return (
         <div className="flex min-w-0 items-center gap-1.5">
-            <span className="font-mono text-xs tracking-widest text-muted-foreground" aria-hidden>
-                ••••••
-            </span>
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => void reveal()}
-                disabled={isRevealing}
-                aria-label="Reveal value"
-            >
-                {isRevealing ? <Spinner className="size-3.5" /> : <Eye className="size-3.5" />}
-            </Button>
+            {isRevealed ? (
+                revealState.value === null ? (
+                    <span className="text-muted-foreground text-sm">Not set</span>
+                ) : (
+                    <CopyableEnvValue value={revealState.value} />
+                )
+            ) : (
+                <span className="font-mono text-xs tracking-widest text-muted-foreground" aria-hidden>
+                    ••••••
+                </span>
+            )}
+            <TimedSwitchButton
+                active={isRevealed}
+                durationSeconds={REVEAL_DURATION_SECONDS}
+                inactiveIcon={isRevealing ? <Spinner className="size-3.5" /> : <Eye className="size-3.5" />}
+                activeIcon={<EyeOff className="size-3.5" />}
+                onTurnOn={() => void reveal()}
+                onTurnOff={() => hide()}
+                pending={isRevealing}
+                aria-label={isRevealed ? "Hide value" : "Reveal value"}
+            />
             {revealState.kind === "error" ? (
                 <span className="text-destructive text-xs" role="alert">
                     {revealState.message}
