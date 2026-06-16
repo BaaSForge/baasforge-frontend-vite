@@ -76,7 +76,7 @@ export function TimedSwitchButton({
     const buttonRef = useRef<HTMLButtonElement>(null);
     const shouldRetainFocusRef = useRef(false);
     const [ringAnimationKey, setRingAnimationKey] = useState(0);
-    const wasActiveRef = useRef(false);
+    const [prevValue, setPrevValue] = useState<boolean | undefined>(active ?? defaultActive);
 
     const { value, toggle } = useTimedSwitch({
         durationSeconds,
@@ -91,6 +91,13 @@ export function TimedSwitchButton({
         },
     });
 
+    if (value !== prevValue) {
+        setPrevValue(value);
+        if (value) {
+            setRingAnimationKey((current) => current + 1);
+        }
+    }
+
     const isIconMode = inactiveIcon != null;
     const content = value
         ? (isIconMode ? (activeIcon ?? inactiveIcon) : (activeLabel ?? inactiveLabel))
@@ -100,13 +107,6 @@ export function TimedSwitchButton({
 
     const isControlled = active !== undefined;
     const isInteractionBlocked = disabled || pending;
-
-    useLayoutEffect(() => {
-        if (value && !wasActiveRef.current) {
-            setRingAnimationKey((current) => current + 1);
-        }
-        wasActiveRef.current = value;
-    }, [value]);
 
     const retainFocus = () => {
         shouldRetainFocusRef.current = true;

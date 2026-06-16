@@ -76,13 +76,16 @@ export function useTimedSwitch({
     useEffect(() => {
         if (!value) {
             clearCountdown();
-            setSecondsLeft(0);
             return;
         }
 
-        setSecondsLeft(durationSeconds);
-
         const startedAt = Date.now();
+
+        const updateRemaining = () => {
+            const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
+            const remaining = Math.max(0, durationSeconds - elapsedSeconds);
+            setSecondsLeft(remaining);
+        };
 
         timeoutRef.current = setTimeout(() => {
             timeoutRef.current = undefined;
@@ -90,14 +93,11 @@ export function useTimedSwitch({
             setValue(false, { reason: "timeout" });
         }, durationSeconds * 1000);
 
-        intervalRef.current = setInterval(() => {
-            const elapsedSeconds = Math.floor((Date.now() - startedAt) / 1000);
-            const remaining = Math.max(0, durationSeconds - elapsedSeconds);
-            setSecondsLeft(remaining);
-        }, 250);
+        intervalRef.current = setInterval(updateRemaining, 250);
+        queueMicrotask(updateRemaining);
 
         return () => clearCountdown();
     }, [value, durationSeconds, clearCountdown, setValue]);
 
-    return { value, secondsLeft, toggle, activate, deactivate };
+    return { value, secondsLeft: value ? secondsLeft : 0, toggle, activate, deactivate };
 }
