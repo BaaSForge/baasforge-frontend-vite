@@ -18,7 +18,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     return (
         <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm text-muted-foreground shrink-0">{label}</span>
-            <span className="flex-1 min-w-0 border-b border-dashed border-muted-foreground/40" aria-hidden />
+            <span className="flex-1 min-w-0 border-b border-dashed border-muted-foreground/15" aria-hidden />
             {value}
         </div>
     );
