@@ -37,6 +37,6 @@ export interface MeResponse extends User {
 }
 
 export function userFromMe(me: MeResponse): User {
-    const { token: _token, last_subscription_cost_calculated_at: _lastSubscriptionCostCalculatedAt, ...user } = me;
-    return user;
+    const { id, platform, id_in_platform, full_name, email_in_platform } = me;
+    return { id, platform, id_in_platform, full_name, email_in_platform };
 }
