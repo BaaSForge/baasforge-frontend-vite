@@ -172,6 +172,8 @@ function CentricModalBodyScroll({
     );
 }
 
+const CentricModalDismissOnOverlayClickContext = React.createContext(true);
+
 function splitCentricModalChildren(children: React.ReactNode) {
     const nodes = React.Children.toArray(children);
     const headerIndex = nodes.findIndex((child) => React.isValidElement(child) && child.type === CentricModalHeader);
@@ -182,11 +184,28 @@ function splitCentricModalChildren(children: React.ReactNode) {
     return { header, footer, body };
 }
 
-function CentricModal({ open, onOpenChange, ...props }: React.ComponentProps<typeof Dialog>) {
+function CentricModal({
+    open,
+    onOpenChange,
+    dismissOnOverlayClick = true,
+    ...props
+}: React.ComponentProps<typeof Dialog> & { dismissOnOverlayClick?: boolean }) {
     const isMobile = useIsMobile();
-    const Component = isMobile ? Drawer : Dialog;
     useRegisterAppChromeDismissWhenOpen(open === true, () => onOpenChange?.(false));
-    return <Component open={open} onOpenChange={onOpenChange} {...props} />;
+
+    if (isMobile) {
+        return (
+            <CentricModalDismissOnOverlayClickContext.Provider value={dismissOnOverlayClick}>
+                <Drawer open={open} onOpenChange={onOpenChange} {...props} />
+            </CentricModalDismissOnOverlayClickContext.Provider>
+        );
+    }
+
+    return (
+        <CentricModalDismissOnOverlayClickContext.Provider value={dismissOnOverlayClick}>
+            <Dialog open={open} onOpenChange={onOpenChange} {...props} />
+        </CentricModalDismissOnOverlayClickContext.Provider>
+    );
 }
 
 function CentricModalTrigger(props: React.ComponentProps<typeof DialogTrigger>) {
@@ -211,6 +230,7 @@ function CentricModalContent({
     tallMobileSheet = false,
     decorator,
     footerShellClassName,
+    onPointerDownOutside: onPointerDownOutsideProp,
     ...props
 }: React.ComponentProps<typeof DialogContent> & {
     showCloseButton?: boolean;
@@ -227,6 +247,12 @@ function CentricModalContent({
     footerShellClassName?: string;
 }) {
     assertCentricModalContentClassName(className, "CentricModalContent");
+
+    const dismissOnOverlayClick = React.useContext(CentricModalDismissOnOverlayClickContext);
+    const handlePointerDownOutside: React.ComponentProps<typeof DialogContent>["onPointerDownOutside"] = (event) => {
+        if (!dismissOnOverlayClick) event.preventDefault();
+        onPointerDownOutsideProp?.(event);
+    };
 
     const isMobile = useIsMobile();
     const { header, footer, body } = splitCentricModalChildren(children);
@@ -253,6 +279,8 @@ function CentricModalContent({
         return (
             <DrawerContent
                 className={cn("flex flex-col overflow-hidden", mobileDrawerShell, !bodyScroll && "min-h-0", className)}
+                dismissOnOverlayClick={dismissOnOverlayClick}
+                onPointerDownOutside={handlePointerDownOutside}
                 {...props}
             >
                 {decorator ? (
@@ -283,6 +311,7 @@ function CentricModalContent({
                 className,
             )}
             showCloseButton={showCloseButton}
+            onPointerDownOutside={handlePointerDownOutside}
             {...props}
         >
             {decorator ? (
