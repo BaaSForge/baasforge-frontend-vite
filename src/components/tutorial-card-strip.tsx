@@ -31,16 +31,21 @@ export function TutorialCardStrip({ items, heading = "Live tutorials", className
             </div>
             <div className="@container w-full min-w-0 [--tutorial-visible-cards:1.2] md:[--tutorial-visible-cards:1.5]">
                 <FadedScrollArea orientation="horizontal" horizontalIntrinsicHeight className="w-full min-w-0">
-                    <div className="flex w-max gap-3">
+                    <div className="flex w-max items-stretch gap-3">
                         {items.map((tutorial, index) => (
-                            <TutorialCard
+                            <div
                                 key={tutorial.title}
-                                number={index + 1}
-                                title={tutorial.title}
-                                description={tutorial.description}
-                                icon={tutorial.icon}
+                                className="flex shrink-0 self-stretch"
                                 style={{ width: TUTORIAL_CARD_WIDTH }}
-                            />
+                            >
+                                <TutorialCard
+                                    number={index + 1}
+                                    title={tutorial.title}
+                                    description={tutorial.description}
+                                    icon={tutorial.icon}
+                                    className="h-full w-full"
+                                />
+                            </div>
                         ))}
                     </div>
                 </FadedScrollArea>

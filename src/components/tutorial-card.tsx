@@ -51,7 +51,7 @@ export function TutorialCard({ number, title, description, icon: Icon, className
     return (
         <article
             className={cn(
-                "group relative flex h-full min-h-36 shrink-0 flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm",
+                "group relative flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm",
                 "transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md",
                 className,
             )}
