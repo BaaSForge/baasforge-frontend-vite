@@ -7,7 +7,7 @@ import {
     dismissOverlayBeforeTargetActivate,
     useOverlayHintHost,
 } from "@/components/tutorial-overlay";
-import { SignupTutorialPlaceholderBoxStrip } from "@/components/signup-tutorial-placeholder-box-strip";
+import { TutorialCardStrip, type TutorialCardItem } from "@/components/tutorial-card-strip";
 import { Button } from "@/components/ui/button";
 import {
     CentricModal,
@@ -22,6 +22,7 @@ import { isSignupToken } from "@/modules/auth/lib/decode-access-token";
 import { useCurrentUserQuery } from "@/modules/auth/queries";
 import { createInformSchedule } from "@/services/informed-user-schedule";
 import { pushAppNotification } from "@/stores/app-notifications";
+import { Coins, FolderKanban, GitBranch, KeyRound, Plug, SearchCode } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const SIGNUP_TUTORIAL_DELAY_MS = 10_000;
@@ -41,26 +42,62 @@ const TUTORIAL_TITLE = "Welcome to BaaS Forge";
 const SIGNUP_TUTORIAL_WORKFLOW_STEPS: ReadonlyArray<{
     title: string;
     description: string;
+    mobileLine: string;
 }> = [
     {
         title: "Develop",
-        description:
-            "Tell the AI what you need and it builds units for you—self-contained files of code that power your API.",
+        description: "Describe what you need—the AI builds units that power your API.",
+        mobileLine: "Describe it—AI builds your units.",
     },
     {
         title: "Test on runtimes",
-        description:
-            "Deploy units to stage (a test runtime) and call them with the built-in HTTP client—without leaving BaaS Forge. Runtimes are the live environments where your code runs.",
+        description: "Deploy to stage and call your API with the built-in HTTP client.",
+        mobileLine: "Deploy to stage and test with HTTP client.",
     },
     {
         title: "Debug",
-        description:
-            "Found an issue? Reference that deploy in chat. The AI reads live runtime data, pinpoints what went wrong, and fixes it.",
+        description: "Reference the deploy in chat—the AI reads runtime data and fixes it.",
+        mobileLine: "Share the deploy in chat to debug.",
     },
     {
         title: "Deploy to production",
+        description: "When tests pass, push to production in seconds.",
+        mobileLine: "Ship to production when tests pass.",
+    },
+];
+
+const WELCOME_TUTORIAL_ITEMS: ReadonlyArray<TutorialCardItem> = [
+    {
+        title: "Your first project",
+        description: "Get ready with the dashboard UI and create your first project.",
+        icon: FolderKanban,
+    },
+    {
+        title: "Write and call your API",
         description:
-            "Once tests look good, push to production in seconds. Your backend API runs on production servers—all from the same platform.",
+            "Write your first API, learn about built units, deploy to stage, call it with the built-in HTTP client.",
+        icon: Plug,
+    },
+    {
+        title: "Debug and release",
+        description:
+            "Use traces to tell the AI what went wrong, update your units, redeploy to stage, then release to production.",
+        icon: SearchCode,
+    },
+    {
+        title: "Units and rollbacks",
+        description: "See your units, browse release history, and roll back to an older release.",
+        icon: GitBranch,
+    },
+    {
+        title: "Project variables",
+        description: "Define your first variables—what they are and how they work.",
+        icon: KeyRound,
+    },
+    {
+        title: "Costs in action",
+        description: "Learn how costs are calculated and see pricing play out on your project.",
+        icon: Coins,
     },
 ];
 
@@ -73,16 +110,23 @@ function SignupTutorialWorkflowSteps() {
                 const isLast = index === lastIndex;
 
                 return (
-                    <li key={step.title} className="relative flex gap-3.5">
-                        <div className="flex w-8 shrink-0 flex-col items-center">
-                            <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
+                    <li key={step.title} className="relative flex gap-2 md:gap-3.5">
+                        <div className="flex w-6 shrink-0 flex-col items-center md:w-8">
+                            <span className="bg-primary/10 text-primary flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums md:size-8 md:text-sm">
                                 {index + 1}
                             </span>
-                            {!isLast ? <span className="bg-border my-1.5 w-px flex-1 min-h-4" aria-hidden /> : null}
+                            {!isLast ? (
+                                <span className="bg-border my-1 w-px flex-1 min-h-2 md:my-1.5 md:min-h-4" aria-hidden />
+                            ) : null}
                         </div>
-                        <div className={cn("min-w-0 flex-1", !isLast && "pb-5")}>
-                            <p className="font-medium leading-snug">{step.title}</p>
-                            <p className="text-muted-foreground mt-1 text-sm text-pretty leading-relaxed">{step.description}</p>
+                        <div className={cn("min-w-0 flex-1", !isLast && "pb-2 md:pb-5")}>
+                            <div className="flex h-6 items-center md:h-auto md:block">
+                                <p className="text-muted-foreground truncate text-xs leading-snug md:hidden">{step.mobileLine}</p>
+                            </div>
+                            <div className="hidden md:block">
+                                <p className="font-medium leading-snug">{step.title}</p>
+                                <p className="text-muted-foreground mt-1 text-sm text-pretty leading-relaxed">{step.description}</p>
+                            </div>
                         </div>
                     </li>
                 );
@@ -135,31 +179,46 @@ function SignupTutorialDialogShell({
 }) {
     return (
         <CentricModal open={open} onOpenChange={onOpenChange} dismissOnOverlayClick={false}>
-            <CentricModalContent className="sm:max-w-xl select-text pointer-events-auto" fillViewportOnMobile showCloseButton>
-                <CentricModalHeader className="gap-5 sm:gap-6">
+            <CentricModalContent
+                className="sm:max-w-xl select-text pointer-events-auto"
+                fillViewportOnMobile
+                showCloseButton
+                onEscapeKeyDown={(event) => event.preventDefault()}
+            >
+                <CentricModalHeader className="gap-3 sm:gap-5 md:gap-6">
                     <CentricModalTitle>{TUTORIAL_TITLE}</CentricModalTitle>
                     <CentricModalDescription className="sr-only">
                         An overview of BaaS Forge and the develop, test, debug, and deploy workflow.
                     </CentricModalDescription>
                 </CentricModalHeader>
-                <div className="space-y-5 select-text">
-                    <p className="text-muted-foreground text-sm leading-relaxed">
+                <div className="space-y-3 select-text md:space-y-5">
+                    <p className="text-muted-foreground text-xs leading-relaxed md:text-sm">
                         BaaS Forge lets you build backend APIs on one platform—no switching tools. Describe the behavior you
                         want and AI writes the code. It handles complex, production-ready scenarios—not just CRUD—and deploys
                         in seconds.
                     </p>
 
-                    <div className="space-y-3">
-                        <p className="text-sm font-medium">How it works</p>
+                    <div className="space-y-1.5 md:space-y-3">
+                        <p className="text-xs font-medium md:text-sm">How it works</p>
                         <SignupTutorialWorkflowSteps />
                     </div>
 
-                    <SignupTutorialPlaceholderBoxStrip />
+                    <TutorialCardStrip items={WELCOME_TUTORIAL_ITEMS} />
                 </div>
                 <CentricModalFooter>
-                    <Button type="button">
-                        Let&apos;s start live tutorials
-                    </Button>
+                    <div className="flex w-full flex-row items-center justify-end gap-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="text-muted-foreground hover:text-foreground"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Skip
+                        </Button>
+                        <Button type="button">
+                            Let&apos;s start live tutorials
+                        </Button>
+                    </div>
                 </CentricModalFooter>
             </CentricModalContent>
         </CentricModal>
