@@ -8,6 +8,13 @@ export { useAuth } from "./hooks";
 export type { UseAuthReturn } from "./hooks";
 export { getGithubInitiateFormAction } from "./lib/github-auth";
 export { getGoogleInitiateFormAction } from "./lib/google-auth";
+export {
+    decodeAccessTokenPayload,
+    isSignupAccessToken,
+    isSignupToken,
+    type DecodedAccessTokenPayload,
+} from "./lib/decode-access-token";
 export { useDeleteTokensMutation, useLogoutMutation } from "./mutations";
 export { useCurrentUserQuery, useGetTokensQuery } from "./queries";
-export type { GetTokensFilter, Token, TokenType, User } from "./types";
+export { userFromMe } from "./types";
+export type { GetTokensFilter, MeResponse, Token, TokenType, User } from "./types";

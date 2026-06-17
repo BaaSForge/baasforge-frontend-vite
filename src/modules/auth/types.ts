@@ -28,4 +28,15 @@ export interface Token {
     created_at: string;
     revoked?: boolean;
     is_signup_token: boolean;
+    refresh_token_id?: string | null;
+}
+
+export interface MeResponse extends User {
+    last_subscription_cost_calculated_at?: string | null;
+    token: Token;
+}
+
+export function userFromMe(me: MeResponse): User {
+    const { token: _token, last_subscription_cost_calculated_at: _lastSubscriptionCostCalculatedAt, ...user } = me;
+    return user;
 }

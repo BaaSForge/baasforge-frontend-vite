@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useLogoutMutation } from "./mutations";
 import { useCurrentUserQuery } from "./queries";
 import type { User } from "./types";
+import { userFromMe } from "./types";
 
 export interface UseAuthReturn {
     user: User | null;
@@ -14,7 +15,7 @@ export interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
     const navigate = useNavigate();
     const location = useLocation();
-    const { data: user, isLoading, refetch } = useCurrentUserQuery();
+    const { data: me, isLoading, refetch } = useCurrentUserQuery();
     const { mutateAsync: logoutMutation } = useLogoutMutation();
 
     const logout = useCallback(async () => {
@@ -26,7 +27,7 @@ export function useAuth(): UseAuthReturn {
     }, [logoutMutation, navigate, location.pathname, location.search]);
 
     return {
-        user: user ?? null,
+        user: me != null ? userFromMe(me) : null,
         isLoading,
         refetch,
         logout,

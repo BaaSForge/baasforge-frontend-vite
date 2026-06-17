@@ -1,3 +1,4 @@
+import { SignupTutorialGlobalHost } from "@/components/signup-tutorial-nudge";
 import { ScalarHttpTestAiNudgeGlobalHost } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { useSubscribeUserNotifications } from "@/hooks/use-subscribe-user-notifications";
@@ -58,6 +59,7 @@ export function AppShell() {
                 </SidebarInset>
                 <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
                 <ScalarHttpTestAiNudgeGlobalHost />
+                <SignupTutorialGlobalHost />
             </SidebarProvider>
         </StartDebugModalProvider>
     );

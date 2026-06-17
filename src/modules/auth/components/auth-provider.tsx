@@ -65,9 +65,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 void (async () => {
                     ignoringSessionExpired = true;
                     try {
-                        const user = await getCurrentUser();
-                        if (user != null) {
-                            queryClient.setQueryData(QueryKeys.AUTH_ME, user);
+                        const me = await getCurrentUser();
+                        if (me != null) {
+                            queryClient.setQueryData(QueryKeys.AUTH_ME, me);
                             return;
                         }
                     } finally {
