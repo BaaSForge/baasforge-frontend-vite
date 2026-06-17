@@ -3,6 +3,7 @@ import { SECONDARY_SIDEBAR_SHEET_BREAKPOINT, useIsBelowBreakpoint } from "@/hook
 import { cn } from "@/lib/utils";
 import { useStickyBreadcrumbBarHeight, useStickyBreadcrumbBarTransition, useStickyBreadcrumbBarVisible } from "@/stores/breadcrumb";
 import React, { useCallback, useMemo, useState } from "react";
+import { SidebarChromeDismiss } from "@/components/sidebar-chrome-dismiss";
 import { Sidebar, SidebarProvider } from "../ui/sidebar";
 import { InternalSecondarySidebarContext } from "./context";
 
@@ -53,6 +54,7 @@ export function SecondarySidebarProvider({ children, storageKey, defaultOpen }: 
                     isSheetViewport || !sidebarOpen ? "w-full" : "w-[calc(100%-var(--sidebar-width))]",
                 )}
             >
+                <SidebarChromeDismiss />
                 {children}
             </SidebarProvider>
         </InternalSecondarySidebarContext.Provider>

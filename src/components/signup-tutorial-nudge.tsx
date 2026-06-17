@@ -1,5 +1,12 @@
 "use client";
 
+import { APP_NOTIFICATION_INBOX_BUTTON_ID, requestOpenAppNotificationInbox } from "@/components/app-notification-inbox-button";
+import {
+    TutorialOverlay,
+    createOverlayHintController,
+    dismissOverlayBeforeTargetActivate,
+    useOverlayHintHost,
+} from "@/components/tutorial-overlay";
 import { Button } from "@/components/ui/button";
 import {
     CentricModal,
@@ -17,9 +24,11 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 
 const SIGNUP_TUTORIAL_DELAY_MS = 10_000;
 
+const SIGNUP_TUTORIAL_INBOX_HINT_DELAY_MS = 5_000;
+
 export const SIGNUP_TUTORIAL_STORAGE_KEY = "signup-tutorial:v1";
 
-const SIGNUP_TUTORIAL_ALERT_STORAGE_KEY = "signup-tutorial:alert-shown:v1";
+const SIGNUP_TUTORIAL_INBOX_HINT_DISMISSED_STORAGE_KEY = "signup-tutorial:alert-shown:v1";
 
 export const SIGNUP_TUTORIAL_NOTIFICATION_GROUP = "tutorials";
 
@@ -30,6 +39,10 @@ const TUTORIAL_TITLE = "Welcome to BaaS Forge";
 const signupTutorialOpenHandlers = new Set<() => void>();
 
 const signupTutorialDialogOpenRef = { current: false };
+
+const signupTutorialInboxHint = createOverlayHintController({
+    dismissedStorageKey: SIGNUP_TUTORIAL_INBOX_HINT_DISMISSED_STORAGE_KEY,
+});
 
 type SignupTutorialOpenOptions = {
     force?: boolean;
@@ -55,31 +68,7 @@ function pushSignupTutorialInboxNotification(): void {
         read: true,
         onShowNotification: () => emitSignupTutorialOpen({ force: true }),
     });
-    maybeShowSignupTutorialAlert();
-}
-
-function readSignupTutorialAlertShown(): boolean {
-    if (typeof globalThis === "undefined" || !("localStorage" in globalThis) || globalThis.localStorage == null) {
-        return false;
-    }
-    return globalThis.localStorage.getItem(SIGNUP_TUTORIAL_ALERT_STORAGE_KEY) === "1";
-}
-
-function markSignupTutorialAlertShown(): void {
-    if (typeof globalThis === "undefined" || !("localStorage" in globalThis) || globalThis.localStorage == null) {
-        return;
-    }
-    try {
-        globalThis.localStorage.setItem(SIGNUP_TUTORIAL_ALERT_STORAGE_KEY, "1");
-    } catch {
-        /* ignore */
-    }
-}
-
-function maybeShowSignupTutorialAlert(): void {
-    if (readSignupTutorialAlertShown()) return;
-    markSignupTutorialAlertShown();
-    globalThis.alert("You have a new tutorial in your notifications inbox.");
+    signupTutorialInboxHint.requestShow();
 }
 
 function SignupTutorialDialogShell({
@@ -126,6 +115,7 @@ export function SignupTutorialGlobalHost() {
     const { data: me } = useCurrentUserQuery();
     const [open, setOpen] = useState(false);
     const delayTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const inboxHint = useOverlayHintHost(signupTutorialInboxHint, { delayMs: SIGNUP_TUTORIAL_INBOX_HINT_DELAY_MS });
 
     const handleOpenChange = useCallback((next: boolean) => {
         setOpen(next);
@@ -183,5 +173,22 @@ export function SignupTutorialGlobalHost() {
         };
     }, [me]);
 
-    return <SignupTutorialDialogShell open={open} onOpenChange={handleOpenChange} />;
+    return (
+        <>
+            <SignupTutorialDialogShell open={open} onOpenChange={handleOpenChange} />
+            <TutorialOverlay
+                targetId={APP_NOTIFICATION_INBOX_BUTTON_ID}
+                placement="bottom"
+                open={inboxHint.open}
+                onOpenChange={inboxHint.onOpenChange}
+                title="Tutorials are in your inbox"
+                description="You can see the tutorials here anytime from the notifications button."
+                dismissLabel="Got it"
+                onTargetPointerDown={dismissOverlayBeforeTargetActivate(
+                    inboxHint.onOpenChange,
+                    requestOpenAppNotificationInbox,
+                )}
+            />
+        </>
+    );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { SCROLL_EDGE_FADER_DEFAULT_FROM, ScrollEdgeFader } from "@/components/scroll-edge-fader";
+import { useRegisterAppChromeDismissWhenOpen } from "@/hooks/use-register-app-chrome-dismiss";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import * as React from "react";
@@ -181,10 +182,11 @@ function splitCentricModalChildren(children: React.ReactNode) {
     return { header, footer, body };
 }
 
-function CentricModal(props: React.ComponentProps<typeof Dialog>) {
+function CentricModal({ open, onOpenChange, ...props }: React.ComponentProps<typeof Dialog>) {
     const isMobile = useIsMobile();
     const Component = isMobile ? Drawer : Dialog;
-    return <Component {...props} />;
+    useRegisterAppChromeDismissWhenOpen(open === true, () => onOpenChange?.(false));
+    return <Component open={open} onOpenChange={onOpenChange} {...props} />;
 }
 
 function CentricModalTrigger(props: React.ComponentProps<typeof DialogTrigger>) {

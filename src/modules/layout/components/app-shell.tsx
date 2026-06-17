@@ -1,3 +1,4 @@
+import { SidebarChromeDismiss } from "@/components/sidebar-chrome-dismiss";
 import { SignupTutorialGlobalHost } from "@/components/signup-tutorial-nudge";
 import { ScalarHttpTestAiNudgeGlobalHost } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
@@ -50,6 +51,7 @@ export function AppShell() {
     return (
         <StartDebugModalProvider>
             <SidebarProvider open={open} onOpenChange={handleOpenChange}>
+                <SidebarChromeDismiss />
                 <MainSidebarShortcutListener />
                 <AppSidebar onOpenShortcuts={handleOpenShortcuts} />
                 <SidebarInset>

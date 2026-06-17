@@ -16,6 +16,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemSeparat
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRegisterAppChromeDismissWhenOpen } from "@/hooks/use-register-app-chrome-dismiss";
 import {
     openAppNotification,
     readStoredNotificationGroupFilter,
@@ -26,6 +27,16 @@ import {
 import { cn } from "@/lib/utils";
 import { Filter, Inbox, X } from "lucide-react";
 import * as React from "react";
+
+export const APP_NOTIFICATION_INBOX_BUTTON_ID = "app-notification-inbox-button";
+
+const appNotificationInboxOpenHandlers = new Set<() => void>();
+
+export function requestOpenAppNotificationInbox(): void {
+    for (const openNow of appNotificationInboxOpenHandlers) {
+        openNow();
+    }
+}
 
 function NotificationGroupFilterMenu({
     groupOptions,
@@ -98,6 +109,18 @@ export function AppNotificationInboxButton() {
     React.useEffect(() => {
         writeStoredNotificationGroupFilter(selectedGroups);
     }, [selectedGroups]);
+
+    const closeInbox = React.useCallback(() => setOpen(false), []);
+
+    React.useLayoutEffect(() => {
+        const openInbox = () => setOpen(true);
+        appNotificationInboxOpenHandlers.add(openInbox);
+        return () => {
+            appNotificationInboxOpenHandlers.delete(openInbox);
+        };
+    }, []);
+
+    useRegisterAppChromeDismissWhenOpen(open, closeInbox);
 
     const groupOptions = React.useMemo(() => {
         const set = new Set<string>();
@@ -235,7 +258,14 @@ export function AppNotificationInboxButton() {
         );
 
     const trigger = (
-        <Button type="button" variant="outline" size="icon" className="relative shrink-0" aria-label="Notifications">
+        <Button
+            id={APP_NOTIFICATION_INBOX_BUTTON_ID}
+            type="button"
+            variant="outline"
+            size="icon"
+            className="relative shrink-0"
+            aria-label="Notifications"
+        >
             <Inbox className="h-[1.2rem] w-[1.2rem]" />
             {badgeLabel != null ? (
                 <Badge

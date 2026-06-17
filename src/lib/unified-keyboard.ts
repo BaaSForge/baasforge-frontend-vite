@@ -32,6 +32,14 @@ export const SHORTCUTS_FOR_MODAL: { label: string; keys: string }[] = [
 
 const handlers: Handlers = {};
 let attached = false;
+let suspendDepth = 0;
+
+export function suspendUnifiedKeyboard(): () => void {
+    suspendDepth += 1;
+    return () => {
+        suspendDepth = Math.max(0, suspendDepth - 1);
+    };
+}
 
 function isInputLike(target: EventTarget | null): boolean {
     if (!target || !(target instanceof HTMLElement)) return false;
@@ -44,7 +52,9 @@ function isInputLike(target: EventTarget | null): boolean {
 function isInsideModal(target: EventTarget | null): boolean {
     if (!target || !(target instanceof Node)) return false;
     const el = target instanceof Element ? target : ((target as Node).parentElement ?? null);
-    return el?.closest?.("[role='dialog'], [role='alertdialog']") != null;
+    return (
+        el?.closest?.("[role='dialog'], [role='alertdialog'], [data-slot='tutorial-overlay']") != null
+    );
 }
 
 type ShortcutRule = {
@@ -88,6 +98,8 @@ const SHORTCUT_RULES: ShortcutRule[] = [
 ];
 
 function handleKeyDown(e: KeyboardEvent): void {
+    if (suspendDepth > 0) return;
+
     // Only act when no other listener has handled the event (e.g. native form/input behavior).
     if (e.defaultPrevented) return;
 
