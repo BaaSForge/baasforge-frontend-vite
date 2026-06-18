@@ -23,7 +23,6 @@ import { useCurrentUserQuery } from "@/modules/auth/queries";
 import { createInformSchedule } from "@/services/informed-user-schedule";
 import {
     getTutorialActionTitleFromDisplayStatus,
-    getTutorialGroup,
     getTutorialsByGroupId,
     runTutorialAction,
     runTutorialGroupAction,
@@ -74,8 +73,6 @@ const SIGNUP_TUTORIAL_WORKFLOW_STEPS: ReadonlyArray<{
         mobileLine: "Ship to production when tests pass.",
     },
 ];
-
-const welcomeTutorialGroup = getTutorialGroup(WELCOME_TUTORIALS_GROUP_ID)!;
 
 const welcomeTutorials = getTutorialsByGroupId(WELCOME_TUTORIALS_GROUP_ID);
 
@@ -211,7 +208,7 @@ function SignupTutorialDialogShell({
                     </div>
 
                     <TutorialCardStrip
-                        heading={welcomeTutorialGroup.title}
+                        heading="Live tutorials"
                         scrollToItemId={open && displayStatuses != null ? lastNonIdleTutorialId : null}
                         items={welcomeTutorials.map((tutorial) => {
                             const status = displayStatuses?.[tutorial.id] ?? "idle";
