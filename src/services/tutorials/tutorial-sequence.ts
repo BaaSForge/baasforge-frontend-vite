@@ -22,6 +22,13 @@ export function findLastNonIdleTutorialId(
     return last;
 }
 
+export function hasAnyTutorialStartedInGroup(
+    groupId: TutorialGroupId,
+    progressById: TutorialProgressById,
+): boolean {
+    return findLastNonIdleTutorialId(groupId, progressById) != null;
+}
+
 export function isTutorialUnlockedInGroup(
     groupId: TutorialGroupId,
     tutorialId: TutorialId,

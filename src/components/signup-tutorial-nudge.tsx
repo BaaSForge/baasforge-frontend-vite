@@ -24,6 +24,8 @@ import { createInformSchedule } from "@/services/informed-user-schedule";
 import {
     getTutorialActionTitleFromDisplayStatus,
     getTutorialsByGroupId,
+    hasAnyTutorialStartedInGroup,
+    loadTutorialGroupProgressById,
     runTutorialAction,
     runTutorialGroupAction,
     useTutorialGroupDisplayState,
@@ -33,9 +35,9 @@ import {
 import { pushAppNotification } from "@/stores/app-notifications";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-const SIGNUP_TUTORIAL_DELAY_MS = 10_000;
+const SIGNUP_TUTORIAL_DELAY_MS = 5_000;
 
-const SIGNUP_TUTORIAL_INBOX_HINT_DELAY_MS = 5_000;
+const SIGNUP_TUTORIAL_INBOX_HINT_DELAY_MS = 3_000;
 
 export const SIGNUP_TUTORIAL_STORAGE_KEY = "signup-tutorial:v1";
 
@@ -142,15 +144,25 @@ function pushSignupTutorialInboxNotification(): void {
         read: true,
         onShowNotification: () => emitSignupTutorialOpen({ force: true }),
     });
+}
+
+type WelcomeModalCloseVia = "dismiss" | "action";
+
+async function requestSignupTutorialInboxHintIfEligible(): Promise<void> {
+    if (signupTutorialInboxHint.isDismissed()) return;
+
+    const progressById = await loadTutorialGroupProgressById(WELCOME_TUTORIALS_GROUP_ID);
+    if (hasAnyTutorialStartedInGroup(WELCOME_TUTORIALS_GROUP_ID, progressById)) return;
+
     signupTutorialInboxHint.requestShow();
 }
 
 function SignupTutorialDialogShell({
     open,
-    onOpenChange,
+    onClose,
 }: {
     open: boolean;
-    onOpenChange: (next: boolean) => void;
+    onClose: (via: WelcomeModalCloseVia) => void;
 }) {
     const { displayStatuses, lastNonIdleTutorialId, groupActionTitle, groupActionKind, isGroupActionDisabled } =
         useTutorialGroupDisplayState(WELCOME_TUTORIALS_GROUP_ID, open);
@@ -162,12 +174,12 @@ function SignupTutorialDialogShell({
             setIsRunningAction(true);
             try {
                 const succeeded = await action();
-                if (succeeded) onOpenChange(false);
+                if (succeeded) onClose("action");
             } finally {
                 setIsRunningAction(false);
             }
         },
-        [onOpenChange],
+        [onClose],
     );
 
     const handleGroupAction = useCallback(() => {
@@ -182,7 +194,13 @@ function SignupTutorialDialogShell({
     );
 
     return (
-        <CentricModal open={open} onOpenChange={onOpenChange} dismissOnOverlayClick={false}>
+        <CentricModal
+            open={open}
+            onOpenChange={(next) => {
+                if (!next) onClose("dismiss");
+            }}
+            dismissOnOverlayClick={false}
+        >
             <CentricModalContent
                 className="sm:max-w-xl select-text pointer-events-auto"
                 fillViewportOnMobile
@@ -232,7 +250,7 @@ function SignupTutorialDialogShell({
                                 type="button"
                                 variant="ghost"
                                 className="text-muted-foreground hover:text-foreground"
-                                onClick={() => onOpenChange(false)}
+                                onClick={() => onClose("dismiss")}
                             >
                                 Skip
                             </Button>
@@ -257,16 +275,20 @@ export function SignupTutorialGlobalHost() {
     const delayTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const inboxHint = useOverlayHintHost(signupTutorialInboxHint, { delayMs: SIGNUP_TUTORIAL_INBOX_HINT_DELAY_MS });
 
-    const handleOpenChange = useCallback((next: boolean) => {
-        setOpen(next);
-        signupTutorialDialogOpenRef.current = next;
-        if (!next) {
-            signupTutorialInformSchedule.recordDismiss();
-            if (delayTimerRef.current != null) {
-                globalThis.clearTimeout(delayTimerRef.current);
-                delayTimerRef.current = undefined;
-            }
-            pushSignupTutorialInboxNotification();
+    const handleWelcomeModalClose = useCallback((via: WelcomeModalCloseVia) => {
+        setOpen(false);
+        signupTutorialDialogOpenRef.current = false;
+        if (delayTimerRef.current != null) {
+            globalThis.clearTimeout(delayTimerRef.current);
+            delayTimerRef.current = undefined;
+        }
+
+        const isFirstWelcomeDismiss = signupTutorialInformSchedule.shouldShow();
+        signupTutorialInformSchedule.recordDismiss();
+        pushSignupTutorialInboxNotification();
+
+        if (via === "dismiss" && isFirstWelcomeDismiss) {
+            void requestSignupTutorialInboxHintIfEligible();
         }
     }, []);
 
@@ -315,7 +337,7 @@ export function SignupTutorialGlobalHost() {
 
     return (
         <>
-            <SignupTutorialDialogShell open={open} onOpenChange={handleOpenChange} />
+            <SignupTutorialDialogShell open={open} onClose={handleWelcomeModalClose} />
             <TutorialOverlay
                 targetId={APP_NOTIFICATION_INBOX_BUTTON_ID}
                 placement="bottom"

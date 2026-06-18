@@ -39,6 +39,7 @@ export {
 } from "./tutorials";
 export {
     findLastNonIdleTutorialId,
+    hasAnyTutorialStartedInGroup,
     isTutorialUnlockedInGroup,
     resolveTutorialDisplayStatus,
     resolveTutorialDisplayStatuses,
