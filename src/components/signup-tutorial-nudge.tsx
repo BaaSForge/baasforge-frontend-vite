@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { isSignupToken } from "@/modules/auth/lib/decode-access-token";
 import { useCurrentUserQuery } from "@/modules/auth/queries";
 import { createInformSchedule } from "@/services/informed-user-schedule";
-import { getTutorialGroup, getTutorialsByGroupId, WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
+import { getTutorialGroup, getTutorialsByGroupId, useTutorialGroupDisplayState, WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { pushAppNotification } from "@/stores/app-notifications";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -146,6 +146,8 @@ function SignupTutorialDialogShell({
     open: boolean;
     onOpenChange: (next: boolean) => void;
 }) {
+    const { displayStatuses, lastNonIdleTutorialId } = useTutorialGroupDisplayState(WELCOME_TUTORIALS_GROUP_ID, open);
+
     return (
         <CentricModal open={open} onOpenChange={onOpenChange} dismissOnOverlayClick={false}>
             <CentricModalContent
@@ -174,11 +176,13 @@ function SignupTutorialDialogShell({
 
                     <TutorialCardStrip
                         heading={welcomeTutorialGroup.title}
+                        scrollToItemId={open && displayStatuses != null ? lastNonIdleTutorialId : null}
                         items={welcomeTutorials.map((tutorial) => ({
                             id: tutorial.id,
                             title: tutorial.title,
                             description: tutorial.description,
                             icon: tutorial.icon,
+                            status: displayStatuses?.[tutorial.id] ?? "idle",
                         }))}
                     />
                 </div>

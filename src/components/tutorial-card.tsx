@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import type { TutorialDisplayStatus } from "@/services/tutorials";
+import { Check, ChevronRight, CircleDashed, CirclePause, Lock, type LucideIcon } from "lucide-react";
 
 const ACCENT_STYLES = [
     {
@@ -36,38 +37,115 @@ const ACCENT_STYLES = [
     },
 ] as const;
 
+const STATUS_RING_STYLES: Record<TutorialDisplayStatus, string> = {
+    idle: "ring-muted-foreground/20 bg-muted/20",
+    "pending-action": "ring-sky-500/45 bg-sky-500/10",
+    interrupted: "ring-amber-500/45 bg-amber-500/10",
+    completed: "ring-emerald-500/45 bg-emerald-500/10",
+    disabled: "ring-muted-foreground/15 bg-muted/30",
+};
+
+const STATUS_INNER_STYLES: Record<TutorialDisplayStatus, string> = {
+    idle: "",
+    "pending-action": "bg-sky-500/15 text-sky-700 ring-sky-500/25 dark:text-sky-300",
+    interrupted: "bg-amber-500/15 text-amber-700 ring-amber-500/25 dark:text-amber-300",
+    completed: "bg-emerald-500/15 text-emerald-700 ring-emerald-500/25 dark:text-emerald-300",
+    disabled: "bg-muted text-muted-foreground ring-muted-foreground/20",
+};
+
+const STATUS_ICONS: Record<Exclude<TutorialDisplayStatus, "idle" | "disabled">, LucideIcon> = {
+    "pending-action": CircleDashed,
+    interrupted: CirclePause,
+    completed: Check,
+};
+
+function TutorialCardStatusBadge({
+    number,
+    status,
+    accentBadge,
+}: {
+    number: number;
+    status: TutorialDisplayStatus;
+    accentBadge: string;
+}) {
+    const StatusIcon =
+        status !== "idle" && status !== "disabled" ? STATUS_ICONS[status] : status === "disabled" ? Lock : null;
+
+    return (
+        <div className="relative flex size-8 shrink-0 items-center justify-center" aria-label={`Tutorial ${number}, ${status}`}>
+            <span
+                className={cn(
+                    "absolute inset-0 rounded-full ring-2 ring-inset transition-colors",
+                    STATUS_RING_STYLES[status],
+                    status === "pending-action" && "animate-pulse",
+                )}
+                aria-hidden
+            />
+            <span
+                className={cn(
+                    "relative z-10 flex size-5 items-center justify-center rounded-full text-[10px] font-bold tabular-nums ring-1 ring-inset",
+                    status === "idle" ? accentBadge : STATUS_INNER_STYLES[status],
+                )}
+            >
+                {number}
+            </span>
+            {StatusIcon != null ? (
+                <span
+                    className={cn(
+                        "absolute -right-0.5 -bottom-0.5 z-20 flex size-3.5 items-center justify-center rounded-full ring-1 ring-background",
+                        status === "pending-action" && "bg-sky-500 text-white",
+                        status === "interrupted" && "bg-amber-500 text-white",
+                        status === "completed" && "bg-emerald-500 text-white",
+                        status === "disabled" && "bg-muted-foreground/70 text-background",
+                    )}
+                    aria-hidden
+                >
+                    <StatusIcon className="size-2" />
+                </span>
+            ) : null}
+        </div>
+    );
+}
+
 export interface TutorialCardProps {
     number: number;
     title: string;
     description: string;
     icon: LucideIcon;
+    status?: TutorialDisplayStatus;
     className?: string;
     style?: React.CSSProperties;
 }
 
-export function TutorialCard({ number, title, description, icon: Icon, className, style }: TutorialCardProps) {
+export function TutorialCard({
+    number,
+    title,
+    description,
+    icon: Icon,
+    status = "idle",
+    className,
+    style,
+}: TutorialCardProps) {
     const accent = ACCENT_STYLES[(number - 1) % ACCENT_STYLES.length];
+    const isDisabled = status === "disabled";
 
     return (
         <article
             className={cn(
                 "group relative flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm",
-                "transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md",
+                "transition-all duration-200",
+                isDisabled
+                    ? "opacity-60"
+                    : "hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md",
                 className,
             )}
             style={style}
+            aria-disabled={isDisabled || undefined}
         >
             <div className={cn("h-1 bg-gradient-to-r", accent.bar)} />
             <div className="flex flex-1 flex-col gap-3 p-4">
                 <div className="flex items-start justify-between gap-2">
-                    <span
-                        className={cn(
-                            "inline-flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums ring-1 ring-inset",
-                            accent.badge,
-                        )}
-                    >
-                        {number}
-                    </span>
+                    <TutorialCardStatusBadge number={number} status={status} accentBadge={accent.badge} />
                     <div className={cn("flex size-9 items-center justify-center rounded-lg", accent.icon)}>
                         <Icon className="size-4.5" aria-hidden />
                     </div>
@@ -77,9 +155,20 @@ export function TutorialCard({ number, title, description, icon: Icon, className
                     <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed text-pretty">{description}</p>
                 </div>
                 <div className="flex items-center justify-end">
-                    <span className="text-muted-foreground/70 group-hover:text-primary flex items-center gap-0.5 text-xs font-medium transition-colors">
-                        Start
-                        <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                    <span
+                        className={cn(
+                            "flex items-center gap-0.5 text-xs font-medium",
+                            isDisabled
+                                ? "text-muted-foreground/60"
+                                : "text-muted-foreground/70 group-hover:text-primary transition-colors",
+                        )}
+                    >
+                        {isDisabled ? "Locked" : "Start"}
+                        {!isDisabled ? (
+                            <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                        ) : (
+                            <Lock className="size-3" aria-hidden />
+                        )}
                     </span>
                 </div>
             </div>
