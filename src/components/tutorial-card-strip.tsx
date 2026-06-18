@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
 export type TutorialCardItem = {
+    id?: string;
     title: string;
     description: string;
     icon: LucideIcon;
@@ -34,7 +35,7 @@ export function TutorialCardStrip({ items, heading = "Live tutorials", className
                     <div className="flex w-max items-stretch gap-3">
                         {items.map((tutorial, index) => (
                             <div
-                                key={tutorial.title}
+                                key={tutorial.id ?? tutorial.title}
                                 className="flex shrink-0 self-stretch"
                                 style={{ width: TUTORIAL_CARD_WIDTH }}
                             >

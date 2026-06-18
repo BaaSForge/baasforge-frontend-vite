@@ -7,7 +7,7 @@ import {
     dismissOverlayBeforeTargetActivate,
     useOverlayHintHost,
 } from "@/components/tutorial-overlay";
-import { TutorialCardStrip, type TutorialCardItem } from "@/components/tutorial-card-strip";
+import { TutorialCardStrip } from "@/components/tutorial-card-strip";
 import { Button } from "@/components/ui/button";
 import {
     CentricModal,
@@ -21,8 +21,8 @@ import { cn } from "@/lib/utils";
 import { isSignupToken } from "@/modules/auth/lib/decode-access-token";
 import { useCurrentUserQuery } from "@/modules/auth/queries";
 import { createInformSchedule } from "@/services/informed-user-schedule";
+import { getTutorialGroup, getTutorialsByGroupId, WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { pushAppNotification } from "@/stores/app-notifications";
-import { Coins, FolderKanban, GitBranch, KeyRound, Plug, SearchCode } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const SIGNUP_TUTORIAL_DELAY_MS = 10_000;
@@ -66,40 +66,9 @@ const SIGNUP_TUTORIAL_WORKFLOW_STEPS: ReadonlyArray<{
     },
 ];
 
-const WELCOME_TUTORIAL_ITEMS: ReadonlyArray<TutorialCardItem> = [
-    {
-        title: "Your first project",
-        description: "Get ready with the dashboard UI and create your first project.",
-        icon: FolderKanban,
-    },
-    {
-        title: "Write and call your API",
-        description:
-            "Write your first API, learn about built units, deploy to stage, call it with the built-in HTTP client.",
-        icon: Plug,
-    },
-    {
-        title: "Debug and release",
-        description:
-            "Use traces to tell the AI what went wrong, update your units, redeploy to stage, then release to production.",
-        icon: SearchCode,
-    },
-    {
-        title: "Units and rollbacks",
-        description: "See your units, browse release history, and roll back to an older release.",
-        icon: GitBranch,
-    },
-    {
-        title: "Project variables",
-        description: "Define your first variables—what they are and how they work.",
-        icon: KeyRound,
-    },
-    {
-        title: "Costs in action",
-        description: "Learn how costs are calculated and see pricing play out on your project.",
-        icon: Coins,
-    },
-];
+const welcomeTutorialGroup = getTutorialGroup(WELCOME_TUTORIALS_GROUP_ID)!;
+
+const welcomeTutorials = getTutorialsByGroupId(WELCOME_TUTORIALS_GROUP_ID);
 
 function SignupTutorialWorkflowSteps() {
     const lastIndex = SIGNUP_TUTORIAL_WORKFLOW_STEPS.length - 1;
@@ -203,7 +172,15 @@ function SignupTutorialDialogShell({
                         <SignupTutorialWorkflowSteps />
                     </div>
 
-                    <TutorialCardStrip items={WELCOME_TUTORIAL_ITEMS} />
+                    <TutorialCardStrip
+                        heading={welcomeTutorialGroup.title}
+                        items={welcomeTutorials.map((tutorial) => ({
+                            id: tutorial.id,
+                            title: tutorial.title,
+                            description: tutorial.description,
+                            icon: tutorial.icon,
+                        }))}
+                    />
                 </div>
                 <CentricModalFooter>
                     <div className="flex w-full flex-row items-center justify-end gap-2">
