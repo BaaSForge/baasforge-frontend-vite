@@ -1,3 +1,21 @@
+export {
+    applyTutorialAction,
+    getSequentialGroupActionTitle,
+    getSequentialGroupActionTitleFromProgress,
+    getTutorialActionTitle,
+    getTutorialActionTitleFromDisplayStatus,
+    loadTutorialGroupProgressById,
+    resolveSequentialGroupActionKind,
+    resolveSequentialGroupTargetTutorialId,
+    resolveTutorialActionKind,
+    runNonSequentialTutorialGroupAction,
+    runSequentialTutorialGroupAction,
+    runTutorialAction,
+    runTutorialGroupAction,
+    TUTORIAL_ROOT_STEP_ID,
+    type SequentialGroupActionKind,
+    type TutorialActionKind,
+} from "./tutorial-actions";
 export { useTutorialGroupDisplayState } from "./hooks/use-tutorial-group-display-state";
 export { useTutorialAggregateStatuses } from "./hooks/use-tutorial-aggregate-statuses";
 export {

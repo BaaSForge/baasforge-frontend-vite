@@ -13,6 +13,8 @@ export type TutorialCardItem = {
     description: string;
     icon: LucideIcon;
     status?: TutorialDisplayStatus;
+    actionLabel: string;
+    onAction?: () => void;
 };
 
 /** One full card plus a peek of the next: 1.2 on mobile, 1.5 from md up. */
@@ -73,6 +75,8 @@ export function TutorialCardStrip({ items, heading = "Live tutorials", className
                                     description={tutorial.description}
                                     icon={tutorial.icon}
                                     status={tutorial.status}
+                                    actionLabel={tutorial.actionLabel}
+                                    onAction={tutorial.onAction}
                                     className="h-full w-full"
                                 />
                             </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { TutorialDisplayStatus } from "@/services/tutorials";
 import { Check, ChevronRight, CircleDashed, CirclePause, Lock, type LucideIcon } from "lucide-react";
@@ -113,6 +114,8 @@ export interface TutorialCardProps {
     description: string;
     icon: LucideIcon;
     status?: TutorialDisplayStatus;
+    actionLabel: string;
+    onAction?: () => void;
     className?: string;
     style?: React.CSSProperties;
 }
@@ -123,11 +126,14 @@ export function TutorialCard({
     description,
     icon: Icon,
     status = "idle",
+    actionLabel,
+    onAction,
     className,
     style,
 }: TutorialCardProps) {
     const accent = ACCENT_STYLES[(number - 1) % ACCENT_STYLES.length];
     const isDisabled = status === "disabled";
+    const isActionDisabled = isDisabled || onAction == null;
 
     return (
         <article
@@ -154,22 +160,27 @@ export function TutorialCard({
                     <h3 className="text-sm font-semibold leading-snug text-pretty">{title}</h3>
                     <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed text-pretty">{description}</p>
                 </div>
-                <div className="flex items-center justify-end">
-                    <span
+                <div className="flex items-center justify-end -my-1 -mr-2">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        disabled={isActionDisabled}
+                        onClick={onAction}
                         className={cn(
-                            "flex items-center gap-0.5 text-xs font-medium",
-                            isDisabled
+                            "h-6 gap-0.5 px-2 text-xs font-medium",
+                            isActionDisabled
                                 ? "text-muted-foreground/60"
-                                : "text-muted-foreground/70 group-hover:text-primary transition-colors",
+                                : "text-muted-foreground/70 hover:text-primary",
                         )}
                     >
-                        {isDisabled ? "Locked" : "Start"}
+                        {actionLabel}
                         {!isDisabled ? (
                             <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
                         ) : (
                             <Lock className="size-3" aria-hidden />
                         )}
-                    </span>
+                    </Button>
                 </div>
             </div>
         </article>

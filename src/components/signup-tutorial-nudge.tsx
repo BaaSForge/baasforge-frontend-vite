@@ -21,7 +21,16 @@ import { cn } from "@/lib/utils";
 import { isSignupToken } from "@/modules/auth/lib/decode-access-token";
 import { useCurrentUserQuery } from "@/modules/auth/queries";
 import { createInformSchedule } from "@/services/informed-user-schedule";
-import { getTutorialGroup, getTutorialsByGroupId, useTutorialGroupDisplayState, WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
+import {
+    getTutorialActionTitleFromDisplayStatus,
+    getTutorialGroup,
+    getTutorialsByGroupId,
+    runTutorialAction,
+    runTutorialGroupAction,
+    useTutorialGroupDisplayState,
+    WELCOME_TUTORIALS_GROUP_ID,
+    type TutorialId,
+} from "@/services/tutorials";
 import { pushAppNotification } from "@/stores/app-notifications";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -146,7 +155,34 @@ function SignupTutorialDialogShell({
     open: boolean;
     onOpenChange: (next: boolean) => void;
 }) {
-    const { displayStatuses, lastNonIdleTutorialId } = useTutorialGroupDisplayState(WELCOME_TUTORIALS_GROUP_ID, open);
+    const { displayStatuses, lastNonIdleTutorialId, groupActionTitle, groupActionKind, isGroupActionDisabled } =
+        useTutorialGroupDisplayState(WELCOME_TUTORIALS_GROUP_ID, open);
+    const [isRunningAction, setIsRunningAction] = useState(false);
+    const showSkipButton = groupActionKind !== "continue" && groupActionKind !== "all-completed";
+
+    const runActionAndClose = useCallback(
+        async (action: () => Promise<boolean>) => {
+            setIsRunningAction(true);
+            try {
+                const succeeded = await action();
+                if (succeeded) onOpenChange(false);
+            } finally {
+                setIsRunningAction(false);
+            }
+        },
+        [onOpenChange],
+    );
+
+    const handleGroupAction = useCallback(() => {
+        void runActionAndClose(() => runTutorialGroupAction(WELCOME_TUTORIALS_GROUP_ID));
+    }, [runActionAndClose]);
+
+    const handleTutorialAction = useCallback(
+        (tutorialId: TutorialId) => {
+            void runActionAndClose(() => runTutorialAction(WELCOME_TUTORIALS_GROUP_ID, tutorialId));
+        },
+        [runActionAndClose],
+    );
 
     return (
         <CentricModal open={open} onOpenChange={onOpenChange} dismissOnOverlayClick={false}>
@@ -177,27 +213,39 @@ function SignupTutorialDialogShell({
                     <TutorialCardStrip
                         heading={welcomeTutorialGroup.title}
                         scrollToItemId={open && displayStatuses != null ? lastNonIdleTutorialId : null}
-                        items={welcomeTutorials.map((tutorial) => ({
-                            id: tutorial.id,
-                            title: tutorial.title,
-                            description: tutorial.description,
-                            icon: tutorial.icon,
-                            status: displayStatuses?.[tutorial.id] ?? "idle",
-                        }))}
+                        items={welcomeTutorials.map((tutorial) => {
+                            const status = displayStatuses?.[tutorial.id] ?? "idle";
+
+                            return {
+                                id: tutorial.id,
+                                title: tutorial.title,
+                                description: tutorial.description,
+                                icon: tutorial.icon,
+                                status,
+                                actionLabel: getTutorialActionTitleFromDisplayStatus(status),
+                                onAction: isRunningAction ? undefined : () => handleTutorialAction(tutorial.id),
+                            };
+                        })}
                     />
                 </div>
                 <CentricModalFooter>
                     <div className="flex w-full flex-row items-center justify-end gap-2">
+                        {showSkipButton ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="text-muted-foreground hover:text-foreground"
+                                onClick={() => onOpenChange(false)}
+                            >
+                                Skip
+                            </Button>
+                        ) : null}
                         <Button
                             type="button"
-                            variant="ghost"
-                            className="text-muted-foreground hover:text-foreground"
-                            onClick={() => onOpenChange(false)}
+                            disabled={isRunningAction || isGroupActionDisabled || groupActionTitle == null}
+                            onClick={handleGroupAction}
                         >
-                            Skip
-                        </Button>
-                        <Button type="button">
-                            Let&apos;s start live tutorials
+                            {groupActionTitle ?? "Let's start live tutorials"}
                         </Button>
                     </div>
                 </CentricModalFooter>
