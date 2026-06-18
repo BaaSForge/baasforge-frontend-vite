@@ -15,10 +15,7 @@ export function useTutorialAggregateStatuses(
     const tutorialIdsKey = tutorialIds.join("\0");
 
     useEffect(() => {
-        if (!enabled) {
-            setStatuses(null);
-            return;
-        }
+        if (!enabled) return;
 
         let alive = true;
 
@@ -39,5 +36,5 @@ export function useTutorialAggregateStatuses(
         };
     }, [enabled, tutorialGroupId, tutorialIdsKey, tutorialIds, version]);
 
-    return statuses;
+    return enabled ? statuses : null;
 }
