@@ -105,7 +105,7 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
                     </EmptyMedia>
                     <EmptyTitle>No live release</EmptyTitle>
                     <EmptyDescription>
-                        Production has no live release yet. Deploy or attach a release to browse units here.
+                        Production has no live release yet. Deploy a release to browse units here.
                     </EmptyDescription>
                 </EmptyHeader>
             </Empty>

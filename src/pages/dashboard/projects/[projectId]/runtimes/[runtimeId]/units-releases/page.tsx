@@ -84,7 +84,7 @@ export default function ProjectRuntimeUnitsAndReleasesPage() {
         return (
             <ContentEmptyState
                 title="No live release"
-                description="This runtime has no live release yet. Deploy or attach a release to browse units here."
+                description="This runtime has no live release yet. Deploy a release to browse units here."
                 icon={PackageIcon}
             />
         );
