@@ -2,6 +2,7 @@ export {
     targetSpotlightOverlayStore,
     setTargetSpotlightOverlayElementId,
     setTargetSpotlightOverlayPlacement,
+    pinToTop,
     useTargetSpotlightOverlayTargetElementId,
     useTargetSpotlightOverlayPlacement,
 } from "./store";

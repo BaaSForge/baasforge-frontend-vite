@@ -1,5 +1,6 @@
 "use client";
 
+import { PinTopAnchor } from "./components/pin-top-anchor";
 import { TargetSpotlightOverlay } from "./target-spotlight-overlay";
 import { useTargetSpotlightOverlayPlacement, useTargetSpotlightOverlayTargetElementId } from "./store";
 
@@ -9,5 +10,12 @@ export function TargetSpotlightOverlayGlobalHost() {
 
     if (targetElementId == null) return null;
 
-    return <TargetSpotlightOverlay targetElementId={targetElementId} placement={placement} />;
+    return (
+        <>
+            <PinTopAnchor />
+            {targetElementId != null ? (
+                <TargetSpotlightOverlay targetElementId={targetElementId} placement={placement} />
+            ) : null}
+        </>
+    );
 }
