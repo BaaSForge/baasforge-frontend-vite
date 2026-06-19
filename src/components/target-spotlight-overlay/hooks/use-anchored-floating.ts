@@ -21,14 +21,24 @@ export function useAnchoredFloating(
     reference: HTMLElement | null,
     placement: TargetSpotlightOverlayPlacement,
     enabled: boolean,
+    options?: { offsetPx?: number; withArrow?: boolean; lockCrossAxis?: boolean },
 ) {
     const arrowRef = useRef<HTMLDivElement>(null);
+    const offsetPx = options?.offsetPx ?? 14;
+    const withArrow = options?.withArrow ?? true;
+    const lockCrossAxis = options?.lockCrossAxis ?? false;
 
     const { refs, floatingStyles, middlewareData, placement: resolvedPlacement } = useFloating({
         elements: { reference: reference ?? undefined },
         placement: placement as Placement,
+        strategy: "fixed",
         // eslint-disable-next-line react-hooks/refs -- floating-ui arrow middleware
-        middleware: [offset(14), flip(), shift({ padding: 16 }), arrow({ element: arrowRef, padding: 8 })],
+        middleware: [
+            offset(offsetPx),
+            flip(),
+            shift({ padding: 16, crossAxis: !lockCrossAxis }),
+            ...(withArrow ? [arrow({ element: arrowRef, padding: 8 })] : []),
+        ],
         whileElementsMounted: enabled ? autoUpdate : undefined,
     });
 

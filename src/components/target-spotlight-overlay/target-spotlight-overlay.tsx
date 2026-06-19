@@ -3,8 +3,16 @@
 import { createPortal } from "react-dom";
 import { AnchoredContentBox } from "./components/anchored-content-box";
 import { CutoutBackdrop } from "./components/cutout-backdrop";
+import { FullScreenBackdrop } from "./components/full-screen-backdrop";
+import { PinTopStatusRing } from "./components/pin-top-status-ring";
 import { TargetSpotlightRing } from "./components/target-spotlight-ring";
-import { DEFAULT_TARGET_RING_PADDING_PX, TARGET_SPOTLIGHT_OVERLAY_Z_INDEX } from "./constants";
+import {
+    DEFAULT_TARGET_RING_PADDING_PX,
+    PIN_TOP_FLOATING_OFFSET_PX,
+    TARGET_SPOTLIGHT_OVERLAY_Z_INDEX,
+    isPinToTopTargetElementId,
+} from "./constants";
+import { useTargetSpotlightOverlayHidePinTopCircles, useTargetSpotlightOverlayPinTopStatus } from "./store";
 import { useAnchoredFloating } from "./hooks/use-anchored-floating";
 import { useElementById } from "./hooks/use-element-by-id";
 import { useElevatedElement } from "./hooks/use-elevated-element";
@@ -24,23 +32,30 @@ export function TargetSpotlightOverlay({
     placement = "bottom",
     targetRingPaddingPx = DEFAULT_TARGET_RING_PADDING_PX,
 }: TargetSpotlightOverlayProps) {
+    const isPinToTop = isPinToTopTargetElementId(targetElementId);
+    const hidePinTopCircles = useTargetSpotlightOverlayHidePinTopCircles();
+    const pinTopStatus = useTargetSpotlightOverlayPinTopStatus();
     const enabled = targetElementId.length > 0;
     const target = useElementById(targetElementId, enabled);
     const targetRect = useTrackedRect(target, enabled);
     const viewport = useViewportSize(enabled);
 
-    useElevatedElement(target, enabled);
+    useElevatedElement(target, enabled && !isPinToTop);
 
     const { arrowRef, setFloatingRef, floatingStyles, resolvedPlacement, arrowStyle } = useAnchoredFloating(
         target,
         placement,
         enabled,
+        isPinToTop ? { offsetPx: PIN_TOP_FLOATING_OFFSET_PX, withArrow: false, lockCrossAxis: true } : undefined,
     );
 
     if (!enabled || target == null || typeof document === "undefined") return null;
 
-    const cutout = targetRect != null ? getCutoutRect(targetRect, targetRingPaddingPx, viewport) : null;
-    const backdropPanels = cutout != null ? getBackdropPanels(cutout, viewport) : [];
+    const cutout =
+        targetRect != null
+            ? getCutoutRect(targetRect, isPinToTop ? 0 : targetRingPaddingPx, viewport)
+            : null;
+    const backdropPanels = !isPinToTop && cutout != null ? getBackdropPanels(cutout, viewport) : [];
 
     return createPortal(
         <div
@@ -48,14 +63,21 @@ export function TargetSpotlightOverlay({
             className="pointer-events-none fixed inset-0"
             style={{ zIndex: TARGET_SPOTLIGHT_OVERLAY_Z_INDEX }}
         >
-            <CutoutBackdrop panels={backdropPanels} />
-            {cutout != null ? <TargetSpotlightRing cutout={cutout} /> : null}
+            {isPinToTop ? <FullScreenBackdrop /> : <CutoutBackdrop panels={backdropPanels} />}
+            {cutout != null && !(isPinToTop && hidePinTopCircles) ? (
+                isPinToTop && pinTopStatus != null ? (
+                    <PinTopStatusRing cutout={cutout} status={pinTopStatus} />
+                ) : (
+                    <TargetSpotlightRing cutout={cutout} variant={isPinToTop ? "pin-top" : "default"} />
+                )
+            ) : null}
             <AnchoredContentBox
                 setFloatingRef={setFloatingRef}
                 floatingStyles={floatingStyles}
                 resolvedPlacement={resolvedPlacement}
                 arrowRef={arrowRef}
                 arrowStyle={arrowStyle}
+                hideArrow={isPinToTop}
             />
         </div>,
         document.body,

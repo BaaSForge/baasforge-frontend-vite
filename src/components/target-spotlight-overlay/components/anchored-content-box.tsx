@@ -9,6 +9,7 @@ type AnchoredContentBoxProps = {
     arrowRef: RefObject<HTMLDivElement | null>;
     arrowStyle: CSSProperties;
     className?: string;
+    hideArrow?: boolean;
 };
 
 export function AnchoredContentBox({
@@ -18,6 +19,7 @@ export function AnchoredContentBox({
     arrowRef,
     arrowStyle,
     className,
+    hideArrow = false,
 }: AnchoredContentBoxProps) {
     return (
         <div
@@ -26,12 +28,14 @@ export function AnchoredContentBox({
             className="pointer-events-auto relative w-[min(100vw-2rem,20rem)] animate-in fade-in-0 zoom-in-95 duration-300 data-[side=bottom]:slide-in-from-top-2"
             data-side={resolvedPlacement}
         >
-            <div
-                ref={arrowRef}
-                aria-hidden
-                className="absolute z-0 size-3 rotate-45 rounded-[2px] border border-primary/20 bg-popover shadow-sm"
-                style={arrowStyle}
-            />
+            {hideArrow ? null : (
+                <div
+                    ref={arrowRef}
+                    aria-hidden
+                    className="absolute z-0 size-3 rotate-45 rounded-[2px] border border-primary/20 bg-popover shadow-sm"
+                    style={arrowStyle}
+                />
+            )}
             <SpotlightContentBox className={className} />
         </div>
     );

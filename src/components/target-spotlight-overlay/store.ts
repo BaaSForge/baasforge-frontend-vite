@@ -1,24 +1,37 @@
 import { createStore, useStore } from "zustand";
-import {
-    TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID,
-} from "./constants";
-import type { TargetSpotlightOverlayPlacement } from "./types";
+import { TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID } from "./constants";
+import type { PinToTopOptions, PinTopStatus, TargetSpotlightOverlayPlacement } from "./types";
 
 type TargetSpotlightOverlayState = {
     targetElementId: string | null;
     placement: TargetSpotlightOverlayPlacement;
+    hidePinTopCircles: boolean;
+    pinTopStatus: PinTopStatus | null;
     setTargetElementId: (elementId: string | null) => void;
     setPlacement: (placement: TargetSpotlightOverlayPlacement) => void;
-    pinToTop: () => void;
+    pinToTop: (options?: PinToTopOptions) => void;
 };
 
 export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlayState>((set, get) => ({
     targetElementId: null,
     placement: "bottom",
-    setTargetElementId: (elementId) => set({ targetElementId: elementId }),
+    hidePinTopCircles: false,
+    pinTopStatus: null,
+    setTargetElementId: (elementId) =>
+        set((state) => {
+            if (elementId === TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID) {
+                return { targetElementId: elementId };
+            }
+
+            return { targetElementId: elementId, hidePinTopCircles: false, pinTopStatus: null };
+        }),
     setPlacement: (placement) => set({ placement }),
-    pinToTop: () => {
-        set({ targetElementId: null });
+    pinToTop: (options) => {
+        set({
+            targetElementId: null,
+            hidePinTopCircles: options?.hidePinCircles ?? false,
+            pinTopStatus: options?.status ?? null,
+        });
         get().setPlacement("bottom");
         get().setTargetElementId(TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID);
     },
@@ -32,8 +45,16 @@ export function setTargetSpotlightOverlayPlacement(placement: TargetSpotlightOve
     targetSpotlightOverlayStore.getState().setPlacement(placement);
 }
 
-export function pinToTop(): void {
-    targetSpotlightOverlayStore.getState().pinToTop();
+export function pinToTop(options?: PinToTopOptions): void {
+    targetSpotlightOverlayStore.getState().pinToTop(options);
+}
+
+export function useTargetSpotlightOverlayHidePinTopCircles(): boolean {
+    return useStore(targetSpotlightOverlayStore, (s) => s.hidePinTopCircles);
+}
+
+export function useTargetSpotlightOverlayPinTopStatus(): PinTopStatus | null {
+    return useStore(targetSpotlightOverlayStore, (s) => s.pinTopStatus);
 }
 
 export function useTargetSpotlightOverlayTargetElementId(): string | null {

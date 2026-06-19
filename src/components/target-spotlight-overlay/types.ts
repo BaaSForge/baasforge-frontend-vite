@@ -1,5 +1,12 @@
 export type TargetSpotlightOverlayPlacement = "top" | "bottom" | "left" | "right";
 
+export type PinTopStatus = "info" | "warning" | "error" | "success";
+
+export type PinToTopOptions = {
+    hidePinCircles?: boolean;
+    status?: PinTopStatus | null;
+};
+
 export type ViewportSize = {
     width: number;
     height: number;
