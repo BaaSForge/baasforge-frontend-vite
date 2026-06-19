@@ -9,8 +9,6 @@ export function TargetSpotlightOverlayGlobalHost() {
     const targetElementId = useTargetSpotlightOverlayTargetElementId();
     const placement = useTargetSpotlightOverlayPlacement();
 
-    if (targetElementId == null) return null;
-
     return (
         <>
             {typeof document !== "undefined" ? createPortal(<PinTopAnchor />, document.body) : null}
