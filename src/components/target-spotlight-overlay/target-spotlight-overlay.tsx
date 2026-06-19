@@ -9,7 +9,7 @@ import { TargetSpotlightRing } from "./components/target-spotlight-ring";
 import {
     DEFAULT_TARGET_RING_PADDING_PX,
     PIN_TOP_FLOATING_OFFSET_PX,
-    TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS,
+    TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS,
     TARGET_SPOTLIGHT_OVERLAY_Z_INDEX,
     isPinToTopTargetElementId,
 } from "./constants";
@@ -64,7 +64,7 @@ export function TargetSpotlightOverlay({
             className="pointer-events-none fixed inset-0"
             style={{
                 zIndex: TARGET_SPOTLIGHT_OVERLAY_Z_INDEX,
-                pointerEvents: TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS,
+                pointerEvents: TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS,
             }}
         >
             {isPinToTop ? <FullScreenBackdrop /> : <CutoutBackdrop panels={backdropPanels} />}

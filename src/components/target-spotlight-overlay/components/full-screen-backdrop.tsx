@@ -1,6 +1,6 @@
 import { TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS } from "../constants";
 
-const BACKDROP_PANEL_CLASS = "fixed bg-black/55 animate-in fade-in-0 duration-300";
+const BACKDROP_PANEL_CLASS = "pointer-events-auto fixed bg-black/55 animate-in fade-in-0 duration-300";
 
 type FullScreenBackdropProps = {
     className?: string;

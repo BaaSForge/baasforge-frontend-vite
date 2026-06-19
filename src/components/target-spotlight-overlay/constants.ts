@@ -1,6 +1,8 @@
 /** Matches `z-50` on dialog, alert-dialog, drawer, and sheet in `@/components/ui`. */
 export const TARGET_SPOTLIGHT_OVERLAY_Z_INDEX = 50 - 1;
 
+export const TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS = "none" as const;
+
 export const TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS = "auto" as const;
 
 export const DEFAULT_TARGET_RING_PADDING_PX = 6;
