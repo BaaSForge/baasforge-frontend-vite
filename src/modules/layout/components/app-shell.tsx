@@ -1,6 +1,7 @@
 import { SidebarChromeDismiss } from "@/components/sidebar-chrome-dismiss";
 import { SignupTutorialGlobalHost } from "@/components/signup-tutorial-nudge";
 import { ScalarHttpTestAiNudgeGlobalHost } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
+import { TargetSpotlightOverlayGlobalHost } from "@/components/target-spotlight-overlay";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { useSubscribeUserNotifications } from "@/hooks/use-subscribe-user-notifications";
 import { register, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
@@ -62,6 +63,7 @@ export function AppShell() {
                 <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
                 <ScalarHttpTestAiNudgeGlobalHost />
                 <SignupTutorialGlobalHost />
+                <TargetSpotlightOverlayGlobalHost />
             </SidebarProvider>
         </StartDebugModalProvider>
     );
