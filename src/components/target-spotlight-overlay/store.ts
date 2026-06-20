@@ -43,6 +43,10 @@ export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlaySta
     resetZIndex: () => set({ zIndexElevated: false }),
 }));
 
+export function isTargetSpotlightOverlayActive(state: Pick<TargetSpotlightOverlayState, "targetElementId" | "pinTopStatus">): boolean {
+    return state.targetElementId != null || state.pinTopStatus != null;
+}
+
 export function setTargetSpotlightOverlayElementId(elementId: string | null): void {
     targetSpotlightOverlayStore.getState().setTargetElementId(elementId);
 }
@@ -81,4 +85,8 @@ export function useTargetSpotlightOverlayPlacement(): TargetSpotlightOverlayPlac
 
 export function useTargetSpotlightOverlayZIndexElevated(): boolean {
     return useStore(targetSpotlightOverlayStore, (s) => s.zIndexElevated);
+}
+
+export function useTargetSpotlightOverlayActive(): boolean {
+    return useStore(targetSpotlightOverlayStore, isTargetSpotlightOverlayActive);
 }

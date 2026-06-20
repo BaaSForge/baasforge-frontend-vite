@@ -3,11 +3,19 @@
 import { createPortal } from "react-dom";
 import { PinTopAnchor } from "./components/pin-top-anchor";
 import { TargetSpotlightOverlay } from "./target-spotlight-overlay";
-import { useTargetSpotlightOverlayPlacement, useTargetSpotlightOverlayTargetElementId } from "./store";
+import { useSpotlightKeyboardSuspend } from "./hooks/use-spotlight-keyboard-suspend";
+import {
+    useTargetSpotlightOverlayActive,
+    useTargetSpotlightOverlayPlacement,
+    useTargetSpotlightOverlayTargetElementId,
+} from "./store";
 
 export function TargetSpotlightOverlayGlobalHost() {
+    const active = useTargetSpotlightOverlayActive();
     const targetElementId = useTargetSpotlightOverlayTargetElementId();
     const placement = useTargetSpotlightOverlayPlacement();
+
+    useSpotlightKeyboardSuspend(active);
 
     return (
         <>

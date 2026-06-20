@@ -5,6 +5,8 @@ export {
     pinToTop,
     elevateTargetSpotlightOverlayZIndex,
     resetTargetSpotlightOverlayZIndex,
+    isTargetSpotlightOverlayActive,
+    useTargetSpotlightOverlayActive,
     useTargetSpotlightOverlayHidePinTopCircles,
     useTargetSpotlightOverlayPinTopStatus,
     useTargetSpotlightOverlayTargetElementId,

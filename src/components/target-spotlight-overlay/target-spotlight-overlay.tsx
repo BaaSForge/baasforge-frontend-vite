@@ -21,6 +21,7 @@ import { useElevatedElement } from "./hooks/use-elevated-element";
 import { useTrackedRect } from "./hooks/use-tracked-rect";
 import { useViewportSize } from "./hooks/use-viewport-size";
 import { getBackdropPanels, getCutoutRect } from "./lib/cutout-backdrop";
+import { TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE } from "./lib/outside-event";
 import type { TargetSpotlightOverlayPlacement } from "./types";
 
 type TargetSpotlightOverlayProps = {
@@ -65,6 +66,7 @@ export function TargetSpotlightOverlay({
         <div
             aria-hidden
             className="pointer-events-none fixed inset-0"
+            {...{ [TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE]: "" }}
             style={{
                 zIndex: overlayZIndex,
                 pointerEvents: TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS,

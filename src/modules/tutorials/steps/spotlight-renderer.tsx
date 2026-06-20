@@ -2,6 +2,7 @@ import {
     TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID,
     TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID,
 } from "@/components/target-spotlight-overlay/constants";
+import { onSpotlightContentHostsMounted } from "@/components/target-spotlight-overlay/lib/spotlight-content-hosts";
 import { type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -16,6 +17,7 @@ type PendingSpotlightContent = {
 };
 
 let roots: SpotlightRoots = { content: null, actions: null };
+let boundHosts: { content: HTMLElement | null; actions: HTMLElement | null } = { content: null, actions: null };
 let pending: PendingSpotlightContent | null = null;
 let waitForHostsCleanup: (() => void) | null = null;
 
@@ -23,20 +25,34 @@ function getHostElement(id: string): HTMLElement | null {
     return document.getElementById(id);
 }
 
-function renderIntoHost(root: Root | null, host: HTMLElement | null, node: ReactNode): Root | null {
-    if (host == null) {
+function isConnectedHost(host: HTMLElement | null): host is HTMLElement {
+    return host != null && host.isConnected;
+}
+
+function renderIntoHost(
+    root: Root | null,
+    host: HTMLElement | null,
+    boundHost: HTMLElement | null,
+    node: ReactNode,
+): { root: Root | null; boundHost: HTMLElement | null } {
+    if (!isConnectedHost(host)) {
         root?.unmount();
-        return null;
+        return { root: null, boundHost: null };
+    }
+
+    if (root != null && boundHost !== host) {
+        root.unmount();
+        root = null;
     }
 
     const nextRoot = root ?? createRoot(host);
     nextRoot.render(node);
-    return nextRoot;
+    return { root: nextRoot, boundHost: host };
 }
 
 function hostsReady(actions?: ReactNode): boolean {
-    if (getHostElement(TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID) == null) return false;
-    if (actions != null && getHostElement(TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID) == null) return false;
+    if (!isConnectedHost(getHostElement(TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID))) return false;
+    if (actions != null && !isConnectedHost(getHostElement(TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID))) return false;
     return true;
 }
 
@@ -47,21 +63,28 @@ function renderPending(): boolean {
     const contentHost = getHostElement(TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID);
     const actionsHost = getHostElement(TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID);
 
-    roots.content = renderIntoHost(
+    const contentResult = renderIntoHost(
         roots.content,
         contentHost,
+        boundHosts.content,
         <div className="px-4 py-3 pr-3 text-sm">{pending.content}</div>,
     );
+    roots.content = contentResult.root;
+    boundHosts.content = contentResult.boundHost;
 
     if (pending.actions == null) {
         roots.actions?.unmount();
         roots.actions = null;
+        boundHosts.actions = null;
     } else {
-        roots.actions = renderIntoHost(
+        const actionsResult = renderIntoHost(
             roots.actions,
             actionsHost,
+            boundHosts.actions,
             <div className="flex items-center gap-1.5 border-t border-primary/10 px-3 pl-2 py-2">{pending.actions}</div>,
         );
+        roots.actions = actionsResult.root;
+        boundHosts.actions = actionsResult.boundHost;
     }
 
     return true;
@@ -73,7 +96,12 @@ function stopWaitingForHosts(): void {
 }
 
 function waitForHosts(): void {
-    if (pending == null || renderPending()) {
+    if (pending == null) {
+        stopWaitingForHosts();
+        return;
+    }
+
+    if (renderPending()) {
         stopWaitingForHosts();
         return;
     }
@@ -81,7 +109,11 @@ function waitForHosts(): void {
     stopWaitingForHosts();
 
     const attempt = (): void => {
-        if (pending == null || renderPending()) {
+        if (pending == null) {
+            stopWaitingForHosts();
+            return;
+        }
+        if (renderPending()) {
             stopWaitingForHosts();
         }
     };
@@ -115,4 +147,11 @@ export function clearSpotlightContent(): void {
     roots.content?.unmount();
     roots.actions?.unmount();
     roots = { content: null, actions: null };
+    boundHosts = { content: null, actions: null };
 }
+
+onSpotlightContentHostsMounted(() => {
+    if (pending != null) {
+        waitForHosts();
+    }
+});

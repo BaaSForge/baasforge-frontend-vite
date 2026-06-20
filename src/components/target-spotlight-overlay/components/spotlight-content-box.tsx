@@ -1,11 +1,17 @@
 import { cn } from "@/lib/utils";
+import { useLayoutEffect } from "react";
 import { TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID, TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID } from "../constants";
+import { notifySpotlightContentHostsMounted } from "../lib/spotlight-content-hosts";
 
 type SpotlightContentBoxProps = {
     className?: string;
 };
 
 export function SpotlightContentBox({ className }: SpotlightContentBoxProps) {
+    useLayoutEffect(() => {
+        notifySpotlightContentHostsMounted();
+    });
+
     return (
         <div
             className={cn(

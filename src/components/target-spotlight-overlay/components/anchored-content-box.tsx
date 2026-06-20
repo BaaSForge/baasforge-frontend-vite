@@ -1,4 +1,5 @@
 import type { CSSProperties, RefObject } from "react";
+import { TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE } from "../lib/outside-event";
 import { SpotlightContentBox } from "./spotlight-content-box";
 import type { TargetSpotlightOverlayPlacement } from "../types";
 
@@ -24,6 +25,7 @@ export function AnchoredContentBox({
     return (
         <div
             ref={setFloatingRef}
+            {...{ [TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE]: "" }}
             style={floatingStyles}
             className="pointer-events-auto relative w-[min(100vw-32px,30rem)] animate-in fade-in-0 zoom-in-95 duration-300 data-[side=bottom]:slide-in-from-top-2"
             data-side={resolvedPlacement}

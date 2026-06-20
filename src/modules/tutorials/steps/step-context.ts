@@ -101,6 +101,7 @@ export function createStepContext<TData extends StoredStepData>(
 
     const goTo = async (stepId: string, partial?: Partial<Omit<TData, "step">>): Promise<void> => {
         cleanupSubscriptions();
+        cleanupSpotlight();
         const next = {
             ...options.getState(),
             ...partial,

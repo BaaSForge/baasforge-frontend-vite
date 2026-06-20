@@ -5,6 +5,7 @@ import { Dialog as SheetPrimitive } from "radix-ui";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { preventDismissIfTargetSpotlightOverlayOutsideEvent } from "@/components/target-spotlight-overlay/lib/outside-event";
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
     return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -40,6 +41,8 @@ function SheetContent({
     children,
     side = "right",
     showCloseButton = true,
+    onPointerDownOutside,
+    onInteractOutside,
     ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
     side?: "top" | "right" | "bottom" | "left";
@@ -50,6 +53,14 @@ function SheetContent({
             <SheetOverlay />
             <SheetPrimitive.Content
                 data-slot="sheet-content"
+                onPointerDownOutside={(event) => {
+                    preventDismissIfTargetSpotlightOverlayOutsideEvent(event);
+                    onPointerDownOutside?.(event);
+                }}
+                onInteractOutside={(event) => {
+                    preventDismissIfTargetSpotlightOverlayOutsideEvent(event);
+                    onInteractOutside?.(event);
+                }}
                 className={cn(
                     "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
                     side === "right" &&
