@@ -1,47 +1,73 @@
 "use client";
 
+import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-inbox-button";
 import {
     pinToTop,
     setTargetSpotlightOverlayElementId,
     SpotlightActions,
     SpotlightContent,
     SpotlightPrimaryActionButton,
-    SpotlightSecondaryActionButton,
 } from "@/components/target-spotlight-overlay";
 import {
-    getTutorialProgressRecord,
-    getTutorialProgressSnapshot,
-    subscribeTutorialProgress,
+    saveTutorialProgress,
+    useTutorialProgressRecord,
     WELCOME_TUTORIALS_GROUP_ID,
 } from "@/services/tutorials";
-import { useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect } from "react";
+import { asYourFirstProjectTutorialRecord } from "./types";
+
+const TUTORIAL_ID = "your-first-project" as const;
 
 export function YourFirstProjectTutorial() {
-    const progressVersion = useSyncExternalStore(
-        subscribeTutorialProgress,
-        getTutorialProgressSnapshot,
-        getTutorialProgressSnapshot,
+    const record = asYourFirstProjectTutorialRecord(
+        useTutorialProgressRecord(WELCOME_TUTORIALS_GROUP_ID, TUTORIAL_ID),
     );
+    const isInboxStep = record?.metadata?.step === "inbox";
 
     useEffect(() => {
+        if (record == null) return;
+
+        if (isInboxStep) {
+            const timer = window.setTimeout(() => {
+                window.scrollBy({ top: -10 });
+                setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID);
+            }, 5000);
+
+            return () => {
+                window.clearTimeout(timer);
+                setTargetSpotlightOverlayElementId(null);
+            };
+        }
+
         pinToTop({ status: "info" });
+
         return () => setTargetSpotlightOverlayElementId(null);
+    }, [record, isInboxStep]);
+
+    const handleGotIt = useCallback(() => {
+        void saveTutorialProgress(WELCOME_TUTORIALS_GROUP_ID, TUTORIAL_ID, "pending-action", { step: "inbox" });
     }, []);
 
-    useEffect(() => {
-        void getTutorialProgressRecord(WELCOME_TUTORIALS_GROUP_ID, "your-first-project").then((record) => {
-            console.log("your-first-project tutorial recorded data", record);
-        });
-    }, [progressVersion]);
+    if (record == null) return null;
+
+    if (isInboxStep) {
+        return (
+            <SpotlightContent>
+                This is your inbox. You can find all tutorials here later. Try clicking it to see what's inside.
+            </SpotlightContent>
+        );
+    }
 
     return (
         <>
             <SpotlightContent>
-                Your first project tutorial
+                Before we create a project, let's learn a bit about the dashboard. Then we'll create your first
+                project.
             </SpotlightContent>
             <SpotlightActions>
-                <SpotlightSecondaryActionButton type="button">Back</SpotlightSecondaryActionButton>
-                <SpotlightPrimaryActionButton type="button">Continue</SpotlightPrimaryActionButton>
+                <SpotlightPrimaryActionButton type="button" onClick={handleGotIt}>
+                    Got it!
+                </SpotlightPrimaryActionButton>
             </SpotlightActions>
         </>
     );

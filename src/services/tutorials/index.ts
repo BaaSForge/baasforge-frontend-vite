@@ -16,6 +16,7 @@ export {
     type TutorialActionKind,
 } from "./tutorial-actions";
 export { useTutorialGroupDisplayState } from "./hooks/use-tutorial-group-display-state";
+export { useTutorialProgressRecord } from "./hooks/use-tutorial-progress-record";
 export { useTutorialStatuses } from "./hooks/use-tutorial-statuses";
 export {
     getTutorialProgressRecord,
@@ -46,8 +47,6 @@ export {
     type TutorialProgressById,
 } from "./tutorial-sequence";
 export type {
-    TutorialMetadataFor,
-    TutorialMetadataMap,
     TutorialProgressRecord,
     TutorialStatus,
 } from "./types";

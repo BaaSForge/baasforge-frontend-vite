@@ -1,6 +1,6 @@
 import { clientIdbGet, clientIdbSet } from "@/lib/client-idb-kv";
 import type { TutorialGroupId, TutorialId } from "./tutorials";
-import type { TutorialMetadataFor, TutorialProgressRecord, TutorialStatus } from "./types";
+import type { TutorialProgressRecord, TutorialStatus } from "./types";
 
 const PREFIX = "tutorial-progress:v1:";
 
@@ -46,17 +46,17 @@ function normalizeProgressRecord(raw: unknown): TutorialProgressRecord | null {
         tutorialGroupId: record.tutorialGroupId,
         tutorialId: record.tutorialId,
         status: record.status,
-        metadata: (record.metadata ?? null) as TutorialProgressRecord["metadata"],
+        metadata: record.metadata ?? null,
     };
 }
 
-export async function saveTutorialProgress<TId extends TutorialId>(
+export async function saveTutorialProgress<TMetadata = null>(
     tutorialGroupId: TutorialGroupId,
-    tutorialId: TId,
+    tutorialId: TutorialId,
     status: TutorialStatus,
-    metadata: TutorialMetadataFor<TId> = null,
+    metadata: TMetadata | null = null,
 ): Promise<void> {
-    const record: TutorialProgressRecord<TId> = {
+    const record: TutorialProgressRecord = {
         tutorialGroupId,
         tutorialId,
         status,
