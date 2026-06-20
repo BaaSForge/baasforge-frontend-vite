@@ -7,6 +7,10 @@ export const TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS = "auto" as const;
 
 export const DEFAULT_TARGET_RING_PADDING_PX = 6;
 
+export const TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID = "target-spotlight-overlay-content";
+
+export const TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID = "target-spotlight-overlay-actions";
+
 export const TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID = "target-spotlight-overlay-pin-top-anchor";
 
 export const TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_OFFSET_PX = 50;

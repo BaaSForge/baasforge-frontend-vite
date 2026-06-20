@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID, TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID } from "../constants";
 
 type SpotlightContentBoxProps = {
     className?: string;
@@ -14,8 +15,8 @@ export function SpotlightContentBox({ className }: SpotlightContentBoxProps) {
         >
             <div className="h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
             <div className="min-h-12">
-                <div id="target-spotlight-overlay-content" />
-                <div id="target-spotlight-overlay-actions" />
+                <div id={TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID} />
+                <div id={TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID} />
             </div>
         </div>
     );
