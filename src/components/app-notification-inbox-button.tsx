@@ -111,9 +111,16 @@ export function AppNotificationInboxButton() {
         writeStoredNotificationGroupFilter(selectedGroups);
     }, [selectedGroups]);
 
+    const prevOpenRef = React.useRef(open);
+
     React.useEffect(() => {
-        if (!open) return;
-        triggerAppEvent(events.NOTIFICATION_OPENED_EVENT);
+        if (open && !prevOpenRef.current) {
+            triggerAppEvent(events.NOTIFICATION_OPENED_EVENT);
+        }
+        if (!open && prevOpenRef.current) {
+            triggerAppEvent(events.NOTIFICATION_CLOSED_EVENT);
+        }
+        prevOpenRef.current = open;
     }, [open]);
 
     const closeInbox = React.useCallback(() => setOpen(false), []);

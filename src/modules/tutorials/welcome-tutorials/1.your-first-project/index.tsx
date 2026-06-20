@@ -62,7 +62,7 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.NOTIFICATION_OPENED_EVENT));
+                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.NOTIFICATION_CLOSED_EVENT));
 
                     if (lostTargetRes) {
                         ctx.goTo("generic-interrupted");
