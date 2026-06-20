@@ -24,6 +24,10 @@ export type StepContext<TData extends StoredStepData> = {
     next: (partial?: Partial<Omit<TData, "step">>) => Promise<void>;
     goTo: (stepId: string, partial?: Partial<Omit<TData, "step">>) => Promise<void>;
     getState: () => TData;
+    markIdle: () => Promise<void>;
+    markPendingAction: (partial?: Partial<TData>) => Promise<void>;
+    markInterrupted: (partial?: Partial<TData>) => Promise<void>;
+    markCompleted: (partial?: Partial<TData>) => Promise<void>;
 };
 
 export type StepDefinition<TData extends StoredStepData> = {

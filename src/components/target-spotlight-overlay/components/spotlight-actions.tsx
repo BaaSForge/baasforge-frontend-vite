@@ -2,6 +2,7 @@
 
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { events, triggerAppEvent } from "@/services/events";
 import { type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID } from "../constants";
@@ -20,8 +21,20 @@ export function SpotlightActions({ children }: SpotlightActionsProps) {
     );
 }
 
-export function SpotlightPrimaryActionButton({ className, ...props }: ButtonProps) {
-    return <Button variant="default" size="xs" className={cn("ml-auto", className)} {...props} />;
+export function SpotlightPrimaryActionButton({ className, onClick, type = "button", ...props }: ButtonProps) {
+    return (
+        <Button
+            type={type}
+            variant="default"
+            size="xs"
+            className={cn("ml-auto", className)}
+            onClick={(event) => {
+                triggerAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED);
+                onClick?.(event);
+            }}
+            {...props}
+        />
+    );
 }
 
 export function SpotlightSecondaryActionButton({ className, ...props }: ButtonProps) {

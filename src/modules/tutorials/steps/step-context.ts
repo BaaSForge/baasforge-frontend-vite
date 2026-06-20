@@ -1,6 +1,7 @@
-import { pinToTop } from "@/components/target-spotlight-overlay";
+import { pinToTop, setTargetSpotlightOverlayElementId } from "@/components/target-spotlight-overlay";
 import { listenAppEvent } from "@/services/events";
 import { saveTutorialProgress } from "@/services/tutorials";
+import type { TutorialStatus } from "@/services/tutorials";
 import type { AppEventName } from "@/services/events";
 import { clearSpotlightContent, flushSpotlightContent, setSpotlightContentToRender } from "./spotlight-renderer";
 import type { StepContext, StoredStepData, TutorialStepsIdentity } from "./types";
@@ -50,6 +51,10 @@ export function createStepContext<TData extends StoredStepData>(
         cleanupIntervals();
     };
 
+    const clearSpotlightTarget = (): void => {
+        setTargetSpotlightOverlayElementId(null);
+    };
+
     const persistState = async (next: TData): Promise<void> => {
         options.setState(next);
         await saveTutorialProgress(
@@ -60,8 +65,27 @@ export function createStepContext<TData extends StoredStepData>(
         );
     };
 
+    const finalizeStatus = async (status: TutorialStatus, metadata: TData | null): Promise<void> => {
+        disposed = true;
+        cleanupSubscriptions();
+        cleanupSpotlight();
+        clearSpotlightTarget();
+        await saveTutorialProgress(
+            options.identity.tutorialGroupId,
+            options.identity.tutorialId,
+            status,
+            metadata,
+        );
+    };
+
+    const mergeState = (partial?: Partial<TData>): TData => ({
+        ...options.getState(),
+        ...partial,
+    });
+
     const goTo = async (stepId: string, partial?: Partial<Omit<TData, "step">>): Promise<void> => {
         cleanupSubscriptions();
+        clearSpotlightTarget();
         const next = {
             ...options.getState(),
             ...partial,
@@ -199,10 +223,27 @@ export function createStepContext<TData extends StoredStepData>(
             return options.getState();
         },
 
+        markIdle() {
+            return finalizeStatus("idle", null);
+        },
+
+        markPendingAction(partial) {
+            return finalizeStatus("pending-action", mergeState(partial));
+        },
+
+        markInterrupted(partial) {
+            return finalizeStatus("interrupted", mergeState(partial));
+        },
+
+        markCompleted(partial) {
+            return finalizeStatus("completed", mergeState(partial));
+        },
+
         dispose() {
             disposed = true;
             cleanupSubscriptions();
             cleanupSpotlight();
+            clearSpotlightTarget();
         },
 
         cleanupSubscriptions,

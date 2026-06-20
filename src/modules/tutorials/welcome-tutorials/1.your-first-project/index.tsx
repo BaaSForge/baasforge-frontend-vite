@@ -5,7 +5,7 @@ import {
     setTargetSpotlightOverlayElementId,
     SpotlightPrimaryActionButton,
 } from "@/components/target-spotlight-overlay";
-import { events, triggerAppEvent } from "@/services/events";
+import { events } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
 import { useSteps } from "@/modules/tutorials/steps";
@@ -21,17 +21,14 @@ export function YourFirstProjectTutorial() {
         },
         [
             {
-                id: "step1",
+                id: "overview",
                 handler: async (ctx) => {
                     ctx.setSpotlightContent(
                         <>
                             Before we create a project, let's learn a bit about the dashboard. Then we'll create your
                             first project.
                         </>,
-                        <SpotlightPrimaryActionButton
-                            type="button"
-                            onClick={() => triggerAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED)}
-                        >
+                        <SpotlightPrimaryActionButton>
                             Got it!
                         </SpotlightPrimaryActionButton>
                     );
@@ -41,7 +38,7 @@ export function YourFirstProjectTutorial() {
                 },
             },
             {
-                id: "step2",
+                id: "inbox",
                 handler: async (ctx) => {
                     const lostTarget = ctx.intervalBreak(500, (breakInterval) => {
                         const foundTarget = document.getElementById(APP_NOTIFICATION_INBOX_BUTTON_ID) != null;
@@ -67,22 +64,43 @@ export function YourFirstProjectTutorial() {
                     const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.NOTIFICATION_OPENED_EVENT));
 
                     if (lostTargetRes) {
-                        setTargetSpotlightOverlayElementId(null);
-                        void ctx.goTo("step1");
+                        ctx.goTo("generic-interrupted");
                         return;
                     }
 
-                    setTargetSpotlightOverlayElementId(null);
-                    void ctx.next({
-                        someData: "",
-                        someAdditionalData: "",
-                    });
+                    void ctx.next({});
                 },
             },
             {
-                id: "step3",
+                id: "done",
                 handler: async (ctx) => {
-                    ctx.getState();
+                    ctx.setSpotlightContent(
+                        <>
+                            Congratulations! You've completed the tutorial.
+                        </>,
+                        <SpotlightPrimaryActionButton>
+                            Close
+                        </SpotlightPrimaryActionButton>
+                    );
+                    ctx.pinToTop({ status: "success" });
+                    await ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED);
+                    await ctx.markCompleted();
+                },
+            },
+            {
+                id: "generic-interrupted",
+                handler: async (ctx) => {
+                    ctx.setSpotlightContent(
+                        <>
+                            Sorry but something went wrong. You can retry the tutorial later.
+                        </>,
+                        <SpotlightPrimaryActionButton>
+                            Ok
+                        </SpotlightPrimaryActionButton>
+                    );
+                    ctx.pinToTop({ status: "error" });
+                    await ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED);
+                    await ctx.markInterrupted();
                 },
             },
         ],
