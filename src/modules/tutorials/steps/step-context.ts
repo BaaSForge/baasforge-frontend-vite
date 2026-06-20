@@ -6,6 +6,22 @@ import type { AppEventName } from "@/services/events";
 import { clearSpotlightContent, flushSpotlightContent, setSpotlightContentToRender } from "./spotlight-renderer";
 import type { StepContext, StoredStepData, TutorialStepsIdentity } from "./types";
 
+function delay(delayMs: number, onceCleanups: Set<() => void>): Promise<void> {
+    return new Promise<void>((resolve) => {
+        const cleanupDelayForThis = (): void => {
+            window.clearTimeout(timeoutId);
+            onceCleanups.delete(cleanupDelayForThis);
+        };
+
+        const timeoutId = window.setTimeout(() => {
+            cleanupDelayForThis();
+            resolve();
+        }, delayMs);
+
+        onceCleanups.add(cleanupDelayForThis);
+    });
+}
+
 type CreateStepContextOptions<TData extends StoredStepData> = {
     identity: TutorialStepsIdentity;
     stepIds: readonly string[];
@@ -129,19 +145,11 @@ export function createStepContext<TData extends StoredStepData>(
         },
 
         timeout(delayMs) {
-            return new Promise<void>((resolve) => {
-                const cleanupTimeoutForThis = (): void => {
-                    window.clearTimeout(timeoutId);
-                    onceCleanups.delete(cleanupTimeoutForThis);
-                };
+            return delay(delayMs, onceCleanups);
+        },
 
-                const timeoutId = window.setTimeout(() => {
-                    cleanupTimeoutForThis();
-                    resolve();
-                }, delayMs);
-
-                onceCleanups.add(cleanupTimeoutForThis);
-            });
+        sleep(delayMs) {
+            return delay(delayMs, onceCleanups);
         },
 
         race(...promises: Promise<unknown>[]) {

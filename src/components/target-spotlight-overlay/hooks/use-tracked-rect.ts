@@ -1,5 +1,5 @@
-import { autoUpdate } from "@floating-ui/react-dom";
 import { useLayoutEffect, useState } from "react";
+import { scheduleLayoutUpdates } from "../lib/schedule-layout-updates";
 
 export function useTrackedRect(element: HTMLElement | null, enabled: boolean): DOMRect | null {
     const [rect, setRect] = useState<DOMRect | null>(null);
@@ -9,7 +9,7 @@ export function useTrackedRect(element: HTMLElement | null, enabled: boolean): D
 
         const update = () => setRect(element.getBoundingClientRect());
         update();
-        return autoUpdate(element, document.documentElement, update);
+        return scheduleLayoutUpdates(element, document.documentElement, update);
     }, [enabled, element]);
 
     return enabled && element != null ? rect : null;

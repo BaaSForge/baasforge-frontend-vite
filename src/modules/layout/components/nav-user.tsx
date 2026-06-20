@@ -25,6 +25,7 @@ import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
 import type { PaymentResponse } from "@/modules/payment";
 import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
+import { events, triggerAppEvent } from "@/services/events";
 import { getTimeLeft } from "@/utils/time";
 
 function PlatformIcon({ platform, className }: { platform: PlatformType; className?: string }) {
@@ -95,6 +96,8 @@ function hasAnyActivePayment(payments: PaymentResponse[]): boolean {
 type NavUserProps = {
     onOpenShortcuts: () => void;
 };
+
+export const APP_USER_MENU_BUTTON_ID = "app-user-menu-button";
 
 export function NavUser({ onOpenShortcuts }: NavUserProps) {
     const { isMobile, open, setOpenMobile } = useSidebar();
@@ -240,9 +243,17 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
                 ) : null}
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <DropdownMenu>
+                <DropdownMenu
+                    onOpenChange={(open) => {
+                        triggerAppEvent(open ? events.USER_MENU_OPENED_EVENT : events.USER_MENU_CLOSED_EVENT);
+                    }}
+                >
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                        <SidebarMenuButton
+                            id={APP_USER_MENU_BUTTON_ID}
+                            size="lg"
+                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                        >
                             <div className="relative shrink-0">
                                 <Avatar className="h-8 w-8 rounded-lg">
                                     <AvatarImage src={undefined} alt={displayName} />

@@ -18,6 +18,8 @@ import {
 import * as React from "react";
 import { Link, useLocation, useParams } from "react-router";
 
+export const APP_SIDEBAR_TOGGLE_BUTTON_ID = "app-sidebar-toggle-button";
+
 const SEGMENT_LABELS: Record<string, string> = {
     dashboard: "Dashboard",
     projects: "Projects",
@@ -129,7 +131,7 @@ function StickyBreadcrumbBarInner({
         <>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <SidebarTrigger />
+                    <SidebarTrigger id={APP_SIDEBAR_TOGGLE_BUTTON_ID} />
                 </TooltipTrigger>
                 <TooltipContent side="right">Toggle sidebar ({SHORTCUT_LABELS.MAIN_SIDEBAR})</TooltipContent>
             </Tooltip>

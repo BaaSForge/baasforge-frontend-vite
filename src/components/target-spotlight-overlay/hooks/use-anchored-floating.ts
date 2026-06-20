@@ -1,6 +1,5 @@
 import {
     arrow,
-    autoUpdate,
     flip,
     offset,
     shift,
@@ -8,6 +7,7 @@ import {
     type Placement,
 } from "@floating-ui/react-dom";
 import { useRef } from "react";
+import { scheduleLayoutUpdates } from "../lib/schedule-layout-updates";
 import type { TargetSpotlightOverlayPlacement } from "../types";
 
 const ARROW_STATIC_SIDE: Record<TargetSpotlightOverlayPlacement, string> = {
@@ -42,7 +42,12 @@ export function useAnchoredFloating(
         placement: placement as Placement,
         strategy: "fixed",
         middleware,
-        whileElementsMounted: enabled ? autoUpdate : undefined,
+        whileElementsMounted: enabled
+            ? (reference, floating, update) => {
+                  if (!(reference instanceof Element)) return () => {};
+                  return scheduleLayoutUpdates(reference, floating, update);
+              }
+            : undefined,
     });
 
     const { x: arrowX, y: arrowY } = middlewareData.arrow ?? {};

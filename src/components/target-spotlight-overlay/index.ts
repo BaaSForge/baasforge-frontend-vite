@@ -3,10 +3,13 @@ export {
     setTargetSpotlightOverlayElementId,
     setTargetSpotlightOverlayPlacement,
     pinToTop,
+    elevateTargetSpotlightOverlayZIndex,
+    resetTargetSpotlightOverlayZIndex,
     useTargetSpotlightOverlayHidePinTopCircles,
     useTargetSpotlightOverlayPinTopStatus,
     useTargetSpotlightOverlayTargetElementId,
     useTargetSpotlightOverlayPlacement,
+    useTargetSpotlightOverlayZIndexElevated,
 } from "./store";
 export {
     SpotlightActions,

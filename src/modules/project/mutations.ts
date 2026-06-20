@@ -2,6 +2,7 @@ import { QueryKeys } from "@/constants/query-keys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { toast } from "@/lib/toast";
+import { events, triggerAppEvent } from "@/services/events";
 import { createProject, deleteProject, patchProject } from "./api";
 import type { ProjectPatchRequest, ProjectRequest } from "./types";
 
@@ -14,6 +15,7 @@ export function useCreateProjectMutation(options?: { onSuccess?: (projectId: str
         mutationFn: (body: ProjectRequest) => createProject(body),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: QueryKeys.PROJECTS_LIST });
+            triggerAppEvent(events.PROJECT_CREATED_EVENT, { projectId: data.id });
             options?.onSuccess?.(data.id);
             toast.success(`Project created successfully!`);
             if (redirectOnSuccess) {

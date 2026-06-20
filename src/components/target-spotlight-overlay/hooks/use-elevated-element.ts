@@ -1,7 +1,6 @@
 import { useLayoutEffect } from "react";
-import { TARGET_SPOTLIGHT_OVERLAY_Z_INDEX } from "../constants";
 
-export function useElevatedElement(element: HTMLElement | null, enabled: boolean): void {
+export function useElevatedElement(element: HTMLElement | null, enabled: boolean, overlayZIndex: number): void {
     useLayoutEffect(() => {
         if (!enabled || element == null) return;
 
@@ -15,7 +14,7 @@ export function useElevatedElement(element: HTMLElement | null, enabled: boolean
         if (computedPosition === "static") {
             element.style.position = "relative";
         }
-        element.style.zIndex = String(TARGET_SPOTLIGHT_OVERLAY_Z_INDEX + 1);
+        element.style.zIndex = String(overlayZIndex + 1);
         /* eslint-enable react-hooks/immutability */
 
         return () => {
@@ -24,5 +23,5 @@ export function useElevatedElement(element: HTMLElement | null, enabled: boolean
                 element.style.position = previous.position;
             }
         };
-    }, [enabled, element]);
+    }, [enabled, element, overlayZIndex]);
 }

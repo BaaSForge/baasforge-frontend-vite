@@ -15,7 +15,10 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { cn } from "@/lib/utils";
 import { getSwitchProjectLink } from "@/modules/project/libs";
 import { useProjectQuery, useProjectsQuery } from "@/modules/project/queries";
+import { events, triggerAppEvent } from "@/services/events";
 import { AppLogoSquare } from "@/components/logo/app-logo-square";
+
+export const APP_PROJECTS_MENU_BUTTON_ID = "app-projects-menu-button";
 
 export function ProjectSwitcher() {
     const { isMobile } = useSidebar();
@@ -33,9 +36,17 @@ export function ProjectSwitcher() {
     return (
         <SidebarMenu>
             <SidebarMenuItem>
-                <DropdownMenu modal={false}>
+                <DropdownMenu
+                    modal={false}
+                    onOpenChange={(open) => {
+                        if (open) {
+                            triggerAppEvent(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
+                        }
+                    }}
+                >
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
+                            id={APP_PROJECTS_MENU_BUTTON_ID}
                             size="lg"
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground border bg-card"
                         >
@@ -93,7 +104,10 @@ export function ProjectSwitcher() {
                         })}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild className="gap-2 p-2">
-                            <Link to="/dashboard/projects/new">
+                            <Link
+                                to="/dashboard/projects/new"
+                                onClick={() => triggerAppEvent(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT)}
+                            >
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                     <Plus className="size-4" />
                                 </div>

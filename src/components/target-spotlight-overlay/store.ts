@@ -7,9 +7,12 @@ type TargetSpotlightOverlayState = {
     placement: TargetSpotlightOverlayPlacement;
     hidePinTopCircles: boolean;
     pinTopStatus: PinTopStatus | null;
+    zIndexElevated: boolean;
     setTargetElementId: (elementId: string | null) => void;
     setPlacement: (placement: TargetSpotlightOverlayPlacement) => void;
     pinToTop: (options?: PinToTopOptions) => void;
+    elevateZIndex: () => void;
+    resetZIndex: () => void;
 };
 
 export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlayState>((set, get) => ({
@@ -17,6 +20,7 @@ export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlaySta
     placement: "bottom",
     hidePinTopCircles: false,
     pinTopStatus: null,
+    zIndexElevated: false,
     setTargetElementId: (elementId) => {
         if (elementId === TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID) {
             set({ targetElementId: elementId });
@@ -35,6 +39,8 @@ export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlaySta
         get().setPlacement("bottom");
         get().setTargetElementId(TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID);
     },
+    elevateZIndex: () => set({ zIndexElevated: true }),
+    resetZIndex: () => set({ zIndexElevated: false }),
 }));
 
 export function setTargetSpotlightOverlayElementId(elementId: string | null): void {
@@ -47,6 +53,14 @@ export function setTargetSpotlightOverlayPlacement(placement: TargetSpotlightOve
 
 export function pinToTop(options?: PinToTopOptions): void {
     targetSpotlightOverlayStore.getState().pinToTop(options);
+}
+
+export function elevateTargetSpotlightOverlayZIndex(): void {
+    targetSpotlightOverlayStore.getState().elevateZIndex();
+}
+
+export function resetTargetSpotlightOverlayZIndex(): void {
+    targetSpotlightOverlayStore.getState().resetZIndex();
 }
 
 export function useTargetSpotlightOverlayHidePinTopCircles(): boolean {
@@ -63,4 +77,8 @@ export function useTargetSpotlightOverlayTargetElementId(): string | null {
 
 export function useTargetSpotlightOverlayPlacement(): TargetSpotlightOverlayPlacement {
     return useStore(targetSpotlightOverlayStore, (s) => s.placement);
+}
+
+export function useTargetSpotlightOverlayZIndexElevated(): boolean {
+    return useStore(targetSpotlightOverlayStore, (s) => s.zIndexElevated);
 }

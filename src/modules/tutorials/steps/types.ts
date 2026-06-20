@@ -18,6 +18,7 @@ export type StepContext<TData extends StoredStepData> = {
     pinToTop: (options?: PinToTopOptions) => void;
     once: (eventName: AppEventName) => Promise<unknown>;
     timeout: (delayMs: number) => Promise<void>;
+    sleep: (delayMs: number) => Promise<void>;
     interval: (intervalMs: number, tick: () => void) => void;
     intervalBreak: (intervalMs: number, tick: (breakInterval: () => void) => void) => Promise<boolean>;
     race: (...promises: Promise<unknown>[]) => Promise<unknown[]>;

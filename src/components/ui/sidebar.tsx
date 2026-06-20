@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MOBILE_BREAKPOINT, useIsBelowBreakpoint } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { events, triggerAppEvent } from "@/services/events";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -29,6 +30,32 @@ type SidebarContextProps = {
 };
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null);
+
+type MainSidebarVisibilitySnapshot = {
+    isMobile: boolean;
+    open: boolean;
+    openMobile: boolean;
+};
+
+let mainSidebarVisibility: MainSidebarVisibilitySnapshot = {
+    isMobile: false,
+    open: true,
+    openMobile: false,
+};
+
+let closeMainSidebarOnMobile: (() => void) | null = null;
+
+export function isMainSidebarOpen(): boolean {
+    return mainSidebarVisibility.isMobile ? mainSidebarVisibility.openMobile : mainSidebarVisibility.open;
+}
+
+export function isMainSidebarClosed(): boolean {
+    return !isMainSidebarOpen();
+}
+
+export function closeMainSidebarIfMobile(): void {
+    closeMainSidebarOnMobile?.();
+}
 
 function useSidebar() {
     const context = React.useContext(SidebarContext);
@@ -79,7 +106,19 @@ function SidebarProvider({
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
-        return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
+        if (isMobile) {
+            return setOpenMobile((open) => {
+                const nextOpen = !open;
+                triggerAppEvent(nextOpen ? events.MAIN_SIDEBAR_OPENED_EVENT : events.MAIN_SIDEBAR_CLOSED_EVENT);
+                return nextOpen;
+            });
+        }
+
+        return setOpen((open) => {
+            const nextOpen = !open;
+            triggerAppEvent(nextOpen ? events.MAIN_SIDEBAR_OPENED_EVENT : events.MAIN_SIDEBAR_CLOSED_EVENT);
+            return nextOpen;
+        });
     }, [isMobile, setOpen, setOpenMobile]);
 
     // Main sidebar shortcut is handled by unified keyboard listener (Ctrl+\ / Cmd+\).
@@ -100,6 +139,22 @@ function SidebarProvider({
         }),
         [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
     );
+
+    React.useLayoutEffect(() => {
+        mainSidebarVisibility = { isMobile, open, openMobile };
+        closeMainSidebarOnMobile = () => {
+            if (!isMobile) return;
+            setOpenMobile((wasOpen) => {
+                if (wasOpen) {
+                    triggerAppEvent(events.MAIN_SIDEBAR_CLOSED_EVENT);
+                }
+                return false;
+            });
+        };
+        return () => {
+            closeMainSidebarOnMobile = null;
+        };
+    }, [isMobile, open, openMobile, setOpenMobile]);
 
     return (
         <SidebarContext.Provider value={contextValue}>

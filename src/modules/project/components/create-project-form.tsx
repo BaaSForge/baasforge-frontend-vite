@@ -11,6 +11,8 @@ import { Lock, LockOpen } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useCreateProjectMutation } from "../mutations";
 
+export const APP_CREATE_PROJECT_FORM_ID = "app-create-project-form";
+
 export interface CreateProjectFormProps {
     className?: string;
     redirectOnSuccess?: boolean;
@@ -65,7 +67,7 @@ export function CreateProjectForm({ className, redirectOnSuccess = true, onSucce
     const slugLockTooltip = slugLocked ? "Unlock to edit slug manually" : "Lock to auto-generate slug from name";
 
     return (
-        <form onSubmit={handleSubmit} className={className}>
+        <form id={APP_CREATE_PROJECT_FORM_ID} onSubmit={handleSubmit} className={className}>
             <FieldGroup>
                 <Field>
                     <FieldLabel htmlFor="create-project-name">Name</FieldLabel>

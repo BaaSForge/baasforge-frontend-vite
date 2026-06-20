@@ -9,7 +9,7 @@ export {
     getProjects,
     patchProject,
 } from "./api";
-export { CreateProjectForm } from "./components/create-project-form";
+export { CreateProjectForm, APP_CREATE_PROJECT_FORM_ID } from "./components/create-project-form";
 export { CompactReleaseBadge } from "./components/compact-release-badge";
 export { ReleaseRevisionBadge } from "./components/release-revision-badge";
 export { ReleaseCardChip } from "./components/release-card-chip";
