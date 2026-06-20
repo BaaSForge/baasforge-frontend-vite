@@ -164,7 +164,7 @@ function SignupTutorialDialogShell({
     open: boolean;
     onClose: (via: WelcomeModalCloseVia) => void;
 }) {
-    const { displayStatuses, lastNonIdleTutorialId, groupActionTitle, groupActionKind, isGroupActionDisabled } =
+    const { displayStatuses, scrollToTutorialId, groupActionTitle, groupActionKind, isGroupActionDisabled } =
         useTutorialGroupDisplayState(WELCOME_TUTORIALS_GROUP_ID, open);
     const [isRunningAction, setIsRunningAction] = useState(false);
     const showSkipButton = groupActionKind !== "continue" && groupActionKind !== "all-completed";
@@ -227,7 +227,7 @@ function SignupTutorialDialogShell({
 
                     <TutorialCardStrip
                         heading="Live tutorials"
-                        scrollToItemId={open && displayStatuses != null ? lastNonIdleTutorialId : null}
+                        scrollToItemId={open ? scrollToTutorialId : null}
                         items={welcomeTutorials.map((tutorial) => {
                             const status = displayStatuses?.[tutorial.id] ?? "idle";
 

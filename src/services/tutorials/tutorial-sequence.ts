@@ -30,7 +30,7 @@ export function findActiveTutorialId(
     if (tutorialId == null) return null;
 
     const status = statusesById[tutorialId] ?? "idle";
-    if (status === "pending-action" || status === "interrupted") return tutorialId;
+    if (status === "pending-action") return tutorialId;
     return null;
 }
 

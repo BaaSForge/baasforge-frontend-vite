@@ -30,6 +30,7 @@ export function useSteps<TData extends StoredStepData>(
     identity: TutorialStepsIdentity,
     steps: StepDefinition<TData>[],
 ): void {
+    const { tutorialGroupId, tutorialId } = identity;
     const stepsRef = useRef(steps);
     stepsRef.current = steps;
 
@@ -49,7 +50,7 @@ export function useSteps<TData extends StoredStepData>(
 
             activeContext?.dispose();
             activeContext = createStepContext<TData>({
-                identity,
+                identity: { tutorialGroupId, tutorialId },
                 stepIds,
                 getState: () => state,
                 setState: (next) => {
@@ -76,7 +77,7 @@ export function useSteps<TData extends StoredStepData>(
         };
 
         void (async () => {
-            const record = await getTutorialProgressRecord(identity.tutorialGroupId, identity.tutorialId);
+            const record = await getTutorialProgressRecord(tutorialGroupId, tutorialId);
             if (cancelled) return;
             if (record?.status !== "pending-action") return;
 
@@ -90,5 +91,5 @@ export function useSteps<TData extends StoredStepData>(
             activeContext = null;
             setTargetSpotlightOverlayElementId(null);
         };
-    }, [identity.tutorialGroupId, identity.tutorialId]);
+    }, [tutorialGroupId, tutorialId]);
 }

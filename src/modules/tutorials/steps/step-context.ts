@@ -85,7 +85,6 @@ export function createStepContext<TData extends StoredStepData>(
 
     const goTo = async (stepId: string, partial?: Partial<Omit<TData, "step">>): Promise<void> => {
         cleanupSubscriptions();
-        clearSpotlightTarget();
         const next = {
             ...options.getState(),
             ...partial,
@@ -243,7 +242,6 @@ export function createStepContext<TData extends StoredStepData>(
             disposed = true;
             cleanupSubscriptions();
             cleanupSpotlight();
-            clearSpotlightTarget();
         },
 
         cleanupSubscriptions,

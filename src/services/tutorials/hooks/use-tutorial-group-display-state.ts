@@ -4,15 +4,16 @@ import { useMemo } from "react";
 import {
     getSequentialGroupActionTitleFromProgress,
     resolveSequentialGroupActionKind,
+    resolveSequentialGroupTargetTutorialId,
     type SequentialGroupActionKind,
 } from "../tutorial-actions";
-import { findLastNonIdleTutorialId, resolveTutorialDisplayStatuses, type TutorialDisplayStatus } from "../tutorial-sequence";
+import { resolveTutorialDisplayStatuses, type TutorialDisplayStatus } from "../tutorial-sequence";
 import { getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "../tutorials";
 import { useTutorialStatuses } from "./use-tutorial-statuses";
 
 export function useTutorialGroupDisplayState(groupId: TutorialGroupId, enabled = true): {
     displayStatuses: Record<TutorialId, TutorialDisplayStatus> | null;
-    lastNonIdleTutorialId: TutorialId | null;
+    scrollToTutorialId: TutorialId | null;
     groupActionTitle: string | null;
     groupActionKind: SequentialGroupActionKind | null;
     isGroupActionDisabled: boolean;
@@ -27,10 +28,10 @@ export function useTutorialGroupDisplayState(groupId: TutorialGroupId, enabled =
         return resolveTutorialDisplayStatuses(groupId, statusesById);
     }, [groupId, statusesById]);
 
-    const lastNonIdleTutorialId = useMemo(() => {
-        if (statusesById == null) return null;
-        return findLastNonIdleTutorialId(groupId, statusesById);
-    }, [groupId, statusesById]);
+    const scrollToTutorialId = useMemo(() => {
+        if (statusesById == null || group?.isSequence !== true) return null;
+        return resolveSequentialGroupTargetTutorialId(groupId, statusesById);
+    }, [group?.isSequence, groupId, statusesById]);
 
     const groupActionKind = useMemo(() => {
         if (statusesById == null || group?.isSequence !== true) return null;
@@ -46,7 +47,7 @@ export function useTutorialGroupDisplayState(groupId: TutorialGroupId, enabled =
 
     return {
         displayStatuses,
-        lastNonIdleTutorialId,
+        scrollToTutorialId,
         groupActionTitle,
         groupActionKind,
         isGroupActionDisabled,

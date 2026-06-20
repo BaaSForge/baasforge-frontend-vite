@@ -1,6 +1,7 @@
 "use client";
 
 import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-inbox-button";
+import { APP_THEME_SWITCHER_BUTTON_ID } from "@/components/mode-toggle";
 import {
     setTargetSpotlightOverlayElementId,
     SpotlightPrimaryActionButton,
@@ -67,6 +68,30 @@ export function YourFirstProjectTutorial() {
                         ctx.goTo("generic-interrupted");
                         return;
                     }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "theme-switch",
+                handler: async (ctx) => {
+                    setTargetSpotlightOverlayElementId(APP_THEME_SWITCHER_BUTTON_ID);
+                    ctx.interval(500, () => {
+                        if (!breadcrumbStore.getState().stickyBarVisible) {
+                            window.scrollBy({ top: -10 });
+                        }
+                    });
+
+                    ctx.setSpotlightContent(
+                        <>
+                            You can switch the app's theme here. Click the button multiple times to toggle between available themes. By default, the theme follows your system setting.
+                        </>,
+                        <SpotlightPrimaryActionButton>
+                            Got it!
+                        </SpotlightPrimaryActionButton>
+                    );
+
+                    await ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED);
 
                     void ctx.next({});
                 },

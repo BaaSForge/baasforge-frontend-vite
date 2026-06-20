@@ -28,6 +28,8 @@ function getNextTheme(current: Theme): Theme {
     return THEME_ORDER[(i + 1) % THEME_ORDER.length];
 }
 
+export const APP_THEME_SWITCHER_BUTTON_ID = "app-theme-switcher-button";
+
 type ModeToggleProps = {
     label?: string;
 };
@@ -59,6 +61,7 @@ export function ModeToggle({ label }: ModeToggleProps) {
             renderTrigger={({ className, ...triggerProps }, { open }) => (
                 <Button
                     {...triggerProps}
+                    id={APP_THEME_SWITCHER_BUTTON_ID}
                     variant="outline"
                     size={label ? "default" : "icon"}
                     className={cn(label && "gap-2", className)}
