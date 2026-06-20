@@ -3,14 +3,8 @@ import {
     findLastNonIdleTutorialId,
     resolveTutorialDisplayStatus,
 } from "./tutorial-sequence";
-import {
-    getTutorialAggregateStatus,
-    saveTutorialProgress,
-} from "./tutorial-progress-service";
+import { getTutorialStatus, saveTutorialProgress } from "./tutorial-progress-service";
 import { getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
-import type { StoredTutorialStepProgress } from "./types";
-
-export const TUTORIAL_ROOT_STEP_ID = "__tutorial-root__";
 
 export type TutorialActionKind = "start" | "restart" | "continue" | "start-again" | "locked";
 
@@ -110,17 +104,9 @@ export function resolveSequentialGroupTargetTutorialId(
 export async function loadTutorialGroupProgressById(groupId: TutorialGroupId): Promise<TutorialProgressById> {
     const tutorials = getTutorialsByGroupId(groupId);
     const entries = await Promise.all(
-        tutorials.map(async (tutorial) => [tutorial.id, await getTutorialAggregateStatus(groupId, tutorial.id)] as const),
+        tutorials.map(async (tutorial) => [tutorial.id, await getTutorialStatus(groupId, tutorial.id)] as const),
     );
     return Object.fromEntries(entries) as TutorialProgressById;
-}
-
-function createPendingRootStep(): StoredTutorialStepProgress {
-    return {
-        stepId: TUTORIAL_ROOT_STEP_ID,
-        status: "pending-action",
-        metadata: null,
-    };
 }
 
 export async function applyTutorialAction(
@@ -138,7 +124,7 @@ export async function applyTutorialAction(
         case "start":
         case "restart":
         case "start-again":
-            await saveTutorialProgress(groupId, tutorialId, [createPendingRootStep()]);
+            await saveTutorialProgress(groupId, tutorialId, "pending-action", null);
             return true;
     }
 }

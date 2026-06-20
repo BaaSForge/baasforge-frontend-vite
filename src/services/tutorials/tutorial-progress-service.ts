@@ -1,8 +1,10 @@
 import { clientIdbGet, clientIdbSet } from "@/lib/client-idb-kv";
 import type { TutorialGroupId, TutorialId } from "./tutorials";
-import type { StoredTutorialStepProgress, TutorialProgressRecord, TutorialStepStatus } from "./types";
+import type { TutorialMetadataFor, TutorialProgressRecord, TutorialStatus } from "./types";
 
 const PREFIX = "tutorial-progress:v1:";
+
+const TUTORIAL_STATUSES = ["idle", "pending-action", "interrupted", "completed"] as const;
 
 let progressVersion = 0;
 
@@ -13,6 +15,10 @@ function emit(): void {
     for (const listener of listeners) {
         listener();
     }
+}
+
+function isTutorialStatus(value: unknown): value is TutorialStatus {
+    return typeof value === "string" && (TUTORIAL_STATUSES as ReadonlyArray<string>).includes(value);
 }
 
 export function subscribeTutorialProgress(listener: () => void): () => void {
@@ -34,51 +40,27 @@ function normalizeProgressRecord(raw: unknown): TutorialProgressRecord | null {
     if (raw == null || typeof raw !== "object") return null;
     const record = raw as Record<string, unknown>;
     if (typeof record.tutorialGroupId !== "string" || typeof record.tutorialId !== "string") return null;
-    if (!Array.isArray(record.steps)) return null;
-
-    const steps: StoredTutorialStepProgress[] = [];
-    for (const step of record.steps) {
-        if (step == null || typeof step !== "object") continue;
-        const s = step as Record<string, unknown>;
-        if (typeof s.stepId !== "string") continue;
-        if (s.status !== "idle" && s.status !== "pending-action" && s.status !== "interrupted" && s.status !== "completed") {
-            continue;
-        }
-        steps.push({
-            stepId: s.stepId,
-            status: s.status,
-            metadata: (s.metadata ?? null) as StoredTutorialStepProgress["metadata"],
-        });
-    }
+    if (!isTutorialStatus(record.status)) return null;
 
     return {
         tutorialGroupId: record.tutorialGroupId,
         tutorialId: record.tutorialId,
-        steps,
+        status: record.status,
+        metadata: (record.metadata ?? null) as TutorialProgressRecord["metadata"],
     };
 }
 
-export function resolveLastNonIdleStepStatus(
-    steps: ReadonlyArray<Pick<StoredTutorialStepProgress, "status">>,
-): TutorialStepStatus {
-    let last: TutorialStepStatus = "idle";
-    for (const step of steps) {
-        if (step.status !== "idle") {
-            last = step.status;
-        }
-    }
-    return last;
-}
-
-export async function saveTutorialProgress(
+export async function saveTutorialProgress<TId extends TutorialId>(
     tutorialGroupId: TutorialGroupId,
-    tutorialId: TutorialId,
-    steps: ReadonlyArray<StoredTutorialStepProgress>,
+    tutorialId: TId,
+    status: TutorialStatus,
+    metadata: TutorialMetadataFor<TId> = null,
 ): Promise<void> {
-    const record: TutorialProgressRecord = {
+    const record: TutorialProgressRecord<TId> = {
         tutorialGroupId,
         tutorialId,
-        steps,
+        status,
+        metadata,
     };
     await clientIdbSet(progressKey(tutorialGroupId, tutorialId), record);
     emit();
@@ -92,11 +74,10 @@ export async function getTutorialProgressRecord(
     return normalizeProgressRecord(raw);
 }
 
-export async function getTutorialAggregateStatus(
+export async function getTutorialStatus(
     tutorialGroupId: TutorialGroupId,
     tutorialId: TutorialId,
-): Promise<TutorialStepStatus> {
+): Promise<TutorialStatus> {
     const record = await getTutorialProgressRecord(tutorialGroupId, tutorialId);
-    if (record == null || record.steps.length === 0) return "idle";
-    return resolveLastNonIdleStepStatus(record.steps);
+    return record?.status ?? "idle";
 }

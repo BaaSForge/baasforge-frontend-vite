@@ -1,9 +1,9 @@
-import type { TutorialStepStatus } from "./types";
+import type { TutorialStatus } from "./types";
 import { getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
 
-export type TutorialDisplayStatus = TutorialStepStatus | "disabled";
+export type TutorialDisplayStatus = TutorialStatus | "disabled";
 
-export type TutorialProgressById = Partial<Record<TutorialId, TutorialStepStatus>>;
+export type TutorialProgressById = Partial<Record<TutorialId, TutorialStatus>>;
 
 export function findLastNonIdleTutorialId(
     groupId: TutorialGroupId,

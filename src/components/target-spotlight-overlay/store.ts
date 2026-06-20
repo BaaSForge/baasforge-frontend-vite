@@ -17,14 +17,14 @@ export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlaySta
     placement: "bottom",
     hidePinTopCircles: false,
     pinTopStatus: null,
-    setTargetElementId: (elementId) =>
-        set((state) => {
-            if (elementId === TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID) {
-                return { targetElementId: elementId };
-            }
+    setTargetElementId: (elementId) => {
+        if (elementId === TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID) {
+            set({ targetElementId: elementId });
+            return;
+        }
 
-            return { targetElementId: elementId, hidePinTopCircles: false, pinTopStatus: null };
-        }),
+        set({ targetElementId: elementId, hidePinTopCircles: false, pinTopStatus: null });
+    },
     setPlacement: (placement) => set({ placement }),
     pinToTop: (options) => {
         set({

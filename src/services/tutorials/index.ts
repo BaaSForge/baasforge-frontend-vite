@@ -12,17 +12,15 @@ export {
     runSequentialTutorialGroupAction,
     runTutorialAction,
     runTutorialGroupAction,
-    TUTORIAL_ROOT_STEP_ID,
     type SequentialGroupActionKind,
     type TutorialActionKind,
 } from "./tutorial-actions";
 export { useTutorialGroupDisplayState } from "./hooks/use-tutorial-group-display-state";
-export { useTutorialAggregateStatuses } from "./hooks/use-tutorial-aggregate-statuses";
+export { useTutorialStatuses } from "./hooks/use-tutorial-statuses";
 export {
-    getTutorialAggregateStatus,
     getTutorialProgressRecord,
-    resolveLastNonIdleStepStatus,
     getTutorialProgressSnapshot,
+    getTutorialStatus,
     saveTutorialProgress,
     subscribeTutorialProgress,
 } from "./tutorial-progress-service";
@@ -47,10 +45,8 @@ export {
     type TutorialProgressById,
 } from "./tutorial-sequence";
 export type {
-    StoredTutorialStepProgress,
+    TutorialMetadataFor,
+    TutorialMetadataMap,
     TutorialProgressRecord,
-    TutorialStepDefinition,
-    TutorialStepMetadataFor,
-    TutorialStepMetadataMap,
-    TutorialStepStatus,
+    TutorialStatus,
 } from "./types";

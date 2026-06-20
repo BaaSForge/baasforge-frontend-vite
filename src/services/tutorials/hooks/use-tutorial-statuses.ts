@@ -2,16 +2,16 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { TutorialGroupId, TutorialId } from "../tutorials";
-import { getTutorialAggregateStatus, getTutorialProgressSnapshot, subscribeTutorialProgress } from "../tutorial-progress-service";
-import type { TutorialStepStatus } from "../types";
+import { getTutorialProgressSnapshot, getTutorialStatus, subscribeTutorialProgress } from "../tutorial-progress-service";
+import type { TutorialStatus } from "../types";
 
-export function useTutorialAggregateStatuses(
+export function useTutorialStatuses(
     tutorialGroupId: TutorialGroupId,
     tutorialIds: ReadonlyArray<TutorialId>,
     enabled = true,
-): Record<TutorialId, TutorialStepStatus> | null {
+): Record<TutorialId, TutorialStatus> | null {
     const version = useSyncExternalStore(subscribeTutorialProgress, getTutorialProgressSnapshot, getTutorialProgressSnapshot);
-    const [statuses, setStatuses] = useState<Record<TutorialId, TutorialStepStatus> | null>(null);
+    const [statuses, setStatuses] = useState<Record<TutorialId, TutorialStatus> | null>(null);
     const tutorialIdsKey = tutorialIds.join("\0");
 
     useEffect(() => {
@@ -22,13 +22,13 @@ export function useTutorialAggregateStatuses(
         void (async () => {
             const entries = await Promise.all(
                 tutorialIds.map(async (tutorialId) => {
-                    const status = await getTutorialAggregateStatus(tutorialGroupId, tutorialId);
+                    const status = await getTutorialStatus(tutorialGroupId, tutorialId);
                     return [tutorialId, status] as const;
                 }),
             );
 
             if (!alive) return;
-            setStatuses(Object.fromEntries(entries) as Record<TutorialId, TutorialStepStatus>);
+            setStatuses(Object.fromEntries(entries) as Record<TutorialId, TutorialStatus>);
         })();
 
         return () => {

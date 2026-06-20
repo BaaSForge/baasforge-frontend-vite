@@ -28,17 +28,20 @@ export function useAnchoredFloating(
     const withArrow = options?.withArrow ?? true;
     const lockCrossAxis = options?.lockCrossAxis ?? false;
 
+    /* eslint-disable react-hooks/refs -- floating-ui arrow middleware reads arrowRef during positioning */
+    const middleware = [
+        offset(offsetPx),
+        flip(),
+        shift({ padding: 16, crossAxis: !lockCrossAxis }),
+        ...(withArrow ? [arrow({ element: arrowRef, padding: 8 })] : []),
+    ];
+    /* eslint-enable react-hooks/refs */
+
     const { refs, floatingStyles, middlewareData, placement: resolvedPlacement } = useFloating({
         elements: { reference: reference ?? undefined },
         placement: placement as Placement,
         strategy: "fixed",
-        // eslint-disable-next-line react-hooks/refs -- floating-ui arrow middleware
-        middleware: [
-            offset(offsetPx),
-            flip(),
-            shift({ padding: 16, crossAxis: !lockCrossAxis }),
-            ...(withArrow ? [arrow({ element: arrowRef, padding: 8 })] : []),
-        ],
+        middleware,
         whileElementsMounted: enabled ? autoUpdate : undefined,
     });
 

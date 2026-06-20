@@ -1,25 +1,18 @@
-export type TutorialStepStatus = "idle" | "pending-action" | "interrupted" | "completed";
+import type { TutorialId } from "./tutorials";
 
-export type TutorialStepDefinition = {
-    id: string;
-    title: string;
-    explanation: string;
+export type TutorialStatus = "idle" | "pending-action" | "interrupted" | "completed";
+
+export type TutorialMetadataMap = {
+    [K in TutorialId]: never;
 };
 
-export type TutorialStepMetadataMap = Record<string, never>;
-
-export type TutorialStepMetadataFor<StepId extends string> = StepId extends keyof TutorialStepMetadataMap
-    ? TutorialStepMetadataMap[StepId] | null
+export type TutorialMetadataFor<TId extends string> = TId extends keyof TutorialMetadataMap
+    ? TutorialMetadataMap[TId] | null
     : null;
 
-export type StoredTutorialStepProgress<StepId extends string = string> = {
-    stepId: StepId;
-    status: TutorialStepStatus;
-    metadata: TutorialStepMetadataFor<StepId>;
-};
-
-export type TutorialProgressRecord = {
+export type TutorialProgressRecord<TId extends string = string> = {
     tutorialGroupId: string;
-    tutorialId: string;
-    steps: ReadonlyArray<StoredTutorialStepProgress>;
+    tutorialId: TId;
+    metadata: TutorialMetadataFor<TId>;
+    status: TutorialStatus;
 };

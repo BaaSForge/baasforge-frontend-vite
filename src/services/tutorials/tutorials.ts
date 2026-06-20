@@ -1,5 +1,4 @@
 import { Coins, FolderKanban, GitBranch, KeyRound, Plug, SearchCode, type LucideIcon } from "lucide-react";
-import type { TutorialStepDefinition } from "./types";
 
 export const WELCOME_TUTORIALS_GROUP_ID = "welcome-tutorials" as const;
 
@@ -25,7 +24,6 @@ export type Tutorial = {
     title: string;
     description: string;
     icon: LucideIcon;
-    steps: ReadonlyArray<TutorialStepDefinition>;
 };
 
 export const TUTORIAL_GROUPS: ReadonlyArray<TutorialGroup> = [
@@ -43,7 +41,6 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         title: "Your first project",
         description: "Get ready with the dashboard UI and create your first project.",
         icon: FolderKanban,
-        steps: [],
     },
     {
         id: "write-and-call-your-api",
@@ -52,7 +49,6 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         description:
             "Write your first API, learn about built units, deploy to stage, call it with the built-in HTTP client.",
         icon: Plug,
-        steps: [],
     },
     {
         id: "debug-and-release",
@@ -61,7 +57,6 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         description:
             "Use traces to tell the AI what went wrong, update your units, redeploy to stage, then release to production.",
         icon: SearchCode,
-        steps: [],
     },
     {
         id: "units-and-rollbacks",
@@ -69,7 +64,6 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         title: "Units and rollbacks",
         description: "See your units, browse release history, and roll back to an older release.",
         icon: GitBranch,
-        steps: [],
     },
     {
         id: "project-variables",
@@ -77,7 +71,6 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         title: "Project variables",
         description: "Define your first variables—what they are and how they work.",
         icon: KeyRound,
-        steps: [],
     },
     {
         id: "costs-in-action",
@@ -85,7 +78,6 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         title: "Costs in action",
         description: "Learn how costs are calculated and see pricing play out on your project.",
         icon: Coins,
-        steps: [],
     },
 ];
 
