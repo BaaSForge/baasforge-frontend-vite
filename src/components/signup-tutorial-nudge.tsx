@@ -1,12 +1,7 @@
 "use client";
 
-import { APP_NOTIFICATION_INBOX_BUTTON_ID, requestOpenAppNotificationInbox } from "@/components/app-notification-inbox-button";
-import {
-    TutorialOverlay,
-    createOverlayHintController,
-    dismissOverlayBeforeTargetActivate,
-    useOverlayHintHost,
-} from "@/components/tutorial-overlay";
+import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-inbox-button";
+import { setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { TutorialCardStrip } from "@/components/tutorial-card-strip";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +15,9 @@ import {
 import { cn } from "@/lib/utils";
 import { isSignupToken } from "@/modules/auth/lib/decode-access-token";
 import { useCurrentUserQuery } from "@/modules/auth/queries";
+import { clearSpotlightContent, setSpotlightContentToRender } from "@/modules/tutorials/steps/spotlight-renderer";
 import { createInformSchedule } from "@/services/informed-user-schedule";
+import { events, listenAppEvent } from "@/services/events";
 import {
     getTutorialActionTitleFromDisplayStatus,
     getTutorialsByGroupId,
@@ -33,6 +30,7 @@ import {
     type TutorialId,
 } from "@/services/tutorials";
 import { pushAppNotification } from "@/stores/app-notifications";
+import { breadcrumbStore } from "@/stores/breadcrumb";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const SIGNUP_TUTORIAL_DELAY_MS = 5_000;
@@ -78,6 +76,24 @@ const SIGNUP_TUTORIAL_WORKFLOW_STEPS: ReadonlyArray<{
 
 const welcomeTutorials = getTutorialsByGroupId(WELCOME_TUTORIALS_GROUP_ID);
 
+function isSignupTutorialInboxHintDismissed(): boolean {
+    if (typeof globalThis === "undefined" || !("localStorage" in globalThis) || globalThis.localStorage == null) {
+        return false;
+    }
+    return globalThis.localStorage.getItem(SIGNUP_TUTORIAL_INBOX_HINT_DISMISSED_STORAGE_KEY) === "1";
+}
+
+function markSignupTutorialInboxHintDismissed(): void {
+    if (typeof globalThis === "undefined" || !("localStorage" in globalThis) || globalThis.localStorage == null) {
+        return;
+    }
+    try {
+        globalThis.localStorage.setItem(SIGNUP_TUTORIAL_INBOX_HINT_DISMISSED_STORAGE_KEY, "1");
+    } catch {
+        /* ignore */
+    }
+}
+
 function SignupTutorialWorkflowSteps() {
     const lastIndex = SIGNUP_TUTORIAL_WORKFLOW_STEPS.length - 1;
 
@@ -116,10 +132,6 @@ const signupTutorialOpenHandlers = new Set<() => void>();
 
 const signupTutorialDialogOpenRef = { current: false };
 
-const signupTutorialInboxHint = createOverlayHintController({
-    dismissedStorageKey: SIGNUP_TUTORIAL_INBOX_HINT_DISMISSED_STORAGE_KEY,
-});
-
 type SignupTutorialOpenOptions = {
     force?: boolean;
 };
@@ -147,15 +159,6 @@ function pushSignupTutorialInboxNotification(): void {
 }
 
 type WelcomeModalCloseVia = "dismiss" | "action";
-
-async function requestSignupTutorialInboxHintIfEligible(): Promise<void> {
-    if (signupTutorialInboxHint.isDismissed()) return;
-
-    const progressById = await loadTutorialGroupProgressById(WELCOME_TUTORIALS_GROUP_ID);
-    if (hasAnyTutorialStartedInGroup(WELCOME_TUTORIALS_GROUP_ID, progressById)) return;
-
-    signupTutorialInboxHint.requestShow();
-}
 
 function SignupTutorialDialogShell({
     open,
@@ -273,24 +276,92 @@ export function SignupTutorialGlobalHost() {
     const { data: me } = useCurrentUserQuery();
     const [open, setOpen] = useState(false);
     const delayTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const inboxHint = useOverlayHintHost(signupTutorialInboxHint, { delayMs: SIGNUP_TUTORIAL_INBOX_HINT_DELAY_MS });
+    const inboxHintDelayRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const inboxHintCleanupRef = useRef<(() => void) | null>(null);
 
-    const handleWelcomeModalClose = useCallback((via: WelcomeModalCloseVia) => {
-        setOpen(false);
-        signupTutorialDialogOpenRef.current = false;
-        if (delayTimerRef.current != null) {
-            globalThis.clearTimeout(delayTimerRef.current);
-            delayTimerRef.current = undefined;
+    const cleanupInboxHint = useCallback(() => {
+        if (inboxHintDelayRef.current != null) {
+            globalThis.clearTimeout(inboxHintDelayRef.current);
+            inboxHintDelayRef.current = undefined;
         }
-
-        const isFirstWelcomeDismiss = signupTutorialInformSchedule.shouldShow();
-        signupTutorialInformSchedule.recordDismiss();
-        pushSignupTutorialInboxNotification();
-
-        if (via === "dismiss" && isFirstWelcomeDismiss) {
-            void requestSignupTutorialInboxHintIfEligible();
-        }
+        inboxHintCleanupRef.current?.();
+        inboxHintCleanupRef.current = null;
+        setTargetSpotlightOverlayElementId(null);
+        clearSpotlightContent();
     }, []);
+
+    const dismissInboxHint = useCallback(() => {
+        cleanupInboxHint();
+        markSignupTutorialInboxHintDismissed();
+    }, [cleanupInboxHint]);
+
+    const showInboxHint = useCallback(() => {
+        setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID);
+
+        const scrollIntervalId = globalThis.setInterval(() => {
+            if (!breadcrumbStore.getState().stickyBarVisible) {
+                window.scrollBy({ top: -10 });
+            }
+        }, 500);
+
+        setSpotlightContentToRender(
+            <>
+                <p className="font-medium">Tutorials are in your inbox</p>
+                <p className="text-muted-foreground mt-1">
+                    You can see the tutorials here anytime from the notifications button.
+                </p>
+            </>,
+            <SpotlightPrimaryActionButton onClick={dismissInboxHint}>Got it</SpotlightPrimaryActionButton>,
+        );
+
+        const stopListening = listenAppEvent(events.NOTIFICATION_OPENED_EVENT, () => {
+            dismissInboxHint();
+        });
+
+        inboxHintCleanupRef.current = () => {
+            globalThis.clearInterval(scrollIntervalId);
+            stopListening();
+        };
+    }, [dismissInboxHint]);
+
+    const scheduleInboxHintIfEligible = useCallback(() => {
+        if (isSignupTutorialInboxHintDismissed()) return;
+
+        inboxHintDelayRef.current = globalThis.setTimeout(() => {
+            inboxHintDelayRef.current = undefined;
+            if (isSignupTutorialInboxHintDismissed()) return;
+            showInboxHint();
+        }, SIGNUP_TUTORIAL_INBOX_HINT_DELAY_MS);
+    }, [showInboxHint]);
+
+    const requestSignupTutorialInboxHintIfEligible = useCallback(async () => {
+        if (isSignupTutorialInboxHintDismissed()) return;
+
+        const progressById = await loadTutorialGroupProgressById(WELCOME_TUTORIALS_GROUP_ID);
+        if (hasAnyTutorialStartedInGroup(WELCOME_TUTORIALS_GROUP_ID, progressById)) return;
+
+        scheduleInboxHintIfEligible();
+    }, [scheduleInboxHintIfEligible]);
+
+    const handleWelcomeModalClose = useCallback(
+        (via: WelcomeModalCloseVia) => {
+            setOpen(false);
+            signupTutorialDialogOpenRef.current = false;
+            if (delayTimerRef.current != null) {
+                globalThis.clearTimeout(delayTimerRef.current);
+                delayTimerRef.current = undefined;
+            }
+
+            const isFirstWelcomeDismiss = signupTutorialInformSchedule.shouldShow();
+            signupTutorialInformSchedule.recordDismiss();
+            pushSignupTutorialInboxNotification();
+
+            if (via === "dismiss" && isFirstWelcomeDismiss) {
+                void requestSignupTutorialInboxHintIfEligible();
+            }
+        },
+        [requestSignupTutorialInboxHintIfEligible],
+    );
 
     useLayoutEffect(() => {
         let alive = true;
@@ -307,6 +378,12 @@ export function SignupTutorialGlobalHost() {
             signupTutorialOpenHandlers.delete(openFromSignal);
         };
     }, []);
+
+    useEffect(() => {
+        return () => {
+            cleanupInboxHint();
+        };
+    }, [cleanupInboxHint]);
 
     useEffect(() => {
         if (me == null) return;
@@ -335,22 +412,5 @@ export function SignupTutorialGlobalHost() {
         };
     }, [me]);
 
-    return (
-        <>
-            <SignupTutorialDialogShell open={open} onClose={handleWelcomeModalClose} />
-            <TutorialOverlay
-                targetId={APP_NOTIFICATION_INBOX_BUTTON_ID}
-                placement="bottom"
-                open={inboxHint.open}
-                onOpenChange={inboxHint.onOpenChange}
-                title="Tutorials are in your inbox"
-                description="You can see the tutorials here anytime from the notifications button."
-                dismissLabel="Got it"
-                onTargetPointerDown={dismissOverlayBeforeTargetActivate(
-                    inboxHint.onOpenChange,
-                    requestOpenAppNotificationInbox,
-                )}
-            />
-        </>
-    );
+    return <SignupTutorialDialogShell open={open} onClose={handleWelcomeModalClose} />;
 }

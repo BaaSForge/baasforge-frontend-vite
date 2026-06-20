@@ -31,14 +31,6 @@ import * as React from "react";
 
 export const APP_NOTIFICATION_INBOX_BUTTON_ID = "app-notification-inbox-button";
 
-const appNotificationInboxOpenHandlers = new Set<() => void>();
-
-export function requestOpenAppNotificationInbox(): void {
-    for (const openNow of appNotificationInboxOpenHandlers) {
-        openNow();
-    }
-}
-
 function NotificationGroupFilterMenu({
     groupOptions,
     selectedGroups,
@@ -124,14 +116,6 @@ export function AppNotificationInboxButton() {
     }, [open]);
 
     const closeInbox = React.useCallback(() => setOpen(false), []);
-
-    React.useLayoutEffect(() => {
-        const openInbox = () => setOpen(true);
-        appNotificationInboxOpenHandlers.add(openInbox);
-        return () => {
-            appNotificationInboxOpenHandlers.delete(openInbox);
-        };
-    }, []);
 
     useRegisterAppChromeDismissWhenOpen(open, closeInbox);
 

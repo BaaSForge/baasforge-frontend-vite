@@ -58,7 +58,7 @@ export function YourFirstProjectTutorial() {
                     ctx.setSpotlightContent(
                         <>
                             This is your inbox. You can find all tutorials here later. Try clicking it to see what's
-                            inside.
+                            inside, at the end you can re-click it to close the inbox.
                         </>,
                     );
 

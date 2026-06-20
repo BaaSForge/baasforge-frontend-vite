@@ -53,7 +53,7 @@ function isInsideModal(target: EventTarget | null): boolean {
     if (!target || !(target instanceof Node)) return false;
     const el = target instanceof Element ? target : ((target as Node).parentElement ?? null);
     return (
-        el?.closest?.("[role='dialog'], [role='alertdialog'], [data-slot='tutorial-overlay']") != null
+        el?.closest?.("[role='dialog'], [role='alertdialog']") != null
     );
 }
 
