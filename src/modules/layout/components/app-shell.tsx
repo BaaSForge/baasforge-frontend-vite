@@ -1,4 +1,5 @@
 import { SidebarChromeDismiss } from "@/components/sidebar-chrome-dismiss";
+import { TutorialGlobalHost } from "@/modules/tutorials";
 import { SignupTutorialGlobalHost } from "@/components/signup-tutorial-nudge";
 import { ScalarHttpTestAiNudgeGlobalHost } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
 import { TargetSpotlightOverlayGlobalHost } from "@/components/target-spotlight-overlay";
@@ -63,6 +64,7 @@ export function AppShell() {
                 <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
                 <ScalarHttpTestAiNudgeGlobalHost />
                 <SignupTutorialGlobalHost />
+                <TutorialGlobalHost />
                 <TargetSpotlightOverlayGlobalHost />
             </SidebarProvider>
         </StartDebugModalProvider>

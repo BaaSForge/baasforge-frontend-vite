@@ -36,6 +36,7 @@ export {
     type TutorialId,
 } from "./tutorials";
 export {
+    findActiveTutorialId,
     findLastNonIdleTutorialId,
     hasAnyTutorialStartedInGroup,
     isTutorialUnlockedInGroup,

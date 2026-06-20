@@ -22,6 +22,18 @@ export function findLastNonIdleTutorialId(
     return last;
 }
 
+export function findActiveTutorialId(
+    groupId: TutorialGroupId,
+    statusesById: TutorialProgressById,
+): TutorialId | null {
+    const tutorialId = findLastNonIdleTutorialId(groupId, statusesById);
+    if (tutorialId == null) return null;
+
+    const status = statusesById[tutorialId] ?? "idle";
+    if (status === "pending-action" || status === "interrupted") return tutorialId;
+    return null;
+}
+
 export function hasAnyTutorialStartedInGroup(
     groupId: TutorialGroupId,
     progressById: TutorialProgressById,
