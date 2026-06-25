@@ -1,8 +1,9 @@
 import type { ChatRichTextEditorHandle } from "@/components/chat-rich-text-editor";
 import { ChatRichTextEditor } from "@/components/chat-rich-text-editor";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
-import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMainSidebar } from "@/stores/main-sidebar";
+import { useSecondarySidebarVisibility } from "@/stores/secondary-sidebar";
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -11,8 +12,6 @@ import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 import { useConversationDebugSession } from "../../conversation-debug";
 import { FollowBottomScrollButton, type FollowBottomScrollControl } from "../../follow-bottom-scroll";
 import { ChatComposerSendButton } from "../chat-composer-send-button";
-
-type Sidebar = ReturnType<typeof useSidebar>;
 
 type Props = {
     /** Remount the composer when switching chat sessions (Lexical editor identity). */
@@ -25,7 +24,6 @@ type Props = {
     canSend: boolean;
     isGenerating?: boolean;
     isNewSession: boolean;
-    mainSidebar?: Sidebar;
     followScroll?: FollowBottomScrollControl;
 };
 
@@ -39,12 +37,10 @@ export default function Controls({
     canSend,
     isGenerating = false,
     isNewSession,
-    mainSidebar: passedMainSidebar,
     followScroll,
 }: Props) {
-    const useSidebarRes = useSidebar();
-    const mainSidebar = passedMainSidebar ?? useSidebarRes;
-    const secondarySidebar = passedMainSidebar ? useSidebarRes : null;
+    const mainSidebar = useMainSidebar();
+    const secondarySidebar = useSecondarySidebarVisibility();
     const isMobile = useIsMobile();
     const [isInputFocused, setIsInputFocused] = useState(false);
     const { isDebugSendActive } = useConversationDebugSession();
@@ -60,7 +56,7 @@ export default function Controls({
 
     const leftClassName =
         mainSidebar.open && !mainSidebar.isMobile ? "!left-[var(--sidebar-width)]" : mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]";
-    const rightClassName = secondarySidebar?.open && !secondarySidebar?.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
+    const rightClassName = secondarySidebar.isOpen && !secondarySidebar.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
 
     // Desktop new session: anchor by `top` so multi-line growth extends downward and does not
     // cover "What would you like to create?". Else keep bottom anchoring as usual.

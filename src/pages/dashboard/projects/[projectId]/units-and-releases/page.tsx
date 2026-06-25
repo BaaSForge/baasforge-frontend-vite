@@ -1,4 +1,4 @@
-import { SecondarySidebarProvider, useSidebar } from "@/components/secondary-sidebar";
+import { SecondarySidebarProvider } from "@/components/secondary-sidebar";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { STORAGE_KEYS } from "@/constants/storage-keys";
 import { useProductionRuntimeQuery, useProjectReleasesQuery, useProjectRuntimesQuery } from "@/modules/project/queries";
@@ -11,20 +11,14 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { ProjectUnitsAndReleasesView } from "./project-units-and-releases-view";
 
 export default function ProjectUnitsAndReleasesPage() {
-    const mainSidebar = useSidebar();
-
     return (
         <SecondarySidebarProvider storageKey={STORAGE_KEYS.UNITS_AND_RELEASES_SIDEBAR_COLLAPSED} defaultOpen>
-            <ProjectUnitsAndReleasesProductionContent mainSidebar={mainSidebar} />
+            <ProjectUnitsAndReleasesProductionContent />
         </SecondarySidebarProvider>
     );
 }
 
-type ProjectUnitsAndReleasesProductionContentProps = {
-    mainSidebar: ReturnType<typeof useSidebar>;
-};
-
-function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsAndReleasesProductionContentProps) {
+function ProjectUnitsAndReleasesProductionContent() {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -121,7 +115,6 @@ function ProjectUnitsAndReleasesProductionContent({ mainSidebar }: ProjectUnitsA
             stageRuntimeId={stageRuntimeIdForSelectedRelease}
             releaseIsStage={selectedRelease?.is_stage === true}
             releaseIsLive={releaseIsLive}
-            mainSidebar={mainSidebar}
             showSecondaryReleaseSidebar
         />
     );

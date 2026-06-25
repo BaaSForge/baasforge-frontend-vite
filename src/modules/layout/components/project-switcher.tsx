@@ -80,7 +80,7 @@ export function ProjectSwitcher() {
                         sideOffset={4}
                     >
                         <DropdownMenuLabel className="text-muted-foreground shrink-0 text-xs">Projects</DropdownMenuLabel>
-                        <FadedScrollArea boundedVertical className="max-h-64 w-full" faderFromClassName="from-popover">
+                        <FadedScrollArea boundedVertical className="max-h-[16.5rem] w-full" faderFromClassName="from-popover">
                             <div>
                                 {projects?.map((project) => {
                                     const linkObj = getSwitchProjectLink(location, params, project.id);

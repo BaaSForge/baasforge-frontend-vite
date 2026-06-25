@@ -1,4 +1,5 @@
-import { useSidebar } from "@/components/ui/sidebar";
+import { useMainSidebar } from "@/stores/main-sidebar";
+import { useSecondarySidebarVisibility } from "@/stores/secondary-sidebar";
 import { cn } from "@/lib/utils";
 import {
     breadcrumbStore,
@@ -10,7 +11,6 @@ import {
 import * as React from "react";
 
 const DEFAULT_PAGE_TITLE_BOX_HEIGHT = 48;
-type Sidebar = ReturnType<typeof useSidebar>;
 
 export function PageTitleBoxPlaceholder() {
     const height = usePageTitleBoxHeight();
@@ -22,7 +22,6 @@ export interface PageTitleBoxProps {
     title: string;
     tools?: React.ReactNode;
     className?: string;
-    mainSidebar?: Sidebar;
     children?: React.ReactNode;
     stackToolsOnMobile?: boolean;
 }
@@ -31,7 +30,6 @@ export function PageTitleBox({
     title,
     tools,
     className,
-    mainSidebar: passedSidebar,
     children,
     stackToolsOnMobile = false,
 }: PageTitleBoxProps) {
@@ -39,15 +37,14 @@ export function PageTitleBox({
     const stickyBarVisible = useStickyBreadcrumbBarVisible();
     const stickyBarHeight = useStickyBreadcrumbBarHeight();
     const { classes: stickyBarTransition, styles: stickyBarTransitionStyles } = useStickyBreadcrumbBarTransition();
-    const useSidebarRes = useSidebar();
+    const mainSidebar = useMainSidebar();
+    const secondarySidebar = useSecondarySidebarVisibility();
     const setPageTitleBoxHeight = breadcrumbStore.getState().setPageTitleBoxHeight;
-
-    const mainSidebar = passedSidebar ?? useSidebarRes;
-    const secondarySidebar = passedSidebar ? useSidebarRes : null;
 
     const pageTitleBoxLeftClassName =
         mainSidebar.open && !mainSidebar.isMobile ? "!left-[var(--sidebar-width)]" : mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]";
-    const pageTitleBoxRightClassName = secondarySidebar && secondarySidebar.open && !secondarySidebar.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
+    const pageTitleBoxRightClassName =
+        secondarySidebar.isOpen && !secondarySidebar.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
 
     const stackToolsLayout = stackToolsOnMobile && tools != null;
 

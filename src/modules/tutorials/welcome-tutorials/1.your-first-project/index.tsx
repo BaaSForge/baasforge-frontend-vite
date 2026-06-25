@@ -5,7 +5,7 @@ import { APP_THEME_SWITCHER_BUTTON_ID } from "@/components/mode-toggle";
 import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
 import { APP_USER_MENU_BUTTON_ID } from "@/modules/layout/components/nav-user";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
-import { closeMainSidebarIfMobile, isMainSidebarClosed } from "@/components/ui/sidebar";
+import { closeMainSidebarIfMobile, isMainSidebarClosed } from "@/stores/main-sidebar";
 import {
     elevateTargetSpotlightOverlayZIndex,
     resetTargetSpotlightOverlayZIndex,

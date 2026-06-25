@@ -1,5 +1,5 @@
 import { useSidebar } from "@/components/ui/sidebar";
-import { useNestedMainSidebar } from "./nested-main-sidebar-context";
+import { useMainSidebar } from "@/stores/main-sidebar";
 
 /**
  * True when the main app sidebar and the nested secondary sidebar are both expanded
@@ -7,7 +7,7 @@ import { useNestedMainSidebar } from "./nested-main-sidebar-context";
  * secondary sidebar sheet breakpoint (includes tablet).
  */
 export function useAreBothSidebarsOpen(): boolean {
-    const main = useNestedMainSidebar();
+    const main = useMainSidebar();
     const secondary = useSidebar();
     return main.open && !main.isMobile && secondary.open && !secondary.isMobile;
 }

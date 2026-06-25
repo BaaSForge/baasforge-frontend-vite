@@ -1,13 +1,11 @@
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import {
-    NestedMainSidebarProvider,
     SecondarySidebar,
     SecondarySidebarProvider,
     SidebarInset,
     useRegisterSecondarySidebarShortcut,
     useSecondarySidebar,
-    useSidebar,
 } from "@/components/secondary-sidebar";
 import {
     AlertDialog,
@@ -99,25 +97,17 @@ function composeDebugTraceDraft(prev: string, releaseToken: string, traceTokens:
     return `${head}\n\n${body}`;
 }
 
-type Sidebar = ReturnType<typeof useSidebar>;
-
 export default function ProjectConversationsPage() {
-    const mainSidebar = useSidebar();
-
     return (
         <SecondarySidebarProvider storageKey={STORAGE_KEYS.CONVERSATION_SIDEBAR_COLLAPSED} defaultOpen>
             <ConversationDebugSessionProvider>
-                <ProjectConversationsContent mainSidebar={mainSidebar} />
+                <ProjectConversationsContent />
             </ConversationDebugSessionProvider>
         </SecondarySidebarProvider>
     );
 }
 
-type ProjectConversationsContentProps = {
-    mainSidebar: Sidebar;
-};
-
-function ProjectConversationsContent({ mainSidebar }: ProjectConversationsContentProps) {
+function ProjectConversationsContent() {
     const { search: locationSearch } = useLocation();
     const conversationDebug = useConversationDebugSession();
     const messageDebugContext = useMemo(() => getConversationDebugSendContext(conversationDebug), [conversationDebug]);
@@ -550,14 +540,12 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
     }, [projectIdOrUndefined, chatSessionIdOrUndefined, projectId, queryClient]);
 
     return (
-        <NestedMainSidebarProvider mainSidebar={mainSidebar}>
-            <ConversationStaleBaseReleaseProvider staleBaseRelease={conversationStaleBaseRelease}>
+        <ConversationStaleBaseReleaseProvider staleBaseRelease={conversationStaleBaseRelease}>
                 <ConversationSessionMessagesProvider messages={chatSessionMessages}>
                     <LiveProductionTimelineProvider projectId={projectIdOrUndefined}>
                         <StickyMessageGroupsProvider>
                             <PageTitleBox
                                 title={title}
-                                mainSidebar={mainSidebar}
                                 tools={
                                     <div className="flex min-w-0 shrink-0 items-center gap-2">
                                         <ConversationStaleBaseReleaseTitleBadge />
@@ -576,7 +564,7 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                     <Spinner className="size-8 absolute top-[100%] mt-2 left-1/2 -translate-x-1/2 text-blue-500" />
                                 )}
                             </PageTitleBox>
-                            <StickyMessageBars mainSidebar={mainSidebar} />
+                            <StickyMessageBars />
                             <SecondarySidebar>
                                 <SecondarySideBar />
                             </SecondarySidebar>
@@ -637,7 +625,6 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                                         canSend={canSend}
                                         isGenerating={isGenerating}
                                         isNewSession={noConversation && !shouldShowTemporaryMessageBeforeRedirecting}
-                                        mainSidebar={mainSidebar}
                                         followScroll={
                                             chatSessionIdOrUndefined
                                                 ? {
@@ -708,6 +695,5 @@ function ProjectConversationsContent({ mainSidebar }: ProjectConversationsConten
                     </LiveProductionTimelineProvider>
                 </ConversationSessionMessagesProvider>
             </ConversationStaleBaseReleaseProvider>
-        </NestedMainSidebarProvider>
     );
 }

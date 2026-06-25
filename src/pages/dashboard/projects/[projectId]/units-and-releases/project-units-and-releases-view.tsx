@@ -1,12 +1,10 @@
 import { Container } from "@/components/page-container";
 import { PageTitleBox } from "@/components/page-title-box";
 import {
-    NestedMainSidebarProvider,
     SecondarySidebar,
     SidebarInset,
     useRegisterSecondarySidebarShortcut,
     useSecondarySidebar,
-    useSidebar,
 } from "@/components/secondary-sidebar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,8 +21,6 @@ import { mergeAllUnitsSearchParams, readReleaseUnitsSearchParams, type UnitsTabV
 import { SecondarySideBar } from "./secondary-side-bar";
 import { UnitsGroupModeToggle } from "./units-group-mode-toggle";
 
-type Sidebar = ReturnType<typeof useSidebar>;
-
 export type ProjectUnitsAndReleasesViewProps = {
     projectId?: string;
     releaseId?: string;
@@ -36,8 +32,6 @@ export type ProjectUnitsAndReleasesViewProps = {
     releaseIsStage?: boolean;
     /** False when the open release is not the runtime’s live release. */
     releaseIsLive?: boolean;
-    /** Passed through nested secondary `SidebarProvider` so the title bar tracks the app sidebar. Omitted on the runtime-scoped route. */
-    mainSidebar?: Sidebar;
     showSecondaryReleaseSidebar: boolean;
 };
 
@@ -49,7 +43,6 @@ export function ProjectUnitsAndReleasesView({
     stageRuntimeId,
     releaseIsStage,
     releaseIsLive = true,
-    mainSidebar,
     showSecondaryReleaseSidebar,
 }: ProjectUnitsAndReleasesViewProps) {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -106,7 +99,6 @@ export function ProjectUnitsAndReleasesView({
             <PageTitleBox
                 title={pageTitle}
                 stackToolsOnMobile
-                {...(mainSidebar != null ? { mainSidebar } : {})}
                 tools={
                     <div className="flex min-w-0 shrink-0 items-center gap-2">
                         {!releaseIsLive && unitsTab === "all" ? <AllUnitsNonLiveReleaseTitleBadge /> : null}
@@ -129,11 +121,7 @@ export function ProjectUnitsAndReleasesView({
 
     return (
         <Tabs value={unitsTab} onValueChange={onUnitsTabChange}>
-            {showSecondaryReleaseSidebar && mainSidebar != null ? (
-                <NestedMainSidebarProvider mainSidebar={mainSidebar}>{body}</NestedMainSidebarProvider>
-            ) : (
-                body
-            )}
+            {body}
         </Tabs>
     );
 }

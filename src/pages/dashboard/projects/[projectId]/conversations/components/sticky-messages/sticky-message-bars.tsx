@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
-import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { useMainSidebar } from "@/stores/main-sidebar";
+import { useSecondarySidebarVisibility } from "@/stores/secondary-sidebar";
 import { useStickyBreadcrumbBarTransition } from "@/stores/breadcrumb";
 import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types";
 import * as React from "react";
@@ -19,12 +20,10 @@ import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 import { StickyMessageLineUser } from "./sticky-message-line-user";
 import { DEFAULT_ROW_FALLBACK_PX, smoothScrollWindowToAlignElementBelowStickyHeaders } from "./sticky-message-scroll";
 
-type Sidebar = ReturnType<typeof useSidebar>;
-
 /** Matches chat column: `Container` horizontal padding + `MIDDLE_CONTENT_CLASSNAME` width. */
 const stickyMessageBarWidthClassName = cn(MIDDLE_CONTENT_CLASSNAME, "min-w-0");
 
-export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?: Sidebar }) {
+export function StickyMessageBars() {
     const {
         getRegistryEntry,
         getRowHeights,
@@ -34,16 +33,15 @@ export function StickyMessageBars({ mainSidebar: passedSidebar }: { mainSidebar?
         activeByGroup,
         flashMessageHighlight,
     } = useStickyMessageGroups();
-    const useSidebarRes = useSidebar();
-    const mainSidebar = passedSidebar ?? useSidebarRes;
-    const secondarySidebar = passedSidebar ? useSidebarRes : null;
+    const mainSidebar = useMainSidebar();
+    const secondarySidebar = useSecondarySidebarVisibility();
 
     const { classes: stickyBarTransition, styles: stickyBarTransitionStyles } = useStickyBreadcrumbBarTransition();
 
     const pageTitleBoxLeftClassName =
         mainSidebar.open && !mainSidebar.isMobile ? "!left-[var(--sidebar-width)]" : mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]";
     const pageTitleBoxRightClassName =
-        secondarySidebar && secondarySidebar.open && !secondarySidebar.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
+        secondarySidebar.isOpen && !secondarySidebar.isMobile ? "!right-[var(--sidebar-width)]" : "right-0";
 
     const rowRefs = React.useRef<Partial<Record<StickyMessageGroupId, HTMLDivElement | null>>>({});
     const combinedBarRef = React.useRef<HTMLDivElement | null>(null);

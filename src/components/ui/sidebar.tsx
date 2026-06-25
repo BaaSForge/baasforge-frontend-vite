@@ -11,153 +11,43 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MOBILE_BREAKPOINT, useIsBelowBreakpoint } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { events, triggerAppEvent } from "@/services/events";
+import type { SidebarStoreApi } from "@/stores/create-sidebar-store";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 export const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 export const SIDEBAR_WIDTH_ICON = "3rem";
 
-type SidebarContextProps = {
-    state: "expanded" | "collapsed";
-    open: boolean;
-    setOpen: (open: boolean) => void;
-    openMobile: boolean;
-    setOpenMobile: (open: boolean) => void;
-    isMobile: boolean;
-    toggleSidebar: () => void;
-};
-
-const SidebarContext = React.createContext<SidebarContextProps | null>(null);
-
-type MainSidebarVisibilitySnapshot = {
-    isMobile: boolean;
-    open: boolean;
-    openMobile: boolean;
-};
-
-let mainSidebarVisibility: MainSidebarVisibilitySnapshot = {
-    isMobile: false,
-    open: true,
-    openMobile: false,
-};
-
-let closeMainSidebarOnMobile: (() => void) | null = null;
-
-export function isMainSidebarOpen(): boolean {
-    return mainSidebarVisibility.isMobile ? mainSidebarVisibility.openMobile : mainSidebarVisibility.open;
-}
-
-export function isMainSidebarClosed(): boolean {
-    return !isMainSidebarOpen();
-}
-
-export function closeMainSidebarIfMobile(): void {
-    closeMainSidebarOnMobile?.();
-}
+const SidebarStoreContext = React.createContext<SidebarStoreApi | null>(null);
 
 function useSidebar() {
-    const context = React.useContext(SidebarContext);
-    if (!context) {
+    const sidebarStore = React.useContext(SidebarStoreContext);
+    if (sidebarStore == null) {
         throw new Error("useSidebar must be used within a SidebarProvider.");
     }
 
-    return context;
+    return sidebarStore.useSidebar();
 }
 
 function SidebarProvider({
-    defaultOpen = true,
-    open: openProp,
-    onOpenChange: setOpenProp,
+    sidebarStore,
     mobileBreakpoint = MOBILE_BREAKPOINT,
     className,
     style,
     children,
     ...props
 }: React.ComponentProps<"div"> & {
-    defaultOpen?: boolean;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
+    sidebarStore: SidebarStoreApi;
     /** Viewport width below which the sidebar renders as an overlay sheet. */
     mobileBreakpoint?: number;
 }) {
     const isMobile = useIsBelowBreakpoint(mobileBreakpoint);
-    const [openMobile, setOpenMobile] = React.useState(false);
-
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
-    const [_open, _setOpen] = React.useState(defaultOpen);
-    const open = openProp ?? _open;
-    const setOpen = React.useCallback(
-        (value: boolean | ((value: boolean) => boolean)) => {
-            const openState = typeof value === "function" ? value(open) : value;
-            if (setOpenProp) {
-                setOpenProp(openState);
-            } else {
-                _setOpen(openState);
-            }
-
-            // This sets the cookie to keep the sidebar state.
-            document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-        },
-        [setOpenProp, open],
-    );
-
-    // Helper to toggle the sidebar.
-    const toggleSidebar = React.useCallback(() => {
-        if (isMobile) {
-            return setOpenMobile((open) => {
-                const nextOpen = !open;
-                triggerAppEvent(nextOpen ? events.MAIN_SIDEBAR_OPENED_EVENT : events.MAIN_SIDEBAR_CLOSED_EVENT);
-                return nextOpen;
-            });
-        }
-
-        return setOpen((open) => {
-            const nextOpen = !open;
-            triggerAppEvent(nextOpen ? events.MAIN_SIDEBAR_OPENED_EVENT : events.MAIN_SIDEBAR_CLOSED_EVENT);
-            return nextOpen;
-        });
-    }, [isMobile, setOpen, setOpenMobile]);
-
-    // Main sidebar shortcut is handled by unified keyboard listener (Ctrl+\ / Cmd+\).
-
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
-    const state = open ? "expanded" : "collapsed";
-
-    const contextValue = React.useMemo<SidebarContextProps>(
-        () => ({
-            state,
-            open,
-            setOpen,
-            isMobile,
-            openMobile,
-            setOpenMobile,
-            toggleSidebar,
-        }),
-        [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
-    );
 
     React.useLayoutEffect(() => {
-        mainSidebarVisibility = { isMobile, open, openMobile };
-        closeMainSidebarOnMobile = () => {
-            if (!isMobile) return;
-            setOpenMobile((wasOpen) => {
-                if (wasOpen) {
-                    triggerAppEvent(events.MAIN_SIDEBAR_CLOSED_EVENT);
-                }
-                return false;
-            });
-        };
-        return () => {
-            closeMainSidebarOnMobile = null;
-        };
-    }, [isMobile, open, openMobile, setOpenMobile]);
+        sidebarStore.store.getState().setIsMobile(isMobile);
+    }, [sidebarStore, isMobile]);
 
     return (
-        <SidebarContext.Provider value={contextValue}>
+        <SidebarStoreContext.Provider value={sidebarStore}>
             <div
                 data-slot="sidebar-wrapper"
                 style={
@@ -175,7 +65,7 @@ function SidebarProvider({
             >
                 {children}
             </div>
-        </SidebarContext.Provider>
+        </SidebarStoreContext.Provider>
     );
 }
 
