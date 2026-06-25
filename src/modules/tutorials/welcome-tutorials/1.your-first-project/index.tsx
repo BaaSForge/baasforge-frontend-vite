@@ -12,6 +12,7 @@ import {
     setTargetSpotlightOverlayElementId,
     SpotlightPrimaryActionButton,
 } from "@/components/target-spotlight-overlay";
+import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
@@ -33,8 +34,11 @@ export function YourFirstProjectTutorial() {
                 handler: async (ctx) => {
                     ctx.setSpotlightContent(
                         <>
-                            Before we create a project, let's learn a bit about the dashboard. Then we'll create your
-                            first project.
+                            <p className="font-medium">Let's tour the dashboard</p>
+                            <p className="text-muted-foreground mt-1">
+                                Before we create a project, let's learn a bit about the dashboard. Then we'll create your
+                                first project.
+                            </p>
                         </>,
                         <SpotlightPrimaryActionButton>
                             Got it!
@@ -64,8 +68,11 @@ export function YourFirstProjectTutorial() {
 
                     ctx.setSpotlightContent(
                         <>
-                            This is your inbox. You can find all tutorials here later. Try clicking it to see what's
-                            inside, at the end you can re-click it to close the inbox to proceed with the tutorial.
+                            <p className="font-medium">Your inbox</p>
+                            <p className="text-muted-foreground mt-1">
+                                This is your inbox. You can find all tutorials here later. Try clicking it to see what's
+                                inside, then close the inbox to proceed with the tutorial.
+                            </p>
                         </>,
                     );
 
@@ -91,7 +98,11 @@ export function YourFirstProjectTutorial() {
 
                     ctx.setSpotlightContent(
                         <>
-                            You can switch the app's theme here. Click the button multiple times to toggle between available themes. By default, the theme follows your system setting.
+                            <p className="font-medium">Personalize your theme</p>
+                            <p className="text-muted-foreground mt-1">
+                                You can switch the app's theme here. Click the button multiple times to toggle between
+                                available themes. By default, the theme follows your system setting.
+                            </p>
                         </>,
                         <SpotlightPrimaryActionButton>
                             Got it!
@@ -118,14 +129,21 @@ export function YourFirstProjectTutorial() {
                     if (sidebarClosed) {
                         ctx.setSpotlightContent(
                             <>
-                                Use this button to open the sidebar and continue with the tutorial.
+                                <p className="font-medium">Open the sidebar</p>
+                                <p className="text-muted-foreground mt-1">
+                                    Use this button to open the sidebar and continue with the tutorial.
+                                </p>
                             </>,
                         );
                         await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
                     } else {
                         ctx.setSpotlightContent(
                             <>
-                                Use this button to show or hide the sidebar. to proceed with the tutorial, close the sidebar and open it again.
+                                <p className="font-medium">Practice the sidebar toggle</p>
+                                <p className="text-muted-foreground mt-1">
+                                    Use this button to show or hide the sidebar. To proceed with the tutorial, close the
+                                    sidebar and open it again.
+                                </p>
                             </>,
                         );
                         
@@ -150,7 +168,10 @@ export function YourFirstProjectTutorial() {
                         });
                         ctx.setSpotlightContent(
                             <>
-                                Use this button to open the sidebar and continue with the tutorial.
+                                <p className="font-medium">Sidebar hidden — open it first</p>
+                                <p className="text-muted-foreground mt-1">
+                                    Use this button to open the sidebar and continue with the tutorial.
+                                </p>
                             </>,
                         );
                         await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
@@ -161,7 +182,11 @@ export function YourFirstProjectTutorial() {
 
                     ctx.setSpotlightContent(
                         <>
-                            Open the user menu to see your profile and settings. Close it to proceed with the tutorial.
+                            <p className="font-medium">Your account menu</p>
+                            <p className="text-muted-foreground mt-1">
+                                Open the user menu to see your profile and settings. Close it to proceed with the
+                                tutorial.
+                            </p>
                         </>,
                     );
 
@@ -189,7 +214,10 @@ export function YourFirstProjectTutorial() {
                         });
                         ctx.setSpotlightContent(
                             <>
-                                Use this button to open the sidebar and continue with the tutorial.
+                                <p className="font-medium">Expand the sidebar to continue</p>
+                                <p className="text-muted-foreground mt-1">
+                                    Use this button to open the sidebar and continue with the tutorial.
+                                </p>
                             </>,
                         );
                         await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
@@ -200,7 +228,11 @@ export function YourFirstProjectTutorial() {
 
                     ctx.setSpotlightContent(
                         <>
-                            Using this button you can switch between projects. Click it to see the list of projects. Then click on `Add project`.
+                            <p className="font-medium">Add a project</p>
+                            <p className="text-muted-foreground mt-1">
+                                Using this button you can switch between projects. Click it to see the list of projects,
+                                then click on `Add project`.
+                            </p>
                         </>,
                     );
 
@@ -227,7 +259,10 @@ export function YourFirstProjectTutorial() {
 
                     ctx.setSpotlightContent(
                         <>
-                            Now you can create a new project. Fill the form and click on `Create project`.
+                            <p className="font-medium">Create your first project</p>
+                            <p className="text-muted-foreground mt-1">
+                                Fill in the form and click `Create project` when you're ready.
+                            </p>
                         </>,
                     );
 
@@ -246,7 +281,11 @@ export function YourFirstProjectTutorial() {
                 handler: async (ctx) => {
                     ctx.setSpotlightContent(
                         <>
-                            Congratulations! You've completed the tutorial.
+                            <p className="font-medium">Tutorial complete!</p>
+                            <p className="text-muted-foreground mt-1">
+                                Congratulations! You've completed the tutorial. The tutorial modal will open so you can
+                                continue with the other tutorials.
+                            </p>
                         </>,
                         <SpotlightPrimaryActionButton>
                             Close
@@ -254,6 +293,8 @@ export function YourFirstProjectTutorial() {
                     );
                     ctx.pinToTop({ status: "success" });
                     await ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED);
+
+                    emitSignupTutorialOpen({ force: true });
                     await ctx.markCompleted();
                 },
             },
@@ -262,7 +303,10 @@ export function YourFirstProjectTutorial() {
                 handler: async (ctx) => {
                     ctx.setSpotlightContent(
                         <>
-                            Sorry but something went wrong. You can retry the tutorial later.
+                            <p className="font-medium">Tutorial interrupted</p>
+                            <p className="text-muted-foreground mt-1">
+                                Sorry, something went wrong. You can retry the tutorial later.
+                            </p>
                         </>,
                         <SpotlightPrimaryActionButton>
                             Ok
