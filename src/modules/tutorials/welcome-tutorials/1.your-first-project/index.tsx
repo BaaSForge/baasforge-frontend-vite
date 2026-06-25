@@ -6,12 +6,7 @@ import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky
 import { APP_USER_MENU_BUTTON_ID } from "@/modules/layout/components/nav-user";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { closeMainSidebarIfMobile, isMainSidebarClosed } from "@/stores/main-sidebar";
-import {
-    elevateTargetSpotlightOverlayZIndex,
-    resetTargetSpotlightOverlayZIndex,
-    setTargetSpotlightOverlayElementId,
-    SpotlightPrimaryActionButton,
-} from "@/components/target-spotlight-overlay";
+import { setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
@@ -177,7 +172,6 @@ export function YourFirstProjectTutorial() {
                         await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
                     }
 
-                    elevateTargetSpotlightOverlayZIndex();
                     setTargetSpotlightOverlayElementId(APP_USER_MENU_BUTTON_ID);
 
                     ctx.setSpotlightContent(
@@ -191,13 +185,11 @@ export function YourFirstProjectTutorial() {
                     );
 
                     await ctx.once(events.USER_MENU_OPENED_EVENT);
-                    resetTargetSpotlightOverlayZIndex();
                     await ctx.once(events.USER_MENU_CLOSED_EVENT);
 
                     closeMainSidebarIfMobile();
 
                     void ctx.next({});
-                    resetTargetSpotlightOverlayZIndex();
                 },
             },
             {
@@ -223,7 +215,6 @@ export function YourFirstProjectTutorial() {
                         await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
                     }
 
-                    elevateTargetSpotlightOverlayZIndex();
                     setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
 
                     ctx.setSpotlightContent(
@@ -237,7 +228,6 @@ export function YourFirstProjectTutorial() {
                     );
 
                     await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
-                    resetTargetSpotlightOverlayZIndex();
                     await ctx.once(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT);
 
                     closeMainSidebarIfMobile();

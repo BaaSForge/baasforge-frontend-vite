@@ -1,7 +1,5 @@
-/** Matches `z-50` on dialog, alert-dialog, drawer, and sheet in `@/components/ui`. */
-export const TARGET_SPOTLIGHT_OVERLAY_Z_INDEX = 50 - 1;
-
-export const TARGET_SPOTLIGHT_OVERLAY_ELEVATED_Z_INDEX = 51;
+/** Matches `--z-index-spotlight` in `global.css` — above modals/sidebars, below poppers. */
+export const TARGET_SPOTLIGHT_OVERLAY_Z_INDEX = 51;
 
 export const TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS = "none" as const;
 

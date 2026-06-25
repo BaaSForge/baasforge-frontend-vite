@@ -25,7 +25,7 @@ function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof Draw
         <DrawerPrimitive.Overlay
             data-slot="drawer-overlay"
             className={cn(
-                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-modal bg-black/50",
                 className,
             )}
             {...props}
@@ -68,7 +68,7 @@ function DrawerContent({
                 onCloseAutoFocus={handleCloseAutoFocus}
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                    "group/drawer-content bg-background fixed z-50 flex h-auto max-h-[80dvh] flex-col overflow-hidden",
+                    "group/drawer-content bg-background fixed z-modal flex h-auto max-h-[80dvh] flex-col overflow-hidden",
                     "data-[vaul-drawer-direction=top]:top-0 data-[vaul-drawer-direction=top]:right-auto data-[vaul-drawer-direction=top]:bottom-auto data-[vaul-drawer-direction=top]:left-1/2 data-[vaul-drawer-direction=top]:w-full data-[vaul-drawer-direction=top]:-translate-x-1/2 data-[vaul-drawer-direction=top]:mb-24 data-[vaul-drawer-direction=top]:rounded-b-lg data-[vaul-drawer-direction=top]:border-b",
                     "data-[vaul-drawer-direction=bottom]:right-auto data-[vaul-drawer-direction=bottom]:bottom-0 data-[vaul-drawer-direction=bottom]:left-1/2 data-[vaul-drawer-direction=bottom]:w-full data-[vaul-drawer-direction=bottom]:-translate-x-1/2 data-[vaul-drawer-direction=bottom]:mt-24 data-[vaul-drawer-direction=bottom]:rounded-t-lg data-[vaul-drawer-direction=bottom]:border-t",
                     "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:border-l data-[vaul-drawer-direction=right]:sm:max-w-sm",
