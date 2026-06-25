@@ -1,8 +1,6 @@
 import { pinToTop, setTargetSpotlightOverlayElementId } from "@/components/target-spotlight-overlay";
-import { listenAppEvent } from "@/services/events";
-import { saveTutorialProgress } from "@/services/tutorials";
-import type { TutorialStatus } from "@/services/tutorials";
-import type { AppEventName } from "@/services/events";
+import { events, listenAppEvent, type AppEventName } from "@/services/events";
+import { saveTutorialProgress, type TutorialStatus } from "@/services/tutorials";
 import { clearSpotlightContent, flushSpotlightContent, setSpotlightContentToRender } from "./spotlight-renderer";
 import type { StepContext, StoredStepData, TutorialStepsIdentity } from "./types";
 
@@ -112,10 +110,15 @@ export function createStepContext<TData extends StoredStepData>(
         void options.runStepById(stepId);
     };
 
+    const cleanupStopListener = listenAppEvent(events.TUTORIAL_STOP_BUTTON_CLICKED, () => {
+        if (disposed) return;
+        void finalizeStatus("interrupted", mergeState());
+    });
+
     const ctx: ManagedStepContext<TData> = {
         setSpotlightContent(content, actions) {
             hasSpotlightContent = true;
-            setSpotlightContentToRender(content, actions);
+            setSpotlightContentToRender(content, actions, { showStopButton: true });
         },
 
         clearSpotlightContent() {
@@ -249,6 +252,7 @@ export function createStepContext<TData extends StoredStepData>(
 
         dispose() {
             disposed = true;
+            cleanupStopListener();
             cleanupSubscriptions();
             cleanupSpotlight();
         },

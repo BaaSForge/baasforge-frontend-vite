@@ -1,9 +1,10 @@
 "use client";
 
 import { Button, type ButtonProps } from "@/components/ui/button";
+import { ConfirmableButton, type ConfirmableButtonProps } from "@/components/ui/confirmable-button";
 import { cn } from "@/lib/utils";
 import { events, triggerAppEvent } from "@/services/events";
-import { type ReactNode } from "react";
+import { type ReactNode, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID } from "../constants";
 import { useElementById } from "../hooks/use-element-by-id";
@@ -45,5 +46,35 @@ export function SpotlightSecondaryActionButton({ className, ...props }: ButtonPr
             className={className}
             {...props}
         />
+    );
+}
+
+export function SpotlightStopButton({
+    className,
+    onClick,
+    confirmationTooltip = "Re-click to stop the tutorial",
+    confirmChildren = "Stop tutorial",
+    children = "Stop tutorial",
+    ...props
+}: Omit<ConfirmableButtonProps, "onClick"> & {
+    onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+}) {
+    return (
+        <ConfirmableButton
+            type="button"
+            variant="ghost"
+            size="xs"
+            className={cn("text-muted-foreground hover:text-foreground", className)}
+            confirmationTooltip={confirmationTooltip}
+            confirmationTooltipPlacement="bottom-start"
+            confirmChildren={confirmChildren}
+            onClick={(event) => {
+                triggerAppEvent(events.TUTORIAL_STOP_BUTTON_CLICKED);
+                onClick?.(event);
+            }}
+            {...props}
+        >
+            {children}
+        </ConfirmableButton>
     );
 }

@@ -17,6 +17,7 @@ export {
     SpotlightActions,
     SpotlightPrimaryActionButton,
     SpotlightSecondaryActionButton,
+    SpotlightStopButton,
 } from "./components/spotlight-actions";
 export { SpotlightContent } from "./components/spotlight-content";
 export { TargetSpotlightOverlay } from "./target-spotlight-overlay";

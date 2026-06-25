@@ -2,6 +2,7 @@ import {
     TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID,
     TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID,
 } from "@/components/target-spotlight-overlay/constants";
+import { SpotlightStopButton } from "@/components/target-spotlight-overlay/components/spotlight-actions";
 import { onSpotlightContentHostsMounted } from "@/components/target-spotlight-overlay/lib/spotlight-content-hosts";
 import { type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -14,6 +15,7 @@ export type SpotlightRoots = {
 type PendingSpotlightContent = {
     content: ReactNode;
     actions?: ReactNode;
+    showStopButton?: boolean;
 };
 
 let roots: SpotlightRoots = { content: null, actions: null };
@@ -50,15 +52,17 @@ function renderIntoHost(
     return { root: nextRoot, boundHost: host };
 }
 
-function hostsReady(actions?: ReactNode): boolean {
+function hostsReady(pendingContent: PendingSpotlightContent): boolean {
     if (!isConnectedHost(getHostElement(TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID))) return false;
-    if (actions != null && !isConnectedHost(getHostElement(TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID))) return false;
+    if (pendingContent.showStopButton || pendingContent.actions != null) {
+        if (!isConnectedHost(getHostElement(TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID))) return false;
+    }
     return true;
 }
 
 function renderPending(): boolean {
     if (pending == null) return false;
-    if (!hostsReady(pending.actions)) return false;
+    if (!hostsReady(pending)) return false;
 
     const contentHost = getHostElement(TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID);
     const actionsHost = getHostElement(TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID);
@@ -72,19 +76,22 @@ function renderPending(): boolean {
     roots.content = contentResult.root;
     boundHosts.content = contentResult.boundHost;
 
-    if (pending.actions == null) {
-        roots.actions?.unmount();
-        roots.actions = null;
-        boundHosts.actions = null;
-    } else {
+    if (pending.showStopButton || pending.actions != null) {
         const actionsResult = renderIntoHost(
             roots.actions,
             actionsHost,
             boundHosts.actions,
-            <div className="flex items-center gap-1.5 border-t border-primary/10 px-3 pl-2 py-2">{pending.actions}</div>,
+            <div className="flex items-center gap-1.5 border-t border-primary/10 px-3 pl-2 py-2">
+                {pending.showStopButton ? <SpotlightStopButton /> : null}
+                {pending.actions != null ? <div className="ml-auto flex items-center gap-1.5">{pending.actions}</div> : null}
+            </div>,
         );
         roots.actions = actionsResult.root;
         boundHosts.actions = actionsResult.boundHost;
+    } else {
+        roots.actions?.unmount();
+        roots.actions = null;
+        boundHosts.actions = null;
     }
 
     return true;
@@ -131,8 +138,12 @@ function waitForHosts(): void {
     };
 }
 
-export function setSpotlightContentToRender(content: ReactNode, actions?: ReactNode): void {
-    pending = { content, actions };
+export function setSpotlightContentToRender(
+    content: ReactNode,
+    actions?: ReactNode,
+    options?: { showStopButton?: boolean },
+): void {
+    pending = { content, actions, showStopButton: options?.showStopButton ?? false };
     waitForHosts();
 }
 

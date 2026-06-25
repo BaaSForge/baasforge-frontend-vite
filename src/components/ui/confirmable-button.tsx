@@ -2,6 +2,7 @@
 
 import { StatusPulseRingLayer } from "@/components/status-pulse-ring";
 import { Button, type ButtonProps } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import * as React from "react";
 
@@ -22,10 +23,36 @@ export type ConfirmableButtonProps = Omit<ButtonProps, "onClick"> & {
     confirmWithinMs?: number;
     confirmationTooltip?: React.ReactNode;
     confirmChildren?: React.ReactNode;
+    confirmationTooltipPlacement?: "top" | "top-start" | "bottom" | "bottom-start";
 };
 
+function getConfirmationTooltipPlacement(placement: NonNullable<ConfirmableButtonProps["confirmationTooltipPlacement"]>): {
+    side: "top" | "bottom";
+    align: "center" | "start";
+} {
+    switch (placement) {
+        case "top-start":
+            return { side: "top", align: "start" };
+        case "bottom":
+            return { side: "bottom", align: "center" };
+        case "bottom-start":
+            return { side: "bottom", align: "start" };
+        default:
+            return { side: "top", align: "center" };
+    }
+}
+
 export const ConfirmableButton = React.forwardRef<HTMLButtonElement, ConfirmableButtonProps>(function ConfirmableButton(
-    { onClick, confirmWithinMs = DEFAULT_CONFIRM_MS, confirmationTooltip, confirmChildren, children, className, ...buttonProps },
+    {
+        onClick,
+        confirmWithinMs = DEFAULT_CONFIRM_MS,
+        confirmationTooltip,
+        confirmChildren,
+        confirmationTooltipPlacement = "top",
+        children,
+        className,
+        ...buttonProps
+    },
     ref,
 ) {
     const [armed, setArmed] = React.useState(false);
@@ -84,39 +111,29 @@ export const ConfirmableButton = React.forwardRef<HTMLButtonElement, Confirmable
         (typeof confirmationTooltip !== "string" || confirmationTooltip.length > 0);
 
     const showTip = armed && hasTooltip;
+    const tooltipPlacement = getConfirmationTooltipPlacement(confirmationTooltipPlacement);
 
     const mergedRef = mergeRefs(ref, buttonRef);
-
-    const button = (
-        <Button ref={mergedRef} type="button" className={cn("relative z-[1]", className)} {...buttonProps} onClick={handleClick}>
-            {armed ? (confirmChildren ?? children) : children}
-        </Button>
-    );
 
     const pulseHost = (
         <div className="relative inline-flex shrink-0 overflow-visible">
             {armed ? <StatusPulseRingLayer className="z-0" style={pulseShape} /> : null}
-            {button}
+            <Button ref={mergedRef} type="button" className={cn("relative z-[1]", className)} {...buttonProps} onClick={handleClick}>
+                {armed ? (confirmChildren ?? children) : children}
+            </Button>
         </div>
     );
 
     if (!hasTooltip) return pulseHost;
 
     return (
-        <div className="relative inline-flex shrink-0 flex-col items-center">
-            {pulseHost}
-            {showTip ? (
-                <span
-                    role="status"
-                    aria-live="polite"
-                    className={cn(
-                        "pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 w-max max-w-[14rem] -translate-x-1/2",
-                        "border-border bg-background text-foreground rounded-md border px-3 py-1.5 text-center text-xs shadow-md",
-                    )}
-                >
+        <TooltipProvider delayDuration={0}>
+            <Tooltip open={showTip} onOpenChange={() => undefined}>
+                <TooltipTrigger asChild>{pulseHost}</TooltipTrigger>
+                <TooltipContent side={tooltipPlacement.side} align={tooltipPlacement.align} sideOffset={6}>
                     {confirmationTooltip}
-                </span>
-            ) : null}
-        </div>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 });

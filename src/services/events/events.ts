@@ -1,5 +1,6 @@
 export const events = {
     TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED: "tutorial-primary-action-button-clicked",
+    TUTORIAL_STOP_BUTTON_CLICKED: "tutorial-stop-button-clicked",
     NOTIFICATION_OPENED_EVENT: "notification-opened",
     NOTIFICATION_CLOSED_EVENT: "notification-closed",
     MAIN_SIDEBAR_OPENED_EVENT: "main-sidebar-opened",
