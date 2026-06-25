@@ -76,7 +76,7 @@ export function TargetSpotlightRing({ cutout, variant = "default" }: TargetSpotl
             }}
         >
             <div className="relative size-full overflow-visible rounded-lg">
-                <StatusPulseRingLayer className="rounded-lg opacity-70" />
+                <StatusPulseRingLayer expand="fixed" className="rounded-lg opacity-70" />
                 <div className="absolute inset-0 rounded-lg border border-blue-500/45" />
             </div>
         </div>

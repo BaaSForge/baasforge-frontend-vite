@@ -17,7 +17,7 @@ import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
 import { useSteps } from "@/modules/tutorials/steps";
 import type { YourFirstProjectTutorialData } from "./types";
-import { APP_CREATE_PROJECT_FORM_ID } from "@/modules/project";
+import { APP_CREATE_PROJECT_FORM_ID } from "@/pages/dashboard/projects/new/page";
 
 const TUTORIAL_ID = "your-first-project" as const;
 
