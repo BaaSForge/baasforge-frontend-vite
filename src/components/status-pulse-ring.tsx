@@ -5,10 +5,10 @@ import type { CSSProperties } from "react";
 export const STATUS_PULSE_RING_EXPAND_REM = 1.5;
 
 const statusPulseRingLayerScaleClass =
-    "pointer-events-none absolute inset-0 origin-center bg-blue-500 animate-[status-pulse-ring_1.2s_ease-out_infinite]";
+    "pointer-events-none absolute inset-0 origin-center bg-status-pulse-ring animate-[status-pulse-ring_1.2s_ease-out_infinite]";
 
 const statusPulseRingLayerFixedClass =
-    "pointer-events-none absolute inset-0 bg-blue-500 animate-[status-pulse-ring-fixed_1.2s_ease-out_infinite]";
+    "pointer-events-none absolute inset-0 bg-status-pulse-ring animate-[status-pulse-ring-fixed_1.2s_ease-out_infinite]";
 
 export type StatusPulseRingExpandMode = "scale" | "fixed";
 

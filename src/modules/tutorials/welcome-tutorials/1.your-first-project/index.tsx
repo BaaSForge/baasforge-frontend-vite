@@ -216,6 +216,13 @@ export function YourFirstProjectTutorial() {
             {
                 id: "project-create-form",
                 handler: async (ctx) => {
+                    const lostTarget = ctx.intervalBreak(500, (breakInterval) => {
+                        const foundTarget = document.getElementById(APP_CREATE_PROJECT_FORM_ID) != null;
+                        if (!foundTarget) {
+                            breakInterval();
+                        }
+                    });
+
                     setTargetSpotlightOverlayElementId(APP_CREATE_PROJECT_FORM_ID);
 
                     ctx.setSpotlightContent(
@@ -224,7 +231,12 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    await ctx.once(events.PROJECT_CREATED_EVENT);
+                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.PROJECT_CREATED_EVENT));
+
+                    if (lostTargetRes) {
+                        ctx.goTo("projects-switch-menu");
+                        return;
+                    }
 
                     void ctx.next({});
                 },

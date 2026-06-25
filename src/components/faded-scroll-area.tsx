@@ -15,6 +15,8 @@ interface FadedScrollAreaProps {
     orientation?: Orientation;
     /** Horizontal only: height follows content (e.g. fenced code) instead of filling a fixed parent. */
     horizontalIntrinsicHeight?: boolean;
+    /** Vertical only: native overflow-y inside max-height (popovers/dropdowns). Set max-h-* on className. */
+    boundedVertical?: boolean;
     scrollToEndByDefault?: boolean;
     hideScrollbar?: boolean;
     faderFromClassName?: string;
@@ -50,6 +52,7 @@ export function FadedScrollArea({
     style,
     orientation = "vertical",
     horizontalIntrinsicHeight = false,
+    boundedVertical = false,
     scrollToEndByDefault = false,
     hideScrollbar = false,
     faderFromClassName = SCROLL_EDGE_FADER_DEFAULT_FROM,
@@ -118,7 +121,33 @@ export function FadedScrollArea({
             contentRo?.disconnect();
             if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
         };
-    }, [flush, scrollToEndAndFlush]);
+    }, [flush, scrollToEndAndFlush, children]);
+
+    if (boundedVertical && !isHorizontal) {
+        return (
+            <div className="relative min-w-0 w-full">
+                <div
+                    ref={viewportRef}
+                    onScroll={onScroll}
+                    onWheel={(event) => event.stopPropagation()}
+                    className={cn(
+                        "focus-visible:ring-ring/50 overflow-x-hidden overflow-y-auto overscroll-contain outline-none focus-visible:ring-[3px] focus-visible:outline-1",
+                        canScroll && !hideScrollbar && "[scrollbar-gutter:stable]",
+                        className,
+                    )}
+                    style={style}
+                >
+                    {children}
+                </div>
+                {showStartFader && (
+                    <ScrollEdgeFader ref={startFadeRef} edge="top" fromClassName={fromClass} className="right-4" style={{ opacity: 0 }} />
+                )}
+                {showEndFader && (
+                    <ScrollEdgeFader ref={endFadeRef} edge="bottom" fromClassName={fromClass} className="right-4" style={{ opacity: 1 }} />
+                )}
+            </div>
+        );
+    }
 
     return (
         <ScrollAreaPrimitive.Root

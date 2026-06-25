@@ -34,7 +34,7 @@ export function TargetSpotlightRing({ cutout, variant = "default" }: TargetSpotl
                 <div className="relative size-full overflow-visible rounded-full">
                     <StatusPulseRingLayer className="rounded-full opacity-70" />
                     <div
-                        className="absolute inset-0 box-border rounded-full border border-blue-500"
+                        className="absolute inset-0 box-border rounded-full border border-status-pulse-ring"
                         style={{ borderWidth: PIN_TOP_RING_SOLID_BORDER_PX }}
                     />
                     <div
@@ -48,7 +48,7 @@ export function TargetSpotlightRing({ cutout, variant = "default" }: TargetSpotl
                         }}
                     />
                     <div
-                        className="absolute rounded-full bg-blue-500"
+                        className="absolute rounded-full bg-status-pulse-ring"
                         style={{
                             top: innerOffset,
                             left: innerOffset,
@@ -77,7 +77,7 @@ export function TargetSpotlightRing({ cutout, variant = "default" }: TargetSpotl
         >
             <div className="relative size-full overflow-visible rounded-lg">
                 <StatusPulseRingLayer expand="fixed" className="rounded-lg opacity-70" />
-                <div className="absolute inset-0 rounded-lg border border-blue-500/45" />
+                <div className="absolute inset-0 rounded-lg border border-status-pulse-ring/50" />
             </div>
         </div>
     );

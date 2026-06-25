@@ -3,6 +3,7 @@
 import { Check, ChevronsUpDown, Package, Plus } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router";
 
+import { FadedScrollArea } from "@/components/faded-scroll-area";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -73,37 +74,40 @@ export function ProjectSwitcher() {
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                        className="flex w-(--radix-dropdown-menu-trigger-width) min-w-56 flex-col overflow-hidden rounded-lg p-1"
                         align="start"
                         side={isMobile ? "bottom" : "right"}
                         sideOffset={4}
                     >
-                        <DropdownMenuLabel className="text-muted-foreground text-xs">Projects</DropdownMenuLabel>
-                        {projects?.map((project) => {
-                            const linkObj = getSwitchProjectLink(location, params, project.id);
-                            const isActive = project.id === activeProject?.id;
-                            return (
-                                <DropdownMenuItem
-                                    asChild
-                                    key={project.name}
-                                    className={`gap-2 p-2 ${isActive ? "bg-accent/60 text-accent-foreground font-semibold" : ""}`}
-                                    aria-current={isActive ? "true" : undefined}
-                                >
-                                    <Link to={linkObj.pathname + linkObj.search}>
-                                        <div
-                                            className={`flex size-6 items-center justify-center rounded-md border ${isActive ? "border-accent bg-accent/30" : ""}`}
+                        <DropdownMenuLabel className="text-muted-foreground shrink-0 text-xs">Projects</DropdownMenuLabel>
+                        <FadedScrollArea boundedVertical className="max-h-64 w-full" faderFromClassName="from-popover">
+                            <div>
+                                {projects?.map((project) => {
+                                    const linkObj = getSwitchProjectLink(location, params, project.id);
+                                    const isActive = project.id === activeProject?.id;
+                                    return (
+                                        <DropdownMenuItem
+                                            asChild
+                                            key={project.name}
+                                            className={`gap-2 p-2 ${isActive ? "bg-accent/60 text-accent-foreground font-semibold" : ""}`}
+                                            aria-current={isActive ? "true" : undefined}
                                         >
-                                            <Package className="size-4" />
-                                        </div>
-                                        {project.name}
-                                        {isActive && <Check className="ml-auto size-4 text-accent-foreground" />}
-                                        {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
-                                    </Link>
-                                </DropdownMenuItem>
-                            );
-                        })}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild className="gap-2 p-2">
+                                            <Link to={linkObj.pathname + linkObj.search}>
+                                                <div
+                                                    className={`flex size-6 items-center justify-center rounded-md border ${isActive ? "border-accent bg-accent/30" : ""}`}
+                                                >
+                                                    <Package className="size-4" />
+                                                </div>
+                                                {project.name}
+                                                {isActive && <Check className="ml-auto size-4 text-accent-foreground" />}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    );
+                                })}
+                            </div>
+                        </FadedScrollArea>
+                        <DropdownMenuSeparator className="shrink-0" />
+                        <DropdownMenuItem asChild className="shrink-0 gap-2 p-2">
                             <Link
                                 to="/dashboard/projects/new"
                                 onClick={() => triggerAppEvent(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT)}
