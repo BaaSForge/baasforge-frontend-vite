@@ -26,11 +26,11 @@ export function findActiveTutorialId(
     groupId: TutorialGroupId,
     statusesById: TutorialProgressById,
 ): TutorialId | null {
-    const tutorialId = findLastNonIdleTutorialId(groupId, statusesById);
-    if (tutorialId == null) return null;
-
-    const status = statusesById[tutorialId] ?? "idle";
-    if (status === "pending-action") return tutorialId;
+    for (const tutorial of getTutorialsByGroupId(groupId)) {
+        if ((statusesById[tutorial.id] ?? "idle") === "pending-action") {
+            return tutorial.id;
+        }
+    }
     return null;
 }
 
