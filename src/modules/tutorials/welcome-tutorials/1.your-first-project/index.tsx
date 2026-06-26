@@ -46,7 +46,7 @@ export function YourFirstProjectTutorial() {
             {
                 id: "inbox",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(500, (breakInterval) => {
+                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
                         const foundTarget = document.getElementById(APP_NOTIFICATION_INBOX_BUTTON_ID) != null;
                         if (!foundTarget) {
                             breakInterval();
@@ -54,7 +54,7 @@ export function YourFirstProjectTutorial() {
                     });
 
                     setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID);
-                    ctx.interval(500, () => {
+                    ctx.interval(1000, () => {
                         if (!breadcrumbStore.getState().stickyBarVisible) {
                             window.scrollBy({ top: -10 });
                         }
@@ -84,7 +84,7 @@ export function YourFirstProjectTutorial() {
                 id: "theme-switch",
                 handler: async (ctx) => {
                     setTargetSpotlightOverlayElementId(APP_THEME_SWITCHER_BUTTON_ID);
-                    ctx.interval(500, () => {
+                    ctx.interval(1000, () => {
                         if (!breadcrumbStore.getState().stickyBarVisible) {
                             window.scrollBy({ top: -10 });
                         }
@@ -126,7 +126,7 @@ export function YourFirstProjectTutorial() {
             {
                 id: "user-menu",
                 handler: async (ctx) => {
-                    const sidebarClosed = ctx.intervalBreak(500, (breakInterval) => {
+                    const sidebarClosed = ctx.intervalBreak(1000, (breakInterval) => {
                         if (isMainSidebarClosed()) {
                             breakInterval();
                         }
@@ -180,7 +180,7 @@ export function YourFirstProjectTutorial() {
             {
                 id: "projects-switch-menu",
                 handler: async (ctx) => {
-                    const sidebarClosed = ctx.intervalBreak(500, (breakInterval) => {
+                    const sidebarClosed = ctx.intervalBreak(1000, (breakInterval) => {
                         if (isMainSidebarClosed()) {
                             breakInterval();
                         }
@@ -219,7 +219,7 @@ export function YourFirstProjectTutorial() {
             {
                 id: "project-create-form",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(500, (breakInterval) => {
+                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
                         const foundTarget = document.getElementById(APP_CREATE_PROJECT_FORM_ID) != null;
                         if (!foundTarget) {
                             breakInterval();

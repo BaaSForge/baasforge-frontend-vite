@@ -52,7 +52,7 @@ export async function ensureMainSidebarOpen<TData extends StoredStepData>(
             if (options?.keepStickyBarVisible && !breadcrumbStore.getState().stickyBarVisible) {
                 window.scrollBy({ top: -10 });
             }
-            await ctx.race(ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT), ctx.sleep(500));
+            await ctx.race(ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT), ctx.sleep(1000));
             syncSpotlightWithSidebar();
         }
     } finally {
