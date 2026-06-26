@@ -92,7 +92,10 @@ export function ProjectSwitcher() {
                                             className={`gap-2 p-2 ${isActive ? "bg-accent/60 text-accent-foreground font-semibold" : ""}`}
                                             aria-current={isActive ? "true" : undefined}
                                         >
-                                            <Link to={linkObj.pathname + linkObj.search}>
+                                            <Link
+                                                to={linkObj.pathname + linkObj.search}
+                                                onClick={() => triggerAppEvent(events.PROJECT_SELECTED_EVENT)}
+                                            >
                                                 <div
                                                     className={`flex size-6 items-center justify-center rounded-md border ${isActive ? "border-accent bg-accent/30" : ""}`}
                                                 >

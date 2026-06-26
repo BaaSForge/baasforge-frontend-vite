@@ -73,6 +73,7 @@ export type ChatRichTextEditorHandle = {
 export type ChatRichTextEditorProps = {
     /** Change when the owning conversation/session identity changes so Lexical remounts cleanly. */
     resetKey?: string;
+    id?: string;
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
@@ -344,6 +345,7 @@ export const ChatRichTextEditor = forwardRef<ChatRichTextEditorHandle, ChatRichT
     function ChatRichTextEditor(
         {
             resetKey,
+            id,
             value,
             onChange,
             placeholder,
@@ -432,6 +434,7 @@ export const ChatRichTextEditor = forwardRef<ChatRichTextEditorHandle, ChatRichT
                     <RichTextPlugin
                         contentEditable={
                             <ContentEditable
+                                id={id}
                                 spellCheck
                                 data-slot="input-group-control"
                                 placeholder={null}

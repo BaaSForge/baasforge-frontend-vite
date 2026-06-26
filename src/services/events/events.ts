@@ -9,7 +9,10 @@ export const events = {
     USER_MENU_CLOSED_EVENT: "user-menu-closed",
     PROJECT_CREATE_BUTTON_CLICKED_EVENT: "project-create-button-clicked",
     PROJECT_SWITCH_MENU_OPENED_EVENT: "project-switch-menu-opened",
+    PROJECT_SELECTED_EVENT: "project-selected",
     PROJECT_CREATED_EVENT: "project-created",
+    DEVELOP_BUTTON_CLICKED_EVENT: "develop-button-clicked",
+    CHAT_COMPOSER_INPUT_FOCUSED_EVENT: "chat-composer-input-focused",
 } as const;
 
 export type AppEventName = (typeof events)[keyof typeof events];

@@ -517,6 +517,11 @@ input[type="search"]::-webkit-search-cancel-button {
     body {
         @apply bg-background text-foreground;
     }
+    ul,
+    ol,
+    li {
+        text-align: start;
+    }
 }
 
 #tldx-toast-container [data-sonner-toaster] {

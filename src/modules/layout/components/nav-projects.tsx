@@ -22,7 +22,10 @@ import { ChatSessionsListModal, useChatSessionsModal, useProjectChatSessionsQuer
 import { useProjectQuery } from "@/modules/project/queries";
 import { useStartDebugModal } from "./start-debug-modal";
 import { debugToolbarActiveToneClassName } from "@/pages/dashboard/projects/[projectId]/conversations/conversation-debug";
+import { events, triggerAppEvent } from "@/services/events";
 import { cn } from "@/lib/utils";
+
+export const APP_DEVELOP_BUTTON_ID = "app-develop-button";
 
 const VISIBLE_CHAT_SESSIONS_COUNT = 5;
 
@@ -95,7 +98,11 @@ export function NavProjects() {
                                             isCollapsed ? "rounded-t-lg rounded-b-none" : "rounded-l-lg rounded-r-none",
                                         )}
                                     >
-                                        <Link to={conversationsUrl}>
+                                        <Link
+                                            id={APP_DEVELOP_BUTTON_ID}
+                                            to={conversationsUrl}
+                                            onClick={() => triggerAppEvent(events.DEVELOP_BUTTON_CLICKED_EVENT)}
+                                        >
                                             <Bot className="size-4 shrink-0" />
                                             <span className="group-data-[collapsible=icon]:hidden">Develop</span>
                                         </Link>

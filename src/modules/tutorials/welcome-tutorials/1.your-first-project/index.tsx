@@ -4,7 +4,7 @@ import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-
 import { APP_THEME_SWITCHER_BUTTON_ID } from "@/components/mode-toggle";
 import { APP_USER_MENU_BUTTON_ID } from "@/modules/layout/components/nav-user";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
-import { closeMainSidebarIfMobile, isMainSidebarClosed } from "@/stores/main-sidebar";
+import { isMainSidebarClosed } from "@/stores/main-sidebar";
 import { setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
@@ -157,8 +157,6 @@ export function YourFirstProjectTutorial() {
                         return;
                     }
 
-                    closeMainSidebarIfMobile();
-
                     void ctx.next({});
                 },
             },
@@ -210,8 +208,6 @@ export function YourFirstProjectTutorial() {
                         ctx.goTo("ensure-sidebar-is-opened-before-projects-switch-menu");
                         return;
                     }
-
-                    closeMainSidebarIfMobile();
 
                     void ctx.next({});
                 },

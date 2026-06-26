@@ -11,7 +11,10 @@ import { ChatComposerAddMenu } from "../chat-composer-add-menu";
 import { MIDDLE_CONTENT_CLASSNAME } from "../../constants";
 import { useConversationDebugSession } from "../../conversation-debug";
 import { FollowBottomScrollButton, type FollowBottomScrollControl } from "../../follow-bottom-scroll";
+import { events, triggerAppEvent } from "@/services/events";
 import { ChatComposerSendButton } from "../chat-composer-send-button";
+
+export const APP_CHAT_COMPOSER_INPUT_ID = "app-chat-composer-input";
 
 type Props = {
     /** Remount the composer when switching chat sessions (Lexical editor identity). */
@@ -107,10 +110,14 @@ export default function Controls({
                     >
                         <ChatRichTextEditor
                             resetKey={composerResetKey}
+                            id={APP_CHAT_COMPOSER_INPUT_ID}
                             ref={messageInputRef}
                             value={messageInputValue}
                             onChange={setMessageInputValue}
-                            onFocus={() => setIsInputFocused(true)}
+                            onFocus={() => {
+                                setIsInputFocused(true);
+                                triggerAppEvent(events.CHAT_COMPOSER_INPUT_FOCUSED_EVENT);
+                            }}
                             onBlur={() => setIsInputFocused(false)}
                             placeholder={placeholder}
                             className="min-h-10 max-h-40 px-0 py-0"
