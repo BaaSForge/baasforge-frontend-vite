@@ -1,4 +1,4 @@
-/** Matches `--z-index-spotlight` in `global.css` — above modals/sidebars, below poppers. */
+/** Matches `--z-index-spotlight` in `global.css` — above modals/sidebars, below poppers and alerts. */
 export const TARGET_SPOTLIGHT_OVERLAY_Z_INDEX = 51;
 
 export const TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS = "none" as const;

@@ -4,7 +4,7 @@ const LAYOUT_POLL_INTERVAL_MS = 500;
 
 export function scheduleLayoutUpdates(
     reference: Element,
-    floating: Element | Window | VisualViewport,
+    floating: HTMLElement | null,
     update: () => void,
 ): () => void {
     const cleanupAutoUpdate = autoUpdate(reference, floating, update);

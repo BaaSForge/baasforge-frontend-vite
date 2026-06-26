@@ -44,7 +44,7 @@ export function useAnchoredFloating(
         middleware,
         whileElementsMounted: enabled
             ? (reference, floating, update) => {
-                  if (!(reference instanceof Element)) return () => {};
+                  if (!(reference instanceof Element) || !(floating instanceof HTMLElement)) return () => {};
                   return scheduleLayoutUpdates(reference, floating, update);
               }
             : undefined,
