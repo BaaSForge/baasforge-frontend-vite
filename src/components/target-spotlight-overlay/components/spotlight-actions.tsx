@@ -4,10 +4,18 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 import { ConfirmableButton, type ConfirmableButtonProps } from "@/components/ui/confirmable-button";
 import { cn } from "@/lib/utils";
 import { events, triggerAppEvent } from "@/services/events";
+import { Ban } from "lucide-react";
 import { type ReactNode, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID } from "../constants";
 import { useElementById } from "../hooks/use-element-by-id";
+
+const STOP_TUTORIAL_LABEL = (
+    <>
+        <Ban aria-hidden />
+        Stop tutorial
+    </>
+);
 
 type SpotlightActionsProps = {
     children: ReactNode;
@@ -53,8 +61,8 @@ export function SpotlightStopButton({
     className,
     onClick,
     confirmationTooltip = "Re-click to stop the tutorial",
-    confirmChildren = "Stop tutorial",
-    children = "Stop tutorial",
+    confirmChildren = STOP_TUTORIAL_LABEL,
+    children = STOP_TUTORIAL_LABEL,
     ...props
 }: Omit<ConfirmableButtonProps, "onClick"> & {
     onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
