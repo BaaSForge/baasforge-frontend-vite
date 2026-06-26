@@ -1,5 +1,6 @@
 export {
     applyTutorialAction,
+    clearSubsequentTutorialProgress,
     getSequentialGroupActionTitle,
     getSequentialGroupActionTitleFromProgress,
     getTutorialActionTitle,
@@ -12,6 +13,7 @@ export {
     runSequentialTutorialGroupAction,
     runTutorialAction,
     runTutorialGroupAction,
+    willTutorialActionClearSubsequentProgress,
     type SequentialGroupActionKind,
     type TutorialActionKind,
 } from "./tutorial-actions";
@@ -19,6 +21,7 @@ export { useTutorialGroupDisplayState } from "./hooks/use-tutorial-group-display
 export { useTutorialProgressRecord } from "./hooks/use-tutorial-progress-record";
 export { useTutorialStatuses } from "./hooks/use-tutorial-statuses";
 export {
+    clearTutorialProgress,
     getTutorialProgressRecord,
     getTutorialProgressSnapshot,
     getTutorialStatus,
@@ -39,6 +42,7 @@ export {
 export {
     findActiveTutorialId,
     findLastNonIdleTutorialId,
+    getSubsequentNonIdleTutorialIds,
     hasAnyTutorialStartedInGroup,
     isTutorialUnlockedInGroup,
     resolveTutorialDisplayStatus,

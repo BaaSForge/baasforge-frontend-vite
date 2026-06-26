@@ -78,6 +78,7 @@ export function CreateProjectForm({ className, redirectOnSuccess = true, onSucce
                             disabled={mutation.isPending}
                             aria-invalid={mutation.isError ? true : undefined}
                             autoComplete="off"
+                            autoFocus
                         />
                     </FieldContent>
                 </Field>

@@ -10,6 +10,14 @@ import {
     useTargetSpotlightOverlayTargetElementId,
 } from "./store";
 
+/**
+ * Modal caution: if a modal opens while the spotlight is active, its backdrop covers
+ * everything outside the modal panel and blocks those clicks. When backdrop dismiss is
+ * disabled (`dismissOnOverlayClick={false}`), the user cannot close the modal by
+ * clicking the overlay—only explicit in-modal controls work. Do not show modals with a
+ * non-dismissible backdrop while a tutorial may run, or users can be stuck with no way
+ * to close the modal.
+ */
 export function TargetSpotlightOverlayGlobalHost() {
     const active = useTargetSpotlightOverlayActive();
     const targetElementId = useTargetSpotlightOverlayTargetElementId();

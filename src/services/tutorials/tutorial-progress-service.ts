@@ -1,4 +1,4 @@
-import { clientIdbGet, clientIdbSet } from "@/lib/client-idb-kv";
+import { clientIdbDelete, clientIdbGet, clientIdbSet } from "@/lib/client-idb-kv";
 import type { TutorialGroupId, TutorialId } from "./tutorials";
 import type { TutorialProgressRecord, TutorialStatus } from "./types";
 
@@ -80,4 +80,12 @@ export async function getTutorialStatus(
 ): Promise<TutorialStatus> {
     const record = await getTutorialProgressRecord(tutorialGroupId, tutorialId);
     return record?.status ?? "idle";
+}
+
+export async function clearTutorialProgress(
+    tutorialGroupId: TutorialGroupId,
+    tutorialId: TutorialId,
+): Promise<void> {
+    await clientIdbDelete(progressKey(tutorialGroupId, tutorialId));
+    emit();
 }

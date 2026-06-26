@@ -44,7 +44,7 @@ function DrawerContent({
     dismissOnOverlayClick?: boolean;
 }) {
     const handlePointerDownOutside: React.ComponentProps<typeof DrawerPrimitive.Content>["onPointerDownOutside"] = (e) => {
-        absorbNextClick();
+        if (dismissOnOverlayClick) absorbNextClick();
         onPointerDownOutsideProp?.(e);
     };
 
@@ -53,15 +53,9 @@ function DrawerContent({
         onCloseAutoFocusProp?.(e);
     };
 
-    const blockOverlayPointerDown = dismissOnOverlayClick
-        ? undefined
-        : (event: React.PointerEvent<HTMLDivElement>) => {
-              event.preventDefault();
-          };
-
     return (
         <DrawerPortal data-slot="drawer-portal">
-            <DrawerOverlay onPointerDown={blockOverlayPointerDown} />
+            <DrawerOverlay className={dismissOnOverlayClick ? undefined : "pointer-events-none"} />
             <DrawerPrimitive.Content
                 data-slot="drawer-content"
                 onPointerDownOutside={handlePointerDownOutside}

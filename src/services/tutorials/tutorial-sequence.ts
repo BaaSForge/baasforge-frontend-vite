@@ -5,6 +5,21 @@ export type TutorialDisplayStatus = TutorialStatus | "disabled";
 
 export type TutorialProgressById = Partial<Record<TutorialId, TutorialStatus>>;
 
+export function getSubsequentNonIdleTutorialIds(
+    groupId: TutorialGroupId,
+    tutorialId: TutorialId,
+    progressById: TutorialProgressById,
+): TutorialId[] {
+    const tutorials = getTutorialsByGroupId(groupId);
+    const index = tutorials.findIndex((tutorial) => tutorial.id === tutorialId);
+    if (index === -1) return [];
+
+    return tutorials
+        .slice(index + 1)
+        .filter((tutorial) => (progressById[tutorial.id] ?? "idle") !== "idle")
+        .map((tutorial) => tutorial.id);
+}
+
 export function findLastNonIdleTutorialId(
     groupId: TutorialGroupId,
     progressById: TutorialProgressById,

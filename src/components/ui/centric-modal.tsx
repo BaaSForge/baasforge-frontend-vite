@@ -311,6 +311,7 @@ function CentricModalContent({
                 className,
             )}
             showCloseButton={showCloseButton}
+            dismissOnOverlayClick={dismissOnOverlayClick}
             onPointerDownOutside={handlePointerDownOutside}
             {...props}
         >

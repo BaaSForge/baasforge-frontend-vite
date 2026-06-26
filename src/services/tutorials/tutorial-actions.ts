@@ -1,9 +1,10 @@
 import type { TutorialDisplayStatus, TutorialProgressById } from "./tutorial-sequence";
 import {
     findLastNonIdleTutorialId,
+    getSubsequentNonIdleTutorialIds,
     resolveTutorialDisplayStatus,
 } from "./tutorial-sequence";
-import { getTutorialStatus, saveTutorialProgress } from "./tutorial-progress-service";
+import { clearTutorialProgress, getTutorialStatus, saveTutorialProgress } from "./tutorial-progress-service";
 import { getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
 
 export type TutorialActionKind = "start" | "restart" | "continue" | "start-again" | "locked";
@@ -101,6 +102,30 @@ export function resolveSequentialGroupTargetTutorialId(
     return findLastNonIdleTutorialId(groupId, progressById);
 }
 
+export function willTutorialActionClearSubsequentProgress(
+    groupId: TutorialGroupId,
+    tutorialId: TutorialId,
+    progressById: TutorialProgressById,
+): boolean {
+    const group = getTutorialGroup(groupId);
+    if (group == null || !group.isSequence) return false;
+
+    const displayStatus = resolveTutorialDisplayStatus(groupId, tutorialId, progressById);
+    const kind = resolveTutorialActionKind(displayStatus);
+    if (kind !== "restart" && kind !== "start-again") return false;
+
+    return getSubsequentNonIdleTutorialIds(groupId, tutorialId, progressById).length > 0;
+}
+
+export async function clearSubsequentTutorialProgress(
+    groupId: TutorialGroupId,
+    tutorialId: TutorialId,
+    progressById: TutorialProgressById,
+): Promise<void> {
+    const subsequentIds = getSubsequentNonIdleTutorialIds(groupId, tutorialId, progressById);
+    await Promise.all(subsequentIds.map((id) => clearTutorialProgress(groupId, id)));
+}
+
 export async function loadTutorialGroupProgressById(groupId: TutorialGroupId): Promise<TutorialProgressById> {
     const tutorials = getTutorialsByGroupId(groupId);
     const entries = await Promise.all(
@@ -123,9 +148,15 @@ export async function applyTutorialAction(
             return true;
         case "start":
         case "restart":
-        case "start-again":
+        case "start-again": {
+            const group = getTutorialGroup(groupId);
+            if (group?.isSequence === true && (kind === "restart" || kind === "start-again")) {
+                const progressById = await loadTutorialGroupProgressById(groupId);
+                await clearSubsequentTutorialProgress(groupId, tutorialId, progressById);
+            }
             await saveTutorialProgress(groupId, tutorialId, "pending-action", null);
             return true;
+        }
     }
 }
 

@@ -38,14 +38,16 @@ function DialogContent({
     className,
     children,
     showCloseButton = true,
+    dismissOnOverlayClick = true,
     onPointerDownOutside: onPointerDownOutsideProp,
     onCloseAutoFocus: onCloseAutoFocusProp,
     ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
+    dismissOnOverlayClick?: boolean;
 }) {
     const handlePointerDownOutside: React.ComponentProps<typeof DialogPrimitive.Content>["onPointerDownOutside"] = (e) => {
-        absorbNextClick();
+        if (dismissOnOverlayClick) absorbNextClick();
         onPointerDownOutsideProp?.(e);
     };
 
@@ -56,7 +58,7 @@ function DialogContent({
 
     return (
         <DialogPortal data-slot="dialog-portal">
-            <DialogOverlay />
+            <DialogOverlay className={dismissOnOverlayClick ? undefined : "pointer-events-none"} />
             <DialogPrimitive.Content
                 data-slot="dialog-content"
                 onPointerDownOutside={handlePointerDownOutside}

@@ -24,6 +24,13 @@ const WELCOME_TUTORIAL_COMPONENTS = {
     "costs-in-action": CostsInActionTutorial,
 } satisfies Record<TutorialId, ComponentType>;
 
+/**
+ * Modal caution: tutorial spotlights block interaction outside the highlighted target.
+ * If a modal is open at the same time, its backdrop covers the rest of the UI. When
+ * backdrop dismiss is disabled (`dismissOnOverlayClick={false}`), overlay clicks cannot
+ * close the modal—only in-modal controls can. Never leave a non-dismissible-by-backdrop
+ * modal open (or open one) while a tutorial may start or is running.
+ */
 export function TutorialGlobalHost() {
     const tutorialIds = useMemo(
         () => getTutorialsByGroupId(WELCOME_TUTORIALS_GROUP_ID).map((tutorial) => tutorial.id),

@@ -3,6 +3,16 @@
 import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-inbox-button";
 import { setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { TutorialCardStrip } from "@/components/tutorial-card-strip";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
     CentricModal,
@@ -19,6 +29,7 @@ import { clearSpotlightContent, setSpotlightContentToRender } from "@/modules/tu
 import { createInformSchedule } from "@/services/informed-user-schedule";
 import { events, listenAppEvent } from "@/services/events";
 import {
+    getSubsequentNonIdleTutorialIds,
     getTutorialActionTitleFromDisplayStatus,
     getTutorialsByGroupId,
     hasAnyTutorialStartedInGroup,
@@ -26,6 +37,7 @@ import {
     runTutorialAction,
     runTutorialGroupAction,
     useTutorialGroupDisplayState,
+    willTutorialActionClearSubsequentProgress,
     WELCOME_TUTORIALS_GROUP_ID,
     type TutorialId,
 } from "@/services/tutorials";
@@ -160,6 +172,11 @@ function pushSignupTutorialInboxNotification(): void {
 
 type WelcomeModalCloseVia = "dismiss" | "action";
 
+type RestartConfirmState = {
+    tutorialId: TutorialId;
+    clearedTutorialIds: TutorialId[];
+};
+
 function SignupTutorialDialogShell({
     open,
     onClose,
@@ -170,6 +187,7 @@ function SignupTutorialDialogShell({
     const { displayStatuses, scrollToTutorialId, groupActionTitle, groupActionKind, isGroupActionDisabled } =
         useTutorialGroupDisplayState(WELCOME_TUTORIALS_GROUP_ID, open);
     const [isRunningAction, setIsRunningAction] = useState(false);
+    const [restartConfirm, setRestartConfirm] = useState<RestartConfirmState | null>(null);
     const showSkipButton = groupActionKind !== "continue" && groupActionKind !== "all-completed";
 
     const runActionAndClose = useCallback(
@@ -190,19 +208,43 @@ function SignupTutorialDialogShell({
     }, [runActionAndClose]);
 
     const handleTutorialAction = useCallback(
-        (tutorialId: TutorialId) => {
+        async (tutorialId: TutorialId) => {
+            const progressById = await loadTutorialGroupProgressById(WELCOME_TUTORIALS_GROUP_ID);
+            if (willTutorialActionClearSubsequentProgress(WELCOME_TUTORIALS_GROUP_ID, tutorialId, progressById)) {
+                setRestartConfirm({
+                    tutorialId,
+                    clearedTutorialIds: getSubsequentNonIdleTutorialIds(
+                        WELCOME_TUTORIALS_GROUP_ID,
+                        tutorialId,
+                        progressById,
+                    ),
+                });
+                return;
+            }
             void runActionAndClose(() => runTutorialAction(WELCOME_TUTORIALS_GROUP_ID, tutorialId));
         },
         [runActionAndClose],
     );
 
+    const handleRestartConfirm = useCallback(() => {
+        const tutorialId = restartConfirm?.tutorialId;
+        setRestartConfirm(null);
+        if (tutorialId == null) return;
+        void runActionAndClose(() => runTutorialAction(WELCOME_TUTORIALS_GROUP_ID, tutorialId));
+    }, [restartConfirm?.tutorialId, runActionAndClose]);
+
+    const clearedTutorialTitles = restartConfirm?.clearedTutorialIds
+        .map((id) => welcomeTutorials.find((tutorial) => tutorial.id === id)?.title)
+        .filter((title): title is string => title != null);
+
     return (
+        <>
         <CentricModal
             open={open}
             onOpenChange={(next) => {
                 if (!next) onClose("dismiss");
             }}
-            dismissOnOverlayClick={false}
+            dismissOnOverlayClick={!signupTutorialInformSchedule.shouldShow()}
         >
             <CentricModalContent
                 className="sm:max-w-xl select-text pointer-events-auto"
@@ -269,6 +311,41 @@ function SignupTutorialDialogShell({
                 </CentricModalFooter>
             </CentricModalContent>
         </CentricModal>
+
+        <AlertDialog
+            open={restartConfirm != null}
+            onOpenChange={(nextOpen) => {
+                if (!nextOpen) setRestartConfirm(null);
+            }}
+        >
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Restart this tutorial?</AlertDialogTitle>
+                    <AlertDialogDescription asChild>
+                        <div className="space-y-2">
+                            <p>
+                                Restarting will clear progress on all following tutorials. You will need to complete them
+                                again.
+                            </p>
+                            {clearedTutorialTitles != null && clearedTutorialTitles.length > 0 ? (
+                                <ul className="list-disc pl-5">
+                                    {clearedTutorialTitles.map((title) => (
+                                        <li key={title}>{title}</li>
+                                    ))}
+                                </ul>
+                            ) : null}
+                        </div>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel type="button">Cancel</AlertDialogCancel>
+                    <AlertDialogAction type="button" onClick={handleRestartConfirm}>
+                        Restart
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+        </>
     );
 }
 
