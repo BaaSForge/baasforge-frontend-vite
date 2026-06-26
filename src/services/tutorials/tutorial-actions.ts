@@ -5,7 +5,7 @@ import {
     resolveTutorialDisplayStatus,
 } from "./tutorial-sequence";
 import { clearTutorialProgress, getTutorialStatus, saveTutorialProgress } from "./tutorial-progress-service";
-import { getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
+import { getTutorial, getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
 
 export type TutorialActionKind = "start" | "restart" | "continue" | "start-again" | "locked";
 
@@ -63,7 +63,11 @@ export function resolveSequentialGroupActionKind(
     const lastStatus = progressById[lastNonIdleTutorialId] ?? "idle";
     if (lastStatus === "pending-action") return "continue";
     if (lastStatus === "interrupted") return "restart";
-    if (lastStatus === "completed") return "start-the-next";
+    if (lastStatus === "completed") {
+        const nextIndex = tutorials.findIndex((tutorial) => tutorial.id === lastNonIdleTutorialId) + 1;
+        const hasStartableNext = tutorials.slice(nextIndex).some((tutorial) => tutorial.comingSoon !== true);
+        return hasStartableNext ? "start-the-next" : "all-completed";
+    }
 
     return "lets-start";
 }
@@ -94,9 +98,9 @@ export function resolveSequentialGroupTargetTutorialId(
 
     if (kind === "start-the-next") {
         const lastNonIdleTutorialId = findLastNonIdleTutorialId(groupId, progressById);
-        if (lastNonIdleTutorialId == null) return tutorials[0]?.id ?? null;
+        if (lastNonIdleTutorialId == null) return tutorials.find((tutorial) => tutorial.comingSoon !== true)?.id ?? null;
         const nextIndex = tutorials.findIndex((tutorial) => tutorial.id === lastNonIdleTutorialId) + 1;
-        return tutorials[nextIndex]?.id ?? null;
+        return tutorials.slice(nextIndex).find((tutorial) => tutorial.comingSoon !== true)?.id ?? null;
     }
 
     return findLastNonIdleTutorialId(groupId, progressById);
@@ -161,6 +165,8 @@ export async function applyTutorialAction(
 }
 
 export async function runTutorialAction(groupId: TutorialGroupId, tutorialId: TutorialId): Promise<boolean> {
+    if (getTutorial(tutorialId)?.comingSoon === true) return false;
+
     const progressById = await loadTutorialGroupProgressById(groupId);
     const displayStatus = resolveTutorialDisplayStatus(groupId, tutorialId, progressById);
     return applyTutorialAction(groupId, tutorialId, displayStatus);

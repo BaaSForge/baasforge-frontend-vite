@@ -3,6 +3,14 @@
 import { APP_DEVELOP_BUTTON_ID } from "@/modules/layout/components/nav-projects";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { APP_CHAT_COMPOSER_ID } from "@/pages/dashboard/projects/[projectId]/conversations/components/controls";
+import {
+    APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID,
+    APP_LAST_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_ID,
+    APP_STAGE_DEPLOY_MODAL_ID,
+    assignLastReleaseControllerStageButtonSpotlightId,
+    assignLastReleaseControllerStageReleaseLinkSpotlightId,
+    isStageDeployModalOpen,
+} from "@/pages/dashboard/projects/[projectId]/conversations/components/message/release-controller-tutorial-targets";
 import { isMainSidebarClosed } from "@/stores/main-sidebar";
 import {
     setTargetSpotlightOverlayElementId,
@@ -213,6 +221,108 @@ export function WriteAndCallYourApiTutorial() {
 
                     if (lostTargetRes) {
                         ctx.goTo("develop-button");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "wait-for-release-stage-modal-opened",
+                handler: async (ctx) => {
+                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
+                        const foundTarget =
+                            assignLastReleaseControllerStageButtonSpotlightId() &&
+                            isConversationSessionUrl(window.location.pathname);
+                        if (!foundTarget) {
+                            breakInterval();
+                        }
+                    });
+
+                    assignLastReleaseControllerStageButtonSpotlightId();
+                    setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Deploy to stage</p>
+                            <p className="text-muted-foreground mt-1">
+                                Click the stage button on the latest release controller to open the deploy modal.
+                            </p>
+                        </>,
+                    );
+
+                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.STAGE_DEPLOY_MODAL_OPENED_EVENT));
+
+                    if (lostTargetRes) {
+                        ctx.goTo("chat-composer-input");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "wait-for-deploy-on-stage",
+                handler: async (ctx) => {
+                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
+                        if (!isStageDeployModalOpen()) {
+                            breakInterval();
+                        }
+                    });
+
+                    setTargetSpotlightOverlayElementId(APP_STAGE_DEPLOY_MODAL_ID);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Choose a stage runtime</p>
+                            <p className="text-muted-foreground mt-1">
+                                Pick a stage runtime and deploy your release. You can deploy to an idle runtime or swap an
+                                existing live release.
+                            </p>
+                        </>,
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("wait-for-release-stage-modal-opened");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "wait-for-click-on-stage-release-button-to-go-to-release-page",
+                handler: async (ctx) => {
+                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
+                        const foundTarget =
+                            assignLastReleaseControllerStageReleaseLinkSpotlightId() &&
+                            isConversationSessionUrl(window.location.pathname);
+                        if (!foundTarget) {
+                            breakInterval();
+                        }
+                    });
+
+                    assignLastReleaseControllerStageReleaseLinkSpotlightId();
+                    setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_ID);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Open the release page</p>
+                            <p className="text-muted-foreground mt-1">
+                                Click the stage release badge to open the release page and inspect your deployed units.
+                            </p>
+                        </>,
+                    );
+
+                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.STAGE_RELEASE_BADGE_CLICKED_EVENT));
+
+                    if (lostTargetRes) {
+                        ctx.goTo("wait-for-deploy-on-stage");
                         return;
                     }
 

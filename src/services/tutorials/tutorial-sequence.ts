@@ -1,5 +1,5 @@
 import type { TutorialStatus } from "./types";
-import { getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
+import { getTutorial, getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
 
 export type TutorialDisplayStatus = TutorialStatus | "disabled";
 
@@ -77,6 +77,9 @@ export function resolveTutorialDisplayStatus(
     tutorialId: TutorialId,
     progressById: TutorialProgressById,
 ): TutorialDisplayStatus {
+    if (getTutorial(tutorialId)?.comingSoon === true) {
+        return "disabled";
+    }
     if (!isTutorialUnlockedInGroup(groupId, tutorialId, progressById)) {
         return "disabled";
     }

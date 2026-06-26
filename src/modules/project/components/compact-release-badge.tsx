@@ -14,9 +14,10 @@ export interface CompactReleaseBadgeProps {
     projectId?: string;
     className?: string;
     suppressLink?: boolean;
+    onLinkClick?: () => void;
 }
 
-export function CompactReleaseBadge({ release, projectId, className, suppressLink }: CompactReleaseBadgeProps) {
+export function CompactReleaseBadge({ release, projectId, className, suppressLink, onLinkClick }: CompactReleaseBadgeProps) {
     const { data: runtimes } = useProjectRuntimesQuery(projectId);
     const isLiveOnRuntime = releaseIsLiveOnProjectRuntimes(release, runtimes);
     const servingRuntime = runtimes?.find((runtime) => runtime.live_release?.id === release.id) ?? null;
@@ -75,7 +76,7 @@ export function CompactReleaseBadge({ release, projectId, className, suppressLin
                 {suppressLink ? (
                     <span className={innerClassName}>{inner}</span>
                 ) : (
-                    <Link to={href} className={innerClassName}>
+                    <Link to={href} className={innerClassName} onClick={() => onLinkClick?.()}>
                         {inner}
                     </Link>
                 )}

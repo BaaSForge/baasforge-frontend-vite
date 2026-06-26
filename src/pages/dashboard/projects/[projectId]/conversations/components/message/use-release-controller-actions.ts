@@ -12,6 +12,7 @@ import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "@/lib/toast";
+import { emitStageDeployOnRuntimeDone } from "@/services/events";
 import { getReleaseControllerPayload, useReleaseControllerRuntimeLiveFlags } from "./release-controller-box-shared";
 
 export function useReleaseControllerActions(
@@ -61,6 +62,7 @@ export function useReleaseControllerActions(
         },
         onSuccess: async () => {
             await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.stage);
+            emitStageDeployOnRuntimeDone();
             setStageDeployRuntimePickOpen(false);
             toast.success("Stage deploy has started.");
         },

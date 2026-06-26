@@ -24,6 +24,7 @@ export type Tutorial = {
     title: string;
     description: string;
     icon: LucideIcon;
+    comingSoon?: boolean;
 };
 
 export const TUTORIAL_GROUPS: ReadonlyArray<TutorialGroup> = [
@@ -57,6 +58,7 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         description:
             "Use traces to tell the AI what went wrong, update your units, redeploy to stage, then release to production.",
         icon: SearchCode,
+        comingSoon: true,
     },
     {
         id: "units-and-rollbacks",
@@ -64,6 +66,7 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         title: "Units and rollbacks",
         description: "See your units, browse release history, and roll back to an older release.",
         icon: GitBranch,
+        comingSoon: true,
     },
     {
         id: "project-variables",
@@ -71,6 +74,7 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         title: "Project variables",
         description: "Define your first variables—what they are and how they work.",
         icon: KeyRound,
+        comingSoon: true,
     },
     {
         id: "costs-in-action",
@@ -78,8 +82,13 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         title: "Costs in action",
         description: "Learn how costs are calculated and see pricing play out on your project.",
         icon: Coins,
+        comingSoon: true,
     },
 ];
+
+export function getTutorial(tutorialId: TutorialId): Tutorial | undefined {
+    return TUTORIALS.find((tutorial) => tutorial.id === tutorialId);
+}
 
 export function getTutorialGroup(groupId: TutorialGroupId): TutorialGroup | undefined {
     return TUTORIAL_GROUPS.find((group) => group.id === groupId);

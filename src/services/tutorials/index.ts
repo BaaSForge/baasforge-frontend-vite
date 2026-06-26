@@ -29,6 +29,7 @@ export {
     subscribeTutorialProgress,
 } from "./tutorial-progress-service";
 export {
+    getTutorial,
     getTutorialGroup,
     getTutorialsByGroupId,
     TUTORIAL_GROUPS,

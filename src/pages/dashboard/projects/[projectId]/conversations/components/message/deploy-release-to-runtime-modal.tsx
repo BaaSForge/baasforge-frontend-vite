@@ -1,6 +1,7 @@
 "use client";
 
 import { StageRuntimePickerModal, useStageRuntimeDetachMutation } from "./stage-runtime-modal-shared";
+import { emitStageDeployOnRuntimeDone } from "@/services/events";
 
 export function DeployReleaseToRuntimeModal({
     open,
@@ -49,7 +50,10 @@ export function DeployReleaseToRuntimeModal({
                         runtimeId,
                         body: { revision, chat_session_id: chatSessionIdForDetach },
                     },
-                    { onSuccess: () => onOpenChange(false) },
+                    { onSuccess: () => {
+                        emitStageDeployOnRuntimeDone();
+                        onOpenChange(false);
+                    } },
                 )
             }
             deployingRuntimeId={deployingRuntimeId}

@@ -275,6 +275,7 @@ function SignupTutorialDialogShell({
                         scrollToItemId={open ? scrollToTutorialId : null}
                         items={welcomeTutorials.map((tutorial) => {
                             const status = displayStatuses?.[tutorial.id] ?? "idle";
+                            const comingSoon = tutorial.comingSoon === true;
 
                             return {
                                 id: tutorial.id,
@@ -282,8 +283,11 @@ function SignupTutorialDialogShell({
                                 description: tutorial.description,
                                 icon: tutorial.icon,
                                 status,
-                                actionLabel: getTutorialActionTitleFromDisplayStatus(status),
-                                onAction: isRunningAction ? undefined : () => handleTutorialAction(tutorial.id),
+                                actionLabel: comingSoon
+                                    ? "Coming soon"
+                                    : getTutorialActionTitleFromDisplayStatus(status),
+                                onAction:
+                                    comingSoon || isRunningAction ? undefined : () => handleTutorialAction(tutorial.id),
                             };
                         })}
                     />

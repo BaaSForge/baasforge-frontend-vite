@@ -7,7 +7,9 @@ import { CompactReleaseBadge } from "@/modules/project";
 import { cn } from "@/lib/utils";
 import { FlaskConical } from "lucide-react";
 import { stageReleaseRowView } from "./release-controller-row-view-models";
+import { APP_RELEASE_CONTROLLER_STAGE_BUTTON_DATA_ATTR, APP_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_DATA_ATTR } from "./release-controller-tutorial-targets";
 import type { ReleaseControllerActions } from "./use-release-controller-actions";
+import { emitStageReleaseBadgeClicked } from "@/services/events";
 
 export function ReleaseControllerThreadStageRow({
     actions,
@@ -25,8 +27,15 @@ export function ReleaseControllerThreadStageRow({
 
     if (view.kind === "live-badge" && stageRelease != null) {
         return (
-            <div className={cn("inline-flex min-w-0", className)}>
-                <CompactReleaseBadge release={stageRelease} projectId={projectId} />
+            <div
+                className={cn("inline-flex min-w-0", className)}
+                {...{ [APP_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_DATA_ATTR]: "" }}
+            >
+                <CompactReleaseBadge
+                    release={stageRelease}
+                    projectId={projectId}
+                    onLinkClick={() => emitStageReleaseBadgeClicked()}
+                />
             </div>
         );
     }
@@ -52,7 +61,7 @@ export function ReleaseControllerThreadStageRow({
     if (view.kind === "deploy") {
         return (
             <div className={cn("inline-flex min-w-0", className)}>
-                <span className="inline-flex">
+                <span className="inline-flex" {...{ [APP_RELEASE_CONTROLLER_STAGE_BUTTON_DATA_ATTR]: "" }}>
                     <Button
                         type="button"
                         variant="outline"
@@ -101,7 +110,7 @@ export function ReleaseControllerThreadStageRow({
 
     return (
         <div className={cn("inline-flex min-w-0", className)}>
-            <span className="inline-flex">
+            <span className="inline-flex" {...{ [APP_RELEASE_CONTROLLER_STAGE_BUTTON_DATA_ATTR]: "" }}>
                 <Button type="button" variant="outline" size="xs" onClick={() => setStageReleaseModalOpen(true)}>
                     Release Stage
                 </Button>

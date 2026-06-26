@@ -17,6 +17,9 @@ export const events = {
     MESSAGE_RECEIVED_EVENT: "message-received",
     CREATE_UNIT_RECEIVED_EVENT: "create-unit-received",
     RELEASE_CONTROLLER_RECEIVED_EVENT: "release-controller-received",
+    STAGE_DEPLOY_MODAL_OPENED_EVENT: "stage-deploy-modal-opened",
+    STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT: "stage-deploy-on-runtime-done",
+    STAGE_RELEASE_BADGE_CLICKED_EVENT: "stage-release-badge-clicked",
 } as const;
 
 export type AppEventName = (typeof events)[keyof typeof events];

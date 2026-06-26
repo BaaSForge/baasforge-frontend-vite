@@ -35,6 +35,8 @@ import { PlatformEnvironmentType } from "@/modules/project/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, FlaskConical, Rocket } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { emitStageDeployModalOpened } from "@/services/events";
+import { APP_STAGE_DEPLOY_MODAL_ID } from "./release-controller-tutorial-targets";
 
 export type StageRuntimeSwapMutationVariables = { runtimeId: string; body: DetachRuntimeLiveReleaseBody };
 
@@ -228,6 +230,12 @@ export function StageRuntimePickerModal({
 
     const prevSwapping = useRef<string | null>(null);
     useEffect(() => {
+        if (open) {
+            emitStageDeployModalOpened();
+        }
+    }, [open]);
+
+    useEffect(() => {
         if (prevSwapping.current != null && swappingRuntimeId == null && runtimeToDetach != null) {
             queueMicrotask(() => {
                 setRuntimeToDetach(null);
@@ -243,7 +251,7 @@ export function StageRuntimePickerModal({
     return (
         <>
             <CentricModal open={open} onOpenChange={onOpenChange}>
-                <CentricModalContent className="sm:max-w-md">
+                <CentricModalContent id={APP_STAGE_DEPLOY_MODAL_ID} className="sm:max-w-md">
                     <CentricModalHeader>
                         <CentricModalTitle>{title}</CentricModalTitle>
                         <CentricModalDescription>{description}</CentricModalDescription>
