@@ -15,7 +15,7 @@ export function SpotlightContentBox({ className }: SpotlightContentBoxProps) {
     return (
         <div
             className={cn(
-                "relative z-10 overflow-visible rounded-xl border border-primary/15 bg-popover text-popover-foreground shadow-2xl shadow-black/20 dark:shadow-black/50",
+                "relative z-10 overflow-hidden rounded-xl border border-primary/15 bg-popover text-popover-foreground shadow-2xl shadow-black/20 dark:shadow-black/50",
                 className,
             )}
         >

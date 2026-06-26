@@ -14,6 +14,7 @@ import {
 } from "@/lib/ws-events";
 import { mergeChatSessionUnitLatestRevisionFromWsUnit } from "@/modules/project/chat-session-unit-latest-revisions-cache";
 import type { ProjectUnitResponse } from "@/modules/project/types";
+import { emitTutorialChatMessageEvents } from "@/services/events";
 import {
     ChatMessageDeliveryStatus,
     ChatMessageStatus,
@@ -291,6 +292,7 @@ export function handleChatSessionWsEvent(
         if (message.type === ChatMessageType.ReleaseControllerBox) {
             void invalidateLastNotDisabledReleaseControllerMessageQueries(queryClient, project_id);
         }
+        emitTutorialChatMessageEvents(message);
         return true;
     }
 
@@ -305,6 +307,7 @@ export function handleChatSessionWsEvent(
         if (message.type === ChatMessageType.ReleaseControllerBox) {
             void invalidateLastNotDisabledReleaseControllerMessageQueries(queryClient, project_id);
         }
+        emitTutorialChatMessageEvents(message);
         return true;
     }
 

@@ -23,6 +23,7 @@ import { useProjectQuery } from "@/modules/project/queries";
 import { useStartDebugModal } from "./start-debug-modal";
 import { debugToolbarActiveToneClassName } from "@/pages/dashboard/projects/[projectId]/conversations/conversation-debug";
 import { events, triggerAppEvent } from "@/services/events";
+import { closeMainSidebarIfMobile } from "@/stores/main-sidebar";
 import { cn } from "@/lib/utils";
 
 export const APP_DEVELOP_BUTTON_ID = "app-develop-button";
@@ -101,7 +102,10 @@ export function NavProjects() {
                                         <Link
                                             id={APP_DEVELOP_BUTTON_ID}
                                             to={conversationsUrl}
-                                            onClick={() => triggerAppEvent(events.DEVELOP_BUTTON_CLICKED_EVENT)}
+                                            onClick={() => {
+                                                triggerAppEvent(events.DEVELOP_BUTTON_CLICKED_EVENT);
+                                                closeMainSidebarIfMobile();
+                                            }}
                                         >
                                             <Bot className="size-4 shrink-0" />
                                             <span className="group-data-[collapsible=icon]:hidden">Develop</span>

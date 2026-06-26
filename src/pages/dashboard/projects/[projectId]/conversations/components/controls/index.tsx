@@ -14,6 +14,7 @@ import { FollowBottomScrollButton, type FollowBottomScrollControl } from "../../
 import { events, triggerAppEvent } from "@/services/events";
 import { ChatComposerSendButton } from "../chat-composer-send-button";
 
+export const APP_CHAT_COMPOSER_ID = "app-chat-composer";
 export const APP_CHAT_COMPOSER_INPUT_ID = "app-chat-composer-input";
 
 type Props = {
@@ -51,11 +52,9 @@ export default function Controls({
     const lineBreakHint = ", Shift+Enter for new line";
     const placeholder = isDebugSendActive
         ? isNewSession
-            ? "Describe what went wrong or what you need so we can debug this release"
+            ? "Describe what went wrong so we can debug"
             : "Explain the issue"
-        : isNewSession
-          ? `Type a message to start a new conversation ${lineBreakHint}`
-          : `Type a message ${lineBreakHint}`;
+        : `Type a message ${lineBreakHint}`;
 
     const leftClassName =
         mainSidebar.open && !mainSidebar.isMobile ? "!left-[var(--sidebar-width)]" : mainSidebar.isMobile ? "left-0" : "!left-[var(--sidebar-width-icon)]";
@@ -103,6 +102,7 @@ export default function Controls({
                 >
                     <FollowBottomScrollButton control={followScroll} />
                     <InputGroup
+                        id={APP_CHAT_COMPOSER_ID}
                         className={cn(
                             "w-full shadow-2xl flex flex-col !bg-background transition-shadow duration-300",
                             isGenerating && "controller-generating-glow",

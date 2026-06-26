@@ -57,6 +57,28 @@ export function SpotlightSecondaryActionButton({ className, ...props }: ButtonPr
     );
 }
 
+export function SpotlightFillChatPromptButton({
+    text,
+    className,
+    children = "Fill the prompt",
+    ...props
+}: ButtonProps & { text: string }) {
+    return (
+        <Button
+            type="button"
+            variant="default"
+            size="xs"
+            className={cn("ml-auto", className)}
+            onClick={() => {
+                triggerAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, { text });
+            }}
+            {...props}
+        >
+            {children}
+        </Button>
+    );
+}
+
 export function SpotlightStopButton({
     className,
     onClick,

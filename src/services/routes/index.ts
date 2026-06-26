@@ -16,3 +16,15 @@ export function getSelectedProjectIdFromPathname(pathname: string): string | und
 export function isProjectSelectedUrl(pathname: string): boolean {
     return getSelectedProjectIdFromPathname(pathname) != null;
 }
+
+export function isNewConversationUrl(pathname: string): boolean {
+    if (!isProjectSelectedUrl(pathname)) return false;
+
+    return matchPath({ path: `${dashboardProjectRoutes.shell}/conversations`, end: true }, pathname) != null;
+}
+
+export function isConversationSessionUrl(pathname: string): boolean {
+    if (!isProjectSelectedUrl(pathname)) return false;
+
+    return matchPath({ path: `${dashboardProjectRoutes.shell}/conversations/:conversationId`, end: false }, pathname) != null;
+}

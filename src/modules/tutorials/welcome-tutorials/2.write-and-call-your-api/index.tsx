@@ -2,17 +2,23 @@
 
 import { APP_DEVELOP_BUTTON_ID } from "@/modules/layout/components/nav-projects";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
-import { APP_CHAT_COMPOSER_INPUT_ID } from "@/pages/dashboard/projects/[projectId]/conversations/components/controls";
+import { APP_CHAT_COMPOSER_ID } from "@/pages/dashboard/projects/[projectId]/conversations/components/controls";
 import { isMainSidebarClosed } from "@/stores/main-sidebar";
-import { setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
+import {
+    setTargetSpotlightOverlayElementId,
+    SpotlightFillChatPromptButton,
+    SpotlightPrimaryActionButton,
+} from "@/components/target-spotlight-overlay";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
-import { isProjectSelectedUrl } from "@/services/routes";
+import { isConversationSessionUrl, isNewConversationUrl, isProjectSelectedUrl } from "@/services/routes";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
 import type { WriteAndCallYourApiTutorialData } from "./types";
 
 const TUTORIAL_ID = "write-and-call-your-api" as const;
+
+const TUTORIAL_HELLO_WORLD_PROMPT = "Write an api which returns a simple `hello world`";
 
 export function WriteAndCallYourApiTutorial() {
     useSteps<WriteAndCallYourApiTutorialData>(
@@ -148,26 +154,61 @@ export function WriteAndCallYourApiTutorial() {
                 id: "chat-composer-input",
                 handler: async (ctx) => {
                     const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget = document.getElementById(APP_CHAT_COMPOSER_INPUT_ID) != null;
+                        const foundTarget =
+                            document.getElementById(APP_CHAT_COMPOSER_ID) != null &&
+                            isNewConversationUrl(window.location.pathname);
                         if (!foundTarget) {
                             breakInterval();
                         }
                     });
 
-                    setTargetSpotlightOverlayElementId(APP_CHAT_COMPOSER_INPUT_ID);
+                    setTargetSpotlightOverlayElementId(APP_CHAT_COMPOSER_ID);
 
                     ctx.setSpotlightContent(
                         <>
                             <p className="font-medium">Start a conversation</p>
                             <p className="text-muted-foreground mt-1">
-                                Type a message here to start a new conversation. Use Shift+Enter for a new line.
+                                Send this message to ask AI to write your first API. When AI is done, we'll come back to go ahead and deploy the to stage runtime.
                             </p>
+                            <blockquote className="my-4 border-l-2 border-muted pl-3 text-sm text-muted-foreground">
+                                {TUTORIAL_HELLO_WORLD_PROMPT}
+                            </blockquote>
                         </>,
+                        <SpotlightFillChatPromptButton text={TUTORIAL_HELLO_WORLD_PROMPT} />,
                     );
+
+                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.MESSAGE_RECEIVED_EVENT));
+
+                    if (lostTargetRes) {
+                        ctx.goTo("develop-button");
+                        return;
+                    }
+
+                    setTargetSpotlightOverlayElementId(null);
+                    ctx.clearSpotlightContent();
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "waiting-for-unit-creation",
+                handler: async (ctx) => {
+                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
+                        const foundTarget =
+                            document.getElementById(APP_CHAT_COMPOSER_ID) != null &&
+                            isConversationSessionUrl(window.location.pathname);
+                        if (!foundTarget) {
+                            breakInterval();
+                        }
+                    });
 
                     const [lostTargetRes] = await ctx.race(
                         lostTarget,
-                        ctx.once(events.CHAT_COMPOSER_INPUT_FOCUSED_EVENT),
+                        (async () => {
+                            await Promise.all([
+                                ctx.once(events.CREATE_UNIT_RECEIVED_EVENT),
+                                ctx.once(events.RELEASE_CONTROLLER_RECEIVED_EVENT),
+                            ]);
+                        })(),
                     );
 
                     if (lostTargetRes) {

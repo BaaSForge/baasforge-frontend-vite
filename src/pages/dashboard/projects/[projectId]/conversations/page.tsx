@@ -27,6 +27,7 @@ import { scrollToBottom, scrollToTop, smoothScrollToElementTop } from "@/lib/dom
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
 import { register, SHORTCUT_LABELS, UNIFIED_KEYBOARD_SCOPES, unregister } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
+import { events, listenAppEvent } from "@/services/events";
 import {
     invalidateDueToRejectOrEdit,
     removeProjectDraftUnitsAsOfReleaseControllerQueries,
@@ -284,6 +285,15 @@ function ProjectConversationsContent() {
             // Merge attachment IDs, staged files, and other composer-only state when the main input supports them.
         }
     }, []);
+
+    useEffect(() => {
+        return listenAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, (event) => {
+            const text = (event as CustomEvent<{ text?: string }>).detail?.text;
+            if (typeof text !== "string") return;
+            applyComposerPrefill({ text });
+            requestAnimationFrame(() => messageInputRef.current?.focus());
+        });
+    }, [applyComposerPrefill, messageInputRef]);
 
     const runTruncateBelowMessage = useCallback(
         async (message: ChatMessageWithDeliveryStatus) => {
