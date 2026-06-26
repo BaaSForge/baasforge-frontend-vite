@@ -2,7 +2,6 @@
 
 import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-inbox-button";
 import { APP_THEME_SWITCHER_BUTTON_ID } from "@/components/mode-toggle";
-import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
 import { APP_USER_MENU_BUTTON_ID } from "@/modules/layout/components/nav-user";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { closeMainSidebarIfMobile, isMainSidebarClosed } from "@/stores/main-sidebar";
@@ -11,7 +10,7 @@ import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
-import { useSteps } from "@/modules/tutorials/steps";
+import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
 import type { YourFirstProjectTutorialData } from "./types";
 import { APP_CREATE_PROJECT_FORM_ID } from "@/pages/dashboard/projects/new/page";
 
@@ -110,41 +109,16 @@ export function YourFirstProjectTutorial() {
                 },
             },
             {
-                id: "sidebar-toggle",
+                id: "ensure-sidebar-is-opened-before-user-menu",
                 handler: async (ctx) => {
-                    setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
-                    ctx.interval(500, () => {
-                        if (!breadcrumbStore.getState().stickyBarVisible) {
-                            window.scrollBy({ top: -10 });
-                        }
-                    });
-
-                    const sidebarClosed = isMainSidebarClosed();
-
-                    if (sidebarClosed) {
-                        ctx.setSpotlightContent(
-                            <>
-                                <p className="font-medium">Open the sidebar</p>
-                                <p className="text-muted-foreground mt-1">
-                                    Use this button to open the sidebar and continue with the tutorial.
-                                </p>
-                            </>,
-                        );
-                        await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
-                    } else {
-                        ctx.setSpotlightContent(
-                            <>
-                                <p className="font-medium">Practice the sidebar toggle</p>
-                                <p className="text-muted-foreground mt-1">
-                                    Use this button to show or hide the sidebar. To proceed with the tutorial, close the
-                                    sidebar and open it again.
-                                </p>
-                            </>,
-                        );
-                        
-                        await ctx.once(events.MAIN_SIDEBAR_CLOSED_EVENT);
-                        await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
-                    }
+                    await ensureMainSidebarOpen(
+                        ctx,
+                        {
+                            title: "Open the sidebar",
+                            description: "Use this button to open the sidebar and continue with the tutorial.",
+                        },
+                        { keepStickyBarVisible: true },
+                    );
 
                     void ctx.next({});
                 },
@@ -152,25 +126,11 @@ export function YourFirstProjectTutorial() {
             {
                 id: "user-menu",
                 handler: async (ctx) => {
-                    const sidebarClosed = isMainSidebarClosed();
-
-                    if (sidebarClosed) {
-                        setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
-                        ctx.interval(500, () => {
-                            if (!breadcrumbStore.getState().stickyBarVisible) {
-                                window.scrollBy({ top: -10 });
-                            }
-                        });
-                        ctx.setSpotlightContent(
-                            <>
-                                <p className="font-medium">Sidebar hidden — open it first</p>
-                                <p className="text-muted-foreground mt-1">
-                                    Use this button to open the sidebar and continue with the tutorial.
-                                </p>
-                            </>,
-                        );
-                        await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
-                    }
+                    const sidebarClosed = ctx.intervalBreak(500, (breakInterval) => {
+                        if (isMainSidebarClosed()) {
+                            breakInterval();
+                        }
+                    });
 
                     setTargetSpotlightOverlayElementId(APP_USER_MENU_BUTTON_ID);
 
@@ -184,8 +144,18 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    await ctx.once(events.USER_MENU_OPENED_EVENT);
-                    await ctx.once(events.USER_MENU_CLOSED_EVENT);
+                    const [sidebarClosedRes] = await ctx.race(
+                        sidebarClosed,
+                        (async () => {
+                            await ctx.once(events.USER_MENU_OPENED_EVENT);
+                            await ctx.once(events.USER_MENU_CLOSED_EVENT);
+                        })(),
+                    );
+
+                    if (sidebarClosedRes) {
+                        ctx.goTo("ensure-sidebar-is-opened-before-user-menu");
+                        return;
+                    }
 
                     closeMainSidebarIfMobile();
 
@@ -193,27 +163,28 @@ export function YourFirstProjectTutorial() {
                 },
             },
             {
+                id: "ensure-sidebar-is-opened-before-projects-switch-menu",
+                handler: async (ctx) => {
+                    await ensureMainSidebarOpen(
+                        ctx,
+                        {
+                            title: "Expand the sidebar to continue",
+                            description: "Use this button to open the sidebar and continue with the tutorial.",
+                        },
+                        { keepStickyBarVisible: true },
+                    );
+
+                    void ctx.next({});
+                },
+            },
+            {
                 id: "projects-switch-menu",
                 handler: async (ctx) => {
-                    const sidebarClosed = isMainSidebarClosed();
-
-                    if (sidebarClosed) {
-                        setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
-                        ctx.interval(500, () => {
-                            if (!breadcrumbStore.getState().stickyBarVisible) {
-                                window.scrollBy({ top: -10 });
-                            }
-                        });
-                        ctx.setSpotlightContent(
-                            <>
-                                <p className="font-medium">Expand the sidebar to continue</p>
-                                <p className="text-muted-foreground mt-1">
-                                    Use this button to open the sidebar and continue with the tutorial.
-                                </p>
-                            </>,
-                        );
-                        await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
-                    }
+                    const sidebarClosed = ctx.intervalBreak(500, (breakInterval) => {
+                        if (isMainSidebarClosed()) {
+                            breakInterval();
+                        }
+                    });
 
                     setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
 
@@ -227,8 +198,18 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
-                    await ctx.once(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT);
+                    const [sidebarClosedRes] = await ctx.race(
+                        sidebarClosed,
+                        (async () => {
+                            await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
+                            await ctx.once(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT);
+                        })(),
+                    );
+
+                    if (sidebarClosedRes) {
+                        ctx.goTo("ensure-sidebar-is-opened-before-projects-switch-menu");
+                        return;
+                    }
 
                     closeMainSidebarIfMobile();
 
