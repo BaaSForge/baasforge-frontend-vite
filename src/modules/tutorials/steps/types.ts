@@ -20,7 +20,11 @@ export type StepContext<TData extends StoredStepData> = {
     timeout: (delayMs: number) => Promise<void>;
     sleep: (delayMs: number) => Promise<void>;
     interval: (intervalMs: number, tick: () => void) => void;
-    intervalBreak: (intervalMs: number, tick: (breakInterval: () => void) => void) => Promise<boolean>;
+    intervalBreak: (
+        intervalMs: number,
+        tick: (breakInterval: () => void) => void,
+        options?: { untilReady?: () => boolean },
+    ) => Promise<boolean>;
     race: (...promises: Promise<unknown>[]) => Promise<unknown[]>;
     next: (partial?: Partial<Omit<TData, "step">>) => Promise<void>;
     goTo: (stepId: string, partial?: Partial<Omit<TData, "step">>) => Promise<void>;

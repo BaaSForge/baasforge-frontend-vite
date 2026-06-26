@@ -46,12 +46,16 @@ export function YourFirstProjectTutorial() {
             {
                 id: "inbox",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget = document.getElementById(APP_NOTIFICATION_INBOX_BUTTON_ID) != null;
-                        if (!foundTarget) {
-                            breakInterval();
-                        }
-                    });
+                    const isInboxRendered = () => document.getElementById(APP_NOTIFICATION_INBOX_BUTTON_ID) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isInboxRendered()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isInboxRendered },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID);
                     ctx.interval(1000, () => {
@@ -126,11 +130,16 @@ export function YourFirstProjectTutorial() {
             {
                 id: "user-menu",
                 handler: async (ctx) => {
-                    const sidebarClosed = ctx.intervalBreak(1000, (breakInterval) => {
-                        if (isMainSidebarClosed()) {
-                            breakInterval();
-                        }
-                    });
+                    const isSidebarOpen = () => !isMainSidebarClosed();
+                    const sidebarClosed = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (isMainSidebarClosed()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isSidebarOpen },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_USER_MENU_BUTTON_ID);
 
@@ -178,11 +187,16 @@ export function YourFirstProjectTutorial() {
             {
                 id: "projects-switch-menu",
                 handler: async (ctx) => {
-                    const sidebarClosed = ctx.intervalBreak(1000, (breakInterval) => {
-                        if (isMainSidebarClosed()) {
-                            breakInterval();
-                        }
-                    });
+                    const isSidebarOpen = () => !isMainSidebarClosed();
+                    const sidebarClosed = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (isMainSidebarClosed()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isSidebarOpen },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
 
@@ -215,12 +229,16 @@ export function YourFirstProjectTutorial() {
             {
                 id: "project-create-form",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget = document.getElementById(APP_CREATE_PROJECT_FORM_ID) != null;
-                        if (!foundTarget) {
-                            breakInterval();
-                        }
-                    });
+                    const isCreateProjectFormRendered = () => document.getElementById(APP_CREATE_PROJECT_FORM_ID) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isCreateProjectFormRendered()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isCreateProjectFormRendered },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_CREATE_PROJECT_FORM_ID);
 

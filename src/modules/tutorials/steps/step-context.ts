@@ -188,10 +188,11 @@ export function createStepContext<TData extends StoredStepData>(
             intervalCleanups.add(cleanupIntervalForThis);
         },
 
-        intervalBreak(intervalMs, tick) {
+        intervalBreak(intervalMs, tick, options) {
             return new Promise<boolean>((resolve) => {
                 let broken = false;
                 let aborted = false;
+                let ready = options?.untilReady == null;
 
                 const cleanupIntervalForThis = (): void => {
                     window.clearInterval(intervalId);
@@ -212,6 +213,12 @@ export function createStepContext<TData extends StoredStepData>(
                 };
 
                 const intervalId = window.setInterval(() => {
+                    if (!ready) {
+                        if (options?.untilReady?.()) {
+                            ready = true;
+                        }
+                        return;
+                    }
                     tick(breakInterval);
                 }, intervalMs);
 

@@ -78,11 +78,16 @@ export function WriteAndCallYourApiTutorial() {
                         return;
                     }
 
-                    const sidebarClosed = ctx.intervalBreak(1000, (breakInterval) => {
-                        if (isMainSidebarClosed()) {
-                            breakInterval();
-                        }
-                    });
+                    const isSidebarOpen = () => !isMainSidebarClosed();
+                    const sidebarClosed = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (isMainSidebarClosed()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isSidebarOpen },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
 
@@ -130,12 +135,16 @@ export function WriteAndCallYourApiTutorial() {
             {
                 id: "develop-button",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget = document.getElementById(APP_DEVELOP_BUTTON_ID) != null;
-                        if (!foundTarget) {
-                            breakInterval();
-                        }
-                    });
+                    const isDevelopButtonRendered = () => document.getElementById(APP_DEVELOP_BUTTON_ID) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isDevelopButtonRendered()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isDevelopButtonRendered },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_DEVELOP_BUTTON_ID);
 
@@ -161,14 +170,18 @@ export function WriteAndCallYourApiTutorial() {
             {
                 id: "chat-composer-input",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget =
-                            document.getElementById(APP_CHAT_COMPOSER_ID) != null &&
-                            isNewConversationUrl(window.location.pathname);
-                        if (!foundTarget) {
-                            breakInterval();
-                        }
-                    });
+                    const isChatComposerReady = () =>
+                        document.getElementById(APP_CHAT_COMPOSER_ID) != null &&
+                        isNewConversationUrl(window.location.pathname);
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isChatComposerReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isChatComposerReady },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_CHAT_COMPOSER_ID);
 
@@ -200,14 +213,18 @@ export function WriteAndCallYourApiTutorial() {
             {
                 id: "waiting-for-unit-creation",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget =
-                            document.getElementById(APP_CHAT_COMPOSER_ID) != null &&
-                            isConversationSessionUrl(window.location.pathname);
-                        if (!foundTarget) {
-                            breakInterval();
-                        }
-                    });
+                    const isConversationChatReady = () =>
+                        document.getElementById(APP_CHAT_COMPOSER_ID) != null &&
+                        isConversationSessionUrl(window.location.pathname);
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isConversationChatReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isConversationChatReady },
+                    );
 
                     const [lostTargetRes] = await ctx.race(
                         lostTarget,
@@ -230,14 +247,18 @@ export function WriteAndCallYourApiTutorial() {
             {
                 id: "wait-for-release-stage-modal-opened",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget =
-                            assignLastReleaseControllerStageButtonSpotlightId() &&
-                            isConversationSessionUrl(window.location.pathname);
-                        if (!foundTarget) {
-                            breakInterval();
-                        }
-                    });
+                    const isReleaseStageButtonReady = () =>
+                        assignLastReleaseControllerStageButtonSpotlightId() &&
+                        isConversationSessionUrl(window.location.pathname);
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isReleaseStageButtonReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isReleaseStageButtonReady },
+                    );
 
                     assignLastReleaseControllerStageButtonSpotlightId();
                     setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID);
@@ -264,11 +285,15 @@ export function WriteAndCallYourApiTutorial() {
             {
                 id: "wait-for-deploy-on-stage",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        if (!isStageDeployModalOpen()) {
-                            breakInterval();
-                        }
-                    });
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isStageDeployModalOpen()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isStageDeployModalOpen },
+                    );
 
                     setTargetSpotlightOverlayElementId(APP_STAGE_DEPLOY_MODAL_ID);
 
@@ -298,14 +323,18 @@ export function WriteAndCallYourApiTutorial() {
             {
                 id: "wait-for-click-on-stage-release-button-to-go-to-release-page",
                 handler: async (ctx) => {
-                    const lostTarget = ctx.intervalBreak(1000, (breakInterval) => {
-                        const foundTarget =
-                            assignLastReleaseControllerStageReleaseLinkSpotlightId() &&
-                            isConversationSessionUrl(window.location.pathname);
-                        if (!foundTarget) {
-                            breakInterval();
-                        }
-                    });
+                    const isStageReleaseLinkReady = () =>
+                        assignLastReleaseControllerStageReleaseLinkSpotlightId() &&
+                        isConversationSessionUrl(window.location.pathname);
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isStageReleaseLinkReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isStageReleaseLinkReady },
+                    );
 
                     assignLastReleaseControllerStageReleaseLinkSpotlightId();
                     setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_ID);
