@@ -97,15 +97,18 @@ class ApiClient {
 
     private async refreshToken(): Promise<void> {
         if (this.refreshPromise) {
-            await this.refreshPromise;
-            return;
+            return this.refreshPromise;
         }
-        this.refreshPromise = this.doRefresh();
-        try {
-            await this.refreshPromise;
-        } finally {
-            this.refreshPromise = null;
-        }
+        
+        this.refreshPromise = (async () => {
+            try {
+                await this.doRefresh();
+            } finally {
+                this.refreshPromise = null;
+            }
+        })();
+        
+        return this.refreshPromise;
     }
 
     private shouldNotifyGlobalError(status: number, extendedOptions: ExtendedOptions): boolean {
@@ -160,7 +163,6 @@ class ApiClient {
             responseData = await response.json();
         } catch (error) {
             if (response.ok) {
-                // 2xx with empty/non-JSON body (e.g. 204 No Content or logout) → treat as success
                 return undefined as T;
             }
             console.error("Failed to parse response data", error);
@@ -177,7 +179,7 @@ class ApiClient {
             } else if (this.shouldNotifyGlobalError(response.status, extendedOptions)) {
                 this.onError?.(responseData, response.status);
             }
-            throw responseData;
+            throw { ...responseData, status: response.status };
         }
 
         return responseData as T;
@@ -253,7 +255,7 @@ class ApiClient {
             } else if (this.shouldNotifyGlobalError(response.status, extendedOptions ?? {})) {
                 this.onError?.(responseData, response.status);
             }
-            throw responseData;
+            throw { ...responseData, status: response.status };
         }
 
         return responseData;

@@ -6,26 +6,13 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { getCurrentUser } from "../api";
 import { AUTH_ERROR_PARAM } from "../constants";
-import { buildAuthErrorLoginSearch, resolvePostLoginPath } from "../lib/callback-url";
+import { buildAuthErrorLoginSearch, buildLoginCallbackUrl } from "../lib/callback-url";
 import { useCurrentUserQuery } from "../queries";
 
 const SESSION_EXPIRED_DEBOUNCE_MS = 400;
 
 export interface AuthProviderProps {
     children: ReactNode;
-}
-
-function buildLoginCallbackUrl(): string {
-    const { pathname, search } = window.location;
-    if (pathname === "/login") {
-        const existing = new URLSearchParams(search).get("callback-url");
-        if (existing) {
-            const path = resolvePostLoginPath(existing);
-            return `${window.location.origin}${path}`;
-        }
-        return `${window.location.origin}/dashboard`;
-    }
-    return `${window.location.origin}${pathname}${search}`;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {

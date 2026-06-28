@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@/lib/api-client";
+import type { ApiError, ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
 import type { GetTokensFilter, MeResponse, Token } from "./types";
 
@@ -10,7 +10,11 @@ export function getCurrentUser(): Promise<MeResponse | null> {
     return apiClient
         .get<ApiResponse<MeResponse>>(AUTH_ME_ENDPOINT)
         .then((res) => res.data ?? null)
-        .catch(() => null);
+        .catch((err: unknown) => {
+            const status = (err as ApiError)?.status;
+            if (status != null && status >= 500) throw err;
+            return null;
+        });
 }
 
 export function logout(): Promise<void> {

@@ -4,11 +4,15 @@ import { useAuth } from "../hooks";
 import { resolvePostLoginPath } from "../lib/callback-url";
 
 export function AuthOpenGuard() {
-    const { user, isLoading } = useAuth();
+    const { user, isLoading, isError } = useAuth();
     const [searchParams] = useSearchParams();
 
     if (isLoading) {
         return <LoadingFallback aria-label="Checking authentication" />;
+    }
+
+    if (isError) {
+        return <Outlet />;
     }
 
     if (user != null) {

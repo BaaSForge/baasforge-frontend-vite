@@ -48,11 +48,7 @@ export const router = createBrowserRouter([
     },
     {
         path: "/",
-        element: (
-            <AuthProvider>
-                <RootLayout />
-            </AuthProvider>
-        ),
+        element: <RootLayout />,
         errorElement: <GeneralErrorPage />,
         children: [
             {
@@ -62,7 +58,11 @@ export const router = createBrowserRouter([
                         element: <HomePage />,
                     },
                     {
-                        element: <AuthClosedGuard />,
+                        element: (
+                            <AuthProvider>
+                                <AuthClosedGuard />
+                            </AuthProvider>
+                        ),
                         children: [
                             {
                                 element: <AuthLayout />,

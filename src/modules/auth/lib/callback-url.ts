@@ -34,6 +34,19 @@ export function buildAuthErrorLoginSearch(pathname: string, searchParams: URLSea
     return loginParams.toString();
 }
 
+export function buildLoginCallbackUrl(): string {
+    const { pathname, search } = window.location;
+    if (pathname === "/login") {
+        const existing = new URLSearchParams(search).get(CALLBACK_URL_PARAM);
+        if (existing) {
+            const path = resolvePostLoginPath(existing);
+            return `${window.location.origin}${path}`;
+        }
+        return `${window.location.origin}${DEFAULT_POST_LOGIN_PATH}`;
+    }
+    return `${window.location.origin}${pathname}${search}`;
+}
+
 export function resolvePostLoginPath(callbackUrlParam: string | null, fallback = DEFAULT_POST_LOGIN_PATH): string {
     if (callbackUrlParam == null || callbackUrlParam === "") {
         return fallback;

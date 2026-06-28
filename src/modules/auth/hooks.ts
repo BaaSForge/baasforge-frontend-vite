@@ -8,6 +8,7 @@ import { userFromMe } from "./types";
 export interface UseAuthReturn {
     user: User | null;
     isLoading: boolean;
+    isError: boolean;
     refetch: () => Promise<unknown>;
     logout: () => Promise<void>;
 }
@@ -15,7 +16,7 @@ export interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
     const navigate = useNavigate();
     const location = useLocation();
-    const { data: me, isLoading, refetch } = useCurrentUserQuery();
+    const { data: me, isLoading, isError, refetch } = useCurrentUserQuery();
     const { mutateAsync: logoutMutation } = useLogoutMutation();
 
     const logout = useCallback(async () => {
@@ -29,6 +30,7 @@ export function useAuth(): UseAuthReturn {
     return {
         user: me != null ? userFromMe(me) : null,
         isLoading,
+        isError,
         refetch,
         logout,
     };
