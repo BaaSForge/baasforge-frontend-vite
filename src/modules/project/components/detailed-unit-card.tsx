@@ -73,6 +73,8 @@ export type DetailedUnitCardProps = {
     releaseIsLive?: boolean;
     /** When set, adds a tutorial spotlight target id to the Live interaction toggle. */
     tutorialLiveInteractionTargetId?: string;
+    tutorialScalarTestRequestTargetId?: string;
+    tutorialScalarSendTargetId?: string;
     /** When live interaction or dependencies panel is expanded (for host-driven chrome, e.g. opacity). */
     onPanelEmphasisChange?: (emphasis: boolean) => void;
 };
@@ -91,6 +93,8 @@ export function DetailedUnitCard({
     releaseIsStage,
     releaseIsLive = true,
     tutorialLiveInteractionTargetId,
+    tutorialScalarTestRequestTargetId,
+    tutorialScalarSendTargetId,
     onPanelEmphasisChange,
 }: DetailedUnitCardProps) {
     const hasParent = unit.revision > 1;
@@ -320,6 +324,8 @@ export function DetailedUnitCard({
                                             projectRuntimeBaseUrl={unitRuntimeBaseUrl}
                                             scalarEmbedReadyNotifyGeneration={scalarEmbedReadyNotifyGen}
                                             onScalarEmbedReady={handleScalarEmbedReady}
+                                            tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
+                                            tutorialScalarSendTargetId={tutorialScalarSendTargetId}
                                         />
                                     ) : unit.unit_type === "actor" ? (
                                         <ActorUnitLiveInteraction

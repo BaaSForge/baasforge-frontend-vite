@@ -3,7 +3,7 @@
 import { DetailedUnitCard } from "@/modules/project/components/detailed-unit-card";
 import { projectUnitStablePath } from "@/modules/project/project-unit-stable-path";
 import type { ProjectUnitResponse } from "@/modules/project/types";
-import { tutorialFirstUnitLiveInteractionButtonId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/tutorial-target-ids";
+import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/tutorial-target-ids";
 import { useWriteAndCallTutorialFirstUnitId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/use-write-and-call-tutorial-first-unit-id";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -37,6 +37,10 @@ export function AllUnitsUnitRow({
     const tutorialFirstUnitId = useWriteAndCallTutorialFirstUnitId();
     const tutorialLiveInteractionTargetId =
         tutorialFirstUnitId === unit.id ? tutorialFirstUnitLiveInteractionButtonId(unit.id) : undefined;
+    const tutorialScalarTestRequestTargetId =
+        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarTestRequestButtonId(unit.id) : undefined;
+    const tutorialScalarSendTargetId =
+        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarSendButtonId(unit.id) : undefined;
 
     return (
         <div
@@ -55,6 +59,8 @@ export function AllUnitsUnitRow({
                 releaseIsStage={releaseIsStage}
                 releaseIsLive={releaseIsLive}
                 tutorialLiveInteractionTargetId={tutorialLiveInteractionTargetId}
+                tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
+                tutorialScalarSendTargetId={tutorialScalarSendTargetId}
                 onPanelEmphasisChange={setEmphasisPanels}
                 leadingHeaderToolbar={
                     <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">

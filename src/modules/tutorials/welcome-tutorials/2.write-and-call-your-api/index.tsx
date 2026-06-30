@@ -26,7 +26,7 @@ import { APP_UNIT_CHANGES_MODAL_ID } from "@/modules/project-chat";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
 import type { WriteAndCallYourApiTutorialData } from "./types";
-import { tutorialFirstUnitLiveInteractionButtonId } from "./tutorial-target-ids";
+import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId } from "./tutorial-target-ids";
 
 const TUTORIAL_ID = "write-and-call-your-api" as const;
 
@@ -579,6 +579,100 @@ export function WriteAndCallYourApiTutorial() {
 
                     if (lostTargetRes) {
                         ctx.goTo("filter-unit-by-id");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "start-scalar-http-client",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    const targetElementId = tutorialFirstUnitScalarTestRequestButtonId(firstUnitId);
+                    const isTestRequestReady = () => document.getElementById(targetElementId) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isTestRequestReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isTestRequestReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(targetElementId);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Open the HTTP client</p>
+                            <p className="text-muted-foreground mt-1">
+                                Click Test Request to open the built-in client and call your API.
+                            </p>
+                        </>
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.SCALAR_TEST_REQUEST_CLICKED_EVENT),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("call-unit-live-interaction");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "send-scalar-http-request",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    const targetElementId = tutorialFirstUnitScalarSendButtonId(firstUnitId);
+                    const isSendReady = () => document.getElementById(targetElementId) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isSendReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isSendReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(targetElementId);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Send your request</p>
+                            <p className="text-muted-foreground mt-1">
+                                Click Send to call your API with the built-in HTTP client.
+                            </p>
+                        </>
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.SCALAR_SEND_CLICKED_EVENT),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("start-scalar-http-client");
                         return;
                     }
 

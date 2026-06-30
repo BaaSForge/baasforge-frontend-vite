@@ -8,7 +8,7 @@ import { saveTutorialProgress, type TutorialStatus } from "@/services/tutorials"
 import { clearSpotlightContent, flushSpotlightContent, setSpotlightContentToRender } from "./spotlight-renderer";
 import type { StepContext, StoredStepData, TutorialStepsIdentity } from "./types";
 
-const DEFAULT_UNTIL_READY_TIMEOUT_MS = 10_000;
+const DEFAULT_UNTIL_READY_TIMEOUT_MS = 5_000;
 
 function delay(delayMs: number, onceCleanups: Set<() => void>): Promise<void> {
     return new Promise<void>((resolve) => {

@@ -16,3 +16,11 @@ export function emitStageReleaseBadgeClicked(): void {
 export function emitUnitLiveInteractionClicked(): void {
     triggerAppEvent(events.UNIT_LIVE_INTERACTION_CLICKED_EVENT);
 }
+
+export function emitScalarTestRequestClicked(): void {
+    triggerAppEvent(events.SCALAR_TEST_REQUEST_CLICKED_EVENT);
+}
+
+export function emitScalarSendClicked(): void {
+    triggerAppEvent(events.SCALAR_SEND_CLICKED_EVENT);
+}

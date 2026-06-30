@@ -12,6 +12,8 @@ import { ensureScalarApiReferenceStylesLoaded } from "./scalar-api-reference-sty
 import { acquireScalarHistoryUrlSyncBlock } from "./scalar-history-url-sync-block";
 import { scalarSiteEmbedConfiguration } from "./scalar-site-embed";
 import { useScalarHttpTestAiNudge } from "./scalar-http-test-ai-nudge";
+import { useTutorialScalarTestRequestTarget } from "./use-tutorial-scalar-test-request-target";
+import { useTutorialScalarSendTarget } from "./use-tutorial-scalar-send-target";
 
 const ApiReferenceReactLazy = lazy(() =>
     import("@scalar/api-reference-react").then((m) => ({ default: m.ApiReferenceReact })),
@@ -160,6 +162,8 @@ export type ScalarHttpOperationClientProps = {
     omitRequestBody?: boolean;
     onEmbedReady?: () => void;
     readyNotifyGeneration?: number;
+    tutorialScalarTestRequestTargetId?: string;
+    tutorialScalarSendTargetId?: string;
 };
 
 export function ScalarHttpOperationClient({
@@ -174,9 +178,14 @@ export function ScalarHttpOperationClient({
     omitRequestBody,
     onEmbedReady,
     readyNotifyGeneration = 0,
+    tutorialScalarTestRequestTargetId,
+    tutorialScalarSendTargetId,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
     const scalarHttpTestAiNudge = useScalarHttpTestAiNudge();
+    const rootRef = useRef<HTMLDivElement>(null);
+    useTutorialScalarTestRequestTarget(rootRef, tutorialScalarTestRequestTargetId);
+    useTutorialScalarSendTarget(tutorialScalarSendTargetId);
 
     const configuration = useMemo((): AnyApiReferenceConfiguration => {
         const { serverBaseUrl: server, path } = resolveOperationUrl(url, serverBaseUrl);
@@ -212,6 +221,7 @@ export function ScalarHttpOperationClient({
 
     return (
         <div
+            ref={rootRef}
             className={cn(
                 "scalar-http-operation-client scalar-app w-full min-h-0 overflow-visible rounded-md",
                 className,
