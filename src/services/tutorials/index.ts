@@ -25,6 +25,8 @@ export {
     getTutorialProgressRecord,
     getTutorialProgressSnapshot,
     getTutorialStatus,
+    hydratePendingTutorialRegistry,
+    isAnyTutorialPendingAction,
     saveTutorialProgress,
     subscribeTutorialProgress,
 } from "./tutorial-progress-service";

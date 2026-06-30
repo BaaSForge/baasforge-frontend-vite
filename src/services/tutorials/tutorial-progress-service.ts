@@ -1,5 +1,5 @@
 import { clientIdbDelete, clientIdbGet, clientIdbSet } from "@/lib/client-idb-kv";
-import type { TutorialGroupId, TutorialId } from "./tutorials";
+import { TUTORIAL_GROUPS, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
 import type { TutorialProgressRecord, TutorialStatus } from "./types";
 
 const PREFIX = "tutorial-progress:v1:";
@@ -9,6 +9,44 @@ const TUTORIAL_STATUSES = ["idle", "pending-action", "interrupted", "completed"]
 let progressVersion = 0;
 
 const listeners = new Set<() => void>();
+
+const pendingTutorialKeys = new Set<string>();
+
+let hydratePendingTutorialRegistryStarted = false;
+
+function pendingTutorialRegistryKey(tutorialGroupId: TutorialGroupId, tutorialId: TutorialId): string {
+    return `${tutorialGroupId}\0${tutorialId}`;
+}
+
+function syncPendingTutorialRegistryKey(
+    tutorialGroupId: TutorialGroupId,
+    tutorialId: TutorialId,
+    status: TutorialStatus,
+): void {
+    const key = pendingTutorialRegistryKey(tutorialGroupId, tutorialId);
+    if (status === "pending-action") pendingTutorialKeys.add(key);
+    else pendingTutorialKeys.delete(key);
+}
+
+export function isAnyTutorialPendingAction(): boolean {
+    return pendingTutorialKeys.size > 0;
+}
+
+export function hydratePendingTutorialRegistry(): void {
+    if (hydratePendingTutorialRegistryStarted || typeof globalThis.window === "undefined") return;
+    hydratePendingTutorialRegistryStarted = true;
+
+    void (async () => {
+        for (const group of TUTORIAL_GROUPS) {
+            for (const tutorial of getTutorialsByGroupId(group.id)) {
+                const record = await getTutorialProgressRecord(group.id, tutorial.id);
+                if (record?.status === "pending-action") {
+                    pendingTutorialKeys.add(pendingTutorialRegistryKey(group.id, tutorial.id));
+                }
+            }
+        }
+    })();
+}
 
 function emit(): void {
     progressVersion += 1;
@@ -62,6 +100,7 @@ export async function saveTutorialProgress<TMetadata = null>(
         status,
         metadata,
     };
+    syncPendingTutorialRegistryKey(tutorialGroupId, tutorialId, status);
     await clientIdbSet(progressKey(tutorialGroupId, tutorialId), record);
     emit();
 }
@@ -86,6 +125,7 @@ export async function clearTutorialProgress(
     tutorialGroupId: TutorialGroupId,
     tutorialId: TutorialId,
 ): Promise<void> {
+    syncPendingTutorialRegistryKey(tutorialGroupId, tutorialId, "idle");
     await clientIdbDelete(progressKey(tutorialGroupId, tutorialId));
     emit();
 }

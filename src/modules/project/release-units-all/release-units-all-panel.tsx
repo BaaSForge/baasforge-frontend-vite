@@ -235,9 +235,9 @@ export function ReleaseUnitsAllPanel({
         setSearchParams,
     ]);
 
-    const patchUrl = (patch: Parameters<typeof mergeAllUnitsSearchParams>[1]) => {
+    const patchUrl = useCallback((patch: Parameters<typeof mergeAllUnitsSearchParams>[1]) => {
         setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), patch));
-    };
+    }, [setSearchParams]);
 
     const applyUnitsPathsFilter = useCallback(
         (next: string[]) => {

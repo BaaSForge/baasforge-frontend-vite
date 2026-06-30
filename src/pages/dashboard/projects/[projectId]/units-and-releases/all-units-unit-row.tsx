@@ -3,7 +3,13 @@
 import { DetailedUnitCard } from "@/modules/project/components/detailed-unit-card";
 import { projectUnitStablePath } from "@/modules/project/project-unit-stable-path";
 import type { ProjectUnitResponse } from "@/modules/project/types";
-import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/tutorial-target-ids";
+import {
+    tutorialFirstUnitLiveInteractionButtonId,
+    tutorialFirstUnitScalarResponseBodySectionId,
+    tutorialFirstUnitScalarResponseHeadersButtonId,
+    tutorialFirstUnitScalarSendButtonId,
+    tutorialFirstUnitScalarTestRequestButtonId,
+} from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/tutorial-target-ids";
 import { useWriteAndCallTutorialFirstUnitId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/use-write-and-call-tutorial-first-unit-id";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -41,6 +47,10 @@ export function AllUnitsUnitRow({
         tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarTestRequestButtonId(unit.id) : undefined;
     const tutorialScalarSendTargetId =
         tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarSendButtonId(unit.id) : undefined;
+    const tutorialScalarResponseHeadersTargetId =
+        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarResponseHeadersButtonId(unit.id) : undefined;
+    const tutorialScalarResponseBodyTargetId =
+        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarResponseBodySectionId(unit.id) : undefined;
 
     return (
         <div
@@ -61,6 +71,8 @@ export function AllUnitsUnitRow({
                 tutorialLiveInteractionTargetId={tutorialLiveInteractionTargetId}
                 tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
                 tutorialScalarSendTargetId={tutorialScalarSendTargetId}
+                tutorialScalarResponseHeadersTargetId={tutorialScalarResponseHeadersTargetId}
+                tutorialScalarResponseBodyTargetId={tutorialScalarResponseBodyTargetId}
                 onPanelEmphasisChange={setEmphasisPanels}
                 leadingHeaderToolbar={
                     <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">

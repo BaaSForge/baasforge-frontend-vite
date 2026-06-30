@@ -29,6 +29,8 @@ export type ApiUnitLiveInteractionProps = {
     onScalarEmbedReady?: () => void;
     tutorialScalarTestRequestTargetId?: string;
     tutorialScalarSendTargetId?: string;
+    tutorialScalarResponseHeadersTargetId?: string;
+    tutorialScalarResponseBodyTargetId?: string;
 };
 
 export function ApiUnitLiveInteraction({
@@ -40,6 +42,8 @@ export function ApiUnitLiveInteraction({
     onScalarEmbedReady,
     tutorialScalarTestRequestTargetId,
     tutorialScalarSendTargetId,
+    tutorialScalarResponseHeadersTargetId,
+    tutorialScalarResponseBodyTargetId,
 }: ApiUnitLiveInteractionProps) {
     const meta = readApiUnitMetadata(unit);
     const apiBase = (projectRuntimeBaseUrl ?? "").trim().replace(/\/$/, "");
@@ -73,6 +77,8 @@ export function ApiUnitLiveInteraction({
             readyNotifyGeneration={scalarEmbedReadyNotifyGeneration}
             tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
             tutorialScalarSendTargetId={tutorialScalarSendTargetId}
+            tutorialScalarResponseHeadersTargetId={tutorialScalarResponseHeadersTargetId}
+            tutorialScalarResponseBodyTargetId={tutorialScalarResponseBodyTargetId}
         />
     );
 }

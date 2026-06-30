@@ -14,6 +14,7 @@ import { AppSyntaxHighlighter } from "@/components/syntax-highlight/app-syntax-h
 import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 import { createDefaultExponentialPostponeMs, createInformSchedule } from "@/services/informed-user-schedule";
+import { hydratePendingTutorialRegistry, isAnyTutorialPendingAction } from "@/services/tutorials";
 import { pushAppNotification } from "@/stores/app-notifications";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
@@ -31,6 +32,7 @@ const scalarHttpTestAiNudgeOpenHandlers = new Set<() => void>();
 const scalarHttpTestAiNudgeDialogOpenRef = { current: false };
 
 export function emitScalarHttpTestAiNudgeOpen(): void {
+    if (isAnyTutorialPendingAction()) return;
     for (const openNow of scalarHttpTestAiNudgeOpenHandlers) {
         openNow();
     }
@@ -49,6 +51,7 @@ let inboxSyncMicrotaskQueued = false;
 
 export function scheduleScalarHttpTestAiNudgeInboxSync(): void {
     if (typeof globalThis.window === "undefined") return;
+    if (isAnyTutorialPendingAction()) return;
     if (inboxSyncMicrotaskQueued) return;
     inboxSyncMicrotaskQueued = true;
     queueMicrotask(() => {
@@ -58,6 +61,7 @@ export function scheduleScalarHttpTestAiNudgeInboxSync(): void {
 }
 
 function pushScalarHttpTestAiNudgeInboxNotification(): void {
+    if (isAnyTutorialPendingAction()) return;
     if (scalarHttpTestAiInformSchedule.readPersisted() == null) return;
     pushAppNotification({
         group: SCALAR_HTTP_TEST_AI_NUDGE_NOTIFICATION_GROUP,
@@ -304,6 +308,7 @@ export function ScalarHttpTestAiNudgeGlobalHost() {
         const openFromSignal = () => {
             globalThis.setTimeout(() => {
                 if (!alive) return;
+                if (isAnyTutorialPendingAction()) return;
                 setOpen(true);
                 scalarHttpTestAiNudgeDialogOpenRef.current = true;
             }, 0);
@@ -324,7 +329,12 @@ export function ScalarHttpTestAiNudgeGlobalHost() {
 }
 
 export function useScalarHttpTestAiNudge() {
+    useEffect(() => {
+        hydratePendingTutorialRegistry();
+    }, []);
+
     const onRequestSent = useCallback(() => {
+        if (isAnyTutorialPendingAction()) return;
         if (!scalarHttpTestAiInformSchedule.shouldShow()) return;
         if (scalarHttpTestAiNudgeDialogOpenRef.current) return;
         emitScalarHttpTestAiNudgeOpen();

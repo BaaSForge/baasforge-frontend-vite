@@ -18,6 +18,7 @@ import {
     SpotlightFillUnitFilterButton,
     SpotlightPrimaryActionButton,
 } from "@/components/target-spotlight-overlay";
+import { closeScalarClientModal } from "@/components/scalar-http-operation-client/close-scalar-client-modal";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
 import { isConversationSessionUrl, isNewConversationUrl, isProjectSelectedUrl } from "@/services/routes";
@@ -26,7 +27,13 @@ import { APP_UNIT_CHANGES_MODAL_ID } from "@/modules/project-chat";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
 import type { WriteAndCallYourApiTutorialData } from "./types";
-import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId } from "./tutorial-target-ids";
+import {
+    tutorialFirstUnitLiveInteractionButtonId,
+    tutorialFirstUnitScalarResponseBodySectionId,
+    tutorialFirstUnitScalarResponseHeadersButtonId,
+    tutorialFirstUnitScalarSendButtonId,
+    tutorialFirstUnitScalarTestRequestButtonId,
+} from "./tutorial-target-ids";
 
 const TUTORIAL_ID = "write-and-call-your-api" as const;
 
@@ -676,6 +683,103 @@ export function WriteAndCallYourApiTutorial() {
                         return;
                     }
 
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "copy-scalar-trace-id",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    const targetElementId = tutorialFirstUnitScalarResponseHeadersButtonId(firstUnitId);
+                    const isResponseHeadersReady = () => document.getElementById(targetElementId) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isResponseHeadersReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isResponseHeadersReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(targetElementId);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Response headers</p>
+                            <p className="text-muted-foreground mt-1">
+                                Here are the response headers from your call. Copy the value of <code className="text-foreground">X-Trace-Id</code> header — you will need it for debugging in later tutorials.
+                            </p>
+                        </>,
+                        <SpotlightPrimaryActionButton>Ok I copied it</SpotlightPrimaryActionButton>,
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("send-scalar-http-request");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "review-scalar-response-body",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    const targetElementId = tutorialFirstUnitScalarResponseBodySectionId(firstUnitId);
+                    const isResponseBodyReady = () => document.getElementById(targetElementId) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isResponseBodyReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isResponseBodyReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(targetElementId);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Response body</p>
+                            <p className="text-muted-foreground mt-1">
+                                This is the response from the API unit you just created.
+                            </p>
+                        </>,
+                        <SpotlightPrimaryActionButton>Got it</SpotlightPrimaryActionButton>,
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("copy-scalar-trace-id");
+                        return;
+                    }
+
+                    closeScalarClientModal();
                     void ctx.next({});
                 },
             },

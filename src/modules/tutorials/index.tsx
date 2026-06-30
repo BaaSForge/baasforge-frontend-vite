@@ -3,11 +3,12 @@
 import {
     findActiveTutorialId,
     getTutorialsByGroupId,
+    hydratePendingTutorialRegistry,
     useTutorialStatuses,
     WELCOME_TUTORIALS_GROUP_ID,
     type TutorialId,
 } from "@/services/tutorials";
-import { useMemo, type ComponentType } from "react";
+import { useMemo, useEffect, type ComponentType } from "react";
 import { CostsInActionTutorial } from "./welcome-tutorials/6.costs-in-action";
 import { DebugAndReleaseTutorial } from "./welcome-tutorials/3.debug-and-release";
 import { ProjectVariablesTutorial } from "./welcome-tutorials/5.project-variables";
@@ -32,6 +33,10 @@ const WELCOME_TUTORIAL_COMPONENTS = {
  * modal open (or open one) while a tutorial may start or is running.
  */
 export function TutorialGlobalHost() {
+    useEffect(() => {
+        hydratePendingTutorialRegistry();
+    }, []);
+
     const tutorialIds = useMemo(
         () => getTutorialsByGroupId(WELCOME_TUTORIALS_GROUP_ID).map((tutorial) => tutorial.id),
         [],

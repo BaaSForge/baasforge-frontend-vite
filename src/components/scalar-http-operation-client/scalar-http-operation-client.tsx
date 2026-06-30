@@ -14,6 +14,8 @@ import { scalarSiteEmbedConfiguration } from "./scalar-site-embed";
 import { useScalarHttpTestAiNudge } from "./scalar-http-test-ai-nudge";
 import { useTutorialScalarTestRequestTarget } from "./use-tutorial-scalar-test-request-target";
 import { useTutorialScalarSendTarget } from "./use-tutorial-scalar-send-target";
+import { useTutorialScalarResponseHeadersTarget } from "./use-tutorial-scalar-response-headers-target";
+import { useTutorialScalarResponseBodyTarget } from "./use-tutorial-scalar-response-body-target";
 
 const ApiReferenceReactLazy = lazy(() =>
     import("@scalar/api-reference-react").then((m) => ({ default: m.ApiReferenceReact })),
@@ -164,6 +166,8 @@ export type ScalarHttpOperationClientProps = {
     readyNotifyGeneration?: number;
     tutorialScalarTestRequestTargetId?: string;
     tutorialScalarSendTargetId?: string;
+    tutorialScalarResponseHeadersTargetId?: string;
+    tutorialScalarResponseBodyTargetId?: string;
 };
 
 export function ScalarHttpOperationClient({
@@ -180,12 +184,16 @@ export function ScalarHttpOperationClient({
     readyNotifyGeneration = 0,
     tutorialScalarTestRequestTargetId,
     tutorialScalarSendTargetId,
+    tutorialScalarResponseHeadersTargetId,
+    tutorialScalarResponseBodyTargetId,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
     const scalarHttpTestAiNudge = useScalarHttpTestAiNudge();
     const rootRef = useRef<HTMLDivElement>(null);
     useTutorialScalarTestRequestTarget(rootRef, tutorialScalarTestRequestTargetId);
     useTutorialScalarSendTarget(tutorialScalarSendTargetId);
+    useTutorialScalarResponseHeadersTarget(tutorialScalarResponseHeadersTargetId);
+    useTutorialScalarResponseBodyTarget(tutorialScalarResponseBodyTargetId);
 
     const configuration = useMemo((): AnyApiReferenceConfiguration => {
         const { serverBaseUrl: server, path } = resolveOperationUrl(url, serverBaseUrl);

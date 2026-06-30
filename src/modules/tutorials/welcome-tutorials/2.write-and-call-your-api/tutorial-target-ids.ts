@@ -9,3 +9,11 @@ export function tutorialFirstUnitScalarTestRequestButtonId(unitId: string): stri
 export function tutorialFirstUnitScalarSendButtonId(unitId: string): string {
     return `tutorial-first-unit-scalar-send-${unitId}`;
 }
+
+export function tutorialFirstUnitScalarResponseHeadersButtonId(unitId: string): string {
+    return `tutorial-first-unit-scalar-response-headers-${unitId}`;
+}
+
+export function tutorialFirstUnitScalarResponseBodySectionId(unitId: string): string {
+    return `tutorial-first-unit-scalar-response-body-${unitId}`;
+}

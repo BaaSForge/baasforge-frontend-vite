@@ -75,6 +75,8 @@ export type DetailedUnitCardProps = {
     tutorialLiveInteractionTargetId?: string;
     tutorialScalarTestRequestTargetId?: string;
     tutorialScalarSendTargetId?: string;
+    tutorialScalarResponseHeadersTargetId?: string;
+    tutorialScalarResponseBodyTargetId?: string;
     /** When live interaction or dependencies panel is expanded (for host-driven chrome, e.g. opacity). */
     onPanelEmphasisChange?: (emphasis: boolean) => void;
 };
@@ -95,6 +97,8 @@ export function DetailedUnitCard({
     tutorialLiveInteractionTargetId,
     tutorialScalarTestRequestTargetId,
     tutorialScalarSendTargetId,
+    tutorialScalarResponseHeadersTargetId,
+    tutorialScalarResponseBodyTargetId,
     onPanelEmphasisChange,
 }: DetailedUnitCardProps) {
     const hasParent = unit.revision > 1;
@@ -326,6 +330,8 @@ export function DetailedUnitCard({
                                             onScalarEmbedReady={handleScalarEmbedReady}
                                             tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
                                             tutorialScalarSendTargetId={tutorialScalarSendTargetId}
+                                            tutorialScalarResponseHeadersTargetId={tutorialScalarResponseHeadersTargetId}
+                                            tutorialScalarResponseBodyTargetId={tutorialScalarResponseBodyTargetId}
                                         />
                                     ) : unit.unit_type === "actor" ? (
                                         <ActorUnitLiveInteraction
