@@ -26,6 +26,7 @@ import { APP_UNIT_CHANGES_MODAL_ID } from "@/modules/project-chat";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
 import type { WriteAndCallYourApiTutorialData } from "./types";
+import { tutorialFirstUnitLiveInteractionButtonId } from "./tutorial-target-ids";
 
 const TUTORIAL_ID = "write-and-call-your-api" as const;
 
@@ -531,6 +532,53 @@ export function WriteAndCallYourApiTutorial() {
 
                     if (lostTargetRes) {
                         ctx.goTo("develop-button");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "call-unit-live-interaction",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    const targetElementId = tutorialFirstUnitLiveInteractionButtonId(firstUnitId);
+                    const isLiveInteractionReady = () => document.getElementById(targetElementId) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isLiveInteractionReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isLiveInteractionReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(targetElementId);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Call your API</p>
+                            <p className="text-muted-foreground mt-1">
+                                Click Live interaction to open the built-in client and call the API you just created.
+                            </p>
+                        </>
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.UNIT_LIVE_INTERACTION_CLICKED_EVENT),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("filter-unit-by-id");
                         return;
                     }
 

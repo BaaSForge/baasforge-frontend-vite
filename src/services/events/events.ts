@@ -30,6 +30,7 @@ export const events = {
     STAGE_DEPLOY_MODAL_OPENED_EVENT: "stage-deploy-modal-opened",
     STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT: "stage-deploy-on-runtime-done",
     STAGE_RELEASE_BADGE_CLICKED_EVENT: "stage-release-badge-clicked",
+    UNIT_LIVE_INTERACTION_CLICKED_EVENT: "unit-live-interaction-clicked",
 } as const;
 
 export type AppEventName = (typeof events)[keyof typeof events];
@@ -63,4 +64,5 @@ export type AppEventPayloadMap = {
     [events.STAGE_DEPLOY_MODAL_OPENED_EVENT]: undefined;
     [events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT]: string | undefined;
     [events.STAGE_RELEASE_BADGE_CLICKED_EVENT]: undefined;
+    [events.UNIT_LIVE_INTERACTION_CLICKED_EVENT]: undefined;
 };

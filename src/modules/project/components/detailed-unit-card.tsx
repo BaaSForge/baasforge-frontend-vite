@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { Maximize2, TriangleAlert } from "lucide-react";
 import { scheduleScalarHttpTestAiNudgeInboxSync } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
+import { emitUnitLiveInteractionClicked } from "@/services/events";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
@@ -70,6 +71,8 @@ export type DetailedUnitCardProps = {
     /** From the open release (`is_stage`); picks stage vs production trigger URL. */
     releaseIsStage?: boolean;
     releaseIsLive?: boolean;
+    /** When set, adds a tutorial spotlight target id to the Live interaction toggle. */
+    tutorialLiveInteractionTargetId?: string;
     /** When live interaction or dependencies panel is expanded (for host-driven chrome, e.g. opacity). */
     onPanelEmphasisChange?: (emphasis: boolean) => void;
 };
@@ -87,6 +90,7 @@ export function DetailedUnitCard({
     stageRuntimeId,
     releaseIsStage,
     releaseIsLive = true,
+    tutorialLiveInteractionTargetId,
     onPanelEmphasisChange,
 }: DetailedUnitCardProps) {
     const hasParent = unit.revision > 1;
@@ -252,6 +256,9 @@ export function DetailedUnitCard({
                                     const willInteraction = next.includes("interaction");
                                     setInteractionOpen(willInteraction);
                                     if (willInteraction && !hadInteraction) {
+                                        if (tutorialLiveInteractionTargetId != null) {
+                                            emitUnitLiveInteractionClicked();
+                                        }
                                         setScalarEmbedReadyNotifyGen((g) => g + 1);
                                         scrollUnitCardAfterScalarRef.current = true;
                                     }
@@ -268,6 +275,7 @@ export function DetailedUnitCard({
                             </ToggleGroupItem>
                             {supportsLiveInteraction ? (
                                 <ToggleGroupItem
+                                    id={tutorialLiveInteractionTargetId}
                                     value="interaction"
                                     disabled={!releaseIsLive}
                                     className="h-7 min-w-0 px-2.5 py-0 text-xs"

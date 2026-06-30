@@ -3,6 +3,8 @@
 import { DetailedUnitCard } from "@/modules/project/components/detailed-unit-card";
 import { projectUnitStablePath } from "@/modules/project/project-unit-stable-path";
 import type { ProjectUnitResponse } from "@/modules/project/types";
+import { tutorialFirstUnitLiveInteractionButtonId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/tutorial-target-ids";
+import { useWriteAndCallTutorialFirstUnitId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/use-write-and-call-tutorial-first-unit-id";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { AllUnitsFlagTestedIconButton } from "./all-units-flag-tested-icon-button";
@@ -32,6 +34,9 @@ export function AllUnitsUnitRow({
 }: AllUnitsUnitRowProps) {
     const { flagged, toggle } = useAllUnitsUnitFlagTested(projectId, unit);
     const [emphasisPanels, setEmphasisPanels] = useState(false);
+    const tutorialFirstUnitId = useWriteAndCallTutorialFirstUnitId();
+    const tutorialLiveInteractionTargetId =
+        tutorialFirstUnitId === unit.id ? tutorialFirstUnitLiveInteractionButtonId(unit.id) : undefined;
 
     return (
         <div
@@ -49,6 +54,7 @@ export function AllUnitsUnitRow({
                 stageRuntimeId={stageRuntimeId}
                 releaseIsStage={releaseIsStage}
                 releaseIsLive={releaseIsLive}
+                tutorialLiveInteractionTargetId={tutorialLiveInteractionTargetId}
                 onPanelEmphasisChange={setEmphasisPanels}
                 leadingHeaderToolbar={
                     <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
