@@ -4,6 +4,8 @@ import { ContentLoadingState } from "@/components/content-loading-state";
 import { SectionTitle } from "@/components/section-title";
 import { Button } from "@/components/ui/button";
 import { FilterClearButton } from "@/components/ui/filter-clear-button";
+
+export const APP_RELEASE_UNITS_FILTER_INPUT_ID = "app-release-units-filter-input";
 import {
     Combobox,
     ComboboxChip,
@@ -42,6 +44,7 @@ import { useAllUnitsPins } from "@/modules/project/use-all-units-pins";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Fragment, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
+import { events, listenAppEvent, triggerAppEvent } from "@/services/events";
 import { groupUnitsByType, sortedProjectUnitTypes } from "@/pages/dashboard/projects/[projectId]/units-and-releases/group-units-by-type";
 import {
     DEFAULT_ALL_UNITS_PAGE,
@@ -172,6 +175,7 @@ export function ReleaseUnitsAllPanel({
 
     useEffect(() => {
         if (!tabActive || !data) return;
+        triggerAppEvent(events.RELEASE_UNITS_LOADED_EVENT);
         const totalPages = Math.max(1, Math.ceil(data.total / data.page_size));
         if (data.page > totalPages) {
             setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), { page: totalPages }));
@@ -234,6 +238,23 @@ export function ReleaseUnitsAllPanel({
     const patchUrl = (patch: Parameters<typeof mergeAllUnitsSearchParams>[1]) => {
         setSearchParams((prev) => mergeAllUnitsSearchParams(new URLSearchParams(prev), patch));
     };
+
+    const applyUnitsPathsFilter = useCallback(
+        (next: string[]) => {
+            patchUrl({ unitsPaths: next, page: DEFAULT_ALL_UNITS_PAGE });
+            triggerAppEvent(events.RELEASE_UNITS_FILTER_APPLIED_EVENT, { unitsPaths: next });
+        },
+        [patchUrl],
+    );
+
+    useEffect(() => {
+        return listenAppEvent(events.RELEASE_UNITS_FILTER_FILL_UNIT_ID_EVENT, (event) => {
+            const unitId = event.detail.unitId;
+            if (!unitsPaths.includes(unitId)) {
+                applyUnitsPathsFilter([...unitsPaths, unitId]);
+            }
+        });
+    }, [unitsPaths, applyUnitsPathsFilter]);
 
     const unitTypesAnchor = useComboboxAnchor();
 
@@ -412,9 +433,10 @@ export function ReleaseUnitsAllPanel({
                 <div className="flex min-h-9 min-w-0 items-start gap-2">
                     <div className="min-w-0 flex-1">
                         <FreeformMultiCombobox
+                            id={APP_RELEASE_UNITS_FILTER_INPUT_ID}
                             placeholder="Unit paths or ids"
                             value={unitsPaths}
-                            onValueChange={(next) => patchUrl({ unitsPaths: next, page: DEFAULT_ALL_UNITS_PAGE })}
+                            onValueChange={applyUnitsPathsFilter}
                             chipsClassName="h-auto min-h-8 w-full min-w-0 py-1"
                         />
                     </div>

@@ -41,8 +41,18 @@ export function isTargetSpotlightOverlayActive(state: Pick<TargetSpotlightOverla
     return state.targetElementId != null || state.pinTopStatus != null;
 }
 
-export function setTargetSpotlightOverlayElementId(elementId: string | null): void {
-    targetSpotlightOverlayStore.getState().setTargetElementId(elementId);
+export function setTargetSpotlightOverlayElementId(
+    elementId: string | null,
+    options?: { placement?: TargetSpotlightOverlayPlacement },
+): void {
+    const { setTargetElementId, setPlacement } = targetSpotlightOverlayStore.getState();
+    if (elementId === TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID) {
+        setTargetElementId(elementId);
+        return;
+    }
+
+    setTargetElementId(elementId);
+    setPlacement(options?.placement ?? "bottom");
 }
 
 export function setTargetSpotlightOverlayPlacement(placement: TargetSpotlightOverlayPlacement): void {

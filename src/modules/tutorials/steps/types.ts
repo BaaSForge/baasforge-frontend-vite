@@ -1,6 +1,6 @@
 import type { TutorialGroupId, TutorialId } from "@/services/tutorials";
 import type { ReactNode } from "react";
-import type { PinToTopOptions } from "@/components/target-spotlight-overlay";
+import type { PinToTopOptions, TargetSpotlightOverlayPlacement } from "@/components/target-spotlight-overlay";
 import type { AppEventName, AppEventPayloadMap } from "@/services/events";
 
 export type TutorialStepsIdentity = {
@@ -16,6 +16,7 @@ export type StepContext<TData extends StoredStepData> = {
     setSpotlightContent: (content: ReactNode, actions?: ReactNode) => void;
     clearSpotlightContent: () => void;
     pinToTop: (options?: PinToTopOptions) => void;
+    setSpotlightPlacement: (placement: TargetSpotlightOverlayPlacement) => void;
     once: <TEventName extends AppEventName>(eventName: TEventName) => Promise<AppEventPayloadMap[TEventName]>;
     timeout: (delayMs: number) => Promise<void>;
     sleep: (delayMs: number) => Promise<void>;
@@ -23,7 +24,7 @@ export type StepContext<TData extends StoredStepData> = {
     intervalBreak: (
         intervalMs: number,
         tick: (breakInterval: () => void) => void,
-        options?: { untilReady?: () => boolean },
+        options?: { untilReady?: () => boolean; untilReadyTimeoutMs?: number },
     ) => Promise<boolean>;
     race: <T extends readonly [...unknown[]]>(...promises: { [K in keyof T]: Promise<T[K]> }) => Promise<{ [K in keyof T]: T[K] | undefined }>;
     next: (partial?: Partial<Omit<TData, "step">>) => Promise<void>;

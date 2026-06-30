@@ -2,10 +2,15 @@ import {
     TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID,
     TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID,
 } from "@/components/target-spotlight-overlay/constants";
-import { SpotlightStopButton } from "@/components/target-spotlight-overlay/components/spotlight-actions";
+import { SpotlightPrevButton, SpotlightStopButton } from "@/components/target-spotlight-overlay/components/spotlight-actions";
 import { onSpotlightContentHostsMounted } from "@/components/target-spotlight-overlay/lib/spotlight-content-hosts";
 import { type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
+
+export type SpotlightRenderOptions = {
+    showStopButton?: boolean;
+    canGoToPreviousStep?: boolean;
+};
 
 export type SpotlightRoots = {
     content: Root | null;
@@ -16,6 +21,7 @@ type PendingSpotlightContent = {
     content: ReactNode;
     actions?: ReactNode;
     showStopButton?: boolean;
+    canGoToPreviousStep?: boolean;
 };
 
 let roots: SpotlightRoots = { content: null, actions: null };
@@ -82,7 +88,12 @@ function renderPending(): boolean {
             actionsHost,
             boundHosts.actions,
             <div className="flex items-center gap-1.5 border-t border-primary/10 px-3 pl-2 py-2">
-                {pending.showStopButton ? <SpotlightStopButton /> : null}
+                {pending.showStopButton ? (
+                    <>
+                        <SpotlightPrevButton disabled={!pending.canGoToPreviousStep} />
+                        <SpotlightStopButton />
+                    </>
+                ) : null}
                 {pending.actions != null ? <div className="ml-auto flex items-center gap-1.5">{pending.actions}</div> : null}
             </div>,
         );
@@ -141,9 +152,14 @@ function waitForHosts(): void {
 export function setSpotlightContentToRender(
     content: ReactNode,
     actions?: ReactNode,
-    options?: { showStopButton?: boolean },
+    options?: SpotlightRenderOptions,
 ): void {
-    pending = { content, actions, showStopButton: options?.showStopButton ?? false };
+    pending = {
+        content,
+        actions,
+        showStopButton: options?.showStopButton ?? false,
+        canGoToPreviousStep: options?.canGoToPreviousStep ?? false,
+    };
     waitForHosts();
 }
 

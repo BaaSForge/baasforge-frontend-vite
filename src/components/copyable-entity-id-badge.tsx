@@ -15,6 +15,10 @@ export type CopyableEntityIdBadgeProps = {
     leadingIcon?: ReactNode;
     /** When false, the chip grows with the id (still capped by max-w on the button via className). */
     truncate?: boolean;
+    /** Optional callback triggered after copy. */
+    onCopy?: (id: string) => void;
+    /** Optional element ID for tutorial targeting. */
+    tutorialTargetId?: string;
 };
 
 export function CopyableEntityIdBadge({
@@ -24,15 +28,23 @@ export function CopyableEntityIdBadge({
     label,
     leadingIcon,
     truncate = true,
+    onCopy,
+    tutorialTargetId,
 }: CopyableEntityIdBadgeProps) {
     const { copied, copy } = useClipboard();
     const copyStateKey = label != null && label !== "" ? `${label}:${id}` : id;
     const copiedThis = copied === copyStateKey;
 
+    const handleClick = () => {
+        void copy(id, copyStateKey);
+        onCopy?.(id);
+    };
+
     return (
         <button
+            id={tutorialTargetId}
             type="button"
-            onClick={() => void copy(id, copyStateKey)}
+            onClick={handleClick}
             className={cn(
                 "inline-flex min-h-[1.375rem] min-w-0 items-center gap-x-2 rounded-[4px] border border-border/45 bg-muted px-2 py-0.5",
                 "text-[0.625rem] leading-none text-muted-foreground",

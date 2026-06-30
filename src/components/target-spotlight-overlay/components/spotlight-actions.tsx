@@ -2,9 +2,10 @@
 
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { ConfirmableButton, type ConfirmableButtonProps } from "@/components/ui/confirmable-button";
+import { envConfig } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import { events, triggerAppEvent } from "@/services/events";
-import { Ban } from "lucide-react";
+import { Ban, ChevronLeft } from "lucide-react";
 import { type ReactNode, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID } from "../constants";
@@ -75,6 +76,50 @@ export function SpotlightFillChatPromptButton({
             {...props}
         >
             {children}
+        </Button>
+    );
+}
+
+export function SpotlightFillUnitFilterButton({
+    unitId,
+    className,
+    children = "Fill unit ID",
+    ...props
+}: ButtonProps & { unitId: string }) {
+    return (
+        <Button
+            type="button"
+            variant="default"
+            size="xs"
+            className={cn("ml-auto", className)}
+            onClick={() => {
+                triggerAppEvent(events.RELEASE_UNITS_FILTER_FILL_UNIT_ID_EVENT, { unitId });
+            }}
+            {...props}
+        >
+            {children}
+        </Button>
+    );
+}
+
+export function SpotlightPrevButton({ className, onClick, type = "button", disabled, ...props }: ButtonProps) {
+    if (!envConfig.isDev) return null;
+
+    return (
+        <Button
+            type={type}
+            variant="ghost"
+            size="xs"
+            disabled={disabled}
+            className={cn("text-muted-foreground hover:text-foreground", className)}
+            onClick={(event) => {
+                triggerAppEvent(events.TUTORIAL_PREV_BUTTON_CLICKED);
+                onClick?.(event);
+            }}
+            {...props}
+        >
+            <ChevronLeft aria-hidden />
+            Prev
         </Button>
     );
 }

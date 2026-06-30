@@ -15,10 +15,13 @@ import { useScrollActiveTabTriggerIntoView } from "@/hooks/use-scroll-active-tab
 import { cn } from "@/lib/utils";
 import { UnitRevisionBadge } from "@/modules/project/components/unit-revision-badge";
 import type { ProjectUnitResponse as ProjectUnit } from "@/modules/project/types";
+import { events, triggerAppEvent } from "@/services/events";
 import { XIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePersistedUnitDiffViewMode } from "../hooks/use-persisted-unit-diff-view-mode";
 import { UnitDetailWithDiff } from "./unit-detail-with-diff";
+
+export const APP_UNIT_CHANGES_MODAL_ID = "app-unit-changes-modal";
 
 const ALL_CONTEXTS_TAB_VALUE = "__all_contexts__";
 const CONTEXT_TAB_VALUE_PREFIX = "ctx:" as const;
@@ -84,9 +87,15 @@ export function ChatSessionViewChangesModal({
         if (!next) {
             setTabUserOverride(null);
             setContextFilter(ALL_CONTEXTS_TAB_VALUE);
+            triggerAppEvent(events.UNIT_CHANGES_MODAL_CLOSED_EVENT);
         }
         onOpenChange(next);
     };
+
+    useEffect(() => {
+        if (!open) return;
+        triggerAppEvent(events.UNIT_CHANGES_MODAL_OPENED_EVENT);
+    }, [open]);
 
     const handleContextFilterChange = (next: string) => {
         if (next === contextFilter) return;
@@ -114,7 +123,7 @@ export function ChatSessionViewChangesModal({
 
     return (
         <CentricModal open={open} onOpenChange={handleModalOpenChange}>
-            <CentricModalContent fillViewport className={modalWidthClass} showCloseButton={false}>
+            <CentricModalContent id={APP_UNIT_CHANGES_MODAL_ID} fillViewport className={modalWidthClass} showCloseButton={false}>
                 {unitsChanged.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No units to compare.</p>
                 ) : (

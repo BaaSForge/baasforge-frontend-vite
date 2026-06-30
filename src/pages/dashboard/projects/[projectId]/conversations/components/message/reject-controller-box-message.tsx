@@ -25,6 +25,7 @@ import { UnitCardChip } from "@/modules/project";
 import { invalidateDueToRejectOrEdit } from "@/modules/project/invalidate-project-queries";
 import type { ProjectUnitResponse } from "@/modules/project/types";
 import { postRejectControllerBoxReject } from "@/modules/project/api";
+import { events, triggerAppEvent } from "@/services/events";
 import {
     ChatSessionViewChangesModal,
     postChatSessionUnitPreviousByFullIds,
@@ -168,7 +169,7 @@ export function RejectControllerBoxMessage({
                 faderFromClassName="from-background"
             >
                 <div className="flex w-max min-w-0 flex-nowrap items-stretch gap-2 py-0.5 pr-1">
-                    {unitChanges.map((unit) => (
+                    {unitChanges.map((unit, index) => (
                         <UnitCardChip
                             key={`${unit.id}-${unit.revision}`}
                             unit={unit}
@@ -180,6 +181,8 @@ export function RejectControllerBoxMessage({
                             }
                             expandDisabled={rejectDiffEligible && preparingViewChanges}
                             expandAriaLabel="View changes vs previous revision"
+                            onUnitIdCopy={index === 0 ? (unitId) => triggerAppEvent(events.UNIT_ID_BADGE_COPIED_EVENT, { unitId }) : undefined}
+                            enableTutorialTarget={index === 0}
                         />
                     ))}
                 </div>

@@ -10,7 +10,10 @@ export function emitTutorialChatMessageEvents(message: ChatMessageResponse): voi
     }
 
     if (message.type === ChatMessageType.ToolCreateUnit) {
-        triggerAppEvent(events.CREATE_UNIT_RECEIVED_EVENT, message as ChatMessageResponse<ToolCreateUnitPayload>);
+        const payload = message.payload as ToolCreateUnitPayload | null;
+        if (payload?.created_unit) {
+            triggerAppEvent(events.CREATE_UNIT_RECEIVED_EVENT, message as ChatMessageResponse<ToolCreateUnitPayload>);
+        }
     }
 
     if (message.type === ChatMessageType.ReleaseControllerBox) {

@@ -14,7 +14,7 @@ export type {
     UnitPreviousByFullIdsBody,
     UnitPreviousByFullIdsResponse,
 } from "./api";
-export { ChatSessionViewChangesModal } from "./components/chat-session-view-changes-modal";
+export { ChatSessionViewChangesModal, APP_UNIT_CHANGES_MODAL_ID } from "./components/chat-session-view-changes-modal";
 export type { ChatSessionUnitChangePair } from "./components/chat-session-view-changes-modal";
 export { ChatSessionsListModal } from "./components/chat-sessions-list-modal";
 export { useChatSessionsModal, useChatSessionsModalState } from "./components/chat-sessions-list-modal/store";

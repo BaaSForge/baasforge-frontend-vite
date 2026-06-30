@@ -15,11 +15,14 @@ import { isMainSidebarClosed } from "@/stores/main-sidebar";
 import {
     setTargetSpotlightOverlayElementId,
     SpotlightFillChatPromptButton,
+    SpotlightFillUnitFilterButton,
     SpotlightPrimaryActionButton,
 } from "@/components/target-spotlight-overlay";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
 import { isConversationSessionUrl, isNewConversationUrl, isProjectSelectedUrl } from "@/services/routes";
+import { APP_RELEASE_UNITS_FILTER_INPUT_ID } from "@/modules/project/release-units-all/release-units-all-panel";
+import { APP_UNIT_CHANGES_MODAL_ID } from "@/modules/project-chat";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
 import type { WriteAndCallYourApiTutorialData } from "./types";
@@ -242,7 +245,129 @@ export function WriteAndCallYourApiTutorial() {
                         return;
                     }
 
-                    void ctx.next({ firstUnitId });
+                    void ctx.next(firstUnitId ? { firstUnitId } : {});
+                },
+            },
+            {
+                id: "copy-unit-id",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.next({});
+                        return;
+                    }
+
+                    const targetElementId = `tutorial-first-unit-id-badge-${firstUnitId}`;
+                    const isUnitCardReady = () => document.getElementById(targetElementId) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isUnitCardReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isUnitCardReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(targetElementId, { placement: "top" });
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Copy the unit ID</p>
+                            <p className="text-muted-foreground mt-1">
+                                Click on the unit ID badge to copy it. You'll need this ID to filter units later.
+                            </p>
+                        </>
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.UNIT_ID_BADGE_COPIED_EVENT),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("develop-button");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "open-unit-changes-modal",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.goTo("develop-button");
+                        return;
+                    }
+
+                    const targetElementId = `tutorial-first-unit-card-${firstUnitId}`;
+                    const isUnitCardReady = () => document.getElementById(targetElementId) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isUnitCardReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isUnitCardReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(targetElementId);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">View your new unit</p>
+                            <p className="text-muted-foreground mt-1">
+                                Click the unit card to open its changes view. Review the details, then close the modal to continue.
+                            </p>
+                        </>
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.UNIT_CHANGES_MODAL_OPENED_EVENT),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("develop-button");
+                        return;
+                    }
+
+                    setTargetSpotlightOverlayElementId(null);
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "review-unit-changes-modal",
+                handler: async (ctx) => {
+                    const isModalReady = () => document.getElementById(APP_UNIT_CHANGES_MODAL_ID) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isModalReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isModalReady },
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.UNIT_CHANGES_MODAL_CLOSED_EVENT),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("open-unit-changes-modal");
+                        return;
+                    }
+
+                    void ctx.next({});
                 },
             },
             {
@@ -318,7 +443,7 @@ export function WriteAndCallYourApiTutorial() {
                         return;
                     }
 
-                    void ctx.next({ stageRuntimeId: runtimeId });
+                    void ctx.next(runtimeId ? { stageRuntimeId: runtimeId } : {});
                 },
             },
             {
@@ -353,6 +478,59 @@ export function WriteAndCallYourApiTutorial() {
 
                     if (lostTargetRes) {
                         ctx.goTo("wait-for-deploy-on-stage");
+                        return;
+                    }
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "filter-unit-by-id",
+                handler: async (ctx) => {
+                    const state = ctx.getState();
+                    const firstUnitId = state.firstUnitId;
+
+                    if (!firstUnitId) {
+                        void ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    const isUnitFilterReady = () => document.getElementById(APP_RELEASE_UNITS_FILTER_INPUT_ID) != null;
+
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isUnitFilterReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isUnitFilterReady },
+                    );
+
+                    setTargetSpotlightOverlayElementId(APP_RELEASE_UNITS_FILTER_INPUT_ID);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Filter units by ID</p>
+                            <p className="text-muted-foreground mt-1">
+                                You can filter units by their ID using this input. Use the button below to fill the ID we copied earlier or paste it manually.
+                            </p>
+                        </>,
+                        <SpotlightFillUnitFilterButton unitId={firstUnitId}>
+                            Fill unit ID
+                        </SpotlightFillUnitFilterButton>
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        (async () => {
+                            await ctx.once(events.RELEASE_UNITS_FILTER_APPLIED_EVENT);
+                            await ctx.once(events.RELEASE_UNITS_LOADED_EVENT);
+                        })(),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("develop-button");
                         return;
                     }
 

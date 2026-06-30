@@ -1,8 +1,14 @@
-import { pinToTop, setTargetSpotlightOverlayElementId } from "@/components/target-spotlight-overlay";
+import {
+    pinToTop,
+    setTargetSpotlightOverlayElementId,
+    setTargetSpotlightOverlayPlacement,
+} from "@/components/target-spotlight-overlay";
 import { events, listenAppEvent, type AppEventName, type AppEventPayloadMap } from "@/services/events";
 import { saveTutorialProgress, type TutorialStatus } from "@/services/tutorials";
 import { clearSpotlightContent, flushSpotlightContent, setSpotlightContentToRender } from "./spotlight-renderer";
 import type { StepContext, StoredStepData, TutorialStepsIdentity } from "./types";
+
+const DEFAULT_UNTIL_READY_TIMEOUT_MS = 10_000;
 
 function delay(delayMs: number, onceCleanups: Set<() => void>): Promise<void> {
     return new Promise<void>((resolve) => {
@@ -115,10 +121,24 @@ export function createStepContext<TData extends StoredStepData>(
         void finalizeStatus("interrupted", mergeState());
     });
 
+    const cleanupPrevListener = listenAppEvent(events.TUTORIAL_PREV_BUTTON_CLICKED, () => {
+        if (disposed) return;
+        const currentIndex = options.stepIds.indexOf(options.getState().step);
+        if (currentIndex <= 0) return;
+        const previousStepId = options.stepIds[currentIndex - 1];
+        if (previousStepId == null) return;
+        void goTo(previousStepId);
+    });
+
+    const canGoToPreviousStep = () => options.stepIds.indexOf(options.getState().step) > 0;
+
     const ctx: ManagedStepContext<TData> = {
         setSpotlightContent(content, actions) {
             hasSpotlightContent = true;
-            setSpotlightContentToRender(content, actions, { showStopButton: true });
+            setSpotlightContentToRender(content, actions, {
+                showStopButton: true,
+                canGoToPreviousStep: canGoToPreviousStep(),
+            });
         },
 
         clearSpotlightContent() {
@@ -130,6 +150,10 @@ export function createStepContext<TData extends StoredStepData>(
             if (hasSpotlightContent) {
                 flushSpotlightContent();
             }
+        },
+
+        setSpotlightPlacement(placement) {
+            setTargetSpotlightOverlayPlacement(placement);
         },
 
         once<TEventName extends AppEventName>(eventName: TEventName) {
@@ -193,9 +217,17 @@ export function createStepContext<TData extends StoredStepData>(
                 let broken = false;
                 let aborted = false;
                 let ready = options?.untilReady == null;
+                const untilReadyTimeoutMs =
+                    options?.untilReadyTimeoutMs ??
+                    (options?.untilReady != null ? DEFAULT_UNTIL_READY_TIMEOUT_MS : undefined);
+                let untilReadyTimeoutId: number | undefined;
 
                 const cleanupIntervalForThis = (): void => {
                     window.clearInterval(intervalId);
+                    if (untilReadyTimeoutId != null) {
+                        window.clearTimeout(untilReadyTimeoutId);
+                        untilReadyTimeoutId = undefined;
+                    }
                     intervalCleanups.delete(abortIntervalBreak);
                 };
 
@@ -212,10 +244,18 @@ export function createStepContext<TData extends StoredStepData>(
                     cleanupIntervalForThis();
                 };
 
+                if (!ready && untilReadyTimeoutMs != null) {
+                    untilReadyTimeoutId = window.setTimeout(breakInterval, untilReadyTimeoutMs);
+                }
+
                 const intervalId = window.setInterval(() => {
                     if (!ready) {
                         if (options?.untilReady?.()) {
                             ready = true;
+                            if (untilReadyTimeoutId != null) {
+                                window.clearTimeout(untilReadyTimeoutId);
+                                untilReadyTimeoutId = undefined;
+                            }
                         }
                         return;
                     }
@@ -260,6 +300,7 @@ export function createStepContext<TData extends StoredStepData>(
         dispose() {
             disposed = true;
             cleanupStopListener();
+            cleanupPrevListener();
             cleanupSubscriptions();
             cleanupSpotlight();
         },

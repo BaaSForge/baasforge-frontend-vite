@@ -9,9 +9,11 @@ export type UnitCardIdRowProps = {
     unitId: string;
     className?: string;
     variant?: "card" | "inline";
+    onCopy?: (unitId: string) => void;
+    tutorialTargetId?: string;
 };
 
-export function UnitCardIdRow({ unitId, className, variant = "card" }: UnitCardIdRowProps) {
+export function UnitCardIdRow({ unitId, className, variant = "card", onCopy, tutorialTargetId }: UnitCardIdRowProps) {
     return (
         <CopyableEntityIdBadge
             id={unitId}
@@ -21,6 +23,8 @@ export function UnitCardIdRow({ unitId, className, variant = "card" }: UnitCardI
                 variant === "inline" && "relative max-w-full min-w-0 self-start justify-start",
                 className,
             )}
+            onCopy={onCopy}
+            tutorialTargetId={tutorialTargetId}
         />
     );
 }

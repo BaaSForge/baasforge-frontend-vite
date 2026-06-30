@@ -13,6 +13,8 @@ export {
 export {
     SpotlightActions,
     SpotlightFillChatPromptButton,
+    SpotlightFillUnitFilterButton,
+    SpotlightPrevButton,
     SpotlightPrimaryActionButton,
     SpotlightSecondaryActionButton,
     SpotlightStopButton,

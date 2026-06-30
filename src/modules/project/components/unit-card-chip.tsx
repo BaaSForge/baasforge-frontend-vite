@@ -19,6 +19,8 @@ export interface UnitCardChipProps {
     onExpandOverride?: () => void;
     expandDisabled?: boolean;
     expandAriaLabel?: string;
+    onUnitIdCopy?: (unitId: string) => void;
+    enableTutorialTarget?: boolean;
 }
 
 export function UnitCardChip({
@@ -30,6 +32,8 @@ export function UnitCardChip({
     onExpandOverride,
     expandDisabled,
     expandAriaLabel,
+    onUnitIdCopy,
+    enableTutorialTarget,
 }: UnitCardChipProps) {
     const hasParent = unit.revision > 1;
     const isDeleted = unit.is_deleted === true;
@@ -53,6 +57,7 @@ export function UnitCardChip({
 
     return (
         <div
+            id={enableTutorialTarget ? `tutorial-first-unit-card-${unit.id}` : undefined}
             className={cn(
                 "relative inline-block shrink-0 self-start min-w-0 max-w-[20rem]",
                 UNIT_CARD_ID_BADGE_RESERVE_CLASS,
@@ -75,7 +80,12 @@ export function UnitCardChip({
                 )}
                 title={unit.explanation ?? undefined}
             >
-                <UnitCardIdRow unitId={unit.id} className="z-3" />
+                <UnitCardIdRow 
+                    unitId={unit.id} 
+                    className="z-3" 
+                    onCopy={onUnitIdCopy}
+                    tutorialTargetId={enableTutorialTarget ? `tutorial-first-unit-id-badge-${unit.id}` : undefined}
+                />
                 <div className="group/expandable-read relative flex flex-col gap-1 overflow-hidden rounded-b-lg px-2.5 pt-4 pb-1.5">
                     <div className="flex flex-wrap items-center gap-1">{badges}</div>
                     <p className={cn("truncate text-[0.6875rem] text-muted-foreground", isDeleted && "line-through")}>{summary}</p>
