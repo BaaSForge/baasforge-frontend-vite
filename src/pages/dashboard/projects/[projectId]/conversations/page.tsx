@@ -288,8 +288,7 @@ function ProjectConversationsContent() {
 
     useEffect(() => {
         return listenAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, (event) => {
-            const text = (event as CustomEvent<{ text?: string }>).detail?.text;
-            if (typeof text !== "string") return;
+            const text = event.detail.text;
             applyComposerPrefill({ text });
             requestAnimationFrame(() => messageInputRef.current?.focus());
         });

@@ -60,9 +60,9 @@ export function useReleaseControllerActions(
             const body = { revision: stageRevision, chat_session_id: sessionForDeploy };
             await postRuntimeDeployStageRelease(projectId, runtimeId, body);
         },
-        onSuccess: async () => {
+        onSuccess: async (_, runtimeId) => {
             await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.stage);
-            emitStageDeployOnRuntimeDone();
+            emitStageDeployOnRuntimeDone(runtimeId);
             setStageDeployRuntimePickOpen(false);
             toast.success("Stage deploy has started.");
         },

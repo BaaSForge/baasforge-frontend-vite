@@ -1,5 +1,5 @@
 import { pinToTop, setTargetSpotlightOverlayElementId } from "@/components/target-spotlight-overlay";
-import { events, listenAppEvent, type AppEventName } from "@/services/events";
+import { events, listenAppEvent, type AppEventName, type AppEventPayloadMap } from "@/services/events";
 import { saveTutorialProgress, type TutorialStatus } from "@/services/tutorials";
 import { clearSpotlightContent, flushSpotlightContent, setSpotlightContentToRender } from "./spotlight-renderer";
 import type { StepContext, StoredStepData, TutorialStepsIdentity } from "./types";
@@ -132,8 +132,8 @@ export function createStepContext<TData extends StoredStepData>(
             }
         },
 
-        once(eventName: AppEventName) {
-            return new Promise<unknown>((resolve) => {
+        once<TEventName extends AppEventName>(eventName: TEventName) {
+            return new Promise<AppEventPayloadMap[TEventName]>((resolve) => {
                 const cleanupOnceForThis = (): void => {
                     cleanup();
                     onceCleanups.delete(cleanupOnceForThis);
@@ -141,7 +141,7 @@ export function createStepContext<TData extends StoredStepData>(
 
                 const cleanup = listenAppEvent(eventName, (event) => {
                     cleanupOnceForThis();
-                    resolve(event instanceof CustomEvent ? event.detail : undefined);
+                    resolve(event.detail);
                 });
 
                 onceCleanups.add(cleanupOnceForThis);
@@ -156,17 +156,17 @@ export function createStepContext<TData extends StoredStepData>(
             return delay(delayMs, onceCleanups);
         },
 
-        race(...promises: Promise<unknown>[]) {
-            return new Promise<unknown[]>((resolve) => {
+        race<T extends readonly [...unknown[]]>(...promises: { [K in keyof T]: Promise<T[K]> }) {
+            return new Promise<{ [K in keyof T]: T[K] | undefined }>((resolve) => {
                 let settled = false;
-                const results = new Array<unknown>(promises.length);
+                const results: unknown[] = new Array<unknown>(promises.length);
 
                 const settle = (index: number, value: unknown): void => {
                     if (settled) return;
                     settled = true;
                     results[index] = value;
                     cleanupSubscriptions();
-                    resolve(results);
+                    resolve(results as { [K in keyof T]: T[K] | undefined });
                 };
 
                 promises.forEach((promise, index) => {

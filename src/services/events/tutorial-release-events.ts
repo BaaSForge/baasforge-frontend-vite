@@ -5,8 +5,8 @@ export function emitStageDeployModalOpened(): void {
     triggerAppEvent(events.STAGE_DEPLOY_MODAL_OPENED_EVENT);
 }
 
-export function emitStageDeployOnRuntimeDone(): void {
-    triggerAppEvent(events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT);
+export function emitStageDeployOnRuntimeDone(runtimeId?: string): void {
+    triggerAppEvent(events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT, runtimeId);
 }
 
 export function emitStageReleaseBadgeClicked(): void {

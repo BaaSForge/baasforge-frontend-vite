@@ -91,7 +91,7 @@ export {
     type ToolArgumentsTooltipParts,
 } from "./payloads";
 
-export interface ChatMessageResponse {
+export interface ChatMessageResponse<TPayload = unknown> {
     id: string;
     chat_session_id: string;
     role: ChatSessionRoleType;
@@ -100,8 +100,7 @@ export interface ChatMessageResponse {
     is_edit_disabled_due_to_live_production_release?: boolean;
     /** Present on some API responses (e.g. agent that produced the message). */
     agent?: string | null;
-    // TODO: make the payload strictly typed
-    payload?: unknown | null;
+    payload?: TPayload | null;
     /** When set, raw tool call / parse metadata (`error`, `raw_arguments`, `tool_name`, …). */
     payload_raw?: ToolMessagePayloadRaw | null;
     created_at: string;

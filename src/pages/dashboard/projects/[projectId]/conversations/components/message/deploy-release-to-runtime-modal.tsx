@@ -51,7 +51,7 @@ export function DeployReleaseToRuntimeModal({
                         body: { revision, chat_session_id: chatSessionIdForDetach },
                     },
                     { onSuccess: () => {
-                        emitStageDeployOnRuntimeDone();
+                        emitStageDeployOnRuntimeDone(runtimeId);
                         onOpenChange(false);
                     } },
                 )

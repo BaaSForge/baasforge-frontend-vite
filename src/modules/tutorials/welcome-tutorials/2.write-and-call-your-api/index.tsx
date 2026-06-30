@@ -226,13 +226,14 @@ export function WriteAndCallYourApiTutorial() {
                         { untilReady: isConversationChatReady },
                     );
 
-                    const [lostTargetRes] = await ctx.race(
+                    const [lostTargetRes, firstUnitId] = await ctx.race(
                         lostTarget,
                         (async () => {
-                            await Promise.all([
+                            const [unitData] = await Promise.all([
                                 ctx.once(events.CREATE_UNIT_RECEIVED_EVENT),
                                 ctx.once(events.RELEASE_CONTROLLER_RECEIVED_EVENT),
                             ]);
+                            return unitData.payload?.created_unit?.id;
                         })(),
                     );
 
@@ -241,7 +242,7 @@ export function WriteAndCallYourApiTutorial() {
                         return;
                     }
 
-                    void ctx.next({});
+                    void ctx.next({ firstUnitId });
                 },
             },
             {
@@ -307,7 +308,7 @@ export function WriteAndCallYourApiTutorial() {
                         </>,
                     );
 
-                    const [lostTargetRes] = await ctx.race(
+                    const [lostTargetRes, runtimeId] = await ctx.race(
                         lostTarget,
                         ctx.once(events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT),
                     );
@@ -317,7 +318,7 @@ export function WriteAndCallYourApiTutorial() {
                         return;
                     }
 
-                    void ctx.next({});
+                    void ctx.next({ stageRuntimeId: runtimeId });
                 },
             },
             {

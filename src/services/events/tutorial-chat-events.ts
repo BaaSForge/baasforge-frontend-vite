@@ -1,4 +1,5 @@
 import { ChatMessageType, ChatSessionRoleType, type ChatMessageResponse } from "@/modules/project-chat/types";
+import type { ToolCreateUnitPayload } from "@/modules/project-chat/payloads";
 
 import { triggerAppEvent } from "./event-bus";
 import { events } from "./events";
@@ -9,7 +10,7 @@ export function emitTutorialChatMessageEvents(message: ChatMessageResponse): voi
     }
 
     if (message.type === ChatMessageType.ToolCreateUnit) {
-        triggerAppEvent(events.CREATE_UNIT_RECEIVED_EVENT);
+        triggerAppEvent(events.CREATE_UNIT_RECEIVED_EVENT, message as ChatMessageResponse<ToolCreateUnitPayload>);
     }
 
     if (message.type === ChatMessageType.ReleaseControllerBox) {

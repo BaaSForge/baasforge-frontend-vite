@@ -29,9 +29,9 @@ export function ReleaseStageRuntimeModal({
             postReleaseControllerStageRelease(projectId!, chatSessionId!, messageId, {
                 stage_project_runtime_id: runtimeId,
             }),
-        onSuccess: async () => {
+        onSuccess: async (_, runtimeId) => {
             await invalidateQueriesAfterRuntimeDeploy(queryClient, projectId!, PlatformEnvironmentType.stage);
-            emitStageDeployOnRuntimeDone();
+            emitStageDeployOnRuntimeDone(runtimeId);
             onOpenChange(false);
             toast.success("Deploying has started.");
         },
@@ -71,7 +71,7 @@ export function ReleaseStageRuntimeModal({
                         },
                     },
                     { onSuccess: () => {
-                        emitStageDeployOnRuntimeDone();
+                        emitStageDeployOnRuntimeDone(runtimeId);
                         onOpenChange(false);
                     } },
                 )

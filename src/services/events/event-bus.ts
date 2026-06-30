@@ -1,14 +1,21 @@
-import type { AppEventName } from "./events";
+import type { AppEventName, AppEventPayloadMap } from "./events";
 
-type AppEventListener = (event: Event) => void;
+type AppEventListener<T = unknown> = (event: CustomEvent<T>) => void;
 
-export function listenAppEvent(eventName: AppEventName, listener: AppEventListener): () => void {
-    window.addEventListener(eventName, listener);
+export function listenAppEvent<TEventName extends AppEventName>(
+    eventName: TEventName,
+    listener: AppEventListener<AppEventPayloadMap[TEventName]>
+): () => void {
+    const typedListener = listener as EventListener;
+    window.addEventListener(eventName, typedListener);
     return () => {
-        window.removeEventListener(eventName, listener);
+        window.removeEventListener(eventName, typedListener);
     };
 }
 
-export function triggerAppEvent(eventName: AppEventName, detail?: unknown): void {
+export function triggerAppEvent<TEventName extends AppEventName>(
+    eventName: TEventName,
+    detail?: AppEventPayloadMap[TEventName]
+): void {
     window.dispatchEvent(new CustomEvent(eventName, { detail }));
 }
