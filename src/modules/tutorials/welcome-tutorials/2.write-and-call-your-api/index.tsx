@@ -1,7 +1,6 @@
 "use client";
 
 import { APP_DEVELOP_BUTTON_ID } from "@/modules/layout/components/nav-projects";
-import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { APP_CHAT_COMPOSER_ID } from "@/pages/dashboard/projects/[projectId]/conversations/components/controls";
 import {
     APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID,
@@ -11,7 +10,6 @@ import {
     assignLastReleaseControllerStageReleaseLinkSpotlightId,
     isStageDeployModalOpen,
 } from "@/pages/dashboard/projects/[projectId]/conversations/components/message/release-controller-tutorial-targets";
-import { isMainSidebarClosed } from "@/stores/main-sidebar";
 import {
     setTargetSpotlightOverlayElementId,
     SpotlightFillChatPromptButton,
@@ -21,11 +19,17 @@ import {
 import { closeScalarClientModal } from "@/components/scalar-http-operation-client/close-scalar-client-modal";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
-import { isConversationSessionUrl, isNewConversationUrl, isProjectSelectedUrl } from "@/services/routes";
+import { isConversationSessionUrl, isNewConversationUrl } from "@/services/routes";
 import { APP_RELEASE_UNITS_FILTER_INPUT_ID } from "@/modules/project/release-units-all/release-units-all-panel";
 import { APP_UNIT_CHANGES_MODAL_ID } from "@/modules/project-chat";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
-import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
+import {
+    createChooseProjectStep,
+    createEnsureSidebarIsOpenedBeforeProjectSelectStep,
+    ENSURE_SIDEBAR_IS_OPENED_BEFORE_PROJECT_SELECT_STEP_ID,
+    ensureMainSidebarOpen,
+    useSteps,
+} from "@/modules/tutorials/steps";
 import type { WriteAndCallYourApiTutorialData } from "./types";
 import {
     tutorialFirstUnitLiveInteractionButtonId,
@@ -66,68 +70,10 @@ export function WriteAndCallYourApiTutorial() {
                     void ctx.next();
                 },
             },
-            {
-                id: "ensure-sidebar-is-opened-before-project-select",
-                handler: async (ctx) => {
-                    await ensureMainSidebarOpen(
-                        ctx,
-                        {
-                            title: "Expand the sidebar to continue",
-                            description: "Use this button to open the sidebar and continue with the tutorial.",
-                        },
-                        { keepStickyBarVisible: true },
-                    );
-
-                    void ctx.next({});
-                },
-            },
-            {
-                id: "choose-project",
-                handler: async (ctx) => {
-                    if (isProjectSelectedUrl(window.location.pathname)) {
-                        ctx.goTo("ensure-sidebar-is-opened-before-develop-button");
-                        return;
-                    }
-
-                    const isSidebarOpen = () => !isMainSidebarClosed();
-                    const sidebarClosed = ctx.intervalBreak(
-                        1000,
-                        (breakInterval) => {
-                            if (isMainSidebarClosed()) {
-                                breakInterval();
-                            }
-                        },
-                        { untilReady: isSidebarOpen },
-                    );
-
-                    setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
-
-                    ctx.setSpotlightContent(
-                        <>
-                            <p className="font-medium">Choose your project</p>
-                            <p className="text-muted-foreground mt-1">
-                                Use this button to switch projects. Open the menu and select the project you created in
-                                the previous tutorial.
-                            </p>
-                        </>,
-                    );
-
-                    const [sidebarClosedRes] = await ctx.race(
-                        sidebarClosed,
-                        (async () => {
-                            await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
-                            await ctx.once(events.PROJECT_SELECTED_EVENT);
-                        })(),
-                    );
-
-                    if (sidebarClosedRes) {
-                        ctx.goTo("ensure-sidebar-is-opened-before-project-select");
-                        return;
-                    }
-
-                    void ctx.next({});
-                },
-            },
+            createEnsureSidebarIsOpenedBeforeProjectSelectStep<WriteAndCallYourApiTutorialData>(),
+            createChooseProjectStep<WriteAndCallYourApiTutorialData>({
+                onProjectAlreadySelectedStepId: "ensure-sidebar-is-opened-before-develop-button",
+            }),
             {
                 id: "ensure-sidebar-is-opened-before-develop-button",
                 handler: async (ctx) => {
@@ -171,7 +117,7 @@ export function WriteAndCallYourApiTutorial() {
                     const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.DEVELOP_BUTTON_CLICKED_EVENT));
 
                     if (lostTargetRes) {
-                        ctx.goTo("ensure-sidebar-is-opened-before-project-select");
+                        ctx.goTo(ENSURE_SIDEBAR_IS_OPENED_BEFORE_PROJECT_SELECT_STEP_ID);
                         return;
                     }
 
@@ -285,6 +231,7 @@ export function WriteAndCallYourApiTutorial() {
                         <>
                             <p className="font-medium">Copy the unit ID</p>
                             <p className="text-muted-foreground mt-1">
+                                This is the ID of the unit just created.
                                 Click on the unit ID badge to copy it. You'll need this ID to filter units later.
                             </p>
                         </>
@@ -333,6 +280,8 @@ export function WriteAndCallYourApiTutorial() {
                             <p className="font-medium">View your new unit</p>
                             <p className="text-muted-foreground mt-1">
                                 Click the unit card to open its changes view. Review the details, then close the modal to continue.
+                                <br />
+                                You don't need to do anything in this modal. Just see what it contains, then close it.
                             </p>
                         </>
                     );
@@ -401,7 +350,7 @@ export function WriteAndCallYourApiTutorial() {
                         <>
                             <p className="font-medium">Deploy to stage</p>
                             <p className="text-muted-foreground mt-1">
-                                Click the stage button on the latest release controller to open the deploy modal.
+                                Click the latest release button at the bottom to open the deploy modal.
                             </p>
                         </>,
                     );
@@ -477,7 +426,7 @@ export function WriteAndCallYourApiTutorial() {
                         <>
                             <p className="font-medium">Open the release page</p>
                             <p className="text-muted-foreground mt-1">
-                                Click the stage release badge to open the release page and inspect your deployed units.
+                                Click again on the stage release badge to open the release page and inspect your deployed units.
                             </p>
                         </>,
                     );
@@ -572,9 +521,9 @@ export function WriteAndCallYourApiTutorial() {
 
                     ctx.setSpotlightContent(
                         <>
-                            <p className="font-medium">Call your API</p>
+                            <p className="font-medium">Expand live interaction section</p>
                             <p className="text-muted-foreground mt-1">
-                                Click Live interaction to open the built-in client and call the API you just created.
+                                Click Live interaction to open the built-in client to continue.
                             </p>
                         </>
                     );
@@ -619,9 +568,9 @@ export function WriteAndCallYourApiTutorial() {
 
                     ctx.setSpotlightContent(
                         <>
-                            <p className="font-medium">Open the HTTP client</p>
+                            <p className="font-medium">Open the HTTP client modal</p>
                             <p className="text-muted-foreground mt-1">
-                                Click Test Request to open the built-in client and call your API.
+                                Click Test Request to open the built-in client modal.
                             </p>
                         </>
                     );
@@ -668,7 +617,7 @@ export function WriteAndCallYourApiTutorial() {
                         <>
                             <p className="font-medium">Send your request</p>
                             <p className="text-muted-foreground mt-1">
-                                Click Send to call your API with the built-in HTTP client.
+                                Click Send to call your API and get the response.
                             </p>
                         </>
                     );
@@ -715,10 +664,10 @@ export function WriteAndCallYourApiTutorial() {
                         <>
                             <p className="font-medium">Response headers</p>
                             <p className="text-muted-foreground mt-1">
-                                Here are the response headers from your call. Copy the value of <code className="text-foreground">X-Trace-Id</code> header — you will need it for debugging in later tutorials.
+                                Here are the response headers from your call. The value of <code className="text-foreground">X-Trace-Id</code> header will be used for debugging in later tutorials.
                             </p>
                         </>,
-                        <SpotlightPrimaryActionButton>Ok I copied it</SpotlightPrimaryActionButton>,
+                        <SpotlightPrimaryActionButton>Got it</SpotlightPrimaryActionButton>,
                     );
 
                     const [lostTargetRes] = await ctx.race(

@@ -27,6 +27,7 @@ import { closeMainSidebarIfMobile } from "@/stores/main-sidebar";
 import { cn } from "@/lib/utils";
 
 export const APP_DEVELOP_BUTTON_ID = "app-develop-button";
+export const APP_RUNTIMES_MENU_BUTTON_ID = "app-runtimes-menu-button";
 
 const VISIBLE_CHAT_SESSIONS_COUNT = 5;
 
@@ -214,7 +215,10 @@ export function NavProjects() {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild isActive={isRuntimesActive} tooltip="Runtimes">
-                            <Link to={runtimesUrl}>
+                            <Link
+                                id={APP_RUNTIMES_MENU_BUTTON_ID}
+                                to={runtimesUrl}
+                            >
                                 <ServerCrash />
                                 <span>Runtimes</span>
                             </Link>

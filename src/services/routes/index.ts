@@ -28,3 +28,9 @@ export function isConversationSessionUrl(pathname: string): boolean {
 
     return matchPath({ path: `${dashboardProjectRoutes.shell}/conversations/:conversationId`, end: false }, pathname) != null;
 }
+
+export function isProjectRuntimesListUrl(pathname: string): boolean {
+    if (!isProjectSelectedUrl(pathname)) return false;
+
+    return matchPath({ path: `${dashboardProjectRoutes.shell}/runtimes`, end: true }, pathname) != null;
+}

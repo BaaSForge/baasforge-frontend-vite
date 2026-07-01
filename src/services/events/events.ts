@@ -33,6 +33,7 @@ export const events = {
     UNIT_LIVE_INTERACTION_CLICKED_EVENT: "unit-live-interaction-clicked",
     SCALAR_TEST_REQUEST_CLICKED_EVENT: "scalar-test-request-clicked",
     SCALAR_SEND_CLICKED_EVENT: "scalar-send-clicked",
+    RUNTIMES_PAGE_MOUNTED_EVENT: "runtimes-page-mounted",
 } as const;
 
 export type AppEventName = (typeof events)[keyof typeof events];
@@ -69,4 +70,5 @@ export type AppEventPayloadMap = {
     [events.UNIT_LIVE_INTERACTION_CLICKED_EVENT]: undefined;
     [events.SCALAR_TEST_REQUEST_CLICKED_EVENT]: undefined;
     [events.SCALAR_SEND_CLICKED_EVENT]: undefined;
+    [events.RUNTIMES_PAGE_MOUNTED_EVENT]: undefined;
 };
