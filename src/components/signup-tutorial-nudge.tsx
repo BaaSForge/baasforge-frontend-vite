@@ -25,7 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { isSignupToken } from "@/modules/auth/lib/decode-access-token";
 import { useCurrentUserQuery } from "@/modules/auth/queries";
-import { clearSpotlightContent, setSpotlightContentToRender } from "@/modules/tutorials/steps/spotlight-renderer";
+import { clearSpotlightContent, setSpotlightContentToRender } from "@/components/target-spotlight-overlay/lib/spotlight-renderer";
 import { createInformSchedule } from "@/services/informed-user-schedule";
 import { events, listenAppEvent } from "@/services/events";
 import {
