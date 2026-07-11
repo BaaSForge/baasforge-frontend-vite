@@ -8,6 +8,7 @@ import {
     useTargetSpotlightOverlayActive,
     useTargetSpotlightOverlayPlacement,
     useTargetSpotlightOverlayTargetElementId,
+    useTargetSpotlightOverlayTargetElementSelector,
 } from "./store";
 
 /**
@@ -21,6 +22,7 @@ import {
 export function TargetSpotlightOverlayGlobalHost() {
     const active = useTargetSpotlightOverlayActive();
     const targetElementId = useTargetSpotlightOverlayTargetElementId();
+    const targetElementSelector = useTargetSpotlightOverlayTargetElementSelector();
     const placement = useTargetSpotlightOverlayPlacement();
 
     useSpotlightKeyboardSuspend(active);
@@ -28,8 +30,12 @@ export function TargetSpotlightOverlayGlobalHost() {
     return (
         <>
             {typeof document !== "undefined" ? createPortal(<PinTopAnchor />, document.body) : null}
-            {targetElementId != null ? (
-                <TargetSpotlightOverlay targetElementId={targetElementId} placement={placement} />
+            {targetElementId != null || targetElementSelector != null ? (
+                <TargetSpotlightOverlay
+                    targetElementId={targetElementId}
+                    targetElementSelector={targetElementSelector}
+                    placement={placement}
+                />
             ) : null}
         </>
     );

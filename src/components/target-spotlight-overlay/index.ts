@@ -1,6 +1,7 @@
 export {
     targetSpotlightOverlayStore,
     setTargetSpotlightOverlayElementId,
+    setTargetSpotlightOverlayElementSelector,
     setTargetSpotlightOverlayPlacement,
     pinToTop,
     isTargetSpotlightOverlayActive,
@@ -8,6 +9,7 @@ export {
     useTargetSpotlightOverlayHidePinTopCircles,
     useTargetSpotlightOverlayPinTopStatus,
     useTargetSpotlightOverlayTargetElementId,
+    useTargetSpotlightOverlayTargetElementSelector,
     useTargetSpotlightOverlayPlacement,
 } from "./store";
 export {

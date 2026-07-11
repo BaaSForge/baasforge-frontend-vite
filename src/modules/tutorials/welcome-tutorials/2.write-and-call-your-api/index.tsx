@@ -1,6 +1,7 @@
 "use client";
 
 import { APP_DEVELOP_BUTTON_ID } from "@/modules/layout/components/nav-projects";
+import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { APP_CHAT_COMPOSER_ID } from "@/pages/dashboard/projects/[projectId]/conversations/components/controls";
 import {
     APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID,
@@ -19,14 +20,12 @@ import {
 import { closeScalarClientModal } from "@/components/scalar-http-operation-client/close-scalar-client-modal";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
-import { isConversationSessionUrl, isNewConversationUrl } from "@/services/routes";
+import { getSelectedProjectIdFromPathname, isConversationSessionUrl, isNewConversationUrl, isProjectSelectedUrl } from "@/services/routes";
+import { isMainSidebarClosed } from "@/stores/main-sidebar";
 import { APP_RELEASE_UNITS_FILTER_INPUT_ID } from "@/modules/project/release-units-all/release-units-all-panel";
 import { APP_UNIT_CHANGES_MODAL_ID } from "@/modules/project-chat";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import {
-    createChooseProjectStep,
-    createEnsureSidebarIsOpenedBeforeProjectSelectStep,
-    ENSURE_SIDEBAR_IS_OPENED_BEFORE_PROJECT_SELECT_STEP_ID,
     ensureMainSidebarOpen,
     useSteps,
 } from "@/modules/tutorials/steps";
@@ -38,6 +37,8 @@ import {
     tutorialFirstUnitScalarSendButtonId,
     tutorialFirstUnitScalarTestRequestButtonId,
 } from "./tutorial-target-ids";
+import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
+import { breadcrumbStore } from "@/stores/breadcrumb";
 
 const TUTORIAL_ID = "write-and-call-your-api" as const;
 
@@ -70,10 +71,85 @@ export function WriteAndCallYourApiTutorial() {
                     void ctx.next();
                 },
             },
-            createEnsureSidebarIsOpenedBeforeProjectSelectStep<WriteAndCallYourApiTutorialData>(),
-            createChooseProjectStep<WriteAndCallYourApiTutorialData>({
-                onProjectAlreadySelectedStepId: "ensure-sidebar-is-opened-before-develop-button",
-            }),
+            {
+                id: "ensure-sidebar-is-opened-before-project-select",
+                handler: async (ctx) => {
+                    ctx.interval(1000, async () => {
+                        if (!breadcrumbStore.getState().stickyBarVisible) {
+                            window.scrollBy({ top: -10 });
+                        }
+
+                        if (isMainSidebarClosed()) {
+                            
+                        } else {
+                            ctx.next({});
+                        }
+                    });
+
+                    setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
+    
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Expand the sidebar to continue</p>
+                            <p className="text-muted-foreground mt-1">Use this button to open the sidebar and continue with the tutorial.</p>
+                        </>,
+                    );
+
+                    await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
+                },
+            },
+            {
+                id: "choose-project",
+                handler: async (ctx) => {
+                    if (isProjectSelectedUrl(window.location.pathname)) {
+                        const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
+                        ctx.goTo(
+                            "ensure-sidebar-is-opened-before-develop-button",
+                            projectId ? ({ projectId } as Partial<Omit<WriteAndCallYourApiTutorialData, "step">>) : undefined,
+                        );
+                        return;
+                    }
+
+                    const isSidebarOpen = () => !isMainSidebarClosed();
+                    const sidebarClosed = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (isMainSidebarClosed()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isSidebarOpen },
+                    );
+
+                    setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Choose your project</p>
+                            <p className="text-muted-foreground mt-1">
+                                Use this button to switch projects. Open the menu and select the project you created in
+                                the previous tutorial.
+                            </p>
+                        </>,
+                    );
+
+                    const [sidebarClosedRes] = await ctx.race(
+                        sidebarClosed,
+                        (async () => {
+                            await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
+                            await ctx.once(events.PROJECT_SELECTED_EVENT);
+                        })(),
+                    );
+
+                    if (sidebarClosedRes) {
+                        ctx.goTo("ensure-sidebar-is-opened-before-project-select");
+                        return;
+                    }
+
+                    const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
+                    void ctx.next((projectId ? { projectId } : {}) as Partial<Omit<WriteAndCallYourApiTutorialData, "step">>);
+                },
+            },
             {
                 id: "ensure-sidebar-is-opened-before-develop-button",
                 handler: async (ctx) => {
@@ -117,7 +193,7 @@ export function WriteAndCallYourApiTutorial() {
                     const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.DEVELOP_BUTTON_CLICKED_EVENT));
 
                     if (lostTargetRes) {
-                        ctx.goTo(ENSURE_SIDEBAR_IS_OPENED_BEFORE_PROJECT_SELECT_STEP_ID);
+                        ctx.goTo("ensure-sidebar-is-opened-before-project-select");
                         return;
                     }
 
@@ -400,7 +476,11 @@ export function WriteAndCallYourApiTutorial() {
                         return;
                     }
 
-                    void ctx.next(runtimeId ? { stageRuntimeId: runtimeId } : {});
+                    const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
+                    void ctx.next({
+                        ...(projectId ? { projectId } : {}),
+                        ...(runtimeId ? { stageRuntimeId: runtimeId } : {}),
+                    });
                 },
             },
             {

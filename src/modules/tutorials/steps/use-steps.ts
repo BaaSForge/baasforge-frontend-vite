@@ -62,7 +62,7 @@ export function useSteps<TData extends StoredStepData>(
             const ctx = activeContext;
 
             try {
-                await step.handler(ctx);
+                await step.handler(ctx, 1);
             } catch (error) {
                 ctx.dispose();
                 if (activeContext === ctx) {

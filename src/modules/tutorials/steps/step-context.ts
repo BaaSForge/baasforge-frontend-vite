@@ -6,7 +6,14 @@ import {
 import { events, listenAppEvent, type AppEventName, type AppEventPayloadMap } from "@/services/events";
 import { saveTutorialProgress, type TutorialStatus } from "@/services/tutorials";
 import { clearSpotlightContent, flushSpotlightContent, setSpotlightContentToRender } from "./spotlight-renderer";
-import type { StepContext, StoredStepData, TutorialStepsIdentity } from "./types";
+import {
+    IntervalSupersededError,
+    type IntervalBreakOptions,
+    type IntervalContext,
+    type StepContext,
+    type StoredStepData,
+    type TutorialStepsIdentity,
+} from "./types";
 
 const DEFAULT_UNTIL_READY_TIMEOUT_MS = 5_000;
 
@@ -26,6 +33,214 @@ function delay(delayMs: number, onceCleanups: Set<() => void>): Promise<void> {
     });
 }
 
+function createIntervalBreakPromise(
+    intervalMs: number,
+    tick: (breakInterval: () => void) => void,
+    options: IntervalBreakOptions | undefined,
+    cleanups: Set<() => void>,
+): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+        let broken = false;
+        let aborted = false;
+        let ready = options?.untilReady == null;
+        const untilReadyTimeoutMs =
+            options?.untilReadyTimeoutMs ??
+            (options?.untilReady != null ? DEFAULT_UNTIL_READY_TIMEOUT_MS : undefined);
+        let untilReadyTimeoutId: number | undefined;
+
+        const cleanupIntervalForThis = (): void => {
+            window.clearInterval(intervalId);
+            if (untilReadyTimeoutId != null) {
+                window.clearTimeout(untilReadyTimeoutId);
+                untilReadyTimeoutId = undefined;
+            }
+            cleanups.delete(abortIntervalBreak);
+        };
+
+        const breakInterval = (): void => {
+            if (broken || aborted) return;
+            broken = true;
+            cleanupIntervalForThis();
+            resolve(true);
+        };
+
+        const abortIntervalBreak = (): void => {
+            if (broken || aborted) return;
+            aborted = true;
+            cleanupIntervalForThis();
+        };
+
+        if (!ready && untilReadyTimeoutMs != null) {
+            untilReadyTimeoutId = window.setTimeout(breakInterval, untilReadyTimeoutMs);
+        }
+
+        const intervalId = window.setInterval(() => {
+            if (!ready) {
+                if (options?.untilReady?.()) {
+                    ready = true;
+                    if (untilReadyTimeoutId != null) {
+                        window.clearTimeout(untilReadyTimeoutId);
+                        untilReadyTimeoutId = undefined;
+                    }
+                }
+                return;
+            }
+            tick(breakInterval);
+        }, intervalMs);
+
+        cleanups.add(abortIntervalBreak);
+    });
+}
+
+function createIntervalTickContext(): { ctx: IntervalContext; supersede: () => void } {
+    const tickCleanups = new Set<() => void>();
+    let tickRejectPending: ((error: IntervalSupersededError) => void) | null = null;
+
+    const rejectPendingTick = (): void => {
+        if (tickRejectPending) {
+            const reject = tickRejectPending;
+            tickRejectPending = null;
+            reject(new IntervalSupersededError());
+        }
+    };
+
+    const supersede = (): void => {
+        for (const cleanup of tickCleanups) {
+            cleanup();
+        }
+        tickCleanups.clear();
+        rejectPendingTick();
+    };
+
+    const trackPending = <T>(run: (reject: (error: IntervalSupersededError) => void) => Promise<T>): Promise<T> => {
+        return new Promise<T>((resolve, reject) => {
+            tickRejectPending = reject;
+            void run(reject).then(
+                (value) => {
+                    if (tickRejectPending === reject) {
+                        tickRejectPending = null;
+                    }
+                    resolve(value);
+                },
+                (error: unknown) => {
+                    if (tickRejectPending === reject) {
+                        tickRejectPending = null;
+                    }
+                    reject(error);
+                },
+            );
+        });
+    };
+
+    const ctx: IntervalContext = {
+        once<TEventName extends AppEventName>(eventName: TEventName) {
+            return new Promise<AppEventPayloadMap[TEventName]>((resolve, reject) => {
+                supersede();
+                tickRejectPending = reject;
+
+                const cleanupOnceForThis = (): void => {
+                    cleanup();
+                    tickCleanups.delete(cleanupOnceForThis);
+                    if (tickRejectPending === reject) {
+                        tickRejectPending = null;
+                    }
+                };
+
+                const cleanup = listenAppEvent(eventName, (event) => {
+                    cleanupOnceForThis();
+                    resolve(event.detail);
+                });
+
+                tickCleanups.add(cleanupOnceForThis);
+            });
+        },
+
+        sleep(delayMs) {
+            return trackPending(async () => {
+                return new Promise<void>((resolve) => {
+                    const cleanupDelayForThis = (): void => {
+                        window.clearTimeout(timeoutId);
+                        tickCleanups.delete(cleanupDelayForThis);
+                    };
+
+                    const timeoutId = window.setTimeout(() => {
+                        cleanupDelayForThis();
+                        resolve();
+                    }, delayMs);
+
+                    tickCleanups.add(cleanupDelayForThis);
+                });
+            });
+        },
+
+        timeout(delayMs) {
+            return ctx.sleep(delayMs);
+        },
+
+        race<T extends readonly [...unknown[]]>(...promises: { [K in keyof T]: Promise<T[K]> }) {
+            return trackPending(async () => {
+                return new Promise<{ [K in keyof T]: T[K] | undefined }>((resolve) => {
+                    let settled = false;
+                    const results: unknown[] = new Array<unknown>(promises.length);
+
+                    const settle = (index: number, value: unknown): void => {
+                        if (settled) return;
+                        settled = true;
+                        for (const cleanup of tickCleanups) {
+                            cleanup();
+                        }
+                        tickCleanups.clear();
+                        results[index] = value;
+                        resolve(results as { [K in keyof T]: T[K] | undefined });
+                    };
+
+                    promises.forEach((promise, index) => {
+                        void Promise.resolve(promise).then((value) => {
+                            settle(index, value);
+                        });
+                    });
+                });
+            });
+        },
+
+        intervalBreak(intervalMs, tick, options) {
+            return trackPending(async () => {
+                return createIntervalBreakPromise(intervalMs, tick, options, tickCleanups);
+            });
+        },
+    };
+
+    return { ctx, supersede };
+}
+
+export function createIntervalTickStepContext<TData extends StoredStepData>(
+    base: StepContext<TData>,
+    intervalCtx: IntervalContext,
+    onStepDone: () => void,
+): StepContext<TData> {
+    const wrapDone =
+        <TArgs extends unknown[]>(fn: (...args: TArgs) => Promise<void>) =>
+        async (...args: TArgs): Promise<void> => {
+            await fn(...args);
+            onStepDone();
+        };
+
+    return {
+        ...base,
+        once: intervalCtx.once,
+        sleep: intervalCtx.sleep,
+        timeout: intervalCtx.timeout,
+        race: intervalCtx.race,
+        intervalBreak: intervalCtx.intervalBreak,
+        next: wrapDone(base.next),
+        goTo: wrapDone(base.goTo),
+        markIdle: wrapDone(base.markIdle),
+        markPendingAction: wrapDone(base.markPendingAction),
+        markInterrupted: wrapDone(base.markInterrupted),
+        markCompleted: wrapDone(base.markCompleted),
+    };
+}
+
 type CreateStepContextOptions<TData extends StoredStepData> = {
     identity: TutorialStepsIdentity;
     stepIds: readonly string[];
@@ -38,6 +253,44 @@ export type ManagedStepContext<TData extends StoredStepData> = StepContext<TData
     dispose: () => void;
     cleanupSubscriptions: () => void;
 };
+
+export function runIntervalWrappedStepHandler<TData extends StoredStepData>(
+    ctx: ManagedStepContext<TData>,
+    intervalMs: number,
+    handler: (ctx: StepContext<TData>, tickNumber: number) => Promise<void>,
+): Promise<void> {
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        let tickNumber = 0;
+
+        const onStepDone = (): void => {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+
+        ctx.interval(
+            intervalMs,
+            async (intervalCtx) => {
+                if (settled) return;
+
+                tickNumber += 1;
+                const tickCtx = createIntervalTickStepContext(ctx, intervalCtx, onStepDone);
+
+                try {
+                    await handler(tickCtx, tickNumber);
+                } catch (error) {
+                    if (error instanceof IntervalSupersededError) return;
+                    if (!settled) {
+                        settled = true;
+                        reject(error);
+                    }
+                }
+            },
+            { immediate: true },
+        );
+    });
+}
 
 export function createStepContext<TData extends StoredStepData>(
     options: CreateStepContextOptions<TData>,
@@ -201,10 +454,31 @@ export function createStepContext<TData extends StoredStepData>(
             });
         },
 
-        interval(intervalMs, tick) {
-            const intervalId = window.setInterval(tick, intervalMs);
+        interval(intervalMs, tick, options) {
+            let supersedePreviousTick: (() => void) | null = null;
+
+            const runTick = (): void => {
+                supersedePreviousTick?.();
+
+                const { ctx, supersede } = createIntervalTickContext();
+                supersedePreviousTick = supersede;
+
+                void Promise.resolve(tick(ctx)).catch((error: unknown) => {
+                    if (!(error instanceof IntervalSupersededError)) {
+                        throw error;
+                    }
+                });
+            };
+
+            if (options?.immediate) {
+                runTick();
+            }
+
+            const intervalId = window.setInterval(runTick, intervalMs);
 
             const cleanupIntervalForThis = (): void => {
+                supersedePreviousTick?.();
+                supersedePreviousTick = null;
                 window.clearInterval(intervalId);
                 intervalCleanups.delete(cleanupIntervalForThis);
             };
@@ -213,57 +487,7 @@ export function createStepContext<TData extends StoredStepData>(
         },
 
         intervalBreak(intervalMs, tick, options) {
-            return new Promise<boolean>((resolve) => {
-                let broken = false;
-                let aborted = false;
-                let ready = options?.untilReady == null;
-                const untilReadyTimeoutMs =
-                    options?.untilReadyTimeoutMs ??
-                    (options?.untilReady != null ? DEFAULT_UNTIL_READY_TIMEOUT_MS : undefined);
-                let untilReadyTimeoutId: number | undefined;
-
-                const cleanupIntervalForThis = (): void => {
-                    window.clearInterval(intervalId);
-                    if (untilReadyTimeoutId != null) {
-                        window.clearTimeout(untilReadyTimeoutId);
-                        untilReadyTimeoutId = undefined;
-                    }
-                    intervalCleanups.delete(abortIntervalBreak);
-                };
-
-                const breakInterval = (): void => {
-                    if (broken || aborted) return;
-                    broken = true;
-                    cleanupIntervalForThis();
-                    resolve(true);
-                };
-
-                const abortIntervalBreak = (): void => {
-                    if (broken || aborted) return;
-                    aborted = true;
-                    cleanupIntervalForThis();
-                };
-
-                if (!ready && untilReadyTimeoutMs != null) {
-                    untilReadyTimeoutId = window.setTimeout(breakInterval, untilReadyTimeoutMs);
-                }
-
-                const intervalId = window.setInterval(() => {
-                    if (!ready) {
-                        if (options?.untilReady?.()) {
-                            ready = true;
-                            if (untilReadyTimeoutId != null) {
-                                window.clearTimeout(untilReadyTimeoutId);
-                                untilReadyTimeoutId = undefined;
-                            }
-                        }
-                        return;
-                    }
-                    tick(breakInterval);
-                }, intervalMs);
-
-                intervalCleanups.add(abortIntervalBreak);
-            });
+            return createIntervalBreakPromise(intervalMs, tick, options, intervalCleanups);
         },
 
         async next(partial) {

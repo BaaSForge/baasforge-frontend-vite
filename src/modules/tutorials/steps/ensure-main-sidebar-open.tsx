@@ -61,3 +61,30 @@ export async function ensureMainSidebarOpen<TData extends StoredStepData>(
         }
     }
 }
+
+export async function simplyEnsureMainSidebarOpen<TData extends StoredStepData>(
+    ctx: StepContext<TData>,
+    content: EnsureMainSidebarOpenContent,
+    options?: EnsureMainSidebarOpenOptions,
+): Promise<void> {
+    const sidebarClosed = isMainSidebarClosed();
+
+    if (!sidebarClosed) {
+        return;
+    }
+
+    if (options?.keepStickyBarVisible && !breadcrumbStore.getState().stickyBarVisible) {
+        window.scrollBy({ top: -10 });
+    }
+
+    setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
+
+    ctx.setSpotlightContent(
+        <>
+            <p className="font-medium">{content.title}</p>
+            <p className="text-muted-foreground mt-1">{content.description}</p>
+        </>,
+    );
+
+    await ctx.once(events.MAIN_SIDEBAR_OPENED_EVENT);
+}

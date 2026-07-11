@@ -48,7 +48,7 @@ export function RuntimeCard({ projectId, runtime }: RuntimeCardProps) {
     );
 
     return (
-        <Card className={`p-0 gap-0 overflow-hidden shadow-none rounded-md`}>
+        <Card data-runtime-id={runtime.id} className={`p-0 gap-0 overflow-hidden shadow-none rounded-md`}>
             <CardHeader className={cn("flex flex-row items-center border-b bg-muted justify-between gap-3 !py-2.5 px-3")}>
                 <h3 className="font-semibold text-sm truncate">{runtime.name}</h3>
             </CardHeader>

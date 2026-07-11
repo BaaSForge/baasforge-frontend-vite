@@ -16,6 +16,7 @@ import {
 import { useTargetSpotlightOverlayHidePinTopCircles, useTargetSpotlightOverlayPinTopStatus } from "./store";
 import { useAnchoredFloating } from "./hooks/use-anchored-floating";
 import { useElementById } from "./hooks/use-element-by-id";
+import { useElementBySelector } from "./hooks/use-element-by-selector";
 import { useElevatedElement } from "./hooks/use-elevated-element";
 import { useTrackedRect } from "./hooks/use-tracked-rect";
 import { useViewportSize } from "./hooks/use-viewport-size";
@@ -24,21 +25,27 @@ import { TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE } from "./lib/outside-event";
 import type { TargetSpotlightOverlayPlacement } from "./types";
 
 type TargetSpotlightOverlayProps = {
-    targetElementId: string;
+    targetElementId?: string | null;
+    targetElementSelector?: string | null;
     placement?: TargetSpotlightOverlayPlacement;
     targetRingPaddingPx?: number;
 };
 
 export function TargetSpotlightOverlay({
-    targetElementId,
+    targetElementId = null,
+    targetElementSelector = null,
     placement = "bottom",
     targetRingPaddingPx = DEFAULT_TARGET_RING_PADDING_PX,
 }: TargetSpotlightOverlayProps) {
-    const isPinToTop = isPinToTopTargetElementId(targetElementId);
+    const isPinToTop = targetElementId != null && isPinToTopTargetElementId(targetElementId);
     const hidePinTopCircles = useTargetSpotlightOverlayHidePinTopCircles();
     const pinTopStatus = useTargetSpotlightOverlayPinTopStatus();
-    const enabled = targetElementId.length > 0;
-    const target = useElementById(targetElementId, enabled);
+    const enabledById = targetElementId != null && targetElementId.length > 0;
+    const enabledBySelector = targetElementSelector != null && targetElementSelector.length > 0;
+    const enabled = enabledById || enabledBySelector;
+    const targetById = useElementById(targetElementId ?? "", enabledById);
+    const targetBySelector = useElementBySelector(targetElementSelector ?? "", enabledBySelector);
+    const target = targetById ?? targetBySelector;
     const targetRect = useTrackedRect(target, enabled);
     const viewport = useViewportSize(enabled);
 

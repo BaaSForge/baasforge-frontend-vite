@@ -10,6 +10,34 @@ export type TutorialStepsIdentity = {
 
 export type StoredStepData = {
     step: string;
+    projectId?: string;
+};
+
+export class IntervalSupersededError extends Error {
+    readonly name = "IntervalSupersededError";
+
+    constructor() {
+        super("Interval tick superseded by next tick");
+    }
+}
+
+export type IntervalBreakOptions = {
+    untilReady?: () => boolean;
+    untilReadyTimeoutMs?: number;
+};
+
+export type IntervalContext = {
+    once: <TEventName extends AppEventName>(eventName: TEventName) => Promise<AppEventPayloadMap[TEventName]>;
+    sleep: (delayMs: number) => Promise<void>;
+    timeout: (delayMs: number) => Promise<void>;
+    race: <T extends readonly [...unknown[]]>(
+        ...promises: { [K in keyof T]: Promise<T[K]> }
+    ) => Promise<{ [K in keyof T]: T[K] | undefined }>;
+    intervalBreak: (
+        intervalMs: number,
+        tick: (breakInterval: () => void) => void,
+        options?: IntervalBreakOptions,
+    ) => Promise<boolean>;
 };
 
 export type StepContext<TData extends StoredStepData> = {
@@ -20,7 +48,11 @@ export type StepContext<TData extends StoredStepData> = {
     once: <TEventName extends AppEventName>(eventName: TEventName) => Promise<AppEventPayloadMap[TEventName]>;
     timeout: (delayMs: number) => Promise<void>;
     sleep: (delayMs: number) => Promise<void>;
-    interval: (intervalMs: number, tick: () => void) => void;
+    interval: (
+        intervalMs: number,
+        tick: (intervalCtx: IntervalContext) => void | Promise<void>,
+        options?: { immediate?: boolean },
+    ) => void;
     intervalBreak: (
         intervalMs: number,
         tick: (breakInterval: () => void) => void,
@@ -38,5 +70,5 @@ export type StepContext<TData extends StoredStepData> = {
 
 export type StepDefinition<TData extends StoredStepData> = {
     id: string;
-    handler: (ctx: StepContext<TData>) => Promise<void>;
+    handler: (ctx: StepContext<TData>, tickNumber: number) => Promise<void>;
 };

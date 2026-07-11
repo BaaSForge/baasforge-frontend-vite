@@ -4,20 +4,22 @@ import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-
 import { APP_THEME_SWITCHER_BUTTON_ID } from "@/components/mode-toggle";
 import { APP_USER_MENU_BUTTON_ID } from "@/modules/layout/components/nav-user";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
-import { isMainSidebarClosed } from "@/stores/main-sidebar";
 import { setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
-import { ensureMainSidebarOpen, useSteps } from "@/modules/tutorials/steps";
+import { useStepsWithIntervals } from "@/modules/tutorials/steps";
 import type { YourFirstProjectTutorialData } from "./types";
 import { APP_CREATE_PROJECT_FORM_ID } from "@/pages/dashboard/projects/new/page";
+import { simplyEnsureMainSidebarOpen } from "@/modules/tutorials/steps";
 
 const TUTORIAL_ID = "your-first-project" as const;
+const TUTORIAL_INTERVAL_MS = 1000;
 
 export function YourFirstProjectTutorial() {
-    useSteps<YourFirstProjectTutorialData>(
+    useStepsWithIntervals<YourFirstProjectTutorialData>(
+        TUTORIAL_INTERVAL_MS,
         {
             tutorialGroupId: WELCOME_TUTORIALS_GROUP_ID,
             tutorialId: TUTORIAL_ID,
@@ -39,6 +41,7 @@ export function YourFirstProjectTutorial() {
                         </SpotlightPrimaryActionButton>
                     );
                     ctx.pinToTop({ status: "info" });
+
                     await ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED);
                     void ctx.next();
                 },
@@ -46,23 +49,18 @@ export function YourFirstProjectTutorial() {
             {
                 id: "inbox",
                 handler: async (ctx) => {
-                    const isInboxRendered = () => document.getElementById(APP_NOTIFICATION_INBOX_BUTTON_ID) != null;
-                    const lostTarget = ctx.intervalBreak(
-                        1000,
-                        (breakInterval) => {
-                            if (!isInboxRendered()) {
-                                breakInterval();
-                            }
-                        },
-                        { untilReady: isInboxRendered },
-                    );
+                    const isInboxRendered = document.getElementById(APP_NOTIFICATION_INBOX_BUTTON_ID) != null;
+
+                    if (!isInboxRendered) {
+                        ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    if (!breadcrumbStore.getState().stickyBarVisible) {
+                        window.scrollBy({ top: -10 });
+                    }
 
                     setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID);
-                    ctx.interval(1000, () => {
-                        if (!breadcrumbStore.getState().stickyBarVisible) {
-                            window.scrollBy({ top: -10 });
-                        }
-                    });
 
                     ctx.setSpotlightContent(
                         <>
@@ -74,13 +72,7 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.NOTIFICATION_CLOSED_EVENT));
-
-                    if (lostTargetRes) {
-                        ctx.goTo("generic-interrupted");
-                        return;
-                    }
-
+                    await ctx.once(events.NOTIFICATION_CLOSED_EVENT);
                     void ctx.next({});
                 },
             },
@@ -88,11 +80,10 @@ export function YourFirstProjectTutorial() {
                 id: "theme-switch",
                 handler: async (ctx) => {
                     setTargetSpotlightOverlayElementId(APP_THEME_SWITCHER_BUTTON_ID);
-                    ctx.interval(1000, () => {
-                        if (!breadcrumbStore.getState().stickyBarVisible) {
-                            window.scrollBy({ top: -10 });
-                        }
-                    });
+
+                    if (!breadcrumbStore.getState().stickyBarVisible) {
+                        window.scrollBy({ top: -10 });
+                    }
 
                     ctx.setSpotlightContent(
                         <>
@@ -113,32 +104,15 @@ export function YourFirstProjectTutorial() {
                 },
             },
             {
-                id: "ensure-sidebar-is-opened-before-user-menu",
+                id: "user-menu",
                 handler: async (ctx) => {
-                    await ensureMainSidebarOpen(
+                    await simplyEnsureMainSidebarOpen(
                         ctx,
                         {
                             title: "Open the sidebar",
                             description: "Use this button to open the sidebar and continue with the tutorial.",
                         },
                         { keepStickyBarVisible: true },
-                    );
-
-                    void ctx.next({});
-                },
-            },
-            {
-                id: "user-menu",
-                handler: async (ctx) => {
-                    const isSidebarOpen = () => !isMainSidebarClosed();
-                    const sidebarClosed = ctx.intervalBreak(
-                        1000,
-                        (breakInterval) => {
-                            if (isMainSidebarClosed()) {
-                                breakInterval();
-                            }
-                        },
-                        { untilReady: isSidebarOpen },
                     );
 
                     setTargetSpotlightOverlayElementId(APP_USER_MENU_BUTTON_ID);
@@ -153,33 +127,8 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    const [sidebarClosedRes] = await ctx.race(
-                        sidebarClosed,
-                        (async () => {
-                            await ctx.once(events.USER_MENU_OPENED_EVENT);
-                            await ctx.once(events.USER_MENU_CLOSED_EVENT);
-                        })(),
-                    );
-
-                    if (sidebarClosedRes) {
-                        ctx.goTo("ensure-sidebar-is-opened-before-user-menu");
-                        return;
-                    }
-
-                    void ctx.next({});
-                },
-            },
-            {
-                id: "ensure-sidebar-is-opened-before-projects-switch-menu",
-                handler: async (ctx) => {
-                    await ensureMainSidebarOpen(
-                        ctx,
-                        {
-                            title: "Expand the sidebar to continue",
-                            description: "Use this button to open the sidebar and continue with the tutorial.",
-                        },
-                        { keepStickyBarVisible: true },
-                    );
+                    await ctx.once(events.USER_MENU_OPENED_EVENT);
+                    await ctx.once(events.USER_MENU_CLOSED_EVENT);
 
                     void ctx.next({});
                 },
@@ -187,15 +136,13 @@ export function YourFirstProjectTutorial() {
             {
                 id: "projects-switch-menu",
                 handler: async (ctx) => {
-                    const isSidebarOpen = () => !isMainSidebarClosed();
-                    const sidebarClosed = ctx.intervalBreak(
-                        1000,
-                        (breakInterval) => {
-                            if (isMainSidebarClosed()) {
-                                breakInterval();
-                            }
+                    await simplyEnsureMainSidebarOpen(
+                        ctx,
+                        {
+                            title: "Expand the sidebar to continue",
+                            description: "Use this button to open the sidebar and continue with the tutorial.",
                         },
-                        { untilReady: isSidebarOpen },
+                        { keepStickyBarVisible: true },
                     );
 
                     setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
@@ -210,18 +157,8 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    const [sidebarClosedRes] = await ctx.race(
-                        sidebarClosed,
-                        (async () => {
-                            await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
-                            await ctx.once(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT);
-                        })(),
-                    );
-
-                    if (sidebarClosedRes) {
-                        ctx.goTo("ensure-sidebar-is-opened-before-projects-switch-menu");
-                        return;
-                    }
+                    await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
+                    await ctx.once(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT);
 
                     void ctx.next({});
                 },
@@ -229,16 +166,12 @@ export function YourFirstProjectTutorial() {
             {
                 id: "project-create-form",
                 handler: async (ctx) => {
-                    const isCreateProjectFormRendered = () => document.getElementById(APP_CREATE_PROJECT_FORM_ID) != null;
-                    const lostTarget = ctx.intervalBreak(
-                        1000,
-                        (breakInterval) => {
-                            if (!isCreateProjectFormRendered()) {
-                                breakInterval();
-                            }
-                        },
-                        { untilReady: isCreateProjectFormRendered },
-                    );
+                    const isCreateProjectFormRendered = document.getElementById(APP_CREATE_PROJECT_FORM_ID) != null;
+
+                    if (isCreateProjectFormRendered) {
+                        ctx.goTo("projects-switch-menu");
+                        return;
+                    }
 
                     setTargetSpotlightOverlayElementId(APP_CREATE_PROJECT_FORM_ID);
 
@@ -251,12 +184,7 @@ export function YourFirstProjectTutorial() {
                         </>,
                     );
 
-                    const [lostTargetRes] = await ctx.race(lostTarget, ctx.once(events.PROJECT_CREATED_EVENT));
-
-                    if (lostTargetRes) {
-                        ctx.goTo("projects-switch-menu");
-                        return;
-                    }
+                    await ctx.once(events.PROJECT_CREATED_EVENT);
 
                     void ctx.next({});
                 },

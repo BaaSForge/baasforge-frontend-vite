@@ -1,19 +1,22 @@
 "use client";
 
 import { APP_RUNTIMES_MENU_BUTTON_ID } from "@/modules/layout/components/nav-projects";
+import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { isMainSidebarClosed } from "@/stores/main-sidebar";
-import { setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
+import { setTargetSpotlightOverlayElementId, setTargetSpotlightOverlayElementSelector, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { events } from "@/services/events";
-import { isProjectRuntimesListUrl } from "@/services/routes";
+import { isProjectRuntimesListUrl, getSelectedProjectIdFromPathname, isProjectSelectedUrl } from "@/services/routes";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import {
-    createChooseProjectStep,
-    createEnsureSidebarIsOpenedBeforeProjectSelectStep,
     ensureMainSidebarOpen,
     useSteps,
 } from "@/modules/tutorials/steps";
 import type { DebugAndReleaseTutorialData } from "./types";
+import {
+    getWriteAndCallTutorialStageRuntimeId,
+    tutorialRuntimeCardSelector,
+} from "./get-write-and-call-tutorial-stage-runtime-id";
 
 const TUTORIAL_ID = "debug-and-release" as const;
 
@@ -45,10 +48,73 @@ export function DebugAndReleaseTutorial() {
                     void ctx.next();
                 },
             },
-            createEnsureSidebarIsOpenedBeforeProjectSelectStep<DebugAndReleaseTutorialData>(),
-            createChooseProjectStep<DebugAndReleaseTutorialData>({
-                onProjectAlreadySelectedStepId: "ensure-sidebar-is-opened-before-click-on-runtimes",
-            }),
+            {
+                id: "ensure-sidebar-is-opened-before-project-select",
+                handler: async (ctx) => {
+                    await ensureMainSidebarOpen(
+                        ctx,
+                        {
+                            title: "Expand the sidebar to continue",
+                            description: "Use this button to open the sidebar and continue with the tutorial.",
+                        },
+                        { keepStickyBarVisible: true },
+                    );
+
+                    void ctx.next({});
+                },
+            },
+            {
+                id: "choose-project",
+                handler: async (ctx) => {
+                    if (isProjectSelectedUrl(window.location.pathname)) {
+                        const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
+                        ctx.goTo(
+                            "ensure-sidebar-is-opened-before-click-on-runtimes",
+                            projectId ? ({ projectId } as Partial<Omit<DebugAndReleaseTutorialData, "step">>) : undefined,
+                        );
+                        return;
+                    }
+
+                    const isSidebarOpen = () => !isMainSidebarClosed();
+                    const sidebarClosed = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (isMainSidebarClosed()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isSidebarOpen },
+                    );
+
+                    setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Choose your project</p>
+                            <p className="text-muted-foreground mt-1">
+                                Use this button to switch projects. Open the menu and select the project you created in
+                                the previous tutorial.
+                            </p>
+                        </>,
+                    );
+
+                    const [sidebarClosedRes] = await ctx.race(
+                        sidebarClosed,
+                        (async () => {
+                            await ctx.once(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
+                            await ctx.once(events.PROJECT_SELECTED_EVENT);
+                        })(),
+                    );
+
+                    if (sidebarClosedRes) {
+                        ctx.goTo("ensure-sidebar-is-opened-before-project-select");
+                        return;
+                    }
+
+                    const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
+                    void ctx.next((projectId ? { projectId } : {}) as Partial<Omit<DebugAndReleaseTutorialData, "step">>);
+                },
+            },
             {
                 id: "ensure-sidebar-is-opened-before-click-on-runtimes",
                 handler: async (ctx) => {
@@ -105,6 +171,54 @@ export function DebugAndReleaseTutorial() {
                     }
 
                     void ctx.next({});
+                },
+            },
+            {
+                id: "review-stage-runtime",
+                handler: async (ctx) => {
+                    const stageRuntimeId = await getWriteAndCallTutorialStageRuntimeId();
+
+                    if (!stageRuntimeId) {
+                        ctx.goTo("generic-interrupted");
+                        return;
+                    }
+
+                    const targetSelector = tutorialRuntimeCardSelector(stageRuntimeId);
+                    const isRuntimeCardReady = () => document.querySelector(targetSelector) != null;
+                    const lostTarget = ctx.intervalBreak(
+                        1000,
+                        (breakInterval) => {
+                            if (!isRuntimeCardReady()) {
+                                breakInterval();
+                            }
+                        },
+                        { untilReady: isRuntimeCardReady },
+                    );
+
+                    setTargetSpotlightOverlayElementSelector(targetSelector);
+
+                    ctx.setSpotlightContent(
+                        <>
+                            <p className="font-medium">Your stage runtime</p>
+                            <p className="text-muted-foreground mt-1">
+                                This is the stage runtime you deployed to in the previous tutorial. Your units run here
+                                before you promote them to production.
+                            </p>
+                        </>,
+                        <SpotlightPrimaryActionButton>Got it</SpotlightPrimaryActionButton>,
+                    );
+
+                    const [lostTargetRes] = await ctx.race(
+                        lostTarget,
+                        ctx.once(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED),
+                    );
+
+                    if (lostTargetRes) {
+                        ctx.goTo("go-to-runtimes");
+                        return;
+                    }
+
+                    void ctx.next();
                 },
             },
             {
