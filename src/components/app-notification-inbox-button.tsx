@@ -25,6 +25,7 @@ import {
     writeStoredNotificationGroupFilter,
 } from "@/stores/app-notifications";
 import { cn } from "@/lib/utils";
+import { appStateStore } from "@/modules/app-state";
 import { events, triggerAppEvent } from "@/services/events";
 import { Filter, Inbox, X } from "lucide-react";
 import * as React from "react";
@@ -102,6 +103,11 @@ export function AppNotificationInboxButton() {
     React.useEffect(() => {
         writeStoredNotificationGroupFilter(selectedGroups);
     }, [selectedGroups]);
+
+    React.useLayoutEffect(() => {
+        appStateStore.getState().setNotificationDropdownOpen(open);
+        return () => appStateStore.getState().setNotificationDropdownOpen(false);
+    }, [open]);
 
     const prevOpenRef = React.useRef(open);
 

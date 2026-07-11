@@ -31,7 +31,7 @@ import {
 } from "@/services/routes";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
-import { isMainSidebarOpen, mainSidebarStore } from "@/stores/main-sidebar";
+import { isMainSidebarClosed, isMainSidebarOpen, mainSidebarStore } from "@/stores/main-sidebar";
 import {
     tutorialFirstUnitLiveInteractionButtonId,
     tutorialFirstUnitScalarResponseBodySectionId,
@@ -52,6 +52,10 @@ const OPEN_SIDEBAR_REPAIR_ID = "open-sidebar";
 
 const onConversationSessionPage = () =>
     isConversationSessionUrl(window.location.pathname) && document.getElementById(APP_CHAT_COMPOSER_ID) != null;
+
+const onDevelopChatPage = () =>
+    (isNewConversationUrl(window.location.pathname) || isConversationSessionUrl(window.location.pathname)) &&
+    document.getElementById(APP_CHAT_COMPOSER_ID) != null;
 
 const currentProjectId = (): Partial<WriteAndCallExtra> | void => {
     const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
@@ -95,6 +99,7 @@ const definition: TutorialDefinition<WriteAndCallExtra> = {
         {
             id: OPEN_SIDEBAR_REPAIR_ID,
             target: { elementId: APP_SIDEBAR_TOGGLE_BUTTON_ID },
+            requires: isMainSidebarClosed,
             keepStickyBarVisible: true,
             content: (
                 <>
@@ -143,8 +148,8 @@ const definition: TutorialDefinition<WriteAndCallExtra> = {
         {
             id: "develop-button",
             target: { elementId: APP_DEVELOP_BUTTON_ID },
-            requires: isMainSidebarOpen,
-            fallback: OPEN_SIDEBAR_REPAIR_ID,
+            requires: () => isProjectSelectedUrl(window.location.pathname),
+            fallback: "choose-project",
             keepStickyBarVisible: true,
             completeOn: events.DEVELOP_BUTTON_CLICKED_EVENT,
             isDone: () => isNewConversationUrl(window.location.pathname),
@@ -160,7 +165,7 @@ const definition: TutorialDefinition<WriteAndCallExtra> = {
         {
             id: "chat-composer-input",
             target: { elementId: APP_CHAT_COMPOSER_ID },
-            requires: () => isNewConversationUrl(window.location.pathname),
+            requires: onDevelopChatPage,
             fallback: "develop-button",
             isDone: () => isConversationSessionUrl(window.location.pathname),
             content: (
@@ -190,7 +195,8 @@ const definition: TutorialDefinition<WriteAndCallExtra> = {
                 extra.firstUnitId
                     ? { elementId: `tutorial-first-unit-id-badge-${extra.firstUnitId}`, placement: "top" }
                     : null,
-            fallback: "waiting-for-unit-creation",
+            requires: onConversationSessionPage,
+            fallback: "develop-button",
             completeOn: events.UNIT_ID_BADGE_COPIED_EVENT,
             content: (
                 <>
@@ -206,7 +212,8 @@ const definition: TutorialDefinition<WriteAndCallExtra> = {
             id: "open-unit-changes-modal",
             target: (extra) =>
                 extra.firstUnitId ? { elementId: `tutorial-first-unit-card-${extra.firstUnitId}` } : null,
-            fallback: "waiting-for-unit-creation",
+            requires: onConversationSessionPage,
+            fallback: "develop-button",
             completeOn: events.UNIT_CHANGES_MODAL_OPENED_EVENT,
             isDone: () => document.getElementById(APP_UNIT_CHANGES_MODAL_ID) != null,
             content: (
@@ -233,7 +240,7 @@ const definition: TutorialDefinition<WriteAndCallExtra> = {
             prepare: () => assignLastReleaseControllerStageButtonSpotlightId(),
             target: { elementId: APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID },
             requires: () => isConversationSessionUrl(window.location.pathname),
-            fallback: "waiting-for-unit-creation",
+            fallback: "develop-button",
             completeOn: events.STAGE_DEPLOY_MODAL_OPENED_EVENT,
             isDone: isStageDeployModalOpen,
             content: (

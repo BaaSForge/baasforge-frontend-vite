@@ -1,11 +1,15 @@
+"use client";
+
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/lib/utils";
 import { absorbNextClick } from "@/lib/absorb-next-click";
+import { useOverlayOpenRegistration } from "@/modules/app-state/use-overlay-open-registration";
 
-function Drawer({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
-    return <DrawerPrimitive.Root data-slot="drawer" {...props} />;
+function Drawer({ open, onOpenChange, ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+    const handleOpenChange = useOverlayOpenRegistration("modal", open, onOpenChange);
+    return <DrawerPrimitive.Root data-slot="drawer" open={open} onOpenChange={handleOpenChange} {...props} />;
 }
 
 function DrawerTrigger({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Trigger>) {

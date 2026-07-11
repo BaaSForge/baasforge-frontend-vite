@@ -6,6 +6,7 @@ import { useTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
 import { RotatingCombobox, type RotatingComboboxOption } from "@/components/ui/rotating-combobox";
 import { cn } from "@/lib/utils";
+import { appStateStore } from "@/modules/app-state";
 
 const THEME_ORDER = ["light", "dark-midnight", "dark-default", "system"] as const satisfies readonly Theme[];
 
@@ -58,6 +59,7 @@ export function ModeToggle({ label }: ModeToggleProps) {
             options={options}
             tooltipSide="left"
             contentAlign="end"
+            onOpenChange={(open) => appStateStore.getState().setThemeSwitchDropdownOpen(open)}
             renderTrigger={({ className, ...triggerProps }, { open }) => (
                 <Button
                     {...triggerProps}

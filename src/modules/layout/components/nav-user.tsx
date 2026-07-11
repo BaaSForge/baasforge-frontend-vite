@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router";
 
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
 import { cn } from "@/lib/utils";
+import { appStateStore } from "@/modules/app-state";
 
 import { TimeLeftLabel } from "@/components/time-left-label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -245,6 +246,7 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
             <SidebarMenuItem>
                 <DropdownMenu
                     onOpenChange={(open) => {
+                        appStateStore.getState().setUserMenuDropdownOpen(open);
                         triggerAppEvent(open ? events.USER_MENU_OPENED_EVENT : events.USER_MENU_CLOSED_EVENT);
                     }}
                 >

@@ -13,6 +13,7 @@ import { events, listenAppEvent, type AppEventName } from "@/services/events";
 import { getTutorialProgressRecord, saveTutorialProgress, type TutorialStatus } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useLocation } from "react-router";
 import type {
     RunnerDisplay,
     RunnerPhase,
@@ -149,18 +150,18 @@ export function TutorialRunner<TExtra extends Record<string, unknown>>({
     const completeStep = async (step: TutorialStep<TExtra>, assignedExtra?: Partial<TExtra>): Promise<void> => {
         if (getPendingStep()?.id !== step.id) return;
         mergeExtra(assignedExtra);
-        mergeExtra(await step.onComplete?.(dataRef.current.extra));
         dataRef.current = {
             ...dataRef.current,
             completedStepIds: [...dataRef.current.completedStepIds, step.id],
         };
         failureRef.current = null;
+        mergeExtra(await step.onComplete?.(dataRef.current.extra));
         if (getPendingStep() == null) {
             finishRun("completed");
             return;
         }
-        persist("pending-action");
         revalidate();
+        persist("pending-action");
     };
 
     const goToPreviousStep = (): void => {
@@ -172,13 +173,20 @@ export function TutorialRunner<TExtra extends Record<string, unknown>>({
         revalidate();
     };
 
-    /** Runs `prepare`, resolves the target, and returns it when all prerequisites hold. */
-    const passingTarget = (step: TutorialStep<TExtra>): StepTarget | null => {
+    const resolveStepTarget = (step: TutorialStep<TExtra>): StepTarget | null => {
         const extra = dataRef.current.extra;
         step.prepare?.(extra);
-        const target = typeof step.target === "function" ? step.target(extra) : step.target;
+        return typeof step.target === "function" ? step.target(extra) : step.target;
+    };
+
+    const stepRequiresMet = (step: TutorialStep<TExtra>): boolean =>
+        step.requires == null || step.requires(dataRef.current.extra);
+
+    /** Runs `prepare`, resolves the target, and returns it when all prerequisites hold. */
+    const passingTarget = (step: TutorialStep<TExtra>): StepTarget | null => {
+        const target = resolveStepTarget(step);
+        if (!stepRequiresMet(step)) return null;
         if (target == null || !isTargetPresent(target)) return null;
-        if (step.requires != null && !step.requires(extra)) return null;
         return target;
     };
 
@@ -191,6 +199,10 @@ export function TutorialRunner<TExtra extends Record<string, unknown>>({
             if (fallbackStep == null) break;
             const target = passingTarget(fallbackStep);
             if (target != null) {
+                if ("hidden" in target) {
+                    fallbackId = fallbackStep.fallback;
+                    continue;
+                }
                 return { kind: "step", step: fallbackStep, isFallback: true, target };
             }
             fallbackId = fallbackStep.fallback;
@@ -213,11 +225,18 @@ export function TutorialRunner<TExtra extends Record<string, unknown>>({
         }
 
         let display: RunnerDisplay<TExtra>;
-        const target = passingTarget(step);
+        const target = resolveStepTarget(step);
+        const requiresMet = stepRequiresMet(step);
+        const targetReady = target != null && isTargetPresent(target);
 
-        if (target != null) {
+        if (requiresMet && targetReady) {
             failureRef.current = null;
             display = { kind: "step", step, isFallback: false, target };
+        } else if (requiresMet) {
+            // Requirements are met but the spotlight target is not in the DOM yet — wait
+            // reactively without falling back to a repair step.
+            failureRef.current = null;
+            display = { kind: "hidden" };
         } else {
             if (failureRef.current?.stepId !== step.id) {
                 // eslint-disable-next-line react-hooks/purity -- revalidate is only called from effects, not during render
@@ -241,6 +260,13 @@ export function TutorialRunner<TExtra extends Record<string, unknown>>({
 
     const engineRef = useRef({ revalidate, completeStep, finishRun, goToPreviousStep, getPendingStep, mergeExtra, persist });
     engineRef.current = { revalidate, completeStep, finishRun, goToPreviousStep, getPendingStep, mergeExtra, persist };
+
+    const location = useLocation();
+
+    useEffect(() => {
+        if (phaseRef.current !== "running") return;
+        engineRef.current.revalidate();
+    }, [location.pathname]);
 
     useEffect(() => {
         let cancelled = false;

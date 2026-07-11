@@ -14,7 +14,7 @@ import {
 } from "@/services/routes";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
-import { isMainSidebarOpen, mainSidebarStore } from "@/stores/main-sidebar";
+import { isMainSidebarClosed, isMainSidebarOpen, mainSidebarStore } from "@/stores/main-sidebar";
 import { useEffect, useState } from "react";
 import {
     getWriteAndCallTutorialStageRuntimeId,
@@ -57,6 +57,7 @@ function createDefinition(stageRuntimeId: string | null): TutorialDefinition<Deb
             {
                 id: OPEN_SIDEBAR_REPAIR_ID,
                 target: { elementId: APP_SIDEBAR_TOGGLE_BUTTON_ID },
+                requires: isMainSidebarClosed,
                 keepStickyBarVisible: true,
                 content: (
                     <>
@@ -106,8 +107,8 @@ function createDefinition(stageRuntimeId: string | null): TutorialDefinition<Deb
             {
                 id: "go-to-runtimes",
                 target: { elementId: APP_RUNTIMES_MENU_BUTTON_ID },
-                requires: isMainSidebarOpen,
-                fallback: OPEN_SIDEBAR_REPAIR_ID,
+                requires: () => isMainSidebarOpen() && isProjectSelectedUrl(window.location.pathname),
+                fallback: "choose-project",
                 keepStickyBarVisible: true,
                 completeOn: events.RUNTIMES_PAGE_MOUNTED_EVENT,
                 isDone: () => isProjectRuntimesListUrl(window.location.pathname),

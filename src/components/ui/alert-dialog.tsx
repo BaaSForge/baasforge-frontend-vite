@@ -1,11 +1,15 @@
+"use client";
+
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import * as React from "react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useOverlayOpenRegistration } from "@/modules/app-state/use-overlay-open-registration";
 
-function AlertDialog({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
-    return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
+function AlertDialog({ open, onOpenChange, ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
+    const handleOpenChange = useOverlayOpenRegistration("alert", open, onOpenChange);
+    return <AlertDialogPrimitive.Root data-slot="alert-dialog" open={open} onOpenChange={handleOpenChange} {...props} />;
 }
 
 function AlertDialogTrigger({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>) {

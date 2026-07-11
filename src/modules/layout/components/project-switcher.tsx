@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { appStateStore } from "@/modules/app-state";
 import { getSwitchProjectLink } from "@/modules/project/libs";
 import { useProjectQuery, useProjectsQuery } from "@/modules/project/queries";
 import { events, triggerAppEvent } from "@/services/events";
@@ -40,6 +41,7 @@ export function ProjectSwitcher() {
                 <DropdownMenu
                     modal={false}
                     onOpenChange={(open) => {
+                        appStateStore.getState().setProjectSwitchDropdownOpen(open);
                         if (open) {
                             triggerAppEvent(events.PROJECT_SWITCH_MENU_OPENED_EVENT);
                         }

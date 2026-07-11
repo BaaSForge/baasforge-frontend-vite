@@ -37,6 +37,7 @@ export type RotatingComboboxProps<T extends string> = {
     contentAlign?: React.ComponentProps<typeof PopoverContent>["align"];
     contentClassName?: string;
     disabled?: boolean;
+    onOpenChange?: (open: boolean) => void;
 };
 
 function nextInOrder<T extends string>(options: RotatingComboboxOption<T>[], current: T): T {
@@ -58,6 +59,7 @@ export function RotatingCombobox<T extends string>({
     contentAlign = "end",
     contentClassName,
     disabled,
+    onOpenChange,
 }: RotatingComboboxProps<T>) {
     const [open, setOpen] = React.useState(false);
     const [hintOpen, setHintOpen] = React.useState(false);
@@ -73,6 +75,14 @@ export function RotatingCombobox<T extends string>({
         onValueChange(nextInOrder(options, value));
     }, [onValueChange, options, value]);
 
+    const handleOpenChange = React.useCallback(
+        (next: boolean) => {
+            setOpen(next);
+            onOpenChange?.(next);
+        },
+        [onOpenChange],
+    );
+
     const handleTriggerClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
         if (disabled) return;
         if (open) {
@@ -80,7 +90,7 @@ export function RotatingCombobox<T extends string>({
             rotate();
             return;
         }
-        setOpen(true);
+        handleOpenChange(true);
     };
 
     const focusListElement = React.useCallback(() => {
@@ -90,8 +100,8 @@ export function RotatingCombobox<T extends string>({
     const handleTriggerKeyDown = useListboxTriggerKeyDown({
         disabled: Boolean(disabled),
         open,
-        onRequestClose: () => setOpen(false),
-        onRequestOpen: () => setOpen(true),
+        onRequestClose: () => handleOpenChange(false),
+        onRequestOpen: () => handleOpenChange(true),
         focusListElement,
     });
 
@@ -168,7 +178,7 @@ export function RotatingCombobox<T extends string>({
     );
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={handleOpenChange}>
             {anchor}
             <PopoverContent
                 align={contentAlign}
@@ -208,7 +218,7 @@ export function RotatingCombobox<T extends string>({
                     onKeyDown={(e) => {
                         if (e.key === "Escape") {
                             e.preventDefault();
-                            setOpen(false);
+                            handleOpenChange(false);
                         }
                     }}
                     className="max-h-96 outline-hidden focus-visible:ring-2 focus-visible:ring-ring/50"
@@ -221,7 +231,7 @@ export function RotatingCombobox<T extends string>({
                                 value={option.value}
                                 onSelect={() => {
                                     onValueChange(option.value);
-                                    setOpen(false);
+                                    handleOpenChange(false);
                                 }}
                                 className="relative w-full gap-2 py-1.5 pr-8 pl-2"
                             >
