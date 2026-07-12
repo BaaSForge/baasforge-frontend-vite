@@ -51,9 +51,7 @@ export function YourFirstProjectTutorial() {
             <SpotlightPrimaryActionButton>Let's go!</SpotlightPrimaryActionButton>,
         );
 
-        return listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, () => {
-            goNext();
-        });
+        return listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, goNext);
     }, [currentStep, goNext]);
 
     useDebouncedEffect(
@@ -63,13 +61,7 @@ export function YourFirstProjectTutorial() {
             if (appState.isNotificationDropdownOpen) {
                 clearTutorialSpotlight();
 
-                const stopListening = listenAppEvent(events.NOTIFICATION_CLOSED_EVENT, () => {
-                    goNext();
-                });
-    
-                return () => {
-                    stopListening();
-                };
+                return listenAppEvent(events.NOTIFICATION_CLOSED_EVENT, goNext);
             }
 
             const cancelPendingScroll = !appState.isBreadcrumbStickyVisible
@@ -117,9 +109,7 @@ export function YourFirstProjectTutorial() {
                 <SpotlightPrimaryActionButton>Got it!</SpotlightPrimaryActionButton>,
             );
 
-            const stopListening = listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, () => {
-                goNext();
-            });
+            const stopListening = listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, goNext);
 
             return () => {
                 cancelPendingScroll?.();
@@ -158,13 +148,7 @@ export function YourFirstProjectTutorial() {
             if (appState.isUserMenuDropdownOpen) {
                 clearTutorialSpotlight();
 
-                const stopListening = listenAppEvent(events.USER_MENU_CLOSED_EVENT, () => {
-                    goNext();
-                });
-    
-                return () => {
-                    stopListening();
-                };
+                return listenAppEvent(events.USER_MENU_CLOSED_EVENT, goNext);
             }
 
             setTargetSpotlightOverlayElementId(APP_USER_MENU_BUTTON_ID);
@@ -220,9 +204,7 @@ export function YourFirstProjectTutorial() {
                     </>,
                 );
 
-                const stopListening = listenAppEvent(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT, () => {
-                    goNext();
-                });
+                const stopListening = listenAppEvent(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT, goNext);
     
                 return () => {
                     resetTargetSpotlightZIndex();
@@ -265,13 +247,7 @@ export function YourFirstProjectTutorial() {
                 </>,
             );
 
-            const stopListening = listenAppEvent(events.PROJECT_CREATED_EVENT, () => {
-                goNext();
-            });
-
-            return () => {
-                stopListening();
-            };
+            return listenAppEvent(events.PROJECT_CREATED_EVENT, goNext);
         },
         [currentStep, goNext, goTo, appState.activePage],
         LAYOUT_SETTLE_DEBOUNCE_MS,
