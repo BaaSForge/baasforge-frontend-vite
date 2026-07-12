@@ -10,10 +10,13 @@ import {
     DEFAULT_TARGET_RING_PADDING_PX,
     PIN_TOP_FLOATING_OFFSET_PX,
     TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS,
-    TARGET_SPOTLIGHT_OVERLAY_Z_INDEX,
     isPinToTopTargetElementId,
 } from "./constants";
-import { useTargetSpotlightOverlayHidePinTopCircles, useTargetSpotlightOverlayPinTopStatus } from "./store";
+import {
+    useTargetSpotlightOverlayHidePinTopCircles,
+    useTargetSpotlightOverlayPinTopStatus,
+    useTargetSpotlightOverlayZIndex,
+} from "./store";
 import { useAnchoredFloating } from "./hooks/use-anchored-floating";
 import { useElementById } from "./hooks/use-element-by-id";
 import { useElementBySelector } from "./hooks/use-element-by-selector";
@@ -40,6 +43,7 @@ export function TargetSpotlightOverlay({
     const isPinToTop = targetElementId != null && isPinToTopTargetElementId(targetElementId);
     const hidePinTopCircles = useTargetSpotlightOverlayHidePinTopCircles();
     const pinTopStatus = useTargetSpotlightOverlayPinTopStatus();
+    const overlayZIndex = useTargetSpotlightOverlayZIndex();
     const enabledById = targetElementId != null && targetElementId.length > 0;
     const enabledBySelector = targetElementSelector != null && targetElementSelector.length > 0;
     const enabled = enabledById || enabledBySelector;
@@ -49,7 +53,7 @@ export function TargetSpotlightOverlay({
     const targetRect = useTrackedRect(target, enabled);
     const viewport = useViewportSize(enabled);
 
-    useElevatedElement(target, enabled && !isPinToTop, TARGET_SPOTLIGHT_OVERLAY_Z_INDEX);
+    useElevatedElement(target, enabled && !isPinToTop, overlayZIndex);
 
     const { arrowRef, setFloatingRef, floatingStyles, resolvedPlacement, arrowStyle } = useAnchoredFloating(
         target,
@@ -72,7 +76,7 @@ export function TargetSpotlightOverlay({
             className="pointer-events-none fixed inset-0"
             {...{ [TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE]: "" }}
             style={{
-                zIndex: TARGET_SPOTLIGHT_OVERLAY_Z_INDEX,
+                zIndex: overlayZIndex,
                 pointerEvents: TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS,
             }}
         >

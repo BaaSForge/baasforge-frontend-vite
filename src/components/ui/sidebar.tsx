@@ -81,7 +81,18 @@ function Sidebar({
     variant?: "sidebar" | "floating" | "inset";
     collapsible?: "offcanvas" | "icon" | "none";
 }) {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
+    const { isMobile, state, openMobile, setOpenMobile, closeMobile } = useSidebar();
+
+    const handleMobileLinkClick = React.useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            const link = (event.target as Element).closest("a[href]");
+            if (link == null) return;
+            const href = link.getAttribute("href");
+            if (href == null || href === "#") return;
+            closeMobile();
+        },
+        [closeMobile],
+    );
 
     if (collapsible === "none") {
         return (
@@ -110,7 +121,9 @@ function Sidebar({
                         <SheetTitle>Sidebar</SheetTitle>
                         <SheetDescription>Displays the mobile sidebar.</SheetDescription>
                     </SheetHeader>
-                    <div className="flex h-full w-full flex-col">{children}</div>
+                    <div className="flex h-full w-full flex-col" onClick={handleMobileLinkClick}>
+                        {children}
+                    </div>
                 </SheetContent>
             </Sheet>
         );

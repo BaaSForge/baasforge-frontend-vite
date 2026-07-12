@@ -5,6 +5,7 @@ import type { Theme } from "@/components/theme-provider/hooks";
 import { useTheme } from "@/components/theme-provider/hooks";
 import { Button } from "@/components/ui/button";
 import { RotatingCombobox, type RotatingComboboxOption } from "@/components/ui/rotating-combobox";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { appStateStore } from "@/modules/app-state";
 
@@ -36,6 +37,7 @@ type ModeToggleProps = {
 };
 
 export function ModeToggle({ label }: ModeToggleProps) {
+    const isMobile = useIsMobile();
     const { theme, setTheme } = useTheme();
     const nextTheme = getNextTheme(theme);
 
@@ -54,6 +56,7 @@ export function ModeToggle({ label }: ModeToggleProps) {
 
     return (
         <RotatingCombobox
+            key={isMobile ? "mobile" : "desktop"}
             value={theme}
             onValueChange={setTheme}
             options={options}

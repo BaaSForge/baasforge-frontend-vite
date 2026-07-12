@@ -54,6 +54,36 @@ function readBreadcrumbState(): Pick<AppState, "isBreadcrumbStickyVisible"> {
     return { isBreadcrumbStickyVisible: breadcrumbStore.getState().stickyBarVisible };
 }
 
+function closedSidebarDropdownState(): Pick<AppState, "isProjectSwitchDropdownOpen" | "isUserMenuDropdownOpen"> {
+    return {
+        isProjectSwitchDropdownOpen: false,
+        isUserMenuDropdownOpen: false,
+    };
+}
+
+function closedChromeDropdownState(): Pick<
+    AppState,
+    "isNotificationDropdownOpen" | "isThemeSwitchDropdownOpen" | "isProjectSwitchDropdownOpen" | "isUserMenuDropdownOpen"
+> {
+    return {
+        ...closedSidebarDropdownState(),
+        isNotificationDropdownOpen: false,
+        isThemeSwitchDropdownOpen: false,
+    };
+}
+
+function canSidebarHostOpenDropdowns(snapshot: Pick<AppState, "isMobile" | "isMainSidebarOpen">): boolean {
+    if (!snapshot.isMobile) return true;
+    return snapshot.isMainSidebarOpen;
+}
+
+export function effectiveSidebarDropdownOpen(
+    storedOpen: boolean,
+    snapshot: Pick<AppState, "isMobile" | "isMainSidebarOpen">,
+): boolean {
+    return storedOpen && canSidebarHostOpenDropdowns(snapshot);
+}
+
 function routeStateEqual(a: RouteState, b: RouteState): boolean {
     if (a.activePage !== b.activePage) return false;
     const aKeys = Object.keys(a.pathParams);
@@ -78,8 +108,20 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
     syncFromMainSidebar: () => {
         const next = readMainSidebarState();
         const state = get();
-        if (state.isMobile === next.isMobile && state.isMainSidebarOpen === next.isMainSidebarOpen) return;
-        set(next);
+        const mobileChanged = state.isMobile !== next.isMobile;
+
+        if (!mobileChanged && state.isMainSidebarOpen === next.isMainSidebarOpen) return;
+
+        const patch: Partial<AppState> = { ...next };
+
+        if (!canSidebarHostOpenDropdowns(next)) {
+            Object.assign(patch, closedSidebarDropdownState());
+        }
+        if (mobileChanged) {
+            Object.assign(patch, closedChromeDropdownState());
+        }
+
+        set(patch);
     },
     syncFromSecondarySidebar: () => {
         const next = readSecondarySidebarState();
@@ -106,11 +148,15 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
         set({ isThemeSwitchDropdownOpen: open });
     },
     setProjectSwitchDropdownOpen: (open) => {
-        if (get().isProjectSwitchDropdownOpen === open) return;
-        set({ isProjectSwitchDropdownOpen: open });
+        const state = get();
+        const nextOpen = effectiveSidebarDropdownOpen(open, state);
+        if (state.isProjectSwitchDropdownOpen === nextOpen) return;
+        set({ isProjectSwitchDropdownOpen: nextOpen });
     },
     setUserMenuDropdownOpen: (open) => {
-        if (get().isUserMenuDropdownOpen === open) return;
-        set({ isUserMenuDropdownOpen: open });
+        const state = get();
+        const nextOpen = effectiveSidebarDropdownOpen(open, state);
+        if (state.isUserMenuDropdownOpen === nextOpen) return;
+        set({ isUserMenuDropdownOpen: nextOpen });
     },
 }));

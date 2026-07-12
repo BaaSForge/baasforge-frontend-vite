@@ -105,6 +105,7 @@ export function createSidebarStore(options: SidebarStoreOptions) {
                 setOpenMobile: state.setOpenMobile,
                 isMobile: state.isMobile,
                 toggleSidebar: state.toggleSidebar,
+                closeMobile: closeIfMobile,
             })),
         );
     }

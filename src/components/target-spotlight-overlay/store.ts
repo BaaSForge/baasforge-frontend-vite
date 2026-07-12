@@ -1,5 +1,9 @@
 import { createStore, useStore } from "zustand";
-import { TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID } from "./constants";
+import {
+    TARGET_SPOTLIGHT_OVERLAY_ELEVATED_Z_INDEX,
+    TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID,
+    TARGET_SPOTLIGHT_OVERLAY_Z_INDEX,
+} from "./constants";
 import type { PinToTopOptions, PinTopStatus, TargetSpotlightOverlayPlacement } from "./types";
 
 type TargetSpotlightOverlayState = {
@@ -8,10 +12,13 @@ type TargetSpotlightOverlayState = {
     placement: TargetSpotlightOverlayPlacement;
     hidePinTopCircles: boolean;
     pinTopStatus: PinTopStatus | null;
+    isZIndexElevated: boolean;
     setTargetElementId: (elementId: string | null) => void;
     setTargetElementSelector: (selector: string | null) => void;
     setPlacement: (placement: TargetSpotlightOverlayPlacement) => void;
     pinToTop: (options?: PinToTopOptions) => void;
+    elevateZIndex: () => void;
+    resetZIndex: () => void;
 };
 
 export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlayState>((set, get) => ({
@@ -20,16 +27,29 @@ export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlaySta
     placement: "bottom",
     hidePinTopCircles: false,
     pinTopStatus: null,
+    isZIndexElevated: false,
     setTargetElementId: (elementId) => {
         if (elementId === TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID) {
             set({ targetElementId: elementId, targetElementSelector: null });
             return;
         }
 
-        set({ targetElementId: elementId, targetElementSelector: null, hidePinTopCircles: false, pinTopStatus: null });
+        set({
+            targetElementId: elementId,
+            targetElementSelector: null,
+            hidePinTopCircles: false,
+            pinTopStatus: null,
+            ...(elementId == null ? { isZIndexElevated: false } : {}),
+        });
     },
     setTargetElementSelector: (selector) => {
-        set({ targetElementSelector: selector, targetElementId: null, hidePinTopCircles: false, pinTopStatus: null });
+        set({
+            targetElementSelector: selector,
+            targetElementId: null,
+            hidePinTopCircles: false,
+            pinTopStatus: null,
+            ...(selector == null ? { isZIndexElevated: false } : {}),
+        });
     },
     setPlacement: (placement) => set({ placement }),
     pinToTop: (options) => {
@@ -38,10 +58,13 @@ export const targetSpotlightOverlayStore = createStore<TargetSpotlightOverlaySta
             targetElementSelector: null,
             hidePinTopCircles: options?.hidePinCircles ?? false,
             pinTopStatus: options?.status ?? null,
+            isZIndexElevated: false,
         });
         get().setPlacement("bottom");
         get().setTargetElementId(TARGET_SPOTLIGHT_OVERLAY_PIN_TOP_ANCHOR_ID);
     },
+    elevateZIndex: () => set({ isZIndexElevated: true }),
+    resetZIndex: () => set({ isZIndexElevated: false }),
 }));
 
 export function isTargetSpotlightOverlayActive(
@@ -81,6 +104,18 @@ export function pinToTop(options?: PinToTopOptions): void {
     targetSpotlightOverlayStore.getState().pinToTop(options);
 }
 
+export function elevateTargetSpotlightZIndex(): void {
+    targetSpotlightOverlayStore.getState().elevateZIndex();
+}
+
+export function resetTargetSpotlightZIndex(): void {
+    targetSpotlightOverlayStore.getState().resetZIndex();
+}
+
+export function getTargetSpotlightOverlayZIndex(isElevated: boolean): number {
+    return isElevated ? TARGET_SPOTLIGHT_OVERLAY_ELEVATED_Z_INDEX : TARGET_SPOTLIGHT_OVERLAY_Z_INDEX;
+}
+
 export function useTargetSpotlightOverlayHidePinTopCircles(): boolean {
     return useStore(targetSpotlightOverlayStore, (s) => s.hidePinTopCircles);
 }
@@ -103,4 +138,8 @@ export function useTargetSpotlightOverlayPlacement(): TargetSpotlightOverlayPlac
 
 export function useTargetSpotlightOverlayActive(): boolean {
     return useStore(targetSpotlightOverlayStore, isTargetSpotlightOverlayActive);
+}
+
+export function useTargetSpotlightOverlayZIndex(): number {
+    return useStore(targetSpotlightOverlayStore, (s) => getTargetSpotlightOverlayZIndex(s.isZIndexElevated));
 }

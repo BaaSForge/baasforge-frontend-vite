@@ -3,7 +3,7 @@
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
-import { type AppState, appStateStore } from "./store";
+import { type AppState, appStateStore, effectiveSidebarDropdownOpen } from "./store";
 import { useSyncAppState } from "./use-sync-app-state";
 
 export function useAppState(): AppState {
@@ -21,8 +21,8 @@ export function useAppState(): AppState {
             pathParams: state.pathParams,
             isNotificationDropdownOpen: state.isNotificationDropdownOpen,
             isThemeSwitchDropdownOpen: state.isThemeSwitchDropdownOpen,
-            isProjectSwitchDropdownOpen: state.isProjectSwitchDropdownOpen,
-            isUserMenuDropdownOpen: state.isUserMenuDropdownOpen,
+            isProjectSwitchDropdownOpen: effectiveSidebarDropdownOpen(state.isProjectSwitchDropdownOpen, state),
+            isUserMenuDropdownOpen: effectiveSidebarDropdownOpen(state.isUserMenuDropdownOpen, state),
             isBreadcrumbStickyVisible: state.isBreadcrumbStickyVisible,
         })),
     );

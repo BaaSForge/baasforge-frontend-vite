@@ -157,7 +157,7 @@ export function setSpotlightContentToRender(
     pending = {
         content,
         actions,
-        showStopButton: options?.showStopButton ?? false,
+        showStopButton: options?.showStopButton ?? true,
         canGoToPreviousStep: options?.canGoToPreviousStep ?? false,
     };
     waitForHosts();

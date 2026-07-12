@@ -21,6 +21,7 @@ import { events, triggerAppEvent } from "@/services/events";
 import { AppLogoSquare } from "@/components/logo/app-logo-square";
 
 export const APP_PROJECTS_MENU_BUTTON_ID = "app-projects-menu-button";
+export const APP_CREATE_PROJECT_LINK_ID = "app-create-project-link";
 
 export function ProjectSwitcher() {
     const { isMobile } = useSidebar();
@@ -39,6 +40,7 @@ export function ProjectSwitcher() {
         <SidebarMenu>
             <SidebarMenuItem>
                 <DropdownMenu
+                    key={isMobile ? "mobile" : "desktop"}
                     modal={false}
                     onOpenChange={(open) => {
                         appStateStore.getState().setProjectSwitchDropdownOpen(open);
@@ -115,6 +117,7 @@ export function ProjectSwitcher() {
                         <DropdownMenuItem asChild className="shrink-0 gap-2 p-2">
                             <Link
                                 to="/dashboard/projects/new"
+                                id={APP_CREATE_PROJECT_LINK_ID}
                                 onClick={() => triggerAppEvent(events.PROJECT_CREATE_BUTTON_CLICKED_EVENT)}
                             >
                                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">

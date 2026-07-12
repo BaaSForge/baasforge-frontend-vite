@@ -4,6 +4,8 @@ export {
     setTargetSpotlightOverlayElementSelector,
     setTargetSpotlightOverlayPlacement,
     pinToTop,
+    elevateTargetSpotlightZIndex,
+    resetTargetSpotlightZIndex,
     isTargetSpotlightOverlayActive,
     useTargetSpotlightOverlayActive,
     useTargetSpotlightOverlayHidePinTopCircles,
@@ -11,6 +13,7 @@ export {
     useTargetSpotlightOverlayTargetElementId,
     useTargetSpotlightOverlayTargetElementSelector,
     useTargetSpotlightOverlayPlacement,
+    useTargetSpotlightOverlayZIndex,
 } from "./store";
 export {
     SpotlightActions,

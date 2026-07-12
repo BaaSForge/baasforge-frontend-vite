@@ -245,6 +245,7 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
             </SidebarMenuItem>
             <SidebarMenuItem>
                 <DropdownMenu
+                    key={isMobile ? "mobile" : "desktop"}
                     onOpenChange={(open) => {
                         appStateStore.getState().setUserMenuDropdownOpen(open);
                         triggerAppEvent(open ? events.USER_MENU_OPENED_EVENT : events.USER_MENU_CLOSED_EVENT);

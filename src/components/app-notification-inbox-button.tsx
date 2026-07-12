@@ -16,6 +16,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemSeparat
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUpdateEffect } from "@/hooks/use-updated";
 import { useRegisterAppChromeDismissWhenOpen } from "@/hooks/use-register-app-chrome-dismiss";
 import {
     openAppNotification,
@@ -108,6 +109,10 @@ export function AppNotificationInboxButton() {
         appStateStore.getState().setNotificationDropdownOpen(open);
         return () => appStateStore.getState().setNotificationDropdownOpen(false);
     }, [open]);
+
+    useUpdateEffect(() => {
+        setOpen(false);
+    }, [isMobile]);
 
     const prevOpenRef = React.useRef(open);
 
