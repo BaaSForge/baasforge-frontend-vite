@@ -1,5 +1,6 @@
 "use client";
 
+import { breadcrumbStore } from "@/stores/breadcrumb";
 import { mainSidebarStore } from "@/stores/main-sidebar";
 import { secondarySidebarStore } from "@/stores/secondary-sidebar";
 import { useEffect } from "react";
@@ -17,16 +18,20 @@ export function useSyncAppState(): void {
     useEffect(() => {
         const syncMain = () => appStateStore.getState().syncFromMainSidebar();
         const syncSecondary = () => appStateStore.getState().syncFromSecondarySidebar();
+        const syncBreadcrumb = () => appStateStore.getState().syncFromBreadcrumb();
 
         syncMain();
         syncSecondary();
+        syncBreadcrumb();
 
         const unsubscribeMain = mainSidebarStore.subscribe(syncMain);
         const unsubscribeSecondary = secondarySidebarStore.subscribe(syncSecondary);
+        const unsubscribeBreadcrumb = breadcrumbStore.subscribe(syncBreadcrumb);
 
         return () => {
             unsubscribeMain();
             unsubscribeSecondary();
+            unsubscribeBreadcrumb();
         };
     }, []);
 }

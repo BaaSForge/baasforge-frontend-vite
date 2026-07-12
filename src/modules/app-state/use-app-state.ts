@@ -23,6 +23,7 @@ export function useAppState(): AppState {
             isThemeSwitchDropdownOpen: state.isThemeSwitchDropdownOpen,
             isProjectSwitchDropdownOpen: state.isProjectSwitchDropdownOpen,
             isUserMenuDropdownOpen: state.isUserMenuDropdownOpen,
+            isBreadcrumbStickyVisible: state.isBreadcrumbStickyVisible,
         })),
     );
 }

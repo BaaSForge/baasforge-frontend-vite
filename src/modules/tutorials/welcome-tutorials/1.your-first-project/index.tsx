@@ -9,6 +9,7 @@ import { useAppState } from "@/modules/app-state";
 import { useTutorialSteps } from "@/modules/tutorials/hooks/use-tutorial-steps";
 import { events, listenAppEvent } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
+import { breadcrumbStore } from "@/stores/breadcrumb";
 import { useEffect } from "react";
 
 const TUTORIAL_ID = "your-first-project" as const;
@@ -46,10 +47,14 @@ export function YourFirstProjectTutorial() {
         return listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, () => {
             goNext();
         });
-    }, [currentStep, appState, goNext]);
+    }, [currentStep, goNext]);
 
     useEffect(() => {
         if (currentStep !== "inbox") return;
+
+        if (!appState.isBreadcrumbStickyVisible) {
+            window.scrollBy({ top: -10 });
+        }
 
         setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID);
 
@@ -68,10 +73,14 @@ export function YourFirstProjectTutorial() {
         return listenAppEvent(events.NOTIFICATION_CLOSED_EVENT, () => {
             goNext();
         });
-    }, [currentStep, appState, goNext]);
+    }, [currentStep, goNext, appState.isBreadcrumbStickyVisible]);
 
     useEffect(() => {
         if (currentStep !== "theme-switcher") return;
+
+        if (!appState.isBreadcrumbStickyVisible) {
+            window.scrollBy({ top: -10 });
+        }
 
         setTargetSpotlightOverlayElementId(APP_THEME_SWITCHER_BUTTON_ID);
 
@@ -90,7 +99,7 @@ export function YourFirstProjectTutorial() {
         return listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, () => {
             goNext();
         });
-    }, [currentStep, appState, goNext]);
+    }, [currentStep, goNext, appState.isBreadcrumbStickyVisible]);
 
     useEffect(() => {
         if (currentStep !== "done") return;

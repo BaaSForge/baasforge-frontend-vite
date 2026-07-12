@@ -1,3 +1,4 @@
+import { breadcrumbStore } from "@/stores/breadcrumb";
 import { isSidebarOpen } from "@/stores/create-sidebar-store";
 import { mainSidebarStore } from "@/stores/main-sidebar";
 import { secondarySidebarStore } from "@/stores/secondary-sidebar";
@@ -18,11 +19,13 @@ export type AppState = {
     isThemeSwitchDropdownOpen: boolean;
     isProjectSwitchDropdownOpen: boolean;
     isUserMenuDropdownOpen: boolean;
+    isBreadcrumbStickyVisible: boolean;
 };
 
 type AppStateActions = {
     syncFromMainSidebar: () => void;
     syncFromSecondarySidebar: () => void;
+    syncFromBreadcrumb: () => void;
     syncRoute: (pathname: string) => void;
     setNotificationDropdownOpen: (open: boolean) => void;
     setThemeSwitchDropdownOpen: (open: boolean) => void;
@@ -47,6 +50,10 @@ function readSecondarySidebarState(): Pick<AppState, "isSecondarySidebarOpen"> {
     };
 }
 
+function readBreadcrumbState(): Pick<AppState, "isBreadcrumbStickyVisible"> {
+    return { isBreadcrumbStickyVisible: breadcrumbStore.getState().stickyBarVisible };
+}
+
 function routeStateEqual(a: RouteState, b: RouteState): boolean {
     if (a.activePage !== b.activePage) return false;
     const aKeys = Object.keys(a.pathParams);
@@ -67,6 +74,7 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
     isThemeSwitchDropdownOpen: false,
     isProjectSwitchDropdownOpen: false,
     isUserMenuDropdownOpen: false,
+    isBreadcrumbStickyVisible: true,
     syncFromMainSidebar: () => {
         const next = readMainSidebarState();
         const state = get();
@@ -76,6 +84,11 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
     syncFromSecondarySidebar: () => {
         const next = readSecondarySidebarState();
         if (get().isSecondarySidebarOpen === next.isSecondarySidebarOpen) return;
+        set(next);
+    },
+    syncFromBreadcrumb: () => {
+        const next = readBreadcrumbState();
+        if (get().isBreadcrumbStickyVisible === next.isBreadcrumbStickyVisible) return;
         set(next);
     },
     syncRoute: (pathname) => {
