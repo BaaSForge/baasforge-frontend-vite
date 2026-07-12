@@ -116,6 +116,8 @@ export interface TutorialCardProps {
     status?: TutorialDisplayStatus;
     actionLabel: string;
     onAction?: () => void;
+    secondaryActionLabel?: string;
+    onSecondaryAction?: () => void;
     className?: string;
     style?: React.CSSProperties;
 }
@@ -128,12 +130,15 @@ export function TutorialCard({
     status = "idle",
     actionLabel,
     onAction,
+    secondaryActionLabel,
+    onSecondaryAction,
     className,
     style,
 }: TutorialCardProps) {
     const accent = ACCENT_STYLES[(number - 1) % ACCENT_STYLES.length];
     const isDisabled = status === "disabled";
     const isActionDisabled = isDisabled || onAction == null;
+    const isSecondaryActionDisabled = isDisabled || onSecondaryAction == null;
 
     return (
         <article
@@ -160,7 +165,24 @@ export function TutorialCard({
                     <h3 className="text-sm font-semibold leading-snug text-pretty">{title}</h3>
                     <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed text-pretty">{description}</p>
                 </div>
-                <div className="flex items-center justify-end -my-1 -mr-2">
+                <div className="flex items-center justify-end gap-1 -my-1 -mr-2">
+                    {secondaryActionLabel != null ? (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="xs"
+                            disabled={isSecondaryActionDisabled}
+                            onClick={onSecondaryAction}
+                            className={cn(
+                                "h-6 px-2 text-xs font-medium",
+                                isSecondaryActionDisabled
+                                    ? "text-muted-foreground/60"
+                                    : "text-muted-foreground/70 hover:text-foreground",
+                            )}
+                        >
+                            {secondaryActionLabel}
+                        </Button>
+                    ) : null}
                     <Button
                         type="button"
                         variant="ghost"

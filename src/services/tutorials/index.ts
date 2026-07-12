@@ -13,6 +13,7 @@ export {
     runSequentialTutorialGroupAction,
     runTutorialAction,
     runTutorialGroupAction,
+    stopTutorialAction,
     willTutorialActionClearSubsequentProgress,
     type SequentialGroupActionKind,
     type TutorialActionKind,

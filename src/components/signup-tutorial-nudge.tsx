@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { isSignupToken } from "@/modules/auth/lib/decode-access-token";
 import { useCurrentUserQuery } from "@/modules/auth/queries";
 import { clearSpotlightContent, setSpotlightContentToRender } from "@/components/target-spotlight-overlay/lib/spotlight-renderer";
+import { clearTutorialSpotlight } from "@/modules/tutorials/hooks/use-tutorial-stop-listener";
 import { createInformSchedule } from "@/services/informed-user-schedule";
 import { events, listenAppEvent } from "@/services/events";
 import {
@@ -36,6 +37,7 @@ import {
     loadTutorialGroupProgressById,
     runTutorialAction,
     runTutorialGroupAction,
+    stopTutorialAction,
     useTutorialGroupDisplayState,
     willTutorialActionClearSubsequentProgress,
     WELCOME_TUTORIALS_GROUP_ID,
@@ -226,6 +228,19 @@ function SignupTutorialDialogShell({
         [runActionAndClose],
     );
 
+    const handleStopTutorial = useCallback(
+        async (tutorialId: TutorialId) => {
+            setIsRunningAction(true);
+            try {
+                const stopped = await stopTutorialAction(WELCOME_TUTORIALS_GROUP_ID, tutorialId);
+                if (stopped) clearTutorialSpotlight();
+            } finally {
+                setIsRunningAction(false);
+            }
+        },
+        [],
+    );
+
     const handleRestartConfirm = useCallback(() => {
         const tutorialId = restartConfirm?.tutorialId;
         setRestartConfirm(null);
@@ -288,6 +303,12 @@ function SignupTutorialDialogShell({
                                     : getTutorialActionTitleFromDisplayStatus(status),
                                 onAction:
                                     comingSoon || isRunningAction ? undefined : () => handleTutorialAction(tutorial.id),
+                                secondaryActionLabel:
+                                    status === "pending-action" && !comingSoon ? "Stop" : undefined,
+                                onSecondaryAction:
+                                    status === "pending-action" && !comingSoon && !isRunningAction
+                                        ? () => handleStopTutorial(tutorial.id)
+                                        : undefined,
                             };
                         })}
                     />
@@ -302,6 +323,16 @@ function SignupTutorialDialogShell({
                                 onClick={() => onClose("dismiss")}
                             >
                                 Skip
+                            </Button>
+                        ) : null}
+                        {groupActionKind === "continue" && scrollToTutorialId != null ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={isRunningAction}
+                                onClick={() => void handleStopTutorial(scrollToTutorialId)}
+                            >
+                                Stop
                             </Button>
                         ) : null}
                         <Button

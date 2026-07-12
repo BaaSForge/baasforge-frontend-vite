@@ -15,6 +15,8 @@ export type TutorialCardItem = {
     status?: TutorialDisplayStatus;
     actionLabel: string;
     onAction?: () => void;
+    secondaryActionLabel?: string;
+    onSecondaryAction?: () => void;
 };
 
 /** One full card plus a peek of the next: 1.2 on mobile, 1.5 from md up. */
@@ -77,6 +79,8 @@ export function TutorialCardStrip({ items, heading = "Live tutorials", className
                                     status={tutorial.status}
                                     actionLabel={tutorial.actionLabel}
                                     onAction={tutorial.onAction}
+                                    secondaryActionLabel={tutorial.secondaryActionLabel}
+                                    onSecondaryAction={tutorial.onSecondaryAction}
                                     className="h-full w-full"
                                 />
                             </div>

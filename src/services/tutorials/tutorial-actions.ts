@@ -4,7 +4,12 @@ import {
     getSubsequentNonIdleTutorialIds,
     resolveTutorialDisplayStatus,
 } from "./tutorial-sequence";
-import { clearTutorialProgress, getTutorialStatus, saveTutorialProgress } from "./tutorial-progress-service";
+import {
+    clearTutorialProgress,
+    getTutorialProgressRecord,
+    getTutorialStatus,
+    saveTutorialProgress,
+} from "./tutorial-progress-service";
 import { getTutorial, getTutorialGroup, getTutorialsByGroupId, type TutorialGroupId, type TutorialId } from "./tutorials";
 
 export type TutorialActionKind = "start" | "restart" | "continue" | "start-again" | "locked";
@@ -170,6 +175,15 @@ export async function runTutorialAction(groupId: TutorialGroupId, tutorialId: Tu
     const progressById = await loadTutorialGroupProgressById(groupId);
     const displayStatus = resolveTutorialDisplayStatus(groupId, tutorialId, progressById);
     return applyTutorialAction(groupId, tutorialId, displayStatus);
+}
+
+export async function stopTutorialAction(groupId: TutorialGroupId, tutorialId: TutorialId): Promise<boolean> {
+    const status = await getTutorialStatus(groupId, tutorialId);
+    if (status !== "pending-action") return false;
+
+    const record = await getTutorialProgressRecord(groupId, tutorialId);
+    await saveTutorialProgress(groupId, tutorialId, "interrupted", record?.metadata ?? null);
+    return true;
 }
 
 export async function runSequentialTutorialGroupAction(groupId: TutorialGroupId): Promise<boolean> {
