@@ -10,7 +10,7 @@ import {
     type TutorialGroupId,
     type TutorialId,
 } from "@/services/tutorials";
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { clearTutorialSpotlight, useTutorialStopListener } from "./use-tutorial-stop-listener";
 
@@ -48,8 +48,6 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
 
     const [completedStepIds, setCompletedStepIds] = useState<string[] | null>(null);
     const [showInterruptedStep, setShowInterruptedStep] = useState(false);
-    const completedStepIdsRef = useRef(completedStepIds ?? []);
-    completedStepIdsRef.current = completedStepIds ?? [];
 
     const currentStep = showInterruptedStep
         ? TUTORIAL_INTERRUPTED_STEP
@@ -60,7 +58,7 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
     useTutorialStopListener(
         tutorialGroupId,
         tutorialId,
-        completedStepIdsRef,
+        completedStepIds,
         completedStepIds !== null && !showInterruptedStep,
     );
 
@@ -88,7 +86,7 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
             <>
                 <p className="font-medium">Tutorial interrupted</p>
                 <p className="text-muted-foreground mt-1">
-                    Sorry, something went wrong. You can resume the tutorial later.
+                    Sorry, something went wrong. You can retry the tutorial later.
                 </p>
             </>,
             <SpotlightPrimaryActionButton>Ok</SpotlightPrimaryActionButton>,
@@ -97,7 +95,7 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
 
         const stopListeningPrimary = listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, () => {
             void saveTutorialProgress(tutorialGroupId, tutorialId, "interrupted", {
-                completedStepIds: [...completedStepIdsRef.current],
+                completedStepIds: [...(completedStepIds ?? [])],
             });
             clearTutorialSpotlight();
             emitSignupTutorialOpen({ force: true });
@@ -107,7 +105,7 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
             stopListeningPrimary();
             clearTutorialSpotlight();
         };
-    }, [currentStep, tutorialGroupId, tutorialId]);
+    }, [completedStepIds, currentStep, tutorialGroupId, tutorialId]);
 
     const persist = useCallback(
         (metadata: TutorialStepRunData, status: "pending-action" | "completed") => {
@@ -118,7 +116,7 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
 
     const completeStep = useCallback(
         (stepId: StepId): boolean => {
-            const nextCompletedStepIds = [...completedStepIdsRef.current, stepId];
+            const nextCompletedStepIds = [...(completedStepIds ?? []), stepId];
             setCompletedStepIds(nextCompletedStepIds);
             setShowInterruptedStep(false);
 
@@ -126,7 +124,7 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
             persist({ completedStepIds: nextCompletedStepIds }, finished ? "completed" : "pending-action");
             return finished;
         },
-        [persist, steps],
+        [completedStepIds, persist, steps],
     );
 
     const goNext = useCallback((): boolean => {
@@ -152,12 +150,18 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
         setShowInterruptedStep(true);
         persist(
             {
-                completedStepIds: [...completedStepIdsRef.current],
+                completedStepIds: [...(completedStepIds ?? [])],
                 interrupted: true,
             },
             "pending-action",
         );
-    }, [persist]);
+    }, [completedStepIds, persist]);
+
+    useEffect(() => {
+        return () => {
+            clearTutorialSpotlight();
+        };
+    }, []);
 
     return { currentStep, goNext, goTo, goToInterrupted };
 }

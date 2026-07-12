@@ -6,9 +6,18 @@ import {
     useFloating,
     type Placement,
 } from "@floating-ui/react-dom";
-import { useRef } from "react";
+import { useRef, type CSSProperties } from "react";
 import { scheduleLayoutUpdates } from "../lib/schedule-layout-updates";
 import type { TargetSpotlightOverlayPlacement } from "../types";
+
+const SPOTLIGHT_CONTENT_BOX_WIDTH = "min(calc(100vw - 32px), 30rem)";
+
+const INITIAL_UNPOSITIONED_FLOATING_STYLES: CSSProperties = {
+    position: "fixed",
+    left: "50%",
+    top: 0,
+    marginLeft: `calc(-0.5 * ${SPOTLIGHT_CONTENT_BOX_WIDTH})`,
+};
 
 const ARROW_STATIC_SIDE: Record<TargetSpotlightOverlayPlacement, string> = {
     top: "bottom",
@@ -37,7 +46,7 @@ export function useAnchoredFloating(
     ];
     /* eslint-enable react-hooks/refs */
 
-    const { refs, floatingStyles, middlewareData, placement: resolvedPlacement } = useFloating({
+    const { refs, floatingStyles, middlewareData, placement: resolvedPlacement, isPositioned } = useFloating({
         elements: { reference: reference ?? undefined },
         placement: placement as Placement,
         strategy: "fixed",
@@ -56,7 +65,7 @@ export function useAnchoredFloating(
     return {
         arrowRef,
         setFloatingRef: refs.setFloating,
-        floatingStyles,
+        floatingStyles: isPositioned ? { ...floatingStyles, marginLeft: 0 } : INITIAL_UNPOSITIONED_FLOATING_STYLES,
         resolvedPlacement: side,
         arrowStyle: {
             left: arrowX != null ? `${arrowX}px` : undefined,

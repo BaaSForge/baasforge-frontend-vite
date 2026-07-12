@@ -4,7 +4,7 @@ import { setTargetSpotlightOverlayElementId } from "@/components/target-spotligh
 import { clearSpotlightContent } from "@/components/target-spotlight-overlay/lib/spotlight-renderer";
 import { events, listenAppEvent } from "@/services/events";
 import { saveTutorialProgress, type TutorialGroupId, type TutorialId } from "@/services/tutorials";
-import { useEffect, type RefObject } from "react";
+import { useEffect } from "react";
 
 export function clearTutorialSpotlight(): void {
     setTargetSpotlightOverlayElementId(null);
@@ -14,17 +14,17 @@ export function clearTutorialSpotlight(): void {
 export function useTutorialStopListener(
     tutorialGroupId: TutorialGroupId,
     tutorialId: TutorialId,
-    completedStepIdsRef: RefObject<readonly string[]>,
+    completedStepIds: readonly string[] | null,
     enabled: boolean,
 ): void {
     useEffect(() => {
-        if (!enabled) return;
+        if (!enabled || completedStepIds == null) return;
 
         return listenAppEvent(events.TUTORIAL_STOP_BUTTON_CLICKED, () => {
             void saveTutorialProgress(tutorialGroupId, tutorialId, "interrupted", {
-                completedStepIds: [...completedStepIdsRef.current],
+                completedStepIds: [...completedStepIds],
             });
             clearTutorialSpotlight();
         });
-    }, [enabled, tutorialGroupId, tutorialId, completedStepIdsRef]);
+    }, [completedStepIds, enabled, tutorialGroupId, tutorialId]);
 }
