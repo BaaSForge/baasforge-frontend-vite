@@ -14,9 +14,9 @@ const SPOTLIGHT_CONTENT_BOX_WIDTH = "min(calc(100vw - 32px), 30rem)";
 
 const INITIAL_UNPOSITIONED_FLOATING_STYLES: CSSProperties = {
     position: "fixed",
-    left: "50%",
+    left: 0,
     top: 0,
-    marginLeft: `calc(-0.5 * ${SPOTLIGHT_CONTENT_BOX_WIDTH})`,
+    transform: `translate(calc(50vw - ${SPOTLIGHT_CONTENT_BOX_WIDTH} / 2), 0px)`,
 };
 
 const ARROW_STATIC_SIDE: Record<TargetSpotlightOverlayPlacement, string> = {
@@ -65,7 +65,7 @@ export function useAnchoredFloating(
     return {
         arrowRef,
         setFloatingRef: refs.setFloating,
-        floatingStyles: isPositioned ? { ...floatingStyles, marginLeft: 0 } : INITIAL_UNPOSITIONED_FLOATING_STYLES,
+        floatingStyles: isPositioned ? floatingStyles : INITIAL_UNPOSITIONED_FLOATING_STYLES,
         resolvedPlacement: side,
         arrowStyle: {
             left: arrowX != null ? `${arrowX}px` : undefined,

@@ -27,7 +27,7 @@ export function AnchoredContentBox({
             ref={setFloatingRef}
             {...{ [TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE]: "" }}
             style={floatingStyles}
-            className="pointer-events-auto"
+            className="pointer-events-auto transition-transform duration-300 ease-out"
         >
             <div
                 className="relative w-[min(100vw-32px,30rem)] animate-in fade-in-0 zoom-in-95 duration-300 data-[side=bottom]:slide-in-from-top-2"
