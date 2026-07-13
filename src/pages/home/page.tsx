@@ -369,7 +369,7 @@ function useWhatTitleFits(ref: RefObject<HTMLElement | null>) {
 function Styles() {
     return (
         <style>{`
-            html { scroll-behavior: smooth; }
+            html { scroll-behavior: smooth; scrollbar-gutter: stable; }
             .bf-page{--font-sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-heading:var(--font-sans);--font-mono:"Geist Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--radius:0.625rem;--radius-sm:calc(var(--radius)*.6);--radius-md:calc(var(--radius)*.8);--radius-lg:var(--radius);--radius-xl:calc(var(--radius)*1.4);--radius-full:9999px;--background:oklch(1 0 0);--foreground:oklch(0% 0 0);--card:oklch(1 0 0);--card-foreground:oklch(0% 0 0);--popover:oklch(1 0 0);--popover-foreground:oklch(0% 0 0);--primary:oklch(0% 0 0);--primary-foreground:oklch(.985 0 0);--secondary:oklch(.97 0 0);--secondary-foreground:oklch(.205 0 0);--muted:oklch(.97 0 0);--muted-foreground:oklch(.556 0 0);--accent:oklch(.97 0 0);--accent-foreground:oklch(.205 0 0);--destructive:oklch(.577 .245 27.325);--destructive-foreground:oklch(.97 .01 17);--border:oklch(.922 0 0);--input:oklch(.922 0 0);--ring:oklch(.708 0 0);--surface:oklch(.98 0 0);--surface-foreground:var(--foreground);--code:var(--surface);--code-foreground:var(--surface-foreground);--code-highlight:oklch(.96 0 0);--code-number:oklch(.56 0 0);--selection:oklch(0% 0 0);--selection-foreground:oklch(1 0 0);--shadow-xs:0 1px 2px 0 rgb(0 0 0 / .05);--shadow-sm:0 1px 3px 0 rgb(0 0 0 / .1),0 1px 2px -1px rgb(0 0 0 / .1);--shadow-md:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1);--shadow-lg:0 10px 15px -3px rgb(0 0 0 / .1),0 4px 6px -4px rgb(0 0 0 / .1);--alt-bg:oklch(.97 0 0);--glow-rgb:0,0,0;--accent-glow:oklch(0.65 0.02 260);font-family:var(--font-sans);line-height:1.5;background:var(--background);color:var(--foreground);min-height:100vh;overflow-x:hidden;transition:background .4s ease,color .4s ease}
             .bf-page.dark{--background:oklch(.145 0 0);--foreground:oklch(.985 0 0);--card:oklch(.205 0 0);--card-foreground:oklch(.985 0 0);--popover:oklch(.205 0 0);--popover-foreground:oklch(.985 0 0);--primary:oklch(.922 0 0);--primary-foreground:oklch(.205 0 0);--secondary:oklch(.269 0 0);--secondary-foreground:oklch(.985 0 0);--muted:oklch(.269 0 0);--muted-foreground:oklch(.708 0 0);--accent:oklch(.371 0 0);--accent-foreground:oklch(.985 0 0);--destructive:oklch(.704 .191 22.216);--destructive-foreground:oklch(.58 .22 27);--border:oklch(1 0 0 / 10%);--input:oklch(1 0 0 / 15%);--ring:oklch(.556 0 0);--surface:oklch(.2 0 0);--surface-foreground:oklch(.708 0 0);--code:var(--surface);--code-foreground:var(--surface-foreground);--code-highlight:oklch(.27 0 0);--code-number:oklch(.72 0 0);--selection:oklch(.922 0 0);--selection-foreground:oklch(.205 0 0);--alt-bg:oklch(.08 0 0);--glow-rgb:255,255,255;--accent-glow:oklch(0.9 0.01 260)}
             .bf-page.midnight{--background:oklch(0.17 0.032 264);--foreground:oklch(0.96 0.012 260);--card:oklch(0.21 0.034 264);--card-foreground:oklch(0.96 0.012 260);--popover:oklch(0.21 0.034 264);--popover-foreground:oklch(0.96 0.012 260);--primary:oklch(0.74 0.15 260);--primary-foreground:oklch(0.15 0.03 264);--secondary:oklch(0.27 0.038 264);--secondary-foreground:oklch(0.96 0.012 260);--muted:oklch(0.25 0.034 264);--muted-foreground:oklch(0.67 0.03 260);--accent:oklch(0.31 0.045 264);--accent-foreground:oklch(0.96 0.012 260);--border:oklch(1 0 0 / 12%);--input:oklch(1 0 0 / 16%);--ring:oklch(0.56 0.06 260);--alt-bg:oklch(.14 .03 264);--glow-rgb:145,175,255;--accent-glow:oklch(0.68 0.12 260);--selection:var(--primary);--selection-foreground:var(--primary-foreground)}
@@ -421,6 +421,20 @@ function Brand() {
 function Navbar({ active, compact }: { active: NavId; compact: boolean }) {
     const [menuOpen, setMenuOpen] = useState(false);
 
+    useEffect(() => {
+        if (!menuOpen) return;
+        const previousOverflow = document.body.style.overflow;
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setMenuOpen(false);
+        };
+        document.body.style.overflow = "hidden";
+        document.addEventListener("keydown", closeOnEscape);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [menuOpen]);
+
     return (
         <>
             <nav className="bf-nav">
@@ -442,39 +456,40 @@ function Navbar({ active, compact }: { active: NavId; compact: boolean }) {
                                 <Link to={LOGIN_PATH}>Start building</Link>
                             </Button>
                         </div>
-                        <button type="button" onClick={() => setMenuOpen((open) => !open)} className="flex size-9 items-center justify-center rounded-md border bg-card text-foreground xl:hidden" aria-label="Open menu">
+                        <button type="button" onClick={() => setMenuOpen((open) => !open)} className="flex size-10 items-center justify-center rounded-md text-foreground transition-colors hover:bg-foreground/8 xl:hidden" aria-label="Open menu" aria-expanded={menuOpen}>
                             {menuOpen ? <X className="size-[18px]" /> : <Menu className="size-[18px]" />}
                         </button>
                     </div>
                 </div>
             </nav>
             {compact && (
-                <>
-                    <div className="fixed inset-0 z-[150] bg-black/45 transition-opacity duration-300" onClick={() => setMenuOpen(false)} style={{ opacity: menuOpen ? 1 : 0, pointerEvents: menuOpen ? "auto" : "none" }} />
-                    <div
-                        className="fixed bottom-0 right-0 top-0 z-[151] flex w-[min(82vw,340px)] flex-col gap-1.5 overflow-y-auto border-l bg-background px-[22px] py-5 transition-transform duration-300"
-                        style={{ transform: menuOpen ? "translateX(0)" : "translateX(100%)", transition: "transform .4s cubic-bezier(.16,1,.3,1)" }}
-                    >
-                        <div className="mb-2.5 flex justify-end">
-                            <button type="button" onClick={() => setMenuOpen(false)} className="flex size-9 items-center justify-center rounded-md border bg-card text-foreground" aria-label="Close menu">
-                                <X className="size-[18px]" />
-                            </button>
-                        </div>
+                <div
+                    className="fixed inset-0 z-[151] flex min-h-[100dvh] flex-col bg-background xl:hidden"
+                    aria-hidden={!menuOpen}
+                    style={{ opacity: menuOpen ? 1 : 0, pointerEvents: menuOpen ? "auto" : "none", transition: "opacity .2s ease" }}
+                >
+                    <div className="mx-auto flex h-[68px] w-full max-w-[1080px] items-center justify-between px-7">
+                        <Brand />
+                        <button type="button" onClick={() => setMenuOpen(false)} className="flex size-10 items-center justify-center rounded-md text-foreground transition-colors hover:bg-foreground/8" aria-label="Close menu">
+                            <X className="size-5" />
+                        </button>
+                    </div>
+                    <nav className="mx-auto mt-12 flex w-full max-w-[1080px] flex-col px-7" aria-label="Mobile navigation">
                         {NAV_LINKS.map((link) => (
-                            <a key={link.label} href={link.href} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenuOpen(false)} className="block border-b border-border px-0.5 py-3.5 text-[21px] font-medium" style={{ color: active === link.id ? "var(--foreground)" : "var(--muted-foreground)" }}>
+                            <a key={link.label} href={link.href} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenuOpen(false)} className="py-2 text-[clamp(32px,9vw,46px)] font-medium leading-[1.13] transition-colors" style={{ color: active === link.id ? "var(--foreground)" : "var(--muted-foreground)" }}>
                                 {link.label}
                             </a>
                         ))}
-                        <div className="mt-6 flex flex-col gap-3">
-                            <Button variant="outline" asChild>
-                                <Link to={LOGIN_PATH}>Sign in</Link>
-                            </Button>
-                            <Button className="bg-primary hover:bg-primary/90" style={{ color: "var(--primary-foreground)" }} asChild>
-                                <Link to={LOGIN_PATH}>Start building</Link>
-                            </Button>
-                        </div>
+                    </nav>
+                    <div className="mx-auto mt-auto grid w-full max-w-[1080px] grid-cols-2 gap-3 px-7 pb-7 pt-8">
+                        <Button variant="outline" className="h-12" asChild>
+                            <Link to={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Sign in</Link>
+                        </Button>
+                        <Button className="h-12 bg-primary hover:bg-primary/90" style={{ color: "var(--primary-foreground)" }} asChild>
+                            <Link to={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Start building</Link>
+                        </Button>
                     </div>
-                </>
+                </div>
             )}
         </>
     );
