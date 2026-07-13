@@ -58,6 +58,7 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         description:
             "Use traces to tell the AI what went wrong, update your units, redeploy to stage, then release to production.",
         icon: SearchCode,
+        comingSoon: true,
     },
     {
         id: "units-and-rollbacks",
