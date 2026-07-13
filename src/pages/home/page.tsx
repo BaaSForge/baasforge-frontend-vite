@@ -17,12 +17,12 @@ const HOME_TITLE = "BaaSForge | AI Backend Platform";
 const HOME_DESCRIPTION = "BaaSForge is an AI backend platform that turns plain-language requirements into production-ready APIs, workflows, workers, and data units.";
 const PHRASES = ["Mock APIs", "Payment workflows", "Approval flows", "Subscription logic", "Background jobs", "Stateful entities", "AI agent orchestration", "Tenant onboarding", "Multi-step sagas"];
 const NAV_LINKS = [
-    { href: "#what", id: "product", label: "Product", sections: ["what"] },
-    { href: "#how", id: "how", label: "How it works", sections: ["how"] },
+    { href: "#what", id: "product", label: "Pitch", sections: ["what"] },
+    { href: "#how", id: "how", label: "Flow", sections: ["how"] },
     { href: "#build", id: "units", label: "Units", sections: ["build"] },
-    { href: "#usecases", id: "use-cases", label: "Use cases", sections: ["usecases"] },
-    { href: "#category", id: "why", label: "Why BaaSForge", sections: ["category"] },
-    { href: "#debug", id: "reliability", label: "Reliability", sections: ["debug"] },
+    { href: "#usecases", id: "use-cases", label: "Ship It", sections: ["usecases"] },
+    { href: "#category", id: "why", label: "Why It Wins", sections: ["category"] },
+    { href: "#debug", id: "reliability", label: "No Pager", sections: ["debug"] },
 ] as const;
 type NavId = (typeof NAV_LINKS)[number]["id"];
 const OBSERVED_SECTION_IDS = NAV_LINKS.flatMap((link) => link.sections);
