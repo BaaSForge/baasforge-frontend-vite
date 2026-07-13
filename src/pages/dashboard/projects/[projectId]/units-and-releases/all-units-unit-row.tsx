@@ -10,7 +10,6 @@ import {
     tutorialFirstUnitScalarSendButtonId,
     tutorialFirstUnitScalarTestRequestButtonId,
 } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/tutorial-target-ids";
-import { useWriteAndCallTutorialFirstUnitId } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/use-write-and-call-tutorial-first-unit-id";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { AllUnitsFlagTestedIconButton } from "./all-units-flag-tested-icon-button";
@@ -40,17 +39,16 @@ export function AllUnitsUnitRow({
 }: AllUnitsUnitRowProps) {
     const { flagged, toggle } = useAllUnitsUnitFlagTested(projectId, unit);
     const [emphasisPanels, setEmphasisPanels] = useState(false);
-    const tutorialFirstUnitId = useWriteAndCallTutorialFirstUnitId();
     const tutorialLiveInteractionTargetId =
-        tutorialFirstUnitId === unit.id ? tutorialFirstUnitLiveInteractionButtonId(unit.id) : undefined;
+        tutorialFirstUnitLiveInteractionButtonId(unit.id);
     const tutorialScalarTestRequestTargetId =
-        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarTestRequestButtonId(unit.id) : undefined;
+        tutorialFirstUnitScalarTestRequestButtonId(unit.id);
     const tutorialScalarSendTargetId =
-        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarSendButtonId(unit.id) : undefined;
+        tutorialFirstUnitScalarSendButtonId(unit.id);
     const tutorialScalarResponseHeadersTargetId =
-        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarResponseHeadersButtonId(unit.id) : undefined;
+        tutorialFirstUnitScalarResponseHeadersButtonId(unit.id);
     const tutorialScalarResponseBodyTargetId =
-        tutorialFirstUnitId === unit.id ? tutorialFirstUnitScalarResponseBodySectionId(unit.id) : undefined;
+        tutorialFirstUnitScalarResponseBodySectionId(unit.id);
 
     return (
         <div

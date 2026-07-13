@@ -7,6 +7,7 @@ import { CompactReleaseBadge } from "@/modules/project";
 import { cn } from "@/lib/utils";
 import { Rocket } from "lucide-react";
 import { prodReleaseDisabledTooltip, prodReleaseRowView } from "./release-controller-row-view-models";
+import { APP_RELEASE_CONTROLLER_PROD_BUTTON_DATA_ATTR, APP_RELEASE_CONTROLLER_PROD_RELEASE_LINK_DATA_ATTR } from "./release-controller-tutorial-targets";
 import type { ReleaseControllerActions } from "./use-release-controller-actions";
 
 export function ReleaseControllerThreadProdRow({
@@ -25,7 +26,10 @@ export function ReleaseControllerThreadProdRow({
 
     if (view.kind === "live-badge" && prodRelease != null) {
         return (
-            <div className={cn("inline-flex min-w-0", className)}>
+            <div
+                className={cn("inline-flex min-w-0", className)}
+                {...{ [APP_RELEASE_CONTROLLER_PROD_RELEASE_LINK_DATA_ATTR]: "" }}
+            >
                 <CompactReleaseBadge release={prodRelease} projectId={projectId} />
             </div>
         );
@@ -52,7 +56,7 @@ export function ReleaseControllerThreadProdRow({
     if (view.kind === "deploy") {
         return (
             <div className={cn("inline-flex min-w-0", className)}>
-                <span className="inline-flex">
+                <span className="inline-flex" {...{ [APP_RELEASE_CONTROLLER_PROD_BUTTON_DATA_ATTR]: "" }}>
                     <Button
                         type="button"
                         variant="outline"
@@ -98,7 +102,7 @@ export function ReleaseControllerThreadProdRow({
     if (view.kind === "open-production-confirm") {
         return (
             <div className={cn("inline-flex min-w-0", className)}>
-                <span className="inline-flex">
+                <span className="inline-flex" {...{ [APP_RELEASE_CONTROLLER_PROD_BUTTON_DATA_ATTR]: "" }}>
                     <Button
                         type="button"
                         variant="outline"

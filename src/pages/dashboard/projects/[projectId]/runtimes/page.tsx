@@ -4,8 +4,7 @@ import { RuntimeCard } from "@/components/runtime-card";
 import { SectionTitle } from "@/components/section-title";
 import { useProjectRuntimesQuery } from "@/modules/project/queries";
 import { PlatformEnvironmentType } from "@/modules/project/types";
-import { events, triggerAppEvent } from "@/services/events";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams } from "react-router";
 
 export default function ProjectRuntimesPage() {
@@ -16,10 +15,6 @@ export default function ProjectRuntimesPage() {
     const projectIdOrUndefined = projectId ?? undefined;
     const projectIdForLinks = projectId ?? "";
     const { data: runtimes, isLoading, error } = useProjectRuntimesQuery(projectIdOrUndefined);
-
-    useEffect(() => {
-        triggerAppEvent(events.RUNTIMES_PAGE_MOUNTED_EVENT);
-    }, []);
 
     const { productionRuntimes, busyStageRuntimes, idleStageRuntimes } = useMemo(() => {
         const list = runtimes ?? [];

@@ -29,7 +29,7 @@ function isTutorialStepRunData<TExtra extends Record<string, unknown>>(
     return Array.isArray(data.completedStepIds) && data.completedStepIds.every((id) => typeof id === "string");
 }
 
-function parseTutorialStepRunData<TExtra extends Record<string, unknown>>(
+export function parseTutorialStepRunData<TExtra extends Record<string, unknown>>(
     value: unknown,
 ): TutorialStepRunData<TExtra> {
     if (!isTutorialStepRunData<TExtra>(value)) {
@@ -48,6 +48,17 @@ function getActiveTutorialStep<TStep extends string>(
     completedStepIds: readonly string[],
 ): TStep | null {
     return steps.find((id) => !completedStepIds.includes(id)) ?? null;
+}
+
+export function useLoadTutorialMetadata<TExtra extends Record<string, unknown> = Record<string, never>>(
+    tutorialGroupId: TutorialGroupId,
+    tutorialId: TutorialId,
+) {
+    return useCallback(async (): Promise<Partial<TExtra>> => {
+        const record = await getTutorialProgressRecord(tutorialGroupId, tutorialId);
+        const data = parseTutorialStepRunData<TExtra>(record?.metadata);
+        return data.extra ?? {};
+    }, [tutorialGroupId, tutorialId]);
 }
 
 export function useTutorialSteps<

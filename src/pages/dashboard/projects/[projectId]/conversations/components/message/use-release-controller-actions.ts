@@ -12,7 +12,7 @@ import type { ChatMessageWithDeliveryStatus } from "@/modules/project-chat/types
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "@/lib/toast";
-import { emitStageDeployOnRuntimeDone } from "@/services/events";
+import { emitProdDeployDone, emitStageDeployOnRuntimeDone } from "@/services/events";
 import { getReleaseControllerPayload, useReleaseControllerRuntimeLiveFlags } from "./release-controller-box-shared";
 
 export function useReleaseControllerActions(
@@ -92,6 +92,7 @@ export function useReleaseControllerActions(
             setProductionRedeployConfirmOpen(false);
             setProdRedeployRuntimeId(null);
             await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
+            emitProdDeployDone();
             toast.success("Production deploy has started.");
         },
         onError: () => {
@@ -109,6 +110,7 @@ export function useReleaseControllerActions(
         onSuccess: async () => {
             setProductionConfirmOpen(false);
             await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.prod);
+            emitProdDeployDone();
             toast.success("Production release process has started.");
         },
         onError: () => {

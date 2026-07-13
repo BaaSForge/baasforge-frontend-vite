@@ -214,6 +214,7 @@ export function NavProjects() {
                             <Link
                                 id={APP_RUNTIMES_MENU_BUTTON_ID}
                                 to={runtimesUrl}
+                                onClick={() => triggerAppEvent(events.RUNTIMES_MENU_BUTTON_CLICKED_EVENT)}
                             >
                                 <ServerCrash />
                                 <span>Runtimes</span>

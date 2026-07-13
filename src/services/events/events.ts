@@ -30,11 +30,13 @@ export const events = {
     RELEASE_CONTROLLER_RECEIVED_EVENT: "release-controller-received",
     STAGE_DEPLOY_MODAL_OPENED_EVENT: "stage-deploy-modal-opened",
     STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT: "stage-deploy-on-runtime-done",
+    PROD_DEPLOY_DONE_EVENT: "prod-deploy-done",
     STAGE_RELEASE_BADGE_CLICKED_EVENT: "stage-release-badge-clicked",
     UNIT_LIVE_INTERACTION_CLICKED_EVENT: "unit-live-interaction-clicked",
     SCALAR_TEST_REQUEST_CLICKED_EVENT: "scalar-test-request-clicked",
     SCALAR_SEND_CLICKED_EVENT: "scalar-send-clicked",
-    RUNTIMES_PAGE_MOUNTED_EVENT: "runtimes-page-mounted",
+    RUNTIMES_MENU_BUTTON_CLICKED_EVENT: "runtimes-menu-button-clicked",
+    RUNTIME_CARD_CHAT_SESSION_BUTTON_CLICKED_EVENT: "runtime-card-chat-session-button-clicked",
 } as const;
 
 export type AppEventName = (typeof events)[keyof typeof events];
@@ -68,9 +70,11 @@ export type AppEventPayloadMap = {
     [events.RELEASE_CONTROLLER_RECEIVED_EVENT]: undefined;
     [events.STAGE_DEPLOY_MODAL_OPENED_EVENT]: undefined;
     [events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT]: string | undefined;
+    [events.PROD_DEPLOY_DONE_EVENT]: undefined;
     [events.STAGE_RELEASE_BADGE_CLICKED_EVENT]: undefined;
     [events.UNIT_LIVE_INTERACTION_CLICKED_EVENT]: undefined;
     [events.SCALAR_TEST_REQUEST_CLICKED_EVENT]: undefined;
     [events.SCALAR_SEND_CLICKED_EVENT]: undefined;
-    [events.RUNTIMES_PAGE_MOUNTED_EVENT]: undefined;
+    [events.RUNTIMES_MENU_BUTTON_CLICKED_EVENT]: undefined;
+    [events.RUNTIME_CARD_CHAT_SESSION_BUTTON_CLICKED_EVENT]: { runtimeId: string; chatSessionId: string };
 };

@@ -23,7 +23,7 @@ import { APP_RELEASE_UNITS_FILTER_INPUT_ID } from "@/modules/project/release-uni
 import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarResponseBodySectionId, tutorialFirstUnitScalarResponseHeadersButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId } from "./tutorial-target-ids";
 import { closeScalarClientModal } from "@/components/scalar-http-operation-client/close-scalar-client-modal";
 
-type WriteAndCallExtra = {
+export type WriteAndCallExtra = {
     projectId: string;
     projectTitle: string;
     chatSessionId: string;
@@ -35,7 +35,7 @@ const TUTORIAL_HELLO_WORLD_PROMPT = "Write an api which returns a simple `hello 
 
 const LAYOUT_SETTLE_DEBOUNCE_MS = 250;
 
-const TUTORIAL_ID = "write-and-call-your-api" as const;
+export const TUTORIAL_ID = "write-and-call-your-api" as const;
 
 const STEPS = [
     "overview",

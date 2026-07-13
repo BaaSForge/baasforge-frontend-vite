@@ -8,10 +8,15 @@ import { MessageSquare, Package } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { LiveBadge } from "./live-badge";
 import { PlatformEnvironmentBadge } from "./platform-environment-badge";
+import { events, triggerAppEvent } from "@/services/events";
 
 export interface RuntimeCardProps {
     projectId: string;
     runtime: ProjectRuntimeResponse;
+}
+
+export function getRuntimeCardChatSessionButtonId({ runtimeId, chatSessionId}: { runtimeId: string, chatSessionId: string }) {
+    return `runtime-card-${runtimeId}-chat-session-${chatSessionId}`;
 }
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -70,7 +75,14 @@ export function RuntimeCard({ projectId, runtime }: RuntimeCardProps) {
                     label="Release intro chat"
                     value={
                         hasIntroChat ? (
-                            <Button asChild variant="outline" size="xs" className="min-w-0 max-w-full shrink">
+                            <Button
+                                asChild
+                                variant="outline"
+                                size="xs"
+                                className="min-w-0 max-w-full shrink"
+                                id={getRuntimeCardChatSessionButtonId({ runtimeId: runtime.id, chatSessionId })}
+                                onClick={() => triggerAppEvent(events.RUNTIME_CARD_CHAT_SESSION_BUTTON_CLICKED_EVENT, { chatSessionId, runtimeId: runtime.id })}
+                            >
                                 <Link
                                     to={`/dashboard/projects/${projectId}/conversations/${chatSessionId}${location.search}`}
                                     className="min-w-0"

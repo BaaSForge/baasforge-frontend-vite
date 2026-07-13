@@ -9,6 +9,10 @@ export function emitStageDeployOnRuntimeDone(runtimeId?: string): void {
     triggerAppEvent(events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT, runtimeId);
 }
 
+export function emitProdDeployDone(): void {
+    triggerAppEvent(events.PROD_DEPLOY_DONE_EVENT);
+}
+
 export function emitStageReleaseBadgeClicked(): void {
     triggerAppEvent(events.STAGE_RELEASE_BADGE_CLICKED_EVENT);
 }

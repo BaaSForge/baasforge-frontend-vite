@@ -2,6 +2,12 @@ export const APP_RELEASE_CONTROLLER_STAGE_BUTTON_DATA_ATTR = "data-app-release-c
 export const APP_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_DATA_ATTR = "data-app-release-controller-stage-release-link";
 export const APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID = "app-last-release-controller-stage-button";
 export const APP_LAST_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_ID = "app-last-release-controller-stage-release-link";
+
+export const APP_RELEASE_CONTROLLER_PROD_BUTTON_DATA_ATTR = "data-app-release-controller-prod-button";
+export const APP_RELEASE_CONTROLLER_PROD_RELEASE_LINK_DATA_ATTR = "data-app-release-controller-prod-release-link";
+export const APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID = "app-last-release-controller-prod-button";
+export const APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID = "app-last-release-controller-prod-release-link";
+
 export const APP_STAGE_DEPLOY_MODAL_ID = "app-stage-deploy-modal";
 
 function queryLastElement(selector: string): HTMLElement | null {
@@ -28,6 +34,20 @@ export function assignLastReleaseControllerStageReleaseLinkSpotlightId(): boolea
     return assignSpotlightIdToLastElement(
         `[${APP_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_DATA_ATTR}]`,
         APP_LAST_RELEASE_CONTROLLER_STAGE_RELEASE_LINK_ID,
+    );
+}
+
+export function assignLastReleaseControllerProdButtonSpotlightId(): boolean {
+    return assignSpotlightIdToLastElement(
+        `[${APP_RELEASE_CONTROLLER_PROD_BUTTON_DATA_ATTR}]`,
+        APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID,
+    );
+}
+
+export function assignLastReleaseControllerProdReleaseLinkSpotlightId(): boolean {
+    return assignSpotlightIdToLastElement(
+        `[${APP_RELEASE_CONTROLLER_PROD_RELEASE_LINK_DATA_ATTR}]`,
+        APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID,
     );
 }
 
