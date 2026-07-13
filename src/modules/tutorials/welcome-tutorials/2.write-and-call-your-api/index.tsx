@@ -1,9 +1,7 @@
 "use client";
 
-import { APP_NOTIFICATION_INBOX_BUTTON_ID } from "@/components/app-notification-inbox-button";
-import { APP_THEME_SWITCHER_BUTTON_ID } from "@/components/mode-toggle";
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
-import { elevateTargetSpotlightZIndex, pinToTop, resetTargetSpotlightZIndex, setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
+import { pinToTop, setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { setSpotlightContentToRender } from "@/components/target-spotlight-overlay/lib/spotlight-renderer";
 import { ActivePage, useAppState } from "@/modules/app-state";
 import { useTutorialSteps } from "@/modules/tutorials/hooks/use-tutorial-steps";
@@ -11,13 +9,10 @@ import { events, listenAppEvent, triggerAppEvent } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { useDebouncedEffect } from "@/hooks/use-debounced-effect";
 import { scrollWindowByWhenSettled } from "@/lib/dom";
-import { cn } from "@/lib/utils";
 import { useEffect } from "react";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
-import { APP_USER_MENU_BUTTON_ID } from "@/modules/layout/components/nav-user";
-import { APP_CREATE_PROJECT_LINK_ID, APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
-import { APP_CREATE_PROJECT_FORM_ID } from "@/pages/dashboard/projects/new/page";
+import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { clearTutorialSpotlight } from "../../hooks/use-tutorial-stop-listener";
 import { isSubRouteOfPage } from "@/pages/routes";
 import { APP_DEVELOP_BUTTON_ID } from "@/modules/layout/components/nav-projects";
