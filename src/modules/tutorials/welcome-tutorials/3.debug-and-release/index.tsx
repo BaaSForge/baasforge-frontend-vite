@@ -7,11 +7,6 @@ import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project
 import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
 import { TutorialRunner, type TutorialDefinition } from "@/modules/tutorials/engine";
 import { events } from "@/services/events";
-import {
-    getSelectedProjectIdFromPathname,
-    isProjectRuntimesListUrl,
-    isProjectSelectedUrl,
-} from "@/services/routes";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { breadcrumbStore } from "@/stores/breadcrumb";
 import { isMainSidebarClosed, isMainSidebarOpen, mainSidebarStore } from "@/stores/main-sidebar";
@@ -28,10 +23,10 @@ type DebugAndReleaseExtra = {
 
 const OPEN_SIDEBAR_REPAIR_ID = "open-sidebar";
 
-const currentProjectId = (): Partial<DebugAndReleaseExtra> | void => {
-    const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
-    if (projectId) return { projectId };
-};
+// const currentProjectId = (): Partial<DebugAndReleaseExtra> | void => {
+//     const projectId = getSelectedProjectIdFromPathname(window.location.pathname);
+//     if (projectId) return { projectId };
+// };
 
 function createDefinition(stageRuntimeId: string | null): TutorialDefinition<DebugAndReleaseExtra> {
     return {
@@ -92,8 +87,8 @@ function createDefinition(stageRuntimeId: string | null): TutorialDefinition<Deb
                 requires: isMainSidebarOpen,
                 fallback: OPEN_SIDEBAR_REPAIR_ID,
                 keepStickyBarVisible: true,
-                isDone: () => isProjectSelectedUrl(window.location.pathname),
-                onComplete: currentProjectId,
+                // isDone: () => isProjectSelectedUrl(window.location.pathname),
+                // onComplete: currentProjectId,
                 content: (
                     <>
                         <p className="font-medium">Choose your project</p>
@@ -107,11 +102,11 @@ function createDefinition(stageRuntimeId: string | null): TutorialDefinition<Deb
             {
                 id: "go-to-runtimes",
                 target: { elementId: APP_RUNTIMES_MENU_BUTTON_ID },
-                requires: () => isMainSidebarOpen() && isProjectSelectedUrl(window.location.pathname),
+                // requires: () => isMainSidebarOpen() && isProjectSelectedUrl(window.location.pathname),
                 fallback: "choose-project",
                 keepStickyBarVisible: true,
                 completeOn: events.RUNTIMES_PAGE_MOUNTED_EVENT,
-                isDone: () => isProjectRuntimesListUrl(window.location.pathname),
+                // isDone: () => isProjectRuntimesListUrl(window.location.pathname),
                 content: (
                     <>
                         <p className="font-medium">Open Runtimes</p>
@@ -124,7 +119,7 @@ function createDefinition(stageRuntimeId: string | null): TutorialDefinition<Deb
             {
                 id: "review-stage-runtime",
                 target: stageRuntimeId ? { selector: tutorialRuntimeCardSelector(stageRuntimeId) } : { hidden: true },
-                requires: () => isProjectRuntimesListUrl(window.location.pathname) && stageRuntimeId != null,
+                // requires: () => isProjectRuntimesListUrl(window.location.pathname) && stageRuntimeId != null,
                 fallback: "go-to-runtimes",
                 completeOn: events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED,
                 content: (

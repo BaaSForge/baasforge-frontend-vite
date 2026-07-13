@@ -14,17 +14,15 @@ export function clearTutorialSpotlight(): void {
 export function useTutorialStopListener(
     tutorialGroupId: TutorialGroupId,
     tutorialId: TutorialId,
-    completedStepIds: readonly string[] | null,
+    getMetadata: () => unknown,
     enabled: boolean,
 ): void {
     useEffect(() => {
-        if (!enabled || completedStepIds == null) return;
+        if (!enabled) return;
 
         return listenAppEvent(events.TUTORIAL_STOP_BUTTON_CLICKED, () => {
-            void saveTutorialProgress(tutorialGroupId, tutorialId, "interrupted", {
-                completedStepIds: [...completedStepIds],
-            });
+            void saveTutorialProgress(tutorialGroupId, tutorialId, "interrupted", getMetadata());
             clearTutorialSpotlight();
         });
-    }, [completedStepIds, enabled, tutorialGroupId, tutorialId]);
+    }, [enabled, getMetadata, tutorialGroupId, tutorialId]);
 }

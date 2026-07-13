@@ -17,8 +17,6 @@ export {
 } from "./store";
 export {
     SpotlightActions,
-    SpotlightFillChatPromptButton,
-    SpotlightFillUnitFilterButton,
     SpotlightPrevButton,
     SpotlightPrimaryActionButton,
     SpotlightSecondaryActionButton,

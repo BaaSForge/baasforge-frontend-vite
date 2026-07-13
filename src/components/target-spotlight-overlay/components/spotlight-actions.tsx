@@ -58,50 +58,6 @@ export function SpotlightSecondaryActionButton({ className, ...props }: ButtonPr
     );
 }
 
-export function SpotlightFillChatPromptButton({
-    text,
-    className,
-    children = "Fill the prompt",
-    ...props
-}: ButtonProps & { text: string }) {
-    return (
-        <Button
-            type="button"
-            variant="default"
-            size="xs"
-            className={cn("ml-auto", className)}
-            onClick={() => {
-                triggerAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, { text });
-            }}
-            {...props}
-        >
-            {children}
-        </Button>
-    );
-}
-
-export function SpotlightFillUnitFilterButton({
-    unitId,
-    className,
-    children = "Fill unit ID",
-    ...props
-}: ButtonProps & { unitId: string }) {
-    return (
-        <Button
-            type="button"
-            variant="default"
-            size="xs"
-            className={cn("ml-auto", className)}
-            onClick={() => {
-                triggerAppEvent(events.RELEASE_UNITS_FILTER_FILL_UNIT_ID_EVENT, { unitId });
-            }}
-            {...props}
-        >
-            {children}
-        </Button>
-    );
-}
-
 export function SpotlightPrevButton({ className, onClick, type = "button", disabled, ...props }: ButtonProps) {
     if (!envConfig.isDev) return null;
 

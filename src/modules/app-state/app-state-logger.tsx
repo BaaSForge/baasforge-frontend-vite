@@ -75,7 +75,7 @@ function cloneAppState(state: AppState): AppState {
     return JSON.parse(JSON.stringify(state));
 }
 
-function logAppStateChanges(changes: AppStateChange[]) {
+function logAppStateChanges(changes: AppStateChange[], latestState: AppState) {
     const label = changes.length === 1 ? "1 change" : `${changes.length} changes`;
     const keyWidth = Math.max(3, ...changes.map(({ key }) => key.length));
     const prevWidth = Math.max(4, ...changes.map(({ prev }) => prev.length));
@@ -102,6 +102,8 @@ function logAppStateChanges(changes: AppStateChange[]) {
         );
     }
 
+    console.log("%c Latest state", "color: #e9d5ff; font-weight: 700;", latestState);
+
     console.groupEnd();
 }
 
@@ -119,7 +121,7 @@ export function AppStateLogger() {
 
         const changes = collectDeepChanges(previousStateRef.current, appState);
         if (changes.length > 0) {
-            logAppStateChanges(changes);
+            logAppStateChanges(changes, cloneAppState(appState));
         }
 
         previousStateRef.current = cloneAppState(appState);

@@ -16,6 +16,7 @@ import { useTutorialScalarTestRequestTarget } from "./use-tutorial-scalar-test-r
 import { useTutorialScalarSendTarget } from "./use-tutorial-scalar-send-target";
 import { useTutorialScalarResponseHeadersTarget } from "./use-tutorial-scalar-response-headers-target";
 import { useTutorialScalarResponseBodyTarget } from "./use-tutorial-scalar-response-body-target";
+import { useScalarClientModalAppStateSync } from "./use-scalar-client-modal-app-state-sync";
 
 const ApiReferenceReactLazy = lazy(() =>
     import("@scalar/api-reference-react").then((m) => ({ default: m.ApiReferenceReact })),
@@ -168,6 +169,7 @@ export type ScalarHttpOperationClientProps = {
     tutorialScalarSendTargetId?: string;
     tutorialScalarResponseHeadersTargetId?: string;
     tutorialScalarResponseBodyTargetId?: string;
+    unitId?: string;
 };
 
 export function ScalarHttpOperationClient({
@@ -186,11 +188,13 @@ export function ScalarHttpOperationClient({
     tutorialScalarSendTargetId,
     tutorialScalarResponseHeadersTargetId,
     tutorialScalarResponseBodyTargetId,
+    unitId,
 }: ScalarHttpOperationClientProps) {
     const resolvedAppTheme = useResolvedAppTheme();
     const scalarHttpTestAiNudge = useScalarHttpTestAiNudge();
     const rootRef = useRef<HTMLDivElement>(null);
     useTutorialScalarTestRequestTarget(rootRef, tutorialScalarTestRequestTargetId);
+    useScalarClientModalAppStateSync(rootRef, unitId);
     useTutorialScalarSendTarget(tutorialScalarSendTargetId);
     useTutorialScalarResponseHeadersTarget(tutorialScalarResponseHeadersTargetId);
     useTutorialScalarResponseBodyTarget(tutorialScalarResponseBodyTargetId);

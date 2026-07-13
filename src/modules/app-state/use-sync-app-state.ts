@@ -4,16 +4,29 @@ import { breadcrumbStore } from "@/stores/breadcrumb";
 import { mainSidebarStore } from "@/stores/main-sidebar";
 import { secondarySidebarStore } from "@/stores/secondary-sidebar";
 import { useEffect } from "react";
-import { useLocation } from "react-router";
+import { useLocation, useMatches, useParams } from "react-router";
 
+import { resolveRouteStateFromMatches, type PathParams } from "./resolve-active-page";
 import { appStateStore } from "./store";
 
+function normalizeParams(params: Record<string, string | undefined>): PathParams {
+    const normalized: PathParams = {};
+    for (const [key, value] of Object.entries(params)) {
+        if (value != null) normalized[key] = value;
+    }
+    return normalized;
+}
+
 export function useSyncAppState(): void {
-    const { pathname } = useLocation();
+    const { pathname, search } = useLocation();
+    const matches = useMatches();
+    const params = useParams();
 
     useEffect(() => {
-        appStateStore.getState().syncRoute(pathname);
-    }, [pathname]);
+        appStateStore
+            .getState()
+            .syncRoute(resolveRouteStateFromMatches(matches, normalizeParams(params), pathname, search));
+    }, [pathname, search, matches, params]);
 
     useEffect(() => {
         const syncMain = () => appStateStore.getState().syncFromMainSidebar();

@@ -98,6 +98,7 @@ export type QueueWorkerUnitLiveInteractionProps = {
 };
 
 type QueueWorkerTabsProps = {
+    unitId: string;
     basePath: string;
     workerBase: string;
     meta: QueueWorkerUnitMetadata;
@@ -118,6 +119,7 @@ function runScopedPlaceholder() {
 }
 
 function QueueWorkerUnitLiveInteractionTabs({
+    unitId,
     basePath,
     workerBase,
     meta,
@@ -155,6 +157,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                 <TabsContent value="enqueue" className="m-0 min-h-0 outline-none">
                     {activeTab === "enqueue" ? (
                         <ScalarHttpOperationClient
+                            unitId={unitId}
                             url={basePath}
                             serverBaseUrl={workerBase}
                             method="POST"
@@ -170,6 +173,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                     {activeTab === "status" ? (
                         runIdValid && runPathPrefix !== "" ? (
                             <ScalarHttpOperationClient
+                                unitId={unitId}
                                 url={`${runPathPrefix}/status`}
                                 serverBaseUrl={workerBase}
                                 method="GET"
@@ -187,6 +191,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                     {activeTab === "result" ? (
                         runIdValid && runPathPrefix !== "" ? (
                             <ScalarHttpOperationClient
+                                unitId={unitId}
                                 url={`${runPathPrefix}/result`}
                                 serverBaseUrl={workerBase}
                                 method="GET"
@@ -204,6 +209,7 @@ function QueueWorkerUnitLiveInteractionTabs({
                     {activeTab === "cancel" ? (
                         runIdValid && runPathPrefix !== "" ? (
                             <ScalarHttpOperationClient
+                                unitId={unitId}
                                 url={`${runPathPrefix}/cancel`}
                                 serverBaseUrl={workerBase}
                                 method="POST"
@@ -280,6 +286,7 @@ export function QueueWorkerUnitLiveInteraction({
 
             <QueueWorkerUnitLiveInteractionTabs
                 key={unit.id}
+                unitId={unit.id}
                 basePath={basePath}
                 workerBase={workerBase}
                 meta={meta}

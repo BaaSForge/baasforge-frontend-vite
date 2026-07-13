@@ -5,10 +5,19 @@ export function useElementBySelector(selector: string, enabled: boolean): HTMLEl
         (onStoreChange) => {
             if (!enabled) return () => {};
 
-            if (document.querySelector(selector) != null) return () => {};
+            let trackedElement = document.querySelector(selector) as HTMLElement | null;
 
-            const observer = new MutationObserver(onStoreChange);
+            const sync = () => {
+                const nextElement = document.querySelector(selector) as HTMLElement | null;
+                if (nextElement !== trackedElement) {
+                    trackedElement = nextElement;
+                    onStoreChange();
+                }
+            };
+
+            const observer = new MutationObserver(sync);
             observer.observe(document.body, { childList: true, subtree: true });
+
             return () => observer.disconnect();
         },
         () => (enabled ? (document.querySelector(selector) as HTMLElement | null) : null),

@@ -258,6 +258,7 @@ function WorkflowUnitLiveInteractionBody({
                     <TabsContent value="start" className="m-0 min-h-0 outline-none">
                         {activeTab === "start" ? (
                             <ScalarHttpOperationClient
+                                unitId={unit.id}
                                 url={basePath}
                                 serverBaseUrl={wfBase}
                                 method="POST"
@@ -273,6 +274,7 @@ function WorkflowUnitLiveInteractionBody({
                         {activeTab === "handler" ? (
                             handlerPath != null ? (
                                 <ScalarHttpOperationClient
+                                    unitId={unit.id}
                                     url={handlerPath}
                                     serverBaseUrl={wfBase}
                                     method="POST"
@@ -293,6 +295,7 @@ function WorkflowUnitLiveInteractionBody({
                         {activeTab === "status" ? (
                             instanceScopedPath != null ? (
                                 <ScalarHttpOperationClient
+                                    unitId={unit.id}
                                     url={`${instanceScopedPath}/status`}
                                     serverBaseUrl={wfBase}
                                     method="GET"
@@ -312,6 +315,7 @@ function WorkflowUnitLiveInteractionBody({
                         {activeTab === "cancel" ? (
                             instanceScopedPath != null ? (
                                 <ScalarHttpOperationClient
+                                    unitId={unit.id}
                                     url={`${instanceScopedPath}/cancel`}
                                     serverBaseUrl={wfBase}
                                     method="POST"
@@ -332,6 +336,7 @@ function WorkflowUnitLiveInteractionBody({
                         {activeTab === "result" ? (
                             instanceScopedPath != null ? (
                                 <ScalarHttpOperationClient
+                                    unitId={unit.id}
                                     url={`${instanceScopedPath}/result`}
                                     serverBaseUrl={wfBase}
                                     method="GET"

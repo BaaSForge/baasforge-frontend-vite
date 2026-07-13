@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Maximize2, TriangleAlert } from "lucide-react";
 import { scheduleScalarHttpTestAiNudgeInboxSync } from "@/components/scalar-http-operation-client/scalar-http-test-ai-nudge";
 import { emitUnitLiveInteractionClicked } from "@/services/events";
+import { appStateStore } from "@/modules/app-state/store";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LIVE_INTERACTION_NOTE_WHEN_NOT_LIVE } from "../live-interaction-notes";
 import { useProjectQuery } from "../queries";
@@ -133,6 +134,13 @@ export function DetailedUnitCard({
     useEffect(() => {
         onPanelEmphasisChange?.(panelEmphasis);
     }, [onPanelEmphasisChange, panelEmphasis]);
+
+    useEffect(() => {
+        appStateStore.getState().setUnitLiveInteractionOpen(unit.id, interactionOpen);
+        return () => {
+            appStateStore.getState().setUnitLiveInteractionOpen(unit.id, false);
+        };
+    }, [unit.id, interactionOpen]);
 
     const panelToggleValue = useMemo(() => {
         const v: string[] = [];

@@ -66,6 +66,7 @@ export function ApiUnitLiveInteraction({
 
     return (
         <ScalarHttpOperationClient
+            unitId={unit.id}
             url={path}
             serverBaseUrl={apiBase}
             method={method}

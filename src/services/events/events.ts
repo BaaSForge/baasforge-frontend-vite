@@ -18,6 +18,7 @@ export const events = {
     DEVELOP_BUTTON_CLICKED_EVENT: "develop-button-clicked",
     CHAT_COMPOSER_INPUT_FOCUSED_EVENT: "chat-composer-input-focused",
     CHAT_COMPOSER_FILL_PROMPT_EVENT: "chat-composer-fill-prompt",
+    CHAT_SESSION_CREATED_EVENT: "chat-session-created",
     UNIT_ID_BADGE_COPIED_EVENT: "unit-id-badge-copied",
     UNIT_CHANGES_MODAL_OPENED_EVENT: "unit-changes-modal-opened",
     UNIT_CHANGES_MODAL_CLOSED_EVENT: "unit-changes-modal-closed",
@@ -50,11 +51,12 @@ export type AppEventPayloadMap = {
     [events.USER_MENU_CLOSED_EVENT]: undefined;
     [events.PROJECT_CREATE_BUTTON_CLICKED_EVENT]: undefined;
     [events.PROJECT_SWITCH_MENU_OPENED_EVENT]: undefined;
-    [events.PROJECT_SELECTED_EVENT]: undefined;
+    [events.PROJECT_SELECTED_EVENT]: { projectId: string; projectTitle: string };
     [events.PROJECT_CREATED_EVENT]: { projectId: string };
     [events.DEVELOP_BUTTON_CLICKED_EVENT]: undefined;
     [events.CHAT_COMPOSER_INPUT_FOCUSED_EVENT]: undefined;
     [events.CHAT_COMPOSER_FILL_PROMPT_EVENT]: { text: string };
+    [events.CHAT_SESSION_CREATED_EVENT]: { chatSessionId: string };
     [events.UNIT_ID_BADGE_COPIED_EVENT]: { unitId: string };
     [events.UNIT_CHANGES_MODAL_OPENED_EVENT]: undefined;
     [events.UNIT_CHANGES_MODAL_CLOSED_EVENT]: undefined;

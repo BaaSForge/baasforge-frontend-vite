@@ -1,36 +1,46 @@
-import { matchPath } from "react-router";
+import type { UIMatch } from "react-router";
 
-import { ActivePage, PAGE_ROUTE_MATCHES, type ActivePage as ActivePageType } from "./pages";
+import { ActivePage, type ActivePage as ActivePageType, type AppRouteHandle } from "@/pages/routes";
 
 export type PathParams = Record<string, string>;
+
+export type AppSearchParams = Record<string, readonly string[]>;
 
 export type RouteState = {
     activePage: ActivePageType;
     pathParams: PathParams;
+    pathname: string;
+    searchParams: AppSearchParams;
 };
 
-const EMPTY_PARAMS: PathParams = {};
+export type { AppRouteHandle };
 
-function normalizeParams(params: Record<string, string | undefined> | undefined): PathParams {
-    if (params == null) return EMPTY_PARAMS;
+export function parseAppSearchParams(search: string): AppSearchParams {
+    const urlSearchParams = new URLSearchParams(search);
+    const result: Record<string, string[]> = {};
 
-    const normalized: PathParams = {};
-    for (const [key, value] of Object.entries(params)) {
-        if (value != null) normalized[key] = value;
+    for (const key of urlSearchParams.keys()) {
+        if (key in result) continue;
+        result[key] = urlSearchParams.getAll(key);
     }
-    return normalized;
+
+    return result;
 }
 
-export function resolveActivePage(pathname: string): RouteState {
-    for (const route of PAGE_ROUTE_MATCHES) {
-        const match = matchPath({ path: route.path, end: route.end ?? false }, pathname);
-        if (match == null) continue;
+export function resolveRouteStateFromMatches(
+    matches: UIMatch[],
+    pathParams: PathParams,
+    pathname: string,
+    search: string,
+): RouteState {
+    const searchParams = parseAppSearchParams(search);
 
-        const pathParams = normalizeParams(match.params);
-        if (route.when != null && !route.when(pathname, pathParams)) continue;
-
-        return { activePage: route.page, pathParams };
+    for (let index = matches.length - 1; index >= 0; index--) {
+        const page = (matches[index].handle as AppRouteHandle | undefined)?.page;
+        if (page != null) {
+            return { activePage: page, pathParams, pathname, searchParams };
+        }
     }
 
-    return { activePage: ActivePage.UNKNOWN, pathParams: EMPTY_PARAMS };
+    return { activePage: ActivePage.UNKNOWN, pathParams, pathname, searchParams };
 }

@@ -1,5 +1,6 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { modifyInfiniteCacheData } from "@/lib/react-query-utils";
+import { events, triggerAppEvent } from "@/services/events";
 import {
     invalidateDueToRejectOrEdit,
     removeProjectDraftUnitsAsOfReleaseControllerQueries,
@@ -18,8 +19,11 @@ export function useCreateProjectChatSessionMutation(projectId: string) {
 
     return useMutation({
         mutationFn: (title: string) => createProjectChatSession(projectId, title),
-        onSuccess: () => {
+        onSuccess: (session) => {
             queryClient.invalidateQueries({ queryKey: QueryKeys.projectChatSessionList(projectId) });
+            if (session != null) {
+                triggerAppEvent(events.CHAT_SESSION_CREATED_EVENT, { chatSessionId: session.id });
+            }
         },
     });
 }

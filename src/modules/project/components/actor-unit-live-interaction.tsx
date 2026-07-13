@@ -128,6 +128,7 @@ export type ActorUnitLiveInteractionProps = {
 const DEFAULT_ACTOR_INSTANCE_ID = "default";
 
 type ActorTabsProps = {
+    unitId: string;
     pathPrefix: string;
     actorBase: string;
     meta: ActorUnitMetadata;
@@ -139,6 +140,7 @@ type ActorTabsProps = {
 };
 
 function ActorUnitLiveInteractionTabs({
+    unitId,
     pathPrefix,
     actorBase,
     meta,
@@ -191,6 +193,7 @@ function ActorUnitLiveInteractionTabs({
                         <TabsContent key={metadataKey} value={`handler:${metadataKey}`} className="m-0 min-h-0 outline-none">
                             {activeTab === `handler:${metadataKey}` ? (
                                 <ScalarHttpOperationClient
+                                    unitId={unitId}
                                     url={`${pathPrefix}/${encodeURIComponent(pathSeg)}`}
                                     serverBaseUrl={actorBase}
                                     method="POST"
@@ -210,6 +213,7 @@ function ActorUnitLiveInteractionTabs({
                 <TabsContent value="state" className="m-0 min-h-0 outline-none">
                     {activeTab === "state" ? (
                         <ScalarHttpOperationClient
+                            unitId={unitId}
                             url={`${pathPrefix}/state`}
                             serverBaseUrl={actorBase}
                             method="GET"
@@ -223,6 +227,7 @@ function ActorUnitLiveInteractionTabs({
                 <TabsContent value="passivate" className="m-0 min-h-0 outline-none">
                     {activeTab === "passivate" ? (
                         <ScalarHttpOperationClient
+                            unitId={unitId}
                             url={`${pathPrefix}/passivate`}
                             serverBaseUrl={actorBase}
                             method="POST"
@@ -237,6 +242,7 @@ function ActorUnitLiveInteractionTabs({
                 <TabsContent value="delete" className="m-0 min-h-0 outline-none">
                     {activeTab === "delete" ? (
                         <ScalarHttpOperationClient
+                            unitId={unitId}
                             url={pathPrefix}
                             serverBaseUrl={actorBase}
                             method="DELETE"
@@ -342,6 +348,7 @@ export function ActorUnitLiveInteraction({
             ) : (
                 <ActorUnitLiveInteractionTabs
                     key={`${unit.id}\u0000${pathPrefix}\u0000${defaultTab}`}
+                    unitId={unit.id}
                     pathPrefix={pathPrefix}
                     actorBase={actorBase}
                     meta={meta}

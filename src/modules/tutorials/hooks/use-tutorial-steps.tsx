@@ -3,6 +3,7 @@
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { pinToTop, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { setSpotlightContentToRender } from "@/components/target-spotlight-overlay/lib/spotlight-renderer";
+import type { TutorialRunData } from "@/modules/tutorials/engine";
 import { events, listenAppEvent } from "@/services/events";
 import {
     getTutorialProgressRecord,
@@ -10,21 +11,36 @@ import {
     type TutorialGroupId,
     type TutorialId,
 } from "@/services/tutorials";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { clearTutorialSpotlight, useTutorialStopListener } from "./use-tutorial-stop-listener";
 
 export const TUTORIAL_INTERRUPTED_STEP = "interrupted" as const;
 
-type TutorialStepRunData = {
-    completedStepIds: string[];
+type TutorialStepRunData<TExtra extends Record<string, unknown>> = TutorialRunData<TExtra> & {
     interrupted?: boolean;
 };
 
-function isTutorialStepRunData(value: unknown): value is TutorialStepRunData {
+function isTutorialStepRunData<TExtra extends Record<string, unknown>>(
+    value: unknown,
+): value is TutorialStepRunData<TExtra> {
     if (value == null || typeof value !== "object") return false;
-    const data = value as TutorialStepRunData;
+    const data = value as TutorialStepRunData<TExtra>;
     return Array.isArray(data.completedStepIds) && data.completedStepIds.every((id) => typeof id === "string");
+}
+
+function parseTutorialStepRunData<TExtra extends Record<string, unknown>>(
+    value: unknown,
+): TutorialStepRunData<TExtra> {
+    if (!isTutorialStepRunData<TExtra>(value)) {
+        return { completedStepIds: [], extra: {} };
+    }
+
+    return {
+        completedStepIds: value.completedStepIds,
+        extra: value.extra ?? {},
+        ...(value.interrupted ? { interrupted: true } : {}),
+    };
 }
 
 function getActiveTutorialStep<TStep extends string>(
@@ -34,7 +50,10 @@ function getActiveTutorialStep<TStep extends string>(
     return steps.find((id) => !completedStepIds.includes(id)) ?? null;
 }
 
-export function useTutorialSteps<const TSteps extends readonly string[]>(
+export function useTutorialSteps<
+    const TSteps extends readonly string[],
+    TExtra extends Record<string, unknown> = Record<string, never>,
+>(
     tutorialGroupId: TutorialGroupId,
     tutorialId: TutorialId,
     steps: TSteps,
@@ -43,11 +62,14 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
     goNext: () => boolean;
     goTo: (stepId: TSteps[number]) => void;
     goToInterrupted: () => void;
+    mergeTutorialMetadata: (partial: Partial<TExtra>) => void;
+    loadTutorialMetadata: () => Promise<Partial<TExtra>>;
 } {
     type StepId = TSteps[number];
 
     const [completedStepIds, setCompletedStepIds] = useState<string[] | null>(null);
     const [showInterruptedStep, setShowInterruptedStep] = useState(false);
+    const extraRef = useRef<Partial<TExtra>>({});
 
     const currentStep = showInterruptedStep
         ? TUTORIAL_INTERRUPTED_STEP
@@ -55,10 +77,25 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
           ? null
           : getActiveTutorialStep(steps, completedStepIds);
 
+    const buildRunData = useCallback(
+        (nextCompletedStepIds: readonly string[], interrupted = showInterruptedStep): TutorialStepRunData<TExtra> => ({
+            completedStepIds: [...nextCompletedStepIds],
+            extra: { ...extraRef.current },
+            ...(interrupted ? { interrupted: true } : {}),
+        }),
+        [showInterruptedStep],
+    );
+
+    const getRunStatus = useCallback(
+        (nextCompletedStepIds: readonly string[]): "pending-action" | "completed" =>
+            getActiveTutorialStep(steps, nextCompletedStepIds) == null ? "completed" : "pending-action",
+        [steps],
+    );
+
     useTutorialStopListener(
         tutorialGroupId,
         tutorialId,
-        completedStepIds,
+        () => buildRunData(completedStepIds ?? []),
         completedStepIds !== null && !showInterruptedStep,
     );
 
@@ -68,7 +105,8 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
         void getTutorialProgressRecord(tutorialGroupId, tutorialId).then((record) => {
             if (cancelled || record?.status !== "pending-action") return;
 
-            const data = isTutorialStepRunData(record.metadata) ? record.metadata : { completedStepIds: [] };
+            const data = parseTutorialStepRunData<TExtra>(record.metadata);
+            extraRef.current = data.extra ?? {};
             setCompletedStepIds(data.completedStepIds);
             if (data.interrupted) setShowInterruptedStep(true);
         });
@@ -94,9 +132,12 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
         );
 
         const stopListeningPrimary = listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, () => {
-            void saveTutorialProgress(tutorialGroupId, tutorialId, "interrupted", {
-                completedStepIds: [...(completedStepIds ?? [])],
-            });
+            void saveTutorialProgress(
+                tutorialGroupId,
+                tutorialId,
+                "interrupted",
+                buildRunData(completedStepIds ?? [], true),
+            );
             clearTutorialSpotlight();
             emitSignupTutorialOpen({ force: true });
         });
@@ -105,10 +146,10 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
             stopListeningPrimary();
             clearTutorialSpotlight();
         };
-    }, [completedStepIds, currentStep, tutorialGroupId, tutorialId]);
+    }, [buildRunData, completedStepIds, currentStep, tutorialGroupId, tutorialId]);
 
     const persist = useCallback(
-        (metadata: TutorialStepRunData, status: "pending-action" | "completed") => {
+        (metadata: TutorialStepRunData<TExtra>, status: "pending-action" | "completed") => {
             void saveTutorialProgress(tutorialGroupId, tutorialId, status, metadata);
         },
         [tutorialGroupId, tutorialId],
@@ -121,10 +162,10 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
             setShowInterruptedStep(false);
 
             const finished = getActiveTutorialStep(steps, nextCompletedStepIds) == null;
-            persist({ completedStepIds: nextCompletedStepIds }, finished ? "completed" : "pending-action");
+            persist(buildRunData(nextCompletedStepIds, false), finished ? "completed" : "pending-action");
             return finished;
         },
-        [completedStepIds, persist, steps],
+        [buildRunData, completedStepIds, persist, steps],
     );
 
     const goNext = useCallback((): boolean => {
@@ -141,21 +182,35 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
 
             const nextCompletedStepIds = [...steps.slice(0, index)];
             setCompletedStepIds(nextCompletedStepIds);
-            persist({ completedStepIds: nextCompletedStepIds }, "pending-action");
+            persist(buildRunData(nextCompletedStepIds, false), "pending-action");
         },
-        [persist, steps],
+        [buildRunData, persist, steps],
     );
 
     const goToInterrupted = useCallback(() => {
         setShowInterruptedStep(true);
-        persist(
-            {
-                completedStepIds: [...(completedStepIds ?? [])],
-                interrupted: true,
-            },
-            "pending-action",
-        );
-    }, [completedStepIds, persist]);
+        persist(buildRunData(completedStepIds ?? [], true), "pending-action");
+    }, [buildRunData, completedStepIds, persist]);
+
+    const mergeTutorialMetadata = useCallback(
+        (partial: Partial<TExtra>) => {
+            extraRef.current = { ...extraRef.current, ...partial };
+            persist(
+                buildRunData(completedStepIds ?? [], showInterruptedStep),
+                getRunStatus(completedStepIds ?? []),
+            );
+        },
+        [buildRunData, completedStepIds, getRunStatus, persist, showInterruptedStep],
+    );
+
+    const loadTutorialMetadata = useCallback(async (): Promise<Partial<TExtra>> => {
+        if (completedStepIds !== null) return { ...extraRef.current };
+
+        const record = await getTutorialProgressRecord(tutorialGroupId, tutorialId);
+        const data = parseTutorialStepRunData<TExtra>(record?.metadata);
+        extraRef.current = data.extra ?? {};
+        return { ...extraRef.current };
+    }, [completedStepIds, tutorialGroupId, tutorialId]);
 
     useEffect(() => {
         return () => {
@@ -163,5 +218,5 @@ export function useTutorialSteps<const TSteps extends readonly string[]>(
         };
     }, []);
 
-    return { currentStep, goNext, goTo, goToInterrupted };
+    return { currentStep, goNext, goTo, goToInterrupted, mergeTutorialMetadata, loadTutorialMetadata };
 }

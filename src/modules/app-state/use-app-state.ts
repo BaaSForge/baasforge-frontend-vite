@@ -19,11 +19,15 @@ export function useAppState(): AppState {
             isAnyAlertOpen: state.isAnyAlertOpen,
             activePage: state.activePage,
             pathParams: state.pathParams,
+            pathname: state.pathname,
+            searchParams: state.searchParams,
             isNotificationDropdownOpen: state.isNotificationDropdownOpen,
             isThemeSwitchDropdownOpen: state.isThemeSwitchDropdownOpen,
             isProjectSwitchDropdownOpen: effectiveSidebarDropdownOpen(state.isProjectSwitchDropdownOpen, state),
             isUserMenuDropdownOpen: effectiveSidebarDropdownOpen(state.isUserMenuDropdownOpen, state),
             isBreadcrumbStickyVisible: state.isBreadcrumbStickyVisible,
+            liveInteractionOpenUnitIds: state.liveInteractionOpenUnitIds,
+            scalarClientModalOpenUnitId: state.scalarClientModalOpenUnitId,
         })),
     );
 }

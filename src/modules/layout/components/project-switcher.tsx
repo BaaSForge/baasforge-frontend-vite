@@ -98,7 +98,12 @@ export function ProjectSwitcher() {
                                         >
                                             <Link
                                                 to={linkObj.pathname + linkObj.search}
-                                                onClick={() => triggerAppEvent(events.PROJECT_SELECTED_EVENT)}
+                                                onClick={() =>
+                                                    triggerAppEvent(events.PROJECT_SELECTED_EVENT, {
+                                                        projectId: project.id,
+                                                        projectTitle: project.name,
+                                                    })
+                                                }
                                             >
                                                 <div
                                                     className={`flex size-6 items-center justify-center rounded-md border ${isActive ? "border-accent bg-accent/30" : ""}`}
