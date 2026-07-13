@@ -16,9 +16,12 @@ type RuntimeStepPhase = StepPhase & { el: SVGElement; startVal?: number };
 const LOGIN_PATH = "/login";
 const PHRASES = ["Mock APIs", "Payment workflows", "Approval flows", "Subscription logic", "Background jobs", "Stateful entities", "AI agent orchestration", "Tenant onboarding", "Multi-step sagas"];
 const NAV_LINKS = [
-    { href: "#what", id: "product", label: "Product", sections: ["what", "how", "usecases", "category"] },
+    { href: "#what", id: "product", label: "Product", sections: ["what"] },
+    { href: "#how", id: "how", label: "How it works", sections: ["how"] },
     { href: "#build", id: "units", label: "Units", sections: ["build"] },
-    { href: "#debug", id: "docs", label: "Docs", sections: ["debug"] },
+    { href: "#usecases", id: "use-cases", label: "Use cases", sections: ["usecases"] },
+    { href: "#category", id: "why", label: "Why BaaSForge", sections: ["category"] },
+    { href: "#debug", id: "reliability", label: "Reliability", sections: ["debug"] },
 ] as const;
 type NavId = (typeof NAV_LINKS)[number]["id"];
 const OBSERVED_SECTION_IDS = NAV_LINKS.flatMap((link) => link.sections);
@@ -393,7 +396,7 @@ function Navbar({ active, compact, theme, setTheme }: { active: NavId; compact: 
             <nav className="bf-nav">
                 <div className="mx-auto flex h-[68px] max-w-[1080px] items-center justify-between px-7">
                     <Brand />
-                    <div className="hidden gap-[30px] text-sm lg:flex">
+                    <div className="hidden gap-5 text-sm xl:flex">
                         {NAV_LINKS.map((link) => (
                             <a key={link.label} href={link.href} aria-current={active === link.id ? "page" : undefined} className="border-b pb-[3px]" style={{ color: active === link.id ? "var(--foreground)" : "var(--muted-foreground)", borderColor: active === link.id ? "var(--foreground)" : "transparent" }}>
                                 {link.label}
@@ -427,7 +430,7 @@ function Navbar({ active, compact, theme, setTheme }: { active: NavId; compact: 
                                 </div>
                             )}
                         </div>
-                        <div className="hidden items-center gap-3.5 lg:flex">
+                        <div className="hidden items-center gap-3.5 xl:flex">
                             <Button variant="ghost" size="sm" asChild>
                                 <Link to={LOGIN_PATH}>Sign in</Link>
                             </Button>
@@ -435,7 +438,7 @@ function Navbar({ active, compact, theme, setTheme }: { active: NavId; compact: 
                                 <Link to={LOGIN_PATH}>Start building</Link>
                             </Button>
                         </div>
-                        <button type="button" onClick={() => setMenuOpen((open) => !open)} className="flex size-9 items-center justify-center rounded-md border bg-card text-foreground lg:hidden" aria-label="Open menu">
+                        <button type="button" onClick={() => setMenuOpen((open) => !open)} className="flex size-9 items-center justify-center rounded-md border bg-card text-foreground xl:hidden" aria-label="Open menu">
                             {menuOpen ? <X className="size-[18px]" /> : <Menu className="size-[18px]" />}
                         </button>
                     </div>
