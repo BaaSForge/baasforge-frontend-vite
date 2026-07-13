@@ -449,10 +449,10 @@ function Navbar({ active, compact }: { active: NavId; compact: boolean }) {
                     </div>
                     <div className="flex items-center gap-3.5">
                         <div className="hidden items-center gap-3.5 xl:flex">
-                            <Button variant="ghost" size="sm" asChild>
+                            <Button variant="ghost" size="sm" className="rounded-full" asChild>
                                 <Link to={LOGIN_PATH}>Sign in</Link>
                             </Button>
-                            <Button size="sm" className="bg-primary hover:bg-primary/90" style={{ color: "var(--primary-foreground)" }} asChild>
+                            <Button size="sm" className="rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
                                 <Link to={LOGIN_PATH}>Start building</Link>
                             </Button>
                         </div>
@@ -482,10 +482,10 @@ function Navbar({ active, compact }: { active: NavId; compact: boolean }) {
                         ))}
                     </nav>
                     <div className="mx-auto mt-auto grid w-full max-w-[1080px] grid-cols-2 gap-3 px-7 pb-7 pt-8">
-                        <Button variant="outline" className="h-12" asChild>
+                        <Button variant="outline" className="h-12 rounded-full" asChild>
                             <Link to={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Sign in</Link>
                         </Button>
-                        <Button className="h-12 bg-primary hover:bg-primary/90" style={{ color: "var(--primary-foreground)" }} asChild>
+                        <Button className="h-12 rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
                             <Link to={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Start building</Link>
                         </Button>
                     </div>
