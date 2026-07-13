@@ -4,11 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AppLogoSquare } from "@/components/logo/app-logo-square";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Contrast, Menu, Monitor, Moon, Sun, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { type RefObject, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 
-type ThemeName = "light" | "midnight" | "dense" | "system";
 type UnitKind = "api" | "workflow" | "queue" | "actor" | "sql" | "graph" | "record" | "object" | "vector" | "common";
 type StepPhase = { sel: string; prop: "strokeDashoffset" | "opacity"; from: number; to: number; t0: number; t1: number };
 type RuntimeStepPhase = StepPhase & { el: SVGElement; startVal?: number };
@@ -363,33 +362,8 @@ function Brand() {
     );
 }
 
-function ThemeIcon({ theme }: { theme: ThemeName }) {
-    if (theme === "light") return <Sun className="size-[18px]" />;
-    if (theme === "midnight") return <Moon className="size-[18px]" />;
-    if (theme === "dense") return <Contrast className="size-[18px]" />;
-    return <Monitor className="size-[18px]" />;
-}
-
-function Navbar({ active, compact, theme, setTheme }: { active: NavId; compact: boolean; theme: ThemeName; setTheme: (theme: ThemeName) => void }) {
+function Navbar({ active, compact }: { active: NavId; compact: boolean }) {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [themeOpen, setThemeOpen] = useState(false);
-    const themeRef = useRef<HTMLDivElement | null>(null);
-    const themeIconRef = useRef<HTMLSpanElement | null>(null);
-
-    useEffect(() => {
-        const close = (event: MouseEvent) => {
-            if (themeRef.current && !themeRef.current.contains(event.target as Node)) setThemeOpen(false);
-        };
-        document.addEventListener("mousedown", close);
-        return () => document.removeEventListener("mousedown", close);
-    }, []);
-    useEffect(() => {
-        const el = themeIconRef.current;
-        if (!el) return;
-        el.style.animation = "none";
-        void el.offsetWidth;
-        el.style.animation = "themeIconIn .5s cubic-bezier(.16,1,.3,1)";
-    }, [theme]);
 
     return (
         <>
@@ -404,32 +378,6 @@ function Navbar({ active, compact, theme, setTheme }: { active: NavId; compact: 
                         ))}
                     </div>
                     <div className="flex items-center gap-3.5">
-                        <div ref={themeRef} className="relative">
-                            <button type="button" onClick={() => setThemeOpen((open) => !open)} className="flex size-9 items-center justify-center rounded-md border bg-card text-foreground transition-colors duration-300 hover:bg-accent" aria-label="Change theme">
-                                <span ref={themeIconRef}>
-                                    <ThemeIcon theme={theme} />
-                                </span>
-                            </button>
-                            {themeOpen && (
-                                <div className="absolute right-0 top-[calc(100%+8px)] z-[200] min-w-[190px] rounded-lg border bg-popover p-1.5 text-popover-foreground shadow-lg animate-[menuIn_.18s_cubic-bezier(.16,1,.3,1)_both]">
-                                    {(["light", "midnight", "dense", "system"] as const).map((option) => (
-                                        <button
-                                            key={option}
-                                            type="button"
-                                            onClick={() => {
-                                                setTheme(option);
-                                                setThemeOpen(false);
-                                            }}
-                                            className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm hover:bg-accent"
-                                        >
-                                            <ThemeIcon theme={option} />
-                                            <span className="flex-1 capitalize">{option === "dense" ? "Dense dark" : option}</span>
-                                            {option === theme && <Check className="size-3.5" />}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
                         <div className="hidden items-center gap-3.5 xl:flex">
                             <Button variant="ghost" size="sm" asChild>
                                 <Link to={LOGIN_PATH}>Sign in</Link>
@@ -797,16 +745,10 @@ function UnitIcon({ kind }: { kind: UnitKind }) {
 
 export default function HomePage() {
     const compact = useMedia("(max-width: 1024px)");
-    const dark = useMedia("(prefers-color-scheme: dark)");
     const active = useActiveSection();
     const visible = useReveal(["what", "how", "build", "usecases", "category", "debug"]);
-    const [theme, setTheme] = useState<ThemeName>(() => (typeof localStorage === "undefined" ? "system" : ((localStorage.getItem("baasforge-theme") as ThemeName | null) ?? "system")));
     const [carousel, setCarousel] = useState(PHRASES.length);
     const [carouselJump, setCarouselJump] = useState(false);
-
-    useEffect(() => {
-        localStorage.setItem("baasforge-theme", theme);
-    }, [theme]);
     useEffect(() => {
         const interval = setInterval(() => setCarousel((index) => index + 1), 2200);
         return () => clearInterval(interval);
@@ -821,11 +763,10 @@ export default function HomePage() {
         });
     };
 
-    const themeClass = theme === "midnight" ? "midnight" : theme === "dense" ? "dense dark" : theme === "system" && dark ? "dark" : "";
     return (
-        <div className={`bf-page ${themeClass}`}>
+        <div className="bf-page midnight">
             <Styles />
-            <Navbar active={active} compact={compact} theme={theme} setTheme={setTheme} />
+            <Navbar active={active} compact={compact} />
             <main>
                 <Hero />
                 <What visible={!!visible.what} compact={compact} />
