@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AppLogoSquare } from "@/components/logo/app-logo-square";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Contrast, Menu, Monitor, Moon, Sun, X } from "lucide-react";
@@ -316,7 +317,7 @@ function Styles() {
             .bf-page.midnight{--background:oklch(0.17 0.032 264);--foreground:oklch(0.96 0.012 260);--card:oklch(0.21 0.034 264);--card-foreground:oklch(0.96 0.012 260);--popover:oklch(0.21 0.034 264);--popover-foreground:oklch(0.96 0.012 260);--primary:oklch(0.74 0.15 260);--primary-foreground:oklch(0.15 0.03 264);--secondary:oklch(0.27 0.038 264);--secondary-foreground:oklch(0.96 0.012 260);--muted:oklch(0.25 0.034 264);--muted-foreground:oklch(0.67 0.03 260);--accent:oklch(0.31 0.045 264);--accent-foreground:oklch(0.96 0.012 260);--border:oklch(1 0 0 / 12%);--input:oklch(1 0 0 / 16%);--ring:oklch(0.56 0.06 260);--alt-bg:oklch(.14 .03 264);--glow-rgb:145,175,255;--accent-glow:oklch(0.68 0.12 260)}
             .bf-page.dense{--alt-bg:oklch(.08 0 0);--glow-rgb:255,255,255;--accent-glow:oklch(0.9 0.01 260)}
             .bf-page ::selection{background:var(--selection);color:var(--selection-foreground)}.bf-page a{color:inherit;text-decoration:none}.bf-container{max-width:1080px;margin:0 auto;padding:0 28px}
-            .bf-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;letter-spacing:-.02em;color:var(--foreground)}.bf-dot{width:18px;height:18px;border-radius:50%;display:inline-block;background:conic-gradient(from 220deg,var(--muted-foreground),var(--foreground),var(--secondary),var(--muted-foreground));box-shadow:0 0 18px rgba(var(--glow-rgb),.3)}
+            .bf-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;letter-spacing:-.02em;color:var(--foreground)}
             .bf-nav{position:fixed;inset:0 0 auto;z-index:100;background:transparent;backdrop-filter:blur(14px);border-bottom:1px solid transparent}
             .bf-hero{position:relative;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(36px,6svh,86px);text-align:center;overflow:hidden;padding:calc(68px + clamp(32px,6svh,88px)) 24px clamp(32px,7svh,84px);background:var(--background)}
             .bf-hero-title-wrap{position:relative;width:100%;perspective:800px}.bf-hero h1{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:clamp(22px,4svh,72px);max-width:1400px;margin:0 auto;color:var(--foreground);font-size:clamp(72px,min(12.8vw,19svh),210px);font-weight:700;letter-spacing:-.07em;line-height:.82}
@@ -353,7 +354,7 @@ function Magnetic({ to, variant, children }: { to: string; variant: "primary" | 
 function Brand() {
     return (
         <Link to="/" className="bf-logo">
-            <span className="bf-dot" />
+            <AppLogoSquare className="size-[22px]" />
             BaaSForge
         </Link>
     );
