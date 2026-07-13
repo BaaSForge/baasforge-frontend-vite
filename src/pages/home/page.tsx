@@ -13,6 +13,8 @@ type StepPhase = { sel: string; prop: "strokeDashoffset" | "opacity"; from: numb
 type RuntimeStepPhase = StepPhase & { el: SVGElement; startVal?: number };
 
 const LOGIN_PATH = "/login";
+const HOME_TITLE = "BaaSForge | AI Backend Platform";
+const HOME_DESCRIPTION = "BaaSForge is an AI backend platform that turns plain-language requirements into production-ready APIs, workflows, workers, and data units.";
 const PHRASES = ["Mock APIs", "Payment workflows", "Approval flows", "Subscription logic", "Background jobs", "Stateful entities", "AI agent orchestration", "Tenant onboarding", "Multi-step sagas"];
 const NAV_LINKS = [
     { href: "#what", id: "product", label: "Product", sections: ["what"] },
@@ -97,6 +99,60 @@ function useMedia(query: string) {
         return () => media.removeEventListener("change", onChange);
     }, [query]);
     return matches;
+}
+
+function HomePageSeo() {
+    useEffect(() => {
+        const previousTitle = document.title;
+        const canonicalUrl = `${window.location.origin}${window.location.pathname}`;
+        document.title = HOME_TITLE;
+
+        const upsertMeta = (selector: string, attribute: "name" | "property", value: string, content: string) => {
+            const meta = document.head.querySelector<HTMLMetaElement>(selector) ?? document.head.appendChild(document.createElement("meta"));
+            meta.setAttribute(attribute, value);
+            meta.content = content;
+            return meta;
+        };
+        const description = upsertMeta('meta[name="description"]', "name", "description", HOME_DESCRIPTION);
+        const openGraphUrl = upsertMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
+        const twitterCard = upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary");
+        const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]') ?? document.head.appendChild(document.createElement("link"));
+        canonical.rel = "canonical";
+        canonical.href = canonicalUrl;
+
+        const schema = document.createElement("script");
+        schema.id = "baasforge-homepage-schema";
+        schema.type = "application/ld+json";
+        schema.text = JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    name: "BaaSForge",
+                    url: window.location.origin,
+                    logo: `${window.location.origin}/logo-256x256.png`,
+                    description: HOME_DESCRIPTION,
+                },
+                {
+                    "@type": "WebSite",
+                    name: "BaaSForge",
+                    url: window.location.origin,
+                    description: HOME_DESCRIPTION,
+                },
+            ],
+        });
+        document.head.appendChild(schema);
+
+        return () => {
+            document.title = previousTitle;
+            schema.remove();
+            canonical.remove();
+            openGraphUrl.remove();
+            description.content = HOME_DESCRIPTION;
+            twitterCard.content = "summary";
+        };
+    }, []);
+    return null;
 }
 
 function getNavIdForSection(sectionId: string): NavId {
@@ -320,7 +376,7 @@ function Styles() {
             .bf-page.dense{--alt-bg:oklch(.08 0 0);--glow-rgb:255,255,255;--accent-glow:oklch(0.9 0.01 260)}
             .bf-page ::selection{background:var(--selection);color:var(--selection-foreground)}.bf-page a{color:inherit;text-decoration:none}.bf-container{max-width:1080px;margin:0 auto;padding:0 28px}
             .bf-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;letter-spacing:-.02em;color:var(--foreground)}
-            .bf-nav{position:fixed;inset:0 0 auto;z-index:100;background:transparent;backdrop-filter:blur(14px);border-bottom:1px solid transparent}
+            .bf-nav{position:fixed;inset:0 0 auto;z-index:100;background:oklch(0.17 0.03 263 / .7);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);}
             .bf-hero{position:relative;min-height:100svh;display:grid;grid-template-rows:2fr 1fr;align-items:stretch;text-align:center;overflow:hidden;padding:68px 24px 32px;background:var(--background)}
             .bf-hero-title-wrap{position:relative;display:grid;width:100%;place-items:center;perspective:800px}.bf-hero h1{position:relative;display:flex;align-items:baseline;justify-content:center;gap:clamp(10px,1.6vw,30px);max-width:1400px;margin:0 auto;color:var(--foreground);font-size:clamp(50px,12.8vw,210px);font-weight:700;letter-spacing:-.07em;line-height:.98;white-space:nowrap}
             .bf-char{display:inline-block;opacity:0;filter:blur(10px);transform:translateY(18px);animation:blurFocus .6s cubic-bezier(.16,1,.3,1) forwards}.bf-hero-support{position:relative;align-self:center;display:flex;flex-direction:column;align-items:center;gap:28px}.bf-copy{max-width:560px;margin:0;color:var(--foreground);font-size:22px;line-height:1.45;animation:blurFocus .6s cubic-bezier(.16,1,.3,1) .5s both}.bf-actions{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;animation:blurFocus .6s cubic-bezier(.16,1,.3,1) .65s both}.bf-pill{display:inline-flex;justify-content:center;border-radius:9999px;padding:14px 30px;font-size:15px;font-weight:600;will-change:transform}.bf-pill.secondary{background:var(--secondary);color:var(--secondary-foreground);border:1px solid var(--border)}.bf-pill.primary{background:var(--primary);color:var(--primary-foreground)}.bf-down{color:var(--muted-foreground);animation:blurFocus .6s cubic-bezier(.16,1,.3,1) .8s both,bob 2.2s ease-in-out 2.8s infinite}
@@ -765,6 +821,7 @@ export default function HomePage() {
 
     return (
         <div className="bf-page midnight">
+            <HomePageSeo />
             <Styles />
             <Navbar active={active} compact={compact} />
             <main>
