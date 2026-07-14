@@ -40,7 +40,7 @@ export function DebugAndReleaseTutorial() {
     const loadWriteAndCallTutorialMetadata = useLoadTutorialMetadata<WriteAndCallExtra>(
         WELCOME_TUTORIALS_GROUP_ID, WRITE_AND_CALL_TUTORIAL_ID,
     );
-    const { currentStep, goNext, goTo, loadTutorialMetadata, goToInterrupted } = useTutorialSteps<
+    const { currentStep, goNext, goTo, goToInterrupted } = useTutorialSteps<
         typeof STEPS,
         DebugAndReleaseExtra
     >(WELCOME_TUTORIALS_GROUP_ID, TUTORIAL_ID, STEPS);
@@ -296,9 +296,10 @@ export function DebugAndReleaseTutorial() {
             currentStep,
             goNext,
             goTo,
+            isInPreviousProject,
+            loadWriteAndCallTutorialMetadata,
             appState.activePage,
             appState.pathParams,
-            loadTutorialMetadata,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
