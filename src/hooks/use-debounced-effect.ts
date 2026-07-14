@@ -1,13 +1,10 @@
 import { useEffect, useRef } from "react";
+import { useAsyncEffect } from "./use-async-effect";
 
 type DebouncedEffectCallback = () =>
     | void
     | (() => void)
     | Promise<void | (() => void)>;
-
-function isPromise<T>(value: unknown): value is Promise<T> {
-    return typeof value === "object" && value !== null && "then" in value;
-}
 
 export function useDebouncedEffect(
     effect: DebouncedEffectCallback,
@@ -15,39 +12,25 @@ export function useDebouncedEffect(
     delay: number,
 ) {
     const effectRef = useRef(effect);
-    const cleanupRef = useRef<(() => void) | undefined>(undefined);
 
     useEffect(() => {
         effectRef.current = effect;
     });
 
-    useEffect(() => {
-        let cancelled = false;
+    useAsyncEffect(async (signal) => {
+        await new Promise<void>((resolve) => {
+            const timeoutId = window.setTimeout(resolve, delay);
 
-        const timeoutId = setTimeout(() => {
-            void (async () => {
-                const result = effectRef.current();
+            signal.addEventListener("abort", () => {
+                clearTimeout(timeoutId);
+                resolve();
+            });
+        });
 
-                if (!isPromise<void | (() => void)>(result)) {
-                    if (!cancelled) {
-                        cleanupRef.current = typeof result === "function" ? result : undefined;
-                    }
-                    return;
-                }
+        if (signal.aborted) {
+            return;
+        }
 
-                const resolved = await result;
-
-                if (!cancelled) {
-                    cleanupRef.current = typeof resolved === "function" ? resolved : undefined;
-                }
-            })();
-        }, delay);
-
-        return () => {
-            cancelled = true;
-            clearTimeout(timeoutId);
-            cleanupRef.current?.();
-            cleanupRef.current = undefined;
-        };
+        return effectRef.current();
     }, [...deps, delay]); // eslint-disable-line react-hooks/exhaustive-deps
 }

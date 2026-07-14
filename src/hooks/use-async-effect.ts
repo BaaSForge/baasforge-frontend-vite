@@ -1,19 +1,19 @@
 import { useEffect, type DependencyList } from "react";
 
-type AsyncEffectCallback = () => Promise<void | (() => void)>;
+type AsyncEffectCallback = (signal: AbortSignal) => Promise<void | (() => void)>;
 
 export function useAsyncEffect(
     effect: AsyncEffectCallback,
     deps: DependencyList,
 ) {
     useEffect(() => {
-        let cancelled = false;
+        const controller = new AbortController();
         let cleanup: (() => void) | undefined;
 
         (async () => {
-            const result = await effect();
+            const result = await effect(controller.signal);
 
-            if (cancelled) {
+            if (controller.signal.aborted) {
                 if (typeof result === "function") {
                     result();
                 }
@@ -26,7 +26,7 @@ export function useAsyncEffect(
         })();
 
         return () => {
-            cancelled = true;
+            controller.abort();
             cleanup?.();
         };
     }, deps); // eslint-disable-line react-hooks/exhaustive-deps
