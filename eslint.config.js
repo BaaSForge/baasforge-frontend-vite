@@ -32,7 +32,7 @@ export default defineConfig([
     rules: {
       'react-refresh/only-export-components': 'off',
       'react-hooks/exhaustive-deps': ['warn', {
-        'additionalHooks': '(useDebouncedEffect)'
+        'additionalHooks': '(useDebouncedEffect|useAsyncEffect)'
       }],
       'no-restricted-imports': [
         'error',

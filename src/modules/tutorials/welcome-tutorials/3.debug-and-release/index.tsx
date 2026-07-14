@@ -72,7 +72,7 @@ export function DebugAndReleaseTutorial() {
     }, [currentStep, goNext]);
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "choose-previous-tutorial-project") return;
 
             const isPreviousProject = await isInPreviousProject();
@@ -141,7 +141,7 @@ export function DebugAndReleaseTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "open-runtimes-page") return;
 
             const isPreviousProject = await isInPreviousProject();
@@ -197,7 +197,7 @@ export function DebugAndReleaseTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "open-runtime-chat-session") return;
 
             const isPreviousProject = await isInPreviousProject();
@@ -256,7 +256,7 @@ export function DebugAndReleaseTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "deploy-to-production") return;
 
             const isPreviousProject = await isInPreviousProject();

@@ -132,12 +132,19 @@ export function WriteAndCallYourApiTutorial() {
                 </>,
             );
         },
-        [currentStep, goNext, mergeTutorialMetadata, appState.isBreadcrumbStickyVisible, appState.isMainSidebarOpen, appState.isProjectSwitchDropdownOpen],
+        [
+            currentStep,
+            goNext,
+            mergeTutorialMetadata,
+            appState.isBreadcrumbStickyVisible,
+            appState.isMainSidebarOpen,
+            appState.isProjectSwitchDropdownOpen,
+        ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "develop-button") return;
 
             const isSubrouteOfProjectShell = isSubRouteOfPage(appState.pathname, ActivePage.PROJECT_SHELL);
@@ -204,7 +211,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "chat-composer-input") return;
 
             if (appState.activePage !== ActivePage.NEW_CHAT) {
@@ -265,7 +272,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "waiting-for-unit-creation") return;
 
             if (appState.activePage !== ActivePage.CHAT) {
@@ -313,7 +320,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "copy-unit-id") return;
 
             if (appState.activePage !== ActivePage.CHAT) {
@@ -358,7 +365,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "open-unit-changes-modal") return;
 
             if (appState.activePage !== ActivePage.CHAT) {
@@ -404,7 +411,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "review-unit-changes-modal") return;
 
             if (appState.activePage !== ActivePage.CHAT) {
@@ -447,7 +454,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "deploy-to-stage") return;
 
             if (appState.activePage !== ActivePage.CHAT) {
@@ -494,7 +501,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "choose-stage-runtime") return;
 
             if (appState.activePage !== ActivePage.CHAT) {
@@ -546,13 +553,14 @@ export function WriteAndCallYourApiTutorial() {
             goTo,
             appState.activePage,
             appState.pathParams,
+            mergeTutorialMetadata,
             loadTutorialMetadata,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "open-release-page") return;
 
             if (appState.activePage !== ActivePage.CHAT) {
@@ -599,7 +607,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "filter-unit-by-id") return;
 
             if (appState.activePage !== ActivePage.RUNTIME_UNITS_RELEASES) {
@@ -661,7 +669,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "call-unit-live-interaction") return;
 
             if (appState.activePage !== ActivePage.RUNTIME_UNITS_RELEASES) {
@@ -719,7 +727,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "start-scalar-http-client") return;
 
             if (appState.activePage !== ActivePage.RUNTIME_UNITS_RELEASES) {
@@ -783,7 +791,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "send-scalar-http-request") return;
 
             if (appState.activePage !== ActivePage.RUNTIME_UNITS_RELEASES) {
@@ -847,7 +855,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "copy-scalar-trace-id") return;
 
             if (appState.activePage !== ActivePage.RUNTIME_UNITS_RELEASES) {
@@ -916,7 +924,7 @@ export function WriteAndCallYourApiTutorial() {
     );
 
     useDebouncedEffect(
-        async () => {
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
             if (currentStep !== "review-scalar-response-body") return;
 
             if (appState.activePage !== ActivePage.RUNTIME_UNITS_RELEASES) {

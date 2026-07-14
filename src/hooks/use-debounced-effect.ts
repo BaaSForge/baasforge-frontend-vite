@@ -17,7 +17,7 @@ export function useDebouncedEffect(
         effectRef.current = effect;
     });
 
-    useAsyncEffect(async (signal) => {
+    useAsyncEffect(async (signal) => { // eslint-disable-line react-hooks/exhaustive-deps
         await new Promise<void>((resolve) => {
             const timeoutId = window.setTimeout(resolve, delay);
 
