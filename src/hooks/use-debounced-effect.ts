@@ -14,14 +14,19 @@ export function useDebouncedEffect(
     deps: React.DependencyList,
     delay: number,
 ) {
+    const effectRef = useRef(effect);
     const cleanupRef = useRef<(() => void) | undefined>(undefined);
+
+    useEffect(() => {
+        effectRef.current = effect;
+    });
 
     useEffect(() => {
         let cancelled = false;
 
         const timeoutId = setTimeout(() => {
             void (async () => {
-                const result = effect();
+                const result = effectRef.current();
 
                 if (!isPromise<void | (() => void)>(result)) {
                     if (!cancelled) {
@@ -44,5 +49,5 @@ export function useDebouncedEffect(
             cleanupRef.current?.();
             cleanupRef.current = undefined;
         };
-    }, [...deps, delay]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [...deps, delay]);
 }

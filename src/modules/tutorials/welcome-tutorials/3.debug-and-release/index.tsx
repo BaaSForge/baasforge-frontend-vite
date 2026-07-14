@@ -302,55 +302,7 @@ export function DebugAndReleaseTutorial() {
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
-
-    useDebouncedEffect(
-        async () => {
-            if (currentStep !== "deploy-to-production") return;
-
-            const isPreviousProject = await isInPreviousProject();
-
-            if (!isPreviousProject) {
-                goTo("choose-previous-tutorial-project");
-                return;
-            }
-
-            if (appState.activePage !== ActivePage.CHAT) {
-                goTo("open-runtime-chat-session");
-                return;
-            }
-
-            const { chatSessionId } = await loadWriteAndCallTutorialMetadata();
-
-            if (appState.pathParams?.conversationId !== chatSessionId) {
-                goTo("open-runtime-chat-session");
-                return;
-            }
-
-            assignLastReleaseControllerProdButtonSpotlightId();
-            setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID);
-
-            setSpotlightContentToRender(
-                <>
-                    <p className="font-medium">Deploy to production</p>
-                    <p className="text-muted-foreground mt-1">
-                        Click the latest release button at the bottom to deploy to the production, note production release is only avaiable when you have released to the stage earlier.
-                    </p>
-                </>,
-            );
-
-            return listenAppEvent(events.PROD_DEPLOY_DONE_EVENT, goNext);
-        },
-        [
-            currentStep,
-            goNext,
-            goTo,
-            appState.activePage,
-            appState.pathParams,
-            loadTutorialMetadata,
-        ],
-        LAYOUT_SETTLE_DEBOUNCE_MS,
-    );
-
+    
     useEffect(() => {
         if (currentStep !== "done") return;
 
