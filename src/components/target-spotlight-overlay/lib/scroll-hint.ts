@@ -65,22 +65,26 @@ function getScrollHintIcon(directions: ScrollAxisDirection[]): ScrollHintIcon {
 function formatScrollHintLabel(icon: ScrollHintIcon): string {
     switch (icon) {
         case "leftTop":
-            return "scroll to left top";
+            return "click to scroll to left top";
         case "rightTop":
-            return "scroll to right top";
+            return "click to scroll to right top";
         case "leftDown":
-            return "scroll to left down";
+            return "click to scroll to left down";
         case "rightDown":
-            return "scroll to right down";
+            return "click to scroll to right down";
         case "up":
-            return "scroll up";
+            return "click to scroll up";
         case "down":
-            return "scroll down";
+            return "click to scroll down";
         case "left":
-            return "scroll left";
+            return "click to scroll left";
         case "right":
-            return "scroll right";
+            return "click to scroll right";
     }
+}
+
+export function scrollTargetIntoView(element: HTMLElement): void {
+    element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 }
 
 export function getScrollHint(rect: DOMRect, viewport: ViewportSize): ScrollHint | null {

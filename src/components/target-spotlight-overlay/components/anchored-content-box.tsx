@@ -13,6 +13,7 @@ type AnchoredContentBoxProps = {
     className?: string;
     hideArrow?: boolean;
     scrollHint?: ScrollHint | null;
+    onScrollToTarget?: () => void;
 };
 
 export function AnchoredContentBox({
@@ -24,6 +25,7 @@ export function AnchoredContentBox({
     className,
     hideArrow = false,
     scrollHint = null,
+    onScrollToTarget,
 }: AnchoredContentBoxProps) {
     return (
         <div
@@ -44,7 +46,11 @@ export function AnchoredContentBox({
                         style={arrowStyle}
                     />
                 )}
-                <SpotlightContentBox className={className} scrollHint={scrollHint} />
+                <SpotlightContentBox
+                    className={className}
+                    scrollHint={scrollHint}
+                    onScrollToTarget={onScrollToTarget}
+                />
             </div>
         </div>
     );

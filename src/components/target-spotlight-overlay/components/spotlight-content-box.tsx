@@ -8,9 +8,10 @@ import { ScrollHint as ScrollHintOverlay } from "./scroll-hint";
 type SpotlightContentBoxProps = {
     className?: string;
     scrollHint?: ScrollHint | null;
+    onScrollToTarget?: () => void;
 };
 
-export function SpotlightContentBox({ className, scrollHint = null }: SpotlightContentBoxProps) {
+export function SpotlightContentBox({ className, scrollHint = null, onScrollToTarget }: SpotlightContentBoxProps) {
     useLayoutEffect(() => {
         notifySpotlightContentHostsMounted();
     });
@@ -24,7 +25,9 @@ export function SpotlightContentBox({ className, scrollHint = null }: SpotlightC
         >
             <div className="h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
             <div className="relative min-h-12">
-                {scrollHint != null ? <ScrollHintOverlay hint={scrollHint} /> : null}
+                {scrollHint != null && onScrollToTarget != null ? (
+                    <ScrollHintOverlay hint={scrollHint} onScrollToTarget={onScrollToTarget} />
+                ) : null}
                 <div id={TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID} />
             </div>
             <div id={TARGET_SPOTLIGHT_OVERLAY_ACTIONS_ID} />

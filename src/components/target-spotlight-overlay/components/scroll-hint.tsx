@@ -38,18 +38,24 @@ const SCROLL_HINT_ICON_ANIMATIONS: Record<ScrollHintIcon, string> = {
 
 type ScrollHintProps = {
     hint: ScrollHintData;
+    onScrollToTarget: () => void;
 };
 
-export function ScrollHint({ hint }: ScrollHintProps) {
+export function ScrollHint({ hint, onScrollToTarget }: ScrollHintProps) {
     const Icon = SCROLL_HINT_ICONS[hint.icon];
 
     return (
-        <div
-            aria-hidden
+        <button
+            type="button"
+            onClick={onScrollToTarget}
+            aria-label={hint.label}
             {...{ [TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE]: "" }}
-            className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center gap-1.5 text-inverse-foreground"
+            className="group absolute inset-0 z-20 flex cursor-pointer items-center justify-center gap-1.5 text-inverse-foreground"
         >
-            <div aria-hidden className="absolute inset-0 bg-inverse/80 backdrop-blur-[2px]" />
+            <div
+                aria-hidden
+                className="absolute inset-0 bg-inverse/80 backdrop-blur-[2px] transition-colors group-hover:bg-inverse/90"
+            />
             <Icon
                 className={cn(
                     "relative z-10 size-4 shrink-0 animate__animated animate__infinite animate__slow",
@@ -58,6 +64,6 @@ export function ScrollHint({ hint }: ScrollHintProps) {
                 aria-hidden
             />
             <span className="relative z-10 text-sm font-medium">{hint.label}</span>
-        </div>
+        </button>
     );
 }

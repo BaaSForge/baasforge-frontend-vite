@@ -24,7 +24,7 @@ import { useElevatedElement } from "./hooks/use-elevated-element";
 import { useTrackedRect } from "./hooks/use-tracked-rect";
 import { useViewportSize } from "./hooks/use-viewport-size";
 import { getBackdropPanels, getCutoutRect } from "./lib/cutout-backdrop";
-import { getScrollHint } from "./lib/scroll-hint";
+import { getScrollHint, scrollTargetIntoView } from "./lib/scroll-hint";
 import { TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE } from "./lib/outside-event";
 import type { TargetSpotlightOverlayPlacement } from "./types";
 
@@ -98,6 +98,7 @@ export function TargetSpotlightOverlay({
                 arrowStyle={arrowStyle}
                 hideArrow={isPinToTop}
                 scrollHint={scrollHint}
+                onScrollToTarget={scrollHint != null ? () => scrollTargetIntoView(target) : undefined}
             />
         </div>,
         document.body,
