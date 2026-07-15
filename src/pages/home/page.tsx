@@ -5,7 +5,7 @@ import { AppLogoSquare } from "@/components/logo/app-logo-square";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Menu, X } from "lucide-react";
-import { type CSSProperties, type RefObject, type TransitionEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { type CSSProperties, type RefObject, type TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router";
 
 type UnitKind = "api" | "workflow" | "queue" | "actor" | "sql" | "graph" | "record" | "object" | "vector" | "common";
@@ -20,8 +20,8 @@ const NAV_LINKS = [
     { href: "#what", id: "product", label: "Pitch", sections: ["what"] },
     { href: "#how", id: "how", label: "Flow", sections: ["how"] },
     { href: "#build", id: "units", label: "Units", sections: ["build"] },
-    { href: "#usecases", id: "use-cases", label: "Ship It", sections: ["usecases"] },
-    { href: "#category", id: "why", label: "Why It Wins", sections: ["category"] },
+    { href: "#usecases", id: "use-cases", label: "Ship", sections: ["usecases"] },
+    { href: "#category", id: "why", label: "Edge", sections: ["category"] },
     { href: "#debug", id: "reliability", label: "No Pager", sections: ["debug"] },
 ] as const;
 type NavId = (typeof NAV_LINKS)[number]["id"];
@@ -387,7 +387,7 @@ function Styles() {
             .bf-steps,.bf-unit-grid{scrollbar-width:none}.bf-steps::-webkit-scrollbar,.bf-unit-grid::-webkit-scrollbar{display:none}
             .bf-unit-grid{display:grid;gap:14px;margin-top:32px}.bf-unit-grid.compute{grid-template-columns:repeat(4,minmax(0,1fr))}.bf-unit-grid.storage{grid-template-columns:repeat(3,minmax(0,1fr))}.bf-unit-card{height:226px;border-radius:var(--radius-xl);outline:1px solid transparent;outline-offset:-1px;transition:opacity .6s cubic-bezier(.16,1,.3,1) var(--bf-unit-delay,0s),transform .45s cubic-bezier(.16,1,.3,1),outline-color .45s ease,box-shadow .45s ease}@media(hover:hover){.bf-unit-card:hover{transform:translateY(-1px) scale(1.03);outline-color:var(--accent-glow);box-shadow:0 10px 22px -18px rgba(var(--glow-rgb),.72),0 0 0 1px rgba(var(--glow-rgb),.16)}}
             .bf-tabs-list{display:inline-flex;width:fit-content;align-items:center;gap:4px;border-bottom:1px solid var(--border);background:transparent;border-radius:0;height:auto;padding:0}.bf-tabs-trigger{display:inline-flex;height:40px;align-items:center;justify-content:center;gap:6px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent!important;box-shadow:none!important;padding:8px 4px;color:var(--muted-foreground);font-size:14px;font-weight:500;white-space:nowrap;transition:color .15s ease,border-color .15s ease}.bf-tabs-trigger:hover{color:var(--foreground)}.bf-tabs-trigger[data-state="active"]{color:var(--foreground);border-bottom-color:var(--foreground);background:transparent!important;box-shadow:none!important}@media(max-width:640px){.bf-tabs-list{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}.bf-tabs-trigger{width:100%!important}}
-            .bf-carousel{position:relative;width:100%;height:380px;overflow:hidden}.bf-carousel-track{position:absolute;top:0;left:0;width:100%;transition:transform .9s cubic-bezier(.65,0,.35,1)}.bf-carousel-item{height:60px;display:flex;align-items:center;font-size:clamp(22px,3vw,32px);font-weight:600;letter-spacing:-.01em;transition:color .8s ease,opacity .8s ease}.bf-moat{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;padding:20px 4px;border-bottom:1px solid var(--border);font-weight:600;transform-origin:left center;transition:background .3s,transform .5s,font-weight .5s}.bf-moat:hover{background:color-mix(in oklch,var(--foreground) 4%,transparent);transform:scale(1.05);font-weight:800}.bf-debug-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}.bf-debug-card{overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--shadow-sm);transition:border-color .3s,box-shadow .3s}.bf-debug-card.live{border-color:var(--foreground);box-shadow:0 0 0 1px rgba(var(--glow-rgb),.15),0 30px 80px -30px rgba(var(--glow-rgb),.2)}.bf-glow{position:absolute;left:50%;bottom:-220px;width:1000px;height:560px;transform:translateX(-50%);background:radial-gradient(ellipse at center,color-mix(in oklch,var(--foreground) 16%,transparent),transparent 62%);pointer-events:none;filter:blur(24px);animation:glowPulse 5s ease-in-out infinite}.bf-footer{position:relative;border-top:1px solid var(--border);padding:38px 0 42px;background:var(--background)}.bf-footer-inner{display:flex;align-items:center;justify-content:space-between;gap:24px}.bf-footer-brand{max-width:420px}.bf-footer-copy{margin:12px 0 0;color:var(--muted-foreground);font-size:13px;line-height:1.65}.bf-footer-mark{color:var(--muted-foreground);font-family:var(--font-mono);font-size:12.5px;line-height:1.4;white-space:nowrap}
+            .bf-carousel{position:relative;width:100%;height:380px;overflow:hidden}.bf-carousel-track{position:absolute;top:0;left:0;width:100%;will-change:transform;transition:transform .9s cubic-bezier(.22,1,.36,1)}.bf-carousel-item{height:60px;display:flex;align-items:center;font-size:clamp(22px,3vw,32px);font-weight:600;letter-spacing:-.01em;transition:color .72s cubic-bezier(.22,1,.36,1),opacity .72s cubic-bezier(.22,1,.36,1)}.bf-moat{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;padding:20px 4px;border-bottom:1px solid var(--border);font-weight:600;transform-origin:left center;transition:background .3s,transform .5s,font-weight .5s}.bf-moat:hover{background:color-mix(in oklch,var(--foreground) 4%,transparent);transform:scale(1.05);font-weight:800}.bf-debug-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}.bf-debug-card{overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--shadow-sm);transition:border-color .3s,box-shadow .3s}.bf-debug-card.live{border-color:var(--foreground);box-shadow:0 0 0 1px rgba(var(--glow-rgb),.15),0 30px 80px -30px rgba(var(--glow-rgb),.2)}.bf-glow{position:absolute;left:50%;bottom:-220px;width:1000px;height:560px;transform:translateX(-50%);background:radial-gradient(ellipse at center,color-mix(in oklch,var(--foreground) 16%,transparent),transparent 62%);pointer-events:none;filter:blur(24px);animation:glowPulse 5s ease-in-out infinite}.bf-footer{position:relative;border-top:1px solid var(--border);padding:38px 0 42px;background:var(--background)}.bf-footer-inner{display:flex;align-items:center;justify-content:space-between;gap:24px}.bf-footer-brand{max-width:420px}.bf-footer-copy{margin:12px 0 0;color:var(--muted-foreground);font-size:13px;line-height:1.65}.bf-footer-mark{color:var(--muted-foreground);font-family:var(--font-mono);font-size:12.5px;line-height:1.4;white-space:nowrap}
             @keyframes blurFocus{from{opacity:0;filter:blur(10px);transform:translateY(18px)}to{opacity:1;filter:blur(0);transform:none}}@keyframes themeIconIn{from{opacity:0;transform:scale(.7) rotate(-90deg);filter:blur(4px)}to{opacity:1;transform:scale(1) rotate(0deg);filter:blur(0)}}@keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}@keyframes ctaPulse{0%{box-shadow:0 0 0 0 oklch(0.9 0.01 260 / .55)}70%{box-shadow:0 0 0 9px oklch(0.9 0.01 260 / 0)}100%{box-shadow:0 0 0 0 oklch(0.9 0.01 260 / 0)}}@keyframes glowPulse{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
             @media(max-width:1024px){.bf-title.wrap{line-height:1.35}.bf-dash-grid{grid-template-columns:1fr;height:auto}.bf-convo{height:500px;border-right:0;border-bottom:1px solid var(--border)}.bf-draft{position:absolute;top:0;right:0;bottom:0;width:min(88vw,380px);z-index:200;align-self:initial;overflow-y:auto;background:var(--card);border-left:1px solid var(--border);transition:transform .5s cubic-bezier(.16,1,.3,1),box-shadow .5s ease}.bf-steps{display:flex;gap:16px;margin-top:40px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.bf-unit-grid.compute,.bf-unit-grid.storage{display:flex;gap:14px;margin-top:18px;margin-left:-14px;margin-right:-14px;overflow-x:auto;padding:14px 14px 22px;scroll-padding-left:14px;scroll-snap-type:x proximity;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.bf-step,.bf-unit-card{min-width:300px;max-width:300px;flex:0 0 300px;scroll-snap-align:start}.bf-unit-card{scroll-snap-stop:always}.bf-step{border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--card);box-shadow:var(--shadow-sm);padding:26px 22px}.bf-steps-line{display:none}.bf-moat{align-items:flex-start;flex-direction:column}}@media(max-width:640px){.bf-container{padding:0 20px}.bf-hero{grid-template-rows:2fr 1fr;min-height:100svh;padding:68px 20px 24px}.bf-hero h1{flex-direction:column;align-items:center;gap:clamp(6px,2.4vw,16px);font-size:clamp(46px,17vw,90px);line-height:.98;white-space:normal}.bf-copy{max-width:100%;font-size:clamp(16px,5vw,22px);line-height:1.45}.bf-down{margin-top:0}.bf-dash{margin-left:-8px;margin-right:-8px}.bf-debug-grid{grid-template-columns:1fr;gap:32px}.bf-footer{padding:34px 0 36px}.bf-footer-inner{align-items:flex-start;flex-direction:column;gap:22px}.bf-footer-brand{max-width:100%}.bf-footer-mark{white-space:normal}}@media(prefers-reduced-motion:reduce){.bf-page *{animation:none!important;transition:none!important}}
         `}</style>
@@ -546,7 +546,7 @@ function What({ visible, compact }: { visible: boolean; compact: boolean }) {
         <section id="what" className="bf-section">
             <div className="bf-container">
                 <div className={`bf-reveal blur ${visible ? "visible" : ""}`}>
-                    <span className="bf-kicker">01 · WHAT IT IS</span>
+                    <span className="bf-kicker">01 · THE PITCH</span>
                     <h2 ref={titleRef} className="bf-title !leading-[1.18]">
                         We built the Backend
                         <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> platform
@@ -675,7 +675,7 @@ function Dashboard({ compact }: { compact: boolean }) {
 function How({ visible }: { visible: boolean }) {
     const stepsRef = useRef<HTMLDivElement | null>(null);
     useStepHoverAnimations(stepsRef);
-    return <section id="how" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">02 · HOW IT WORKS</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">Three steps.</span> <span className="bf-muted whitespace-nowrap">Live in production.</span></h2></div><div ref={stepsRef} className={`bf-steps bf-reveal ${visible ? "visible" : ""}`}><div className="bf-steps-line" />{STEPS.map((step, index) => <div key={step[0]} className="bf-step" data-step-anim><StepSvg index={index} /><div className="mb-4 font-mono text-xl font-bold tracking-[0.02em]">{step[0]}</div><p className="m-0 text-[15.5px] leading-[1.65] text-muted-foreground"><strong className="font-bold text-foreground">{step[1]}</strong> {step[2]}</p></div>)}</div></div></section>;
+    return <section id="how" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">02 · BUILD FLOW</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">Three steps.</span> <span className="bf-muted whitespace-nowrap">Live in production.</span></h2></div><div ref={stepsRef} className={`bf-steps bf-reveal ${visible ? "visible" : ""}`}><div className="bf-steps-line" />{STEPS.map((step, index) => <div key={step[0]} className="bf-step" data-step-anim><StepSvg index={index} /><div className="mb-4 font-mono text-xl font-bold tracking-[0.02em]">{step[0]}</div><p className="m-0 text-[15.5px] leading-[1.65] text-muted-foreground"><strong className="font-bold text-foreground">{step[1]}</strong> {step[2]}</p></div>)}</div></div></section>;
 }
 
 function StepSvg({ index }: { index: number }) {
@@ -700,7 +700,7 @@ function Build({ visible }: { visible: boolean }) {
         <section id="build" className="bf-section">
             <div className="bf-container">
                 <div className={`bf-reveal ${visible ? "visible" : ""}`}>
-                    <span className="bf-kicker">03 · THE CORE PRIMITIVE</span>
+                    <span className="bf-kicker">03 · BACKEND UNITS</span>
                     <h2 className="bf-title wrap">BaaSForge creates your backend <span className="bf-muted">with Units.</span></h2>
                     <p className="mt-[22px] max-w-[620px] text-[17px] leading-[1.6] text-muted-foreground">Based on the backend behavior you describe, BaaSForge intelligently arranges the right units and builds your APIs from these building blocks.</p>
                 </div>
@@ -742,13 +742,72 @@ function UnitCard({ unit, index = 0, opacity = 1 }: { unit: Unit; index?: number
     return <div className="bf-unit-card" style={style}><Card className="h-full shadow-none"><CardContent className="flex h-[176px] flex-col px-6 pb-3"><div className="mb-[18px] flex items-start justify-between"><div className="flex size-[46px] items-center justify-center rounded-md border bg-secondary"><UnitIcon kind={unit.icon} /></div>{unit.status && <Badge variant="secondary" className="rounded-md">{unit.status}</Badge>}</div><h3 className="mb-2 text-[19px] font-semibold tracking-[-.02em]">{unit.title}</h3><p className="m-0 text-[14.5px] leading-[1.55] text-muted-foreground">{unit.desc}</p></CardContent></Card></div>;
 }
 
-function UseCases({ visible, index, jump, onTransitionEnd }: { visible: boolean; index: number; jump: boolean; onTransitionEnd: (event: TransitionEvent<HTMLDivElement>) => void }) {
+function UseCases({ visible }: { visible: boolean }) {
+    const sectionRef = useRef<HTMLElement | null>(null);
+    const resetFrameRef = useRef<number | null>(null);
     const items = useMemo(() => [...PHRASES, ...PHRASES, ...PHRASES], []);
-    return <section id="usecases" className="bf-section"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">04 · WHAT BUILDERS SHIP</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">The top builders use</span> <span className="whitespace-nowrap"><span className="bf-muted">BaaSForge</span> for:</span></h2></div><div className={`bf-carousel mt-11 bf-reveal ${visible ? "visible" : ""}`}><div className="bf-carousel-track" onTransitionEnd={onTransitionEnd} style={{ transform: `translateY(calc(190px - 30px - ${index * 60}px))`, transition: jump ? "none" : undefined }}>{items.map((item, itemIndex) => { const distance = Math.abs(itemIndex - index); const opacity = distance === 0 ? 1 : distance === 1 ? 0.45 : distance === 2 ? 0.22 : 0.14; return <div key={`${item}-${itemIndex}`} className="bf-carousel-item" style={{ opacity, color: distance === 0 ? "var(--foreground)" : "var(--muted-foreground)", transition: jump ? "none" : undefined }}>{item}</div>; })}</div></div></div></section>;
+    const reducedMotion = useMedia("(prefers-reduced-motion: reduce)");
+    const [index, setIndex] = useState(PHRASES.length);
+    const [jump, setJump] = useState(false);
+    const [inView, setInView] = useState(false);
+    const [pageVisible, setPageVisible] = useState(() => typeof document === "undefined" || document.visibilityState === "visible");
+
+    const resetLoop = useCallback(() => {
+        setJump(true);
+        setIndex((current) => (current >= PHRASES.length * 2 ? current - PHRASES.length : current));
+        resetFrameRef.current = requestAnimationFrame(() => {
+            resetFrameRef.current = requestAnimationFrame(() => {
+                setJump(false);
+                resetFrameRef.current = null;
+            });
+        });
+    }, []);
+
+    useEffect(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+        const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: "120px 0px", threshold: 0.08 });
+        observer.observe(section);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        const onVisibilityChange = () => setPageVisible(document.visibilityState === "visible");
+        document.addEventListener("visibilitychange", onVisibilityChange);
+        return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+    }, []);
+
+    useEffect(() => {
+        if (!visible || !inView || !pageVisible || jump) return;
+        const timer = window.setTimeout(() => {
+            setIndex((current) => {
+                const next = current + 1;
+                return reducedMotion && next >= PHRASES.length * 2 ? PHRASES.length : next;
+            });
+        }, 2300);
+        return () => window.clearTimeout(timer);
+    }, [inView, index, jump, pageVisible, reducedMotion, visible]);
+
+    useEffect(() => {
+        if (reducedMotion || jump || index < PHRASES.length * 2) return;
+        const fallback = window.setTimeout(resetLoop, 1050);
+        return () => window.clearTimeout(fallback);
+    }, [index, jump, reducedMotion, resetLoop]);
+
+    useEffect(() => () => {
+        if (resetFrameRef.current !== null) cancelAnimationFrame(resetFrameRef.current);
+    }, []);
+
+    const onTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+        if (event.target !== event.currentTarget || event.propertyName !== "transform" || index < PHRASES.length * 2) return;
+        resetLoop();
+    };
+
+    return <section ref={sectionRef} id="usecases" className="bf-section"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">04 · WHAT BUILDERS SHIP</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">The top builders use</span> <span className="whitespace-nowrap"><span className="bf-muted">BaaSForge</span> for:</span></h2></div><div className={`bf-carousel mt-11 bf-reveal ${visible ? "visible" : ""}`}><div className="bf-carousel-track" onTransitionEnd={onTransitionEnd} style={{ transform: `translateY(calc(190px - 30px - ${index * 60}px))`, transition: jump ? "none" : undefined }}>{items.map((item, itemIndex) => { const distance = Math.abs(itemIndex - index); const opacity = distance === 0 ? 1 : distance === 1 ? 0.45 : distance === 2 ? 0.22 : 0.14; return <div key={`${item}-${itemIndex}`} className="bf-carousel-item" style={{ opacity, color: distance === 0 ? "var(--foreground)" : "var(--muted-foreground)", transition: jump ? "none" : undefined }}>{item}</div>; })}</div></div></div></section>;
 }
 
 function Category({ visible }: { visible: boolean }) {
-    return <section id="category" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">05 · DEFENSIBILITY</span><h2 className="bf-title wrap">Why builders choose <span className="bf-muted">BaaSForge.</span></h2></div><div className={`mt-11 flex flex-col border-t bf-reveal ${visible ? "visible" : ""}`}>{MOATS.map(([title, desc]) => <div key={title} className="bf-moat"><span className="shrink-0 text-[19.5px] tracking-[-.01em]"><span className="mr-2.5 inline-block size-1.5 rounded-full bg-foreground align-middle" />{title}</span><span className="text-[15px] font-normal leading-[1.5] text-muted-foreground">{desc}</span></div>)}</div></div></section>;
+    return <section id="category" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">05 · THE BAASFORGE EDGE</span><h2 className="bf-title wrap">Why builders choose <span className="bf-muted">BaaSForge.</span></h2></div><div className={`mt-11 flex flex-col border-t bf-reveal ${visible ? "visible" : ""}`}>{MOATS.map(([title, desc]) => <div key={title} className="bf-moat"><span className="shrink-0 text-[19.5px] tracking-[-.01em]"><span className="mr-2.5 inline-block size-1.5 rounded-full bg-foreground align-middle" />{title}</span><span className="text-[15px] font-normal leading-[1.5] text-muted-foreground">{desc}</span></div>)}</div></div></section>;
 }
 
 function Debug({ visible }: { visible: boolean }) {
@@ -776,7 +835,7 @@ function Debug({ visible }: { visible: boolean }) {
     const pre = needle === -1 ? text : text.slice(0, needle);
     const mid = needle === -1 ? "" : "charge.worker";
     const post = needle === -1 ? "" : text.slice(needle + mid.length);
-    return <section id="debug" className="bf-section"><div className="bf-container"><div className={`bf-debug-grid bf-reveal ${visible ? "visible" : ""}`}><div><span className="bf-kicker">06 · WHEN THINGS BREAK</span><h2 className="bf-title">Built for your <span className="bf-muted">freedom.</span></h2><p className="mt-[22px] max-w-[620px] text-[17px] leading-[1.6] text-muted-foreground">BaaSForge is the support behind you. Even when things go wrong, it traces production, catches the failure, and clears the mess — before your users ever find out.</p></div><div ref={ref} className={`bf-debug-card ${started ? "live" : ""}`}><div className="flex items-center gap-2 border-b px-4 py-3 font-mono text-xs text-muted-foreground"><span className="size-1.5 rounded-full bg-foreground" style={{ animation: started ? "pulseDot 1.4s ease-in-out infinite" : "none" }} />observability · trace #4471</div><div className="flex flex-col gap-3 p-4"><div className="max-w-[78%] self-end rounded-[12px_12px_2px_12px] bg-foreground px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-background">Why did checkout fail at 14:22?</div><div className="grid max-w-[92%] self-start rounded-[2px_12px_12px_12px] border bg-secondary px-3.5 py-3 font-mono text-[13px] leading-[1.6] text-secondary-foreground"><span aria-hidden="true" className="invisible col-start-1 row-start-1">{DEBUG_TEXT}</span><span className="col-start-1 row-start-1">{pre}<span className="font-semibold text-foreground">{mid}</span>{post}{text.length > 0 && text.length < DEBUG_TEXT.length && <span className="inline-block h-3.5 w-[7px] animate-[blink_1s_steps(2)_infinite] bg-foreground align-[-2px]" />}</span></div></div></div></div></div></section>;
+    return <section id="debug" className="bf-section"><div className="bf-container"><div className={`bf-debug-grid bf-reveal ${visible ? "visible" : ""}`}><div><span className="bf-kicker">06 · NO-PAGER MODE</span><h2 className="bf-title">Built for your <span className="bf-muted">freedom.</span></h2><p className="mt-[22px] max-w-[620px] text-[17px] leading-[1.6] text-muted-foreground">BaaSForge is the support behind you. Even when things go wrong, it traces production, catches the failure, and clears the mess — before your users ever find out.</p></div><div ref={ref} className={`bf-debug-card ${started ? "live" : ""}`}><div className="flex items-center gap-2 border-b px-4 py-3 font-mono text-xs text-muted-foreground"><span className="size-1.5 rounded-full bg-foreground" style={{ animation: started ? "pulseDot 1.4s ease-in-out infinite" : "none" }} />observability · trace #4471</div><div className="flex flex-col gap-3 p-4"><div className="max-w-[78%] self-end rounded-[12px_12px_2px_12px] bg-foreground px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-background">Why did checkout fail at 14:22?</div><div className="grid max-w-[92%] self-start rounded-[2px_12px_12px_12px] border bg-secondary px-3.5 py-3 font-mono text-[13px] leading-[1.6] text-secondary-foreground"><span aria-hidden="true" className="invisible col-start-1 row-start-1">{DEBUG_TEXT}</span><span className="col-start-1 row-start-1">{pre}<span className="font-semibold text-foreground">{mid}</span>{post}{text.length > 0 && text.length < DEBUG_TEXT.length && <span className="inline-block h-3.5 w-[7px] animate-[blink_1s_steps(2)_infinite] bg-foreground align-[-2px]" />}</span></div></div></div></div></div></section>;
 }
 
 function Close() {
@@ -819,22 +878,6 @@ export default function HomePage() {
     const compact = useMedia("(max-width: 1024px)");
     const active = useActiveSection();
     const visible = useReveal(["what", "how", "build", "usecases", "category", "debug"]);
-    const [carousel, setCarousel] = useState(PHRASES.length);
-    const [carouselJump, setCarouselJump] = useState(false);
-    useEffect(() => {
-        const interval = setInterval(() => setCarousel((index) => index + 1), 2200);
-        return () => clearInterval(interval);
-    }, []);
-    const onCarouselTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
-        if (event.propertyName !== "transform") return;
-        setCarousel((index) => {
-            if (index < PHRASES.length * 2) return index;
-            setCarouselJump(true);
-            requestAnimationFrame(() => requestAnimationFrame(() => setCarouselJump(false)));
-            return index - PHRASES.length;
-        });
-    };
-
     return (
         <div className="bf-page midnight">
             <HomePageSeo />
@@ -845,7 +888,7 @@ export default function HomePage() {
                 <What visible={!!visible.what} compact={compact} />
                 <How visible={!!visible.how} />
                 <Build visible={!!visible.build} />
-                <UseCases visible={!!visible.usecases} index={carousel} jump={carouselJump} onTransitionEnd={onCarouselTransitionEnd} />
+                <UseCases visible={!!visible.usecases} />
                 <Category visible={!!visible.category} />
                 <Debug visible={!!visible.debug} />
                 <Close />
