@@ -20,7 +20,6 @@ import {
 import { useAnchoredFloating } from "./hooks/use-anchored-floating";
 import { useElementById } from "./hooks/use-element-by-id";
 import { useElementBySelector } from "./hooks/use-element-by-selector";
-import { useElevatedElement } from "./hooks/use-elevated-element";
 import { useTrackedRect } from "./hooks/use-tracked-rect";
 import { useViewportSize } from "./hooks/use-viewport-size";
 import { getBackdropPanels, getCutoutRect } from "./lib/cutout-backdrop";
@@ -53,8 +52,6 @@ export function TargetSpotlightOverlay({
     const target = targetById ?? targetBySelector;
     const targetRect = useTrackedRect(target, enabled);
     const viewport = useViewportSize(enabled);
-
-    useElevatedElement(target, enabled && !isPinToTop, overlayZIndex);
 
     const { arrowRef, setFloatingRef, floatingStyles, resolvedPlacement, arrowStyle } = useAnchoredFloating(
         target,
