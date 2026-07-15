@@ -1,9 +1,9 @@
 import type { PointerEvent } from "react";
 import type { BackdropPanel } from "../types";
-import { TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS } from "../constants";
+import { TARGET_SPOTLIGHT_OVERLAY_BACKDROP_CLASS, TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS } from "../constants";
 import { TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE } from "../lib/outside-event";
 
-const BACKDROP_PANEL_CLASS = "pointer-events-auto fixed bg-black/55 animate-in fade-in-0 duration-300";
+const BACKDROP_PANEL_CLASS = `pointer-events-auto fixed ${TARGET_SPOTLIGHT_OVERLAY_BACKDROP_CLASS} animate-in fade-in-0 duration-300`;
 
 type CutoutBackdropProps = {
     panels: BackdropPanel[];

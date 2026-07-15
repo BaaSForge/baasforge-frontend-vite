@@ -1,5 +1,6 @@
 import type { CSSProperties, RefObject } from "react";
 import { TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE } from "../lib/outside-event";
+import type { ScrollHint } from "../lib/scroll-hint";
 import { SpotlightContentBox } from "./spotlight-content-box";
 import type { TargetSpotlightOverlayPlacement } from "../types";
 
@@ -11,6 +12,7 @@ type AnchoredContentBoxProps = {
     arrowStyle: CSSProperties;
     className?: string;
     hideArrow?: boolean;
+    scrollHint?: ScrollHint | null;
 };
 
 export function AnchoredContentBox({
@@ -21,6 +23,7 @@ export function AnchoredContentBox({
     arrowStyle,
     className,
     hideArrow = false,
+    scrollHint = null,
 }: AnchoredContentBoxProps) {
     return (
         <div
@@ -41,7 +44,7 @@ export function AnchoredContentBox({
                         style={arrowStyle}
                     />
                 )}
-                <SpotlightContentBox className={className} />
+                <SpotlightContentBox className={className} scrollHint={scrollHint} />
             </div>
         </div>
     );

@@ -24,6 +24,7 @@ import { useElevatedElement } from "./hooks/use-elevated-element";
 import { useTrackedRect } from "./hooks/use-tracked-rect";
 import { useViewportSize } from "./hooks/use-viewport-size";
 import { getBackdropPanels, getCutoutRect } from "./lib/cutout-backdrop";
+import { getScrollHint } from "./lib/scroll-hint";
 import { TARGET_SPOTLIGHT_OVERLAY_ATTRIBUTE } from "./lib/outside-event";
 import type { TargetSpotlightOverlayPlacement } from "./types";
 
@@ -69,6 +70,7 @@ export function TargetSpotlightOverlay({
             ? getCutoutRect(targetRect, isPinToTop ? 0 : targetRingPaddingPx, viewport)
             : null;
     const backdropPanels = !isPinToTop && cutout != null ? getBackdropPanels(cutout, viewport) : [];
+    const scrollHint = !isPinToTop && targetRect != null ? getScrollHint(targetRect, viewport) : null;
 
     return createPortal(
         <div
@@ -95,6 +97,7 @@ export function TargetSpotlightOverlay({
                 arrowRef={arrowRef}
                 arrowStyle={arrowStyle}
                 hideArrow={isPinToTop}
+                scrollHint={scrollHint}
             />
         </div>,
         document.body,

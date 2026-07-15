@@ -8,6 +8,8 @@ export const TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS = "none" as const;
 
 export const TARGET_SPOTLIGHT_OVERLAY_BACKDROP_POINTER_EVENTS = "auto" as const;
 
+export const TARGET_SPOTLIGHT_OVERLAY_BACKDROP_CLASS = "bg-black/55";
+
 export const DEFAULT_TARGET_RING_PADDING_PX = 6;
 
 export const TARGET_SPOTLIGHT_OVERLAY_CONTENT_ID = "target-spotlight-overlay-content";
