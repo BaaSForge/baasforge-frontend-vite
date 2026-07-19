@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && npm run lint && vite build",
+    "build": "tsc -b && npm run lint && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && node scripts/prerender-home.mjs",
     "lint": "eslint . --max-warnings 0",
     "lint:strict": "npm run lint",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "preview": "vite preview",
+    "preview:ssr": "serve -l 1201 ./dist",
+    "docker:build": "docker build --build-arg APP_ENV=${APP_ENV:-STAGE} -t local-baasforge-frontend .",
+    "docker:run": "docker run --rm -p 1210:80 -v \"$PWD/nginx.local.conf:/etc/nginx/conf.d/default.conf:ro\" local-baasforge-frontend",
     "get-api-ts-types": "swagger-typescript-api generate -p https://stage.api.baal.ai/swagger/v1/swagger.json -o ./src/types/ -n backend-api.ts",
     "test": "tsc --noEmit",
     "prepare": "husky"
@@ -113,6 +116,7 @@
     "@types/leaflet": "^1.9.21",
     "@types/mark.js": "^8.11.12",
     "@types/node": "^24.10.1",
+    "serve": "^14.2.6",
     "@types/qs": "^6.14.0",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",

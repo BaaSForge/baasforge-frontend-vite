@@ -11,6 +11,7 @@ import ProjectUsagePage from "./dashboard/projects/[projectId]/usage/page";
 import ProjectRuntimePage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/page";
 import ProjectRuntimeUnitsAndReleasesPage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/units-releases/page";
 import ProjectUnitsAndReleasesPage from "./dashboard/projects/[projectId]/units-and-releases/page";
+import HomePage from "./home/page";
 import { RootLayout } from "./root-layout";
 import { ActivePage, buildRouteExports, toRouterRoutes, type AppRouteObject, type PagePaths } from "./routes";
 
@@ -32,7 +33,6 @@ const ProjectSettingsLayout = lazy(() => import("./dashboard/projects/[projectId
 const ProjectSettingsInfoPage = lazy(() => import("./dashboard/projects/[projectId]/settings/info/page"));
 const ProjectSettingsDeletePage = lazy(() => import("./dashboard/projects/[projectId]/settings/delete/page"));
 const ProjectConversationsPage = lazy(() => import("./dashboard/projects/[projectId]/conversations/page"));
-const HomePage = lazy(() => import("./home/page"));
 const LoginPage = lazy(() => import("./login/page"));
 const DocumentationSharePage = lazy(() => import("./projects/documentation/[projectId]/share/[releaseId]/page"));
 

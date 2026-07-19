@@ -49,6 +49,9 @@ export default defineConfig(({ mode }) => {
         preview: {
             port: 1200,
         },
+        ssr: {
+            noExternal: ["react-router", "react-router/dom"],
+        },
         build: {
             chunkSizeWarningLimit: 500,
             rollupOptions: {

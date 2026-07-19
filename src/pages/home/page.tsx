@@ -5,7 +5,7 @@ import { AppLogoSquare } from "@/components/logo/app-logo-square";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Menu, X } from "lucide-react";
-import { type CSSProperties, type RefObject, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type RefObject, type TransitionEvent, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router";
 
 type UnitKind = "api" | "workflow" | "queue" | "actor" | "sql" | "graph" | "record" | "object" | "vector" | "common";
@@ -90,15 +90,15 @@ const DASH_UNITS = [
 type Unit = { title: string; desc: string; icon: UnitKind; status?: string };
 
 function useMedia(query: string) {
-    const [matches, setMatches] = useState(() => (typeof matchMedia === "undefined" ? false : matchMedia(query).matches));
-    useEffect(() => {
-        if (typeof matchMedia === "undefined") return;
-        const media = matchMedia(query);
-        const onChange = (event: MediaQueryListEvent) => setMatches(event.matches);
-        media.addEventListener("change", onChange);
-        return () => media.removeEventListener("change", onChange);
-    }, [query]);
-    return matches;
+    return useSyncExternalStore(
+        (onStoreChange) => {
+            const media = matchMedia(query);
+            media.addEventListener("change", onStoreChange);
+            return () => media.removeEventListener("change", onStoreChange);
+        },
+        () => matchMedia(query).matches,
+        () => false,
+    );
 }
 
 function HomePageSeo() {
@@ -115,7 +115,7 @@ function HomePageSeo() {
         };
         const description = upsertMeta('meta[name="description"]', "name", "description", HOME_DESCRIPTION);
         const openGraphUrl = upsertMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
-        const twitterCard = upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary");
+        const twitterCard = upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
         const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]') ?? document.head.appendChild(document.createElement("link"));
         canonical.rel = "canonical";
         canonical.href = canonicalUrl;
@@ -149,7 +149,7 @@ function HomePageSeo() {
             canonical.remove();
             openGraphUrl.remove();
             description.content = HOME_DESCRIPTION;
-            twitterCard.content = "summary";
+            twitterCard.content = "summary_large_image";
         };
     }, []);
     return null;
@@ -187,7 +187,7 @@ function useActiveSection() {
 }
 
 function useReveal(ids: string[]) {
-    const [visible, setVisible] = useState<Record<string, boolean>>({});
+    const [visible, setVisible] = useState<Record<string, boolean>>(() => Object.fromEntries(ids.map((id) => [id, true])));
     const key = ids.join(",");
     useEffect(() => {
         const observer = new IntersectionObserver(

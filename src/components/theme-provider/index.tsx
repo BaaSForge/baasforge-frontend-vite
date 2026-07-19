@@ -14,7 +14,10 @@ function normalizeStoredTheme(raw: string | null, fallback: Theme): Theme {
 }
 
 export function ThemeProvider({ children, defaultTheme = "system", storageKey, ...props }: ThemeProviderProps) {
-    const [theme, setTheme] = useState<Theme>(() => normalizeStoredTheme(localStorage.getItem(storageKey), defaultTheme));
+    const [theme, setTheme] = useState<Theme>(() => {
+        if (typeof window === "undefined") return defaultTheme;
+        return normalizeStoredTheme(localStorage.getItem(storageKey), defaultTheme);
+    });
 
     useEffect(() => {
         const root = window.document.documentElement;
