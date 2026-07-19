@@ -1,10 +1,17 @@
 export type TargetSpotlightOverlayPlacement = "top" | "bottom" | "left" | "right";
 
+export type TargetSpotlightZIndexLayout = "main" | "layout" | "modal" | "alert" | "toast";
+
 export type PinTopStatus = "info" | "warning" | "error" | "success";
 
 export type PinToTopOptions = {
     hidePinCircles?: boolean;
     status?: PinTopStatus | null;
+};
+
+export type SetTargetSpotlightOverlayOptions = {
+    placement?: TargetSpotlightOverlayPlacement;
+    zIndexLayout?: TargetSpotlightZIndexLayout;
 };
 
 export type ViewportSize = {

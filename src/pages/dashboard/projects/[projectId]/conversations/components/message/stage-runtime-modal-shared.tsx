@@ -35,6 +35,7 @@ import { PlatformEnvironmentType } from "@/modules/project/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight, FlaskConical, Rocket } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { appStateStore } from "@/modules/app-state";
 import { emitStageDeployModalOpened } from "@/services/events";
 import { APP_STAGE_DEPLOY_MODAL_ID } from "./release-controller-tutorial-targets";
 
@@ -230,9 +231,9 @@ export function StageRuntimePickerModal({
 
     const prevSwapping = useRef<string | null>(null);
     useEffect(() => {
-        if (open) {
-            emitStageDeployModalOpened();
-        }
+        if (!open) return;
+        appStateStore.getState().setStageDeployModalOpen(true);
+        emitStageDeployModalOpened();
     }, [open]);
 
     useEffect(() => {
@@ -250,7 +251,13 @@ export function StageRuntimePickerModal({
 
     return (
         <>
-            <CentricModal open={open} onOpenChange={onOpenChange}>
+            <CentricModal
+                open={open}
+                onOpenChange={(next) => {
+                    if (!next) appStateStore.getState().setStageDeployModalOpen(false);
+                    onOpenChange(next);
+                }}
+            >
                 <CentricModalContent id={APP_STAGE_DEPLOY_MODAL_ID} className="sm:max-w-md">
                     <CentricModalHeader>
                         <CentricModalTitle>{title}</CentricModalTitle>

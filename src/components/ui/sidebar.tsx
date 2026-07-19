@@ -104,12 +104,11 @@ function Sidebar({
 
     if (isMobile) {
         return (
-            <Sheet open={openMobile} onOpenChange={setOpenMobile} modal={false} {...props}>
+            <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
                 <SheetContent
                     data-sidebar="sidebar"
                     data-slot="sidebar"
                     data-mobile="true"
-                    overlayClassName="pointer-events-none"
                     className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
                     style={
                         {

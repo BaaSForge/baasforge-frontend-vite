@@ -30,9 +30,9 @@ export function ReleaseStageRuntimeModal({
                 stage_project_runtime_id: runtimeId,
             }),
         onSuccess: async (_, runtimeId) => {
-            await invalidateQueriesAfterRuntimeDeploy(queryClient, projectId!, PlatformEnvironmentType.stage);
             emitStageDeployOnRuntimeDone(runtimeId);
             onOpenChange(false);
+            await invalidateQueriesAfterRuntimeDeploy(queryClient, projectId!, PlatformEnvironmentType.stage);
             toast.success("Deploying has started.");
         },
         onError: () => {

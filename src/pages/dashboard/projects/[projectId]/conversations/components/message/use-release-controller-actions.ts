@@ -61,9 +61,9 @@ export function useReleaseControllerActions(
             await postRuntimeDeployStageRelease(projectId, runtimeId, body);
         },
         onSuccess: async (_, runtimeId) => {
-            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.stage);
             emitStageDeployOnRuntimeDone(runtimeId);
             setStageDeployRuntimePickOpen(false);
+            await invalidateAfterRuntimeDeploy(PlatformEnvironmentType.stage);
             toast.success("Stage deploy has started.");
         },
         onError: () => {

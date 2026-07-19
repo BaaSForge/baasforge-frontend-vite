@@ -13,6 +13,7 @@ export type AppState = {
     isSecondarySidebarOpen: boolean;
     isAnyModalOpen: boolean;
     isAnyAlertOpen: boolean;
+    isStageDeployModalOpen: boolean;
     activePage: (typeof ActivePage)[keyof typeof ActivePage];
     pathParams: PathParams;
     pathname: string;
@@ -37,6 +38,7 @@ type AppStateActions = {
     setUserMenuDropdownOpen: (open: boolean) => void;
     setUnitLiveInteractionOpen: (unitId: string, open: boolean) => void;
     setScalarClientModalOpenUnitId: (unitId: string | null) => void;
+    setStageDeployModalOpen: (open: boolean) => void;
 };
 
 export type AppStateStore = AppState & AppStateActions;
@@ -130,6 +132,7 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
     isSecondarySidebarOpen: false,
     isAnyModalOpen: false,
     isAnyAlertOpen: false,
+    isStageDeployModalOpen: false,
     activePage: ActivePage.UNKNOWN,
     pathParams: {},
     pathname: "",
@@ -224,5 +227,9 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
     setScalarClientModalOpenUnitId: (unitId) => {
         if (get().scalarClientModalOpenUnitId === unitId) return;
         set({ scalarClientModalOpenUnitId: unitId });
+    },
+    setStageDeployModalOpen: (open) => {
+        if (get().isStageDeployModalOpen === open) return;
+        set({ isStageDeployModalOpen: open });
     },
 }));

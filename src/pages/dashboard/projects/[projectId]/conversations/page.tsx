@@ -288,11 +288,9 @@ function ProjectConversationsContent() {
 
     useEffect(() => {
         return listenAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, (event) => {
-            const text = event.detail.text;
-            applyComposerPrefill({ text });
-            requestAnimationFrame(() => messageInputRef.current?.focus());
+            applyComposerPrefill({ text: event.detail.text });
         });
-    }, [applyComposerPrefill, messageInputRef]);
+    }, [applyComposerPrefill]);
 
     const runTruncateBelowMessage = useCallback(
         async (message: ChatMessageWithDeliveryStatus) => {

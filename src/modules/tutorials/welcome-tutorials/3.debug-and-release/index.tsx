@@ -172,7 +172,7 @@ export function DebugAndReleaseTutorial() {
                 }
             }
 
-            setTargetSpotlightOverlayElementId(APP_RUNTIMES_MENU_BUTTON_ID);
+            setTargetSpotlightOverlayElementId(APP_RUNTIMES_MENU_BUTTON_ID, { zIndexLayout: 'layout' });
 
             setSpotlightContentToRender(
                 <>

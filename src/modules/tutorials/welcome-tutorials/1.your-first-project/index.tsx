@@ -68,7 +68,7 @@ export function YourFirstProjectTutorial() {
                 ? scrollWindowByWhenSettled({ top: -10 })
                 : undefined;
 
-            setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID);
+            setTargetSpotlightOverlayElementId(APP_NOTIFICATION_INBOX_BUTTON_ID, { zIndexLayout: 'layout' });
 
             setSpotlightContentToRender(
                 <>
@@ -96,7 +96,7 @@ export function YourFirstProjectTutorial() {
                 ? scrollWindowByWhenSettled({ top: -10 })
                 : undefined;
 
-            setTargetSpotlightOverlayElementId(APP_THEME_SWITCHER_BUTTON_ID);
+            setTargetSpotlightOverlayElementId(APP_THEME_SWITCHER_BUTTON_ID, { zIndexLayout: 'layout' });
 
             setSpotlightContentToRender(
                 <>
@@ -129,7 +129,7 @@ export function YourFirstProjectTutorial() {
                     ? scrollWindowByWhenSettled({ top: -10 })
                     : undefined;
 
-                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
+                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID, { zIndexLayout: 'layout' });
 
                 setSpotlightContentToRender(
                     <>
@@ -151,7 +151,7 @@ export function YourFirstProjectTutorial() {
                 return listenAppEvent(events.USER_MENU_CLOSED_EVENT, goNext);
             }
 
-            setTargetSpotlightOverlayElementId(APP_USER_MENU_BUTTON_ID);
+            setTargetSpotlightOverlayElementId(APP_USER_MENU_BUTTON_ID, { zIndexLayout: 'layout' });
 
             setSpotlightContentToRender(
                 <>
@@ -175,7 +175,7 @@ export function YourFirstProjectTutorial() {
                     ? scrollWindowByWhenSettled({ top: -10 })
                     : undefined;
 
-                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
+                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID, { zIndexLayout: 'layout' });
 
                 setSpotlightContentToRender(
                     <>
@@ -192,7 +192,7 @@ export function YourFirstProjectTutorial() {
             }
 
             if (appState.isProjectSwitchDropdownOpen) {
-                setTargetSpotlightOverlayElementId(APP_CREATE_PROJECT_LINK_ID);
+                setTargetSpotlightOverlayElementId(APP_CREATE_PROJECT_LINK_ID, { zIndexLayout: 'layout' });
                 elevateTargetSpotlightZIndex();
 
                 setSpotlightContentToRender(
@@ -212,7 +212,7 @@ export function YourFirstProjectTutorial() {
                 };
             }
 
-            setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
+            setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID, { zIndexLayout: 'layout' });
 
             setSpotlightContentToRender(
                 <>

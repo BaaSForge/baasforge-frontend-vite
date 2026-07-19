@@ -50,8 +50,3 @@ export function assignLastReleaseControllerProdReleaseLinkSpotlightId(): boolean
         APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID,
     );
 }
-
-export function isStageDeployModalOpen(): boolean {
-    const el = document.getElementById(APP_STAGE_DEPLOY_MODAL_ID);
-    return el?.getAttribute("data-state") === "open";
-}

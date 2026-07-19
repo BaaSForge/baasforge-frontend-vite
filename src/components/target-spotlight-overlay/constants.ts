@@ -1,8 +1,14 @@
-/** Matches `--z-index-spotlight` in `global.css` — above modals/sidebars, below poppers and alerts. */
-export const TARGET_SPOTLIGHT_OVERLAY_Z_INDEX = 51;
+import type { TargetSpotlightZIndexLayout } from "./types";
 
-/** Above `--z-index-popper` so the spotlight can sit over open dropdowns during tutorials. */
-export const TARGET_SPOTLIGHT_OVERLAY_ELEVATED_Z_INDEX = 53;
+export const TARGET_SPOTLIGHT_OVERLAY_Z_INDEX_BY_LAYOUT = {
+    main: 25,
+    layout: 45,
+    modal: 52,
+    alert: 55,
+    toast: 105,
+} as const satisfies Record<TargetSpotlightZIndexLayout, number>;
+
+export const DEFAULT_TARGET_SPOTLIGHT_Z_INDEX_LAYOUT: TargetSpotlightZIndexLayout = "main";
 
 export const TARGET_SPOTLIGHT_OVERLAY_ROOT_POINTER_EVENTS = "none" as const;
 

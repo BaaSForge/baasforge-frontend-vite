@@ -5,6 +5,7 @@ import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/lib/utils";
 import { absorbNextClick } from "@/lib/absorb-next-click";
+import { TOAST_PORTAL_ID } from "@/lib/toast-portal";
 import { useOverlayOpenRegistration } from "@/modules/app-state/use-overlay-open-registration";
 
 function Drawer({ open, onOpenChange, ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
@@ -48,6 +49,11 @@ function DrawerContent({
     dismissOnOverlayClick?: boolean;
 }) {
     const handlePointerDownOutside: React.ComponentProps<typeof DrawerPrimitive.Content>["onPointerDownOutside"] = (e) => {
+        if (e.target instanceof Element && e.target.closest(`#${TOAST_PORTAL_ID}`)) {
+            e.preventDefault();
+            onPointerDownOutsideProp?.(e);
+            return;
+        }
         if (dismissOnOverlayClick) absorbNextClick();
         onPointerDownOutsideProp?.(e);
     };

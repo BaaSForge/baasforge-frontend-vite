@@ -6,6 +6,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { absorbNextClick } from "@/lib/absorb-next-click";
+import { TOAST_PORTAL_ID } from "@/lib/toast-portal";
 import { useOverlayOpenRegistration } from "@/modules/app-state/use-overlay-open-registration";
 
 function Dialog({ open, onOpenChange, ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -51,6 +52,11 @@ function DialogContent({
     dismissOnOverlayClick?: boolean;
 }) {
     const handlePointerDownOutside: React.ComponentProps<typeof DialogPrimitive.Content>["onPointerDownOutside"] = (e) => {
+        if (e.target instanceof Element && e.target.closest(`#${TOAST_PORTAL_ID}`)) {
+            e.preventDefault();
+            onPointerDownOutsideProp?.(e);
+            return;
+        }
         if (dismissOnOverlayClick) absorbNextClick();
         onPointerDownOutsideProp?.(e);
     };

@@ -9,7 +9,7 @@ import { events, listenAppEvent, triggerAppEvent } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { useDebouncedEffect } from "@/hooks/use-debounced-effect";
 import { scrollWindowByWhenSettled } from "@/lib/dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
@@ -34,6 +34,26 @@ export type WriteAndCallExtra = {
 const TUTORIAL_HELLO_WORLD_PROMPT = "Write an api which returns a simple `hello world`";
 
 const LAYOUT_SETTLE_DEBOUNCE_MS = 250;
+
+function FillPromptButton() {
+    const [filled, setFilled] = useState(false);
+
+    return (
+        <Button
+            type="button"
+            variant="default"
+            size="xs"
+            className="ml-auto"
+            disabled={filled}
+            onClick={() => {
+                triggerAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, { text: TUTORIAL_HELLO_WORLD_PROMPT });
+                setFilled(true);
+            }}
+        >
+            Fill the prompt
+        </Button>
+    );
+}
 
 export const TUTORIAL_ID = "write-and-call-your-api" as const;
 
@@ -92,7 +112,7 @@ export function WriteAndCallYourApiTutorial() {
                     ? scrollWindowByWhenSettled({ top: -10 })
                     : undefined;
 
-                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
+                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID, { zIndexLayout: 'layout' });
 
                 setSpotlightContentToRender(
                     <>
@@ -120,7 +140,7 @@ export function WriteAndCallYourApiTutorial() {
                 });
             }
 
-            setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID);
+            setTargetSpotlightOverlayElementId(APP_PROJECTS_MENU_BUTTON_ID, { zIndexLayout: 'layout' });
 
             setSpotlightContentToRender(
                 <>
@@ -166,7 +186,7 @@ export function WriteAndCallYourApiTutorial() {
                     ? scrollWindowByWhenSettled({ top: -10 })
                     : undefined;
 
-                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID);
+                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID, { zIndexLayout: 'layout' });
 
                 setSpotlightContentToRender(
                     <>
@@ -182,7 +202,7 @@ export function WriteAndCallYourApiTutorial() {
                 }
             }
 
-            setTargetSpotlightOverlayElementId(APP_DEVELOP_BUTTON_ID);
+            setTargetSpotlightOverlayElementId(APP_DEVELOP_BUTTON_ID, { zIndexLayout: 'layout' });
 
             setSpotlightContentToRender(
                 <>
@@ -239,17 +259,7 @@ export function WriteAndCallYourApiTutorial() {
                         {TUTORIAL_HELLO_WORLD_PROMPT}
                     </blockquote>
                 </>,
-                <Button
-                    type="button"
-                    variant="default"
-                    size="xs"
-                    className={"ml-auto"}
-                    onClick={() => {
-                        triggerAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, { text: TUTORIAL_HELLO_WORLD_PROMPT });
-                    }}
-                >
-                    Fill the prompt
-                </Button>,
+                <FillPromptButton />,
             );
 
             return listenAppEvent(events.CHAT_SESSION_CREATED_EVENT, (event) => {
@@ -521,14 +531,12 @@ export function WriteAndCallYourApiTutorial() {
                 return;
             }
 
-            const modalElement = document.getElementById(APP_STAGE_DEPLOY_MODAL_ID);
-
-            if (modalElement === null) {
+            if (!appState.isStageDeployModalOpen) {
                 goTo("deploy-to-stage");
                 return;
             }
 
-            setTargetSpotlightOverlayElementId(APP_STAGE_DEPLOY_MODAL_ID);
+            setTargetSpotlightOverlayElementId(APP_STAGE_DEPLOY_MODAL_ID, { zIndexLayout: 'modal' });
 
             setSpotlightContentToRender(
                 <>
@@ -553,6 +561,7 @@ export function WriteAndCallYourApiTutorial() {
             goTo,
             appState.activePage,
             appState.pathParams,
+            appState.isStageDeployModalOpen,
             mergeTutorialMetadata,
             loadTutorialMetadata,
         ],
@@ -828,7 +837,7 @@ export function WriteAndCallYourApiTutorial() {
                 return;
             }
 
-            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarSendButtonId(firstUnitId));
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarSendButtonId(firstUnitId), { zIndexLayout: 'toast' });
 
             setSpotlightContentToRender(
                 <>
@@ -892,7 +901,7 @@ export function WriteAndCallYourApiTutorial() {
                 return;
             }
 
-            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarResponseHeadersButtonId(firstUnitId));
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarResponseHeadersButtonId(firstUnitId), { zIndexLayout: 'toast' });
 
             setSpotlightContentToRender(
                 <>
@@ -961,7 +970,7 @@ export function WriteAndCallYourApiTutorial() {
                 return;
             }
 
-            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarResponseBodySectionId(firstUnitId));
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarResponseBodySectionId(firstUnitId), { zIndexLayout: 'toast' });
 
             setSpotlightContentToRender(
                 <>

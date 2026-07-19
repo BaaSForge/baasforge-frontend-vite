@@ -25,4 +25,13 @@ export {
 export { SpotlightContent } from "./components/spotlight-content";
 export { TargetSpotlightOverlay } from "./target-spotlight-overlay";
 export { TargetSpotlightOverlayGlobalHost } from "./target-spotlight-overlay-global-host";
-export type { TargetSpotlightOverlayPlacement, CutoutRect, BackdropPanel, PinTopStatus, PinToTopOptions } from "./types";
+export type {
+    TargetSpotlightOverlayPlacement,
+    TargetSpotlightZIndexLayout,
+    CutoutRect,
+    BackdropPanel,
+    PinTopStatus,
+    PinToTopOptions,
+    SetTargetSpotlightOverlayOptions,
+} from "./types";
+

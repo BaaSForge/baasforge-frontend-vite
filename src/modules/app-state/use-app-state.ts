@@ -17,6 +17,7 @@ export function useAppState(): AppState {
             isSecondarySidebarOpen: state.isSecondarySidebarOpen,
             isAnyModalOpen: state.isAnyModalOpen,
             isAnyAlertOpen: state.isAnyAlertOpen,
+            isStageDeployModalOpen: state.isStageDeployModalOpen,
             activePage: state.activePage,
             pathParams: state.pathParams,
             pathname: state.pathname,
