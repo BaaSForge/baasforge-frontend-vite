@@ -24,13 +24,18 @@ COPY package-lock.json /usr/src/app
 
 RUN npm install
 
+COPY docs-site/package.json docs-site/package-lock.json* /usr/src/app/docs-site/
+RUN npm install --prefix docs-site
+
 COPY . /usr/src/app
 
 RUN npm run build
+RUN npm run build --prefix docs-site
 
 FROM nginx:1.29.1-alpine3.22-slim
 
 COPY --from=builder /usr/src/app/dist /usr/share/nginx/html
+COPY --from=builder /usr/src/app/docs-site/out /usr/share/nginx/html/docs
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

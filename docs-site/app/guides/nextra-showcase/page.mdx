@@ -1,0 +1,153 @@
+import { PlaygroundDemo } from '@/components/playground-demo'
+import {
+  Bleed,
+  Callout,
+  Cards,
+  Collapse,
+  Details,
+  FileTree,
+  Steps,
+  Summary,
+  Tabs,
+} from 'nextra/components'
+
+export const metadata = {
+  title: 'Nextra Showcase',
+}
+
+# Nextra Components Showcase
+
+This page demonstrates the Nextra docs theme and components available in
+the BaaSForge documentation site. Breadcrumb, table of contents,
+pagination, and last updated are provided automatically by the theme
+wrapper.
+
+## Theme features
+
+- **Breadcrumb** — shown above the page title
+- **Table of contents** — right sidebar from page headings
+- **Copy page** — button above content copies this page as Markdown
+- **Pagination** — previous/next links at the bottom
+- **Last updated** — bottom-right timestamp on every page
+
+## Typography
+
+### Heading levels
+
+#### Heading 4
+
+##### Heading 5
+
+###### Heading 6
+
+Body text with [internal link](/getting-started) and [external link](https://nextra.site).
+
+## Links and lists
+
+Unordered list:
+
+- First item
+- Second item
+
+Ordered list:
+
+1. Step one
+2. Step two
+
+## Callouts
+
+<Callout>Default callout for tips and helpful notes.</Callout>
+<Callout type="info">Info callout for neutral context.</Callout>
+<Callout type="warning">Warning callout for caution.</Callout>
+<Callout type="error">Error callout for critical issues.</Callout>
+<Callout type="important">Important callout for emphasis.</Callout>
+
+## Code blocks
+
+```typescript copy filename="example.ts"
+export function greet(name: string) {
+  return `Hello, ${name}!`
+}
+```
+
+## Tables
+
+| Component | Package |
+| --- | --- |
+| Callout | nextra/components |
+| Tabs | nextra/components |
+
+## Tabs
+
+<Tabs items={['Preview', 'Code']}>
+  <Tabs.Tab>
+    Tab panels switch content without leaving the page.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash copy
+    npm install nextra nextra-theme-docs
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Steps
+
+<Steps>
+### Install dependencies
+
+Add Nextra and the docs theme to your project.
+
+### Configure Next.js
+
+Wrap your config with the Nextra plugin and set `output: 'export'`.
+
+### Ship docs
+
+Build static pages and serve them from your reverse proxy.
+</Steps>
+
+## Cards
+
+<Cards>
+  <Cards.Card title="Getting Started" href="/getting-started" />
+  <Cards.Card title="Guides" href="/guides" />
+  <Cards.Card title="API Reference" href="/api-reference" />
+</Cards>
+
+## File tree
+
+<FileTree>
+  <FileTree.Folder name="docs-site" defaultOpen>
+    <FileTree.Folder name="app" defaultOpen>
+      <FileTree.File name="layout.tsx" />
+      <FileTree.File name="page.mdx" />
+    </FileTree.Folder>
+    <FileTree.File name="package.json" />
+  </FileTree.Folder>
+</FileTree>
+
+## Details and collapse
+
+<Details>
+  <Summary>Click to expand details</Summary>
+  Details hide optional content until the reader opens them.
+</Details>
+
+<Collapse isOpen>
+  Collapse animates height when toggled from a parent control.
+</Collapse>
+
+## Bleed
+
+<Bleed full={false}>
+  Bleed lets content break out of the normal content column width.
+</Bleed>
+
+## Blockquote
+
+> Blockquotes style quoted text and can be combined with GitHub-style
+> alerts in MDX.
+
+## Playground
+
+<PlaygroundDemo />

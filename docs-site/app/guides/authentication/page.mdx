@@ -1,0 +1,22 @@
+export const metadata = {
+  title: 'Authentication',
+}
+
+# Authentication
+
+This guide covers how to protect endpoints and issue credentials for
+client apps.
+
+## API tokens
+
+Create tokens from the dashboard Tokens page. Send them as a Bearer
+header on each request.
+
+```txt copy
+Authorization: Bearer <your-token>
+```
+
+## Share links
+
+Public documentation share links use a separate secret and do not grant
+write access to your project.

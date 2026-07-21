@@ -1,0 +1,47 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.rootNudge {
+  transform: translateY(-3px);
+}
+
+.link {
+  display: inline-flex;
+  flex-shrink: 0;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.link:hover {
+  opacity: 0.75;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: flex-end;
+  line-height: 1;
+}
+
+.name {
+  font-size: 1.125rem;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.name:hover {
+  opacity: 0.75;
+}
+
+.suffix {
+  font-size: 0.875rem;
+  margin-left: 0.375rem;
+  cursor: default;
+  color: light-dark(rgb(107 114 128), rgb(156 163 175));
+  pointer-events: none;
+}

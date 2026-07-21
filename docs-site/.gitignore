@@ -1,0 +1,7 @@
+node_modules
+.next
+out
+.preview
+_pagefind
+*.log
+.DS_Store

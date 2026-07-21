@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig([
-  globalIgnores(['dist', 'src/components/ui/**']),
+  globalIgnores(['dist', 'docs-site/**', 'src/components/ui/**']),
   {
     files: ['**/*.{ts,tsx}'],
     ignores: ['src/components/ui/**'],

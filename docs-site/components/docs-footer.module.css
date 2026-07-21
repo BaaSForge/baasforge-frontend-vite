@@ -1,0 +1,60 @@
+.inner {
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  gap: 2.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+    gap: 2rem 3rem;
+  }
+}
+
+.brand {
+  max-width: 22rem;
+}
+
+.tagline {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.groupTitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: light-dark(rgb(17 24 39), rgb(243 244 246));
+}
+
+.linkList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.link:hover {
+  color: light-dark(rgb(17 24 39), rgb(243 244 246));
+}
+
+.copyright {
+  margin: 2.5rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid light-dark(rgb(229 231 235), rgb(38 38 38));
+  font-size: 0.75rem;
+}

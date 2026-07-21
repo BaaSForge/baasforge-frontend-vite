@@ -43,6 +43,11 @@ export default defineConfig(({ mode }) => {
                         secure: false,
                         ws: true,
                     },
+                    "/docs": {
+                        target: "http://localhost:1220",
+                        changeOrigin: true,
+                        ws: true,
+                    },
                 },
             }),
         },

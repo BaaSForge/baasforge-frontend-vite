@@ -398,7 +398,8 @@ function Magnetic({ to, variant, children }: { to: string; variant: "primary" | 
     const ref = useRef<HTMLAnchorElement | null>(null);
     useMagnet(ref);
     const className = `bf-pill ${variant}`;
-    return to.startsWith("/") ? (
+    const isSpaRoute = to.startsWith("/") && !to.startsWith("/docs");
+    return isSpaRoute ? (
         <Link ref={ref} to={to} className={className}>
             {children}
         </Link>
@@ -522,7 +523,7 @@ function Hero() {
                     from prompt to production.
                 </p>
                 <div className="bf-actions">
-                    <Magnetic to="#" variant="secondary">
+                    <Magnetic to="/docs" variant="secondary">
                         Go to docs
                     </Magnetic>
                     <Magnetic to={LOGIN_PATH} variant="primary">
@@ -780,7 +781,7 @@ function Debug({ visible }: { visible: boolean }) {
 }
 
 function Close() {
-    return <section className="relative overflow-hidden border-t py-[130px] text-center"><div className="bf-glow" /><div className="bf-container relative"><h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold tracking-[-.05em] text-transparent">Build Backend.</h2><div className="mt-[34px] flex justify-center gap-3.5"><Magnetic to="#" variant="secondary">Go to docs</Magnetic><Magnetic to={LOGIN_PATH} variant="primary">Start building</Magnetic></div><p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Free credit included, No payment info needed</p></div></section>;
+    return <section className="relative overflow-hidden border-t py-[130px] text-center"><div className="bf-glow" /><div className="bf-container relative"><h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold tracking-[-.05em] text-transparent">Build Backend.</h2><div className="mt-[34px] flex justify-center gap-3.5"><Magnetic to="/docs" variant="secondary">Go to docs</Magnetic><Magnetic to={LOGIN_PATH} variant="primary">Start building</Magnetic></div><p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Free credit included, No payment info needed</p></div></section>;
 }
 
 function Footer() {
