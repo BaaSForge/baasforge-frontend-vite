@@ -1,0 +1,392 @@
+html:has(.bf-not-found) {
+    scrollbar-gutter: stable;
+}
+
+.bf-not-found {
+    --background: oklch(0.17 0.032 264);
+    --foreground: oklch(0.96 0.012 260);
+    --primary: oklch(0.74 0.15 260);
+    --primary-foreground: oklch(0.15 0.03 264);
+    --secondary: oklch(0.27 0.038 264);
+    --secondary-foreground: oklch(0.96 0.012 260);
+    --muted-foreground: oklch(0.67 0.03 260);
+    --accent: oklch(0.31 0.045 264);
+    --accent-foreground: oklch(0.96 0.012 260);
+    --border: oklch(1 0 0 / 12%);
+    --ring: oklch(0.56 0.06 260);
+    --selection: var(--primary);
+    --selection-foreground: var(--primary-foreground);
+    --motion-response: cubic-bezier(0.22, 1, 0.36, 1);
+
+    min-height: 100svh;
+    overflow: hidden;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-optical-sizing: auto;
+}
+
+.bf-not-found ::selection {
+    background: var(--selection);
+    color: var(--selection-foreground);
+}
+
+.bf-not-found-nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 10;
+    height: 68px;
+    background: oklch(0.17 0.03 263 / 70%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+}
+
+.bf-not-found-nav-inner {
+    display: flex;
+    width: 100%;
+    max-width: 1080px;
+    height: 68px;
+    margin: 0 auto;
+    padding: 0 28px;
+    align-items: center;
+}
+
+.bf-not-found-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 9999px;
+    color: var(--foreground);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.5;
+    text-decoration: none;
+    transition:
+        opacity 160ms cubic-bezier(0.23, 1, 0.32, 1),
+        transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.bf-not-found-main {
+    display: flex;
+    min-height: 100svh;
+    padding: 104px 24px 64px;
+    align-items: center;
+    justify-content: center;
+}
+
+.bf-not-found-content {
+    display: flex;
+    width: min(100%, 1120px);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.bf-not-found-number-wrap {
+    position: relative;
+    display: grid;
+    max-width: 100%;
+    place-items: center;
+}
+
+.bf-not-found-title,
+.bf-not-found-tear {
+    color: var(--foreground);
+    font-size: clamp(104px, 27vw, 310px);
+    font-weight: 700;
+    letter-spacing: -0.07em;
+    line-height: 0.92;
+    white-space: nowrap;
+}
+
+.bf-not-found-title {
+    display: flex;
+    margin: 0;
+    padding-right: 0.07em;
+    transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.bf-not-found-glyph {
+    display: inline-block;
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(18px);
+    animation: bf-not-found-enter 600ms cubic-bezier(0.16, 1, 0.3, 1) var(--glyph-delay) forwards;
+}
+
+.bf-not-found-signal {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    overflow: hidden;
+    place-items: center;
+    pointer-events: none;
+}
+
+.bf-not-found-tear {
+    position: absolute;
+    padding-right: 0.07em;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bf-not-found-tear-left {
+    color: var(--primary);
+    animation: bf-not-found-tear-left 520ms steps(1, end) 820ms both;
+}
+
+.bf-not-found-tear-right {
+    color: var(--foreground);
+    animation: bf-not-found-tear-right 520ms steps(1, end) 820ms both;
+}
+
+.bf-not-found-copy {
+    max-width: 680px;
+    margin: clamp(22px, 4vh, 42px) 0 0;
+    color: var(--muted-foreground);
+    font-size: clamp(18px, 2.1vw, 25px);
+    line-height: 1.5;
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(18px);
+    animation: bf-not-found-enter 600ms cubic-bezier(0.16, 1, 0.3, 1) 240ms forwards;
+}
+
+.bf-not-found-copy strong {
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.bf-not-found-actions {
+    display: flex;
+    margin-top: 30px;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: bf-not-found-actions-enter 420ms cubic-bezier(0.23, 1, 0.32, 1) 420ms forwards;
+}
+
+.bf-not-found-button {
+    min-width: 144px;
+    padding-inline: 26px;
+    touch-action: manipulation;
+    transition:
+        color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1),
+        transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.bf-not-found-brand:active,
+.bf-not-found-button:active {
+    transform: scale(0.97);
+}
+
+.bf-not-found-brand:focus-visible,
+.bf-not-found-button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .bf-not-found-brand:hover {
+        opacity: 0.78;
+    }
+
+}
+
+@media (max-width: 640px) {
+    .bf-not-found-main {
+        padding: 92px 20px 40px;
+    }
+
+    .bf-not-found-title,
+    .bf-not-found-tear {
+        font-size: clamp(104px, 34vw, 174px);
+    }
+
+    .bf-not-found-copy {
+        max-width: 320px;
+        font-size: clamp(17px, 5.1vw, 20px);
+    }
+
+    .bf-not-found-actions {
+        width: min(100%, 360px);
+        flex-wrap: wrap;
+    }
+
+    .bf-not-found-button {
+        flex: 1 1 150px;
+    }
+}
+
+@media (max-width: 359px) {
+    .bf-not-found-actions {
+        flex-direction: column;
+    }
+
+    .bf-not-found-button {
+        width: 100%;
+        flex: none;
+    }
+}
+
+@media (max-height: 650px) {
+    .bf-not-found-main {
+        padding-top: 88px;
+        padding-bottom: 28px;
+    }
+
+    .bf-not-found-copy {
+        margin-top: 16px;
+    }
+
+    .bf-not-found-actions {
+        margin-top: 20px;
+    }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .bf-not-found-nav {
+        background: var(--background);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bf-not-found-glyph,
+    .bf-not-found-copy,
+    .bf-not-found-actions {
+        filter: none;
+        transform: none;
+        animation: bf-not-found-fade 200ms ease forwards;
+    }
+
+    .bf-not-found-glyph {
+        animation-delay: var(--glyph-delay);
+    }
+
+    .bf-not-found-copy,
+    .bf-not-found-actions {
+        animation-delay: 0ms;
+    }
+
+    .bf-not-found-tear {
+        display: none;
+        animation: none;
+    }
+
+    .bf-not-found-brand,
+    .bf-not-found-title,
+    .bf-not-found-button {
+        transition:
+            opacity 120ms ease,
+            background-color 120ms ease,
+            color 120ms ease;
+    }
+
+    .bf-not-found-brand:active,
+    .bf-not-found-button:active {
+        transform: none;
+    }
+}
+
+@keyframes bf-not-found-enter {
+    from {
+        opacity: 0;
+        filter: blur(10px);
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: none;
+    }
+}
+
+@keyframes bf-not-found-actions-enter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes bf-not-found-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bf-not-found-tear-left {
+    0%,
+    14%,
+    100% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+        clip-path: inset(48% 0 44% 0);
+    }
+    15%,
+    27% {
+        opacity: 0.78;
+        transform: translate3d(-18px, 0, 0);
+        clip-path: inset(48% 0 44% 0);
+    }
+    28%,
+    48% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+    }
+    49%,
+    62% {
+        opacity: 0.52;
+        transform: translate3d(12px, 0, 0);
+        clip-path: inset(20% 0 70% 0);
+    }
+    63%,
+    100% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes bf-not-found-tear-right {
+    0%,
+    31%,
+    100% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+        clip-path: inset(68% 0 22% 0);
+    }
+    32%,
+    46% {
+        opacity: 0.42;
+        transform: translate3d(14px, 0, 0);
+    }
+    47%,
+    70% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+    }
+    71%,
+    83% {
+        opacity: 0.65;
+        transform: translate3d(-10px, 0, 0);
+        clip-path: inset(34% 0 58% 0);
+    }
+    84%,
+    100% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+    }
+}

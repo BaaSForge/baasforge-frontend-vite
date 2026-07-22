@@ -120,9 +120,14 @@ function HomePageSeo() {
         canonical.rel = "canonical";
         canonical.href = canonicalUrl;
 
-        const schema = document.createElement("script");
-        schema.id = "baasforge-homepage-schema";
-        schema.type = "application/ld+json";
+        const existingSchema = document.querySelector<HTMLScriptElement>("#baasforge-homepage-schema");
+        const schema = existingSchema ?? document.createElement("script");
+        const previousSchemaText = schema.text;
+        if (!existingSchema) {
+            schema.id = "baasforge-homepage-schema";
+            schema.type = "application/ld+json";
+            document.head.appendChild(schema);
+        }
         schema.text = JSON.stringify({
             "@context": "https://schema.org",
             "@graph": [
@@ -141,11 +146,10 @@ function HomePageSeo() {
                 },
             ],
         });
-        document.head.appendChild(schema);
-
         return () => {
             document.title = previousTitle;
-            schema.remove();
+            if (existingSchema) schema.text = previousSchemaText;
+            else schema.remove();
             canonical.remove();
             openGraphUrl.remove();
             description.content = HOME_DESCRIPTION;
