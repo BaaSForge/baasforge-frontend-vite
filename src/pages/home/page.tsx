@@ -453,7 +453,7 @@ function Magnetic({ to, variant, children }: { to: string; variant: "primary" | 
     useMagnet(ref);
     const className = `bf-pill ${variant}`;
     return to.startsWith("/") ? (
-        <Link ref={ref} to={to} className={className}>
+        <Link ref={ref} to={to} className={className} reloadDocument>
             {children}
         </Link>
     ) : (
@@ -517,10 +517,10 @@ function Navbar({ active, compact }: { active: NavId; compact: boolean }) {
                     <div className="flex items-center gap-3.5">
                         <div className="hidden items-center gap-3.5 xl:flex">
                             <Button variant="ghost" size="sm" className="rounded-full" asChild>
-                                <Link to={LOGIN_PATH}>Sign in</Link>
+                                <Link to={LOGIN_PATH} reloadDocument>Sign in</Link>
                             </Button>
                             <Button size="sm" className="rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
-                                <Link to={LOGIN_PATH}>Start building</Link>
+                                <Link to={LOGIN_PATH} reloadDocument>Start building</Link>
                             </Button>
                         </div>
                         <button ref={menuButtonRef} type="button" onClick={() => setMenuOpen((open) => !open)} className="bf-menu-toggle flex size-10 items-center justify-center rounded-md text-foreground hover:bg-foreground/8 xl:hidden" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} data-open={menuOpen}>
@@ -548,10 +548,10 @@ function Navbar({ active, compact }: { active: NavId; compact: boolean }) {
                     </nav>
                     <div className="mx-auto mt-auto grid w-full max-w-[1080px] grid-cols-2 gap-3 px-7 pb-7 pt-8">
                         <Button variant="outline" className="h-12 rounded-full" asChild>
-                            <Link className="bf-mobile-action" to={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Sign in</Link>
+                            <Link className="bf-mobile-action" to={LOGIN_PATH} reloadDocument onClick={() => setMenuOpen(false)}>Sign in</Link>
                         </Button>
                         <Button className="h-12 rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
-                            <Link className="bf-mobile-action" to={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Start building</Link>
+                            <Link className="bf-mobile-action" to={LOGIN_PATH} reloadDocument onClick={() => setMenuOpen(false)}>Start building</Link>
                         </Button>
                     </div>
                 </div>
@@ -945,7 +945,7 @@ function Footer() {
                             <div>
                                 <h2 className="bf-footer-column-title">Resources</h2>
                                 <ul className="bf-footer-list">
-                                    <li><Link className="bf-footer-link" to="/docs">Docs</Link></li>
+                                    <li><Link className="bf-footer-link" to="/docs" reloadDocument>Docs</Link></li>
                                 </ul>
                             </div>
                             <div>
@@ -964,8 +964,8 @@ function Footer() {
                     <div className="bf-footer-meta">
                         <span className="bf-footer-mark">© 2026 BaaSForge</span>
                         <div className="bf-footer-legal">
-                            <Link className="bf-footer-link" to="/privacy-policy">Privacy Policy</Link>
-                            <Link className="bf-footer-link" to="/terms-of-service">Terms of Service</Link>
+                            <Link className="bf-footer-link" to="/privacy-policy" reloadDocument>Privacy Policy</Link>
+                            <Link className="bf-footer-link" to="/terms-of-service" reloadDocument>Terms of Service</Link>
                         </div>
                     </div>
                 </div>

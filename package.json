@@ -10,7 +10,7 @@
     "lint:strict": "npm run lint",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "preview": "vite preview",
-    "preview:ssr": "serve -l 1201 ./dist",
+    "preview:ssr": "serve -s -l 1201 ./dist",
     "docker:build": "docker build --build-arg APP_ENV=${APP_ENV:-STAGE} -t local-baasforge-frontend .",
     "docker:run": "docker run --rm -p 1210:80 -v \"$PWD/nginx.local.conf:/etc/nginx/conf.d/default.conf:ro\" local-baasforge-frontend",
     "get-api-ts-types": "swagger-typescript-api generate -p https://stage.api.baal.ai/swagger/v1/swagger.json -o ./src/types/ -n backend-api.ts",
