@@ -6,6 +6,7 @@ export default function TermsOfUsePage() {
         <LegalPage
             canonicalPath="/terms-of-use"
             content={termsOfUse}
+            dateModified="2026-07-23"
             description="Review the terms governing access to and use of BaaSForge services."
             title="Terms of Use"
         />

@@ -6,6 +6,7 @@ export default function PrivacyPolicyPage() {
         <LegalPage
             canonicalPath="/privacy-policy"
             content={privacyPolicy}
+            dateModified="2026-07-23"
             description="Learn how BaaSForge collects, uses, protects, and retains personal data."
             title="Privacy Policy"
         />

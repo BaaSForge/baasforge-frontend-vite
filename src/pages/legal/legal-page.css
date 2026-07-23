@@ -86,15 +86,15 @@ html:has(.bf-legal) {
 }
 
 .bf-legal-document {
-    width: min(100%, 760px);
+    width: min(100%, 720px);
     margin: 0 auto;
-    color: var(--muted-foreground);
-    font-size: 15px;
-    line-height: 1.8;
+    color: color-mix(in oklch, var(--foreground) 72%, var(--muted-foreground));
+    font-size: 16px;
+    line-height: 1.78;
 }
 
 .bf-legal-document h1 {
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--foreground);
     font-size: clamp(38px, 7vw, 64px);
     font-weight: 650;
@@ -102,14 +102,32 @@ html:has(.bf-legal) {
     line-height: 1.02;
 }
 
-.bf-legal-document h1 + p {
-    margin: 0 0 64px;
+.bf-legal-document-header {
+    margin-bottom: 56px;
+}
+
+.bf-legal-document-meta {
+    display: flex;
+    margin-top: 18px;
+    align-items: center;
+    gap: 10px;
     color: var(--muted-foreground);
+    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
     font-size: 13px;
+    line-height: 1.5;
+}
+
+.bf-legal-document-meta-dot {
+    width: 3px;
+    height: 3px;
+    flex: 0 0 3px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.65;
 }
 
 .bf-legal-document h2 {
-    margin: 64px 0 18px;
+    margin: 58px 0 16px;
     padding-top: 8px;
     color: var(--foreground);
     font-size: clamp(21px, 3vw, 27px);
@@ -120,7 +138,7 @@ html:has(.bf-legal) {
 
 .bf-legal-document p,
 .bf-legal-document ul {
-    margin: 0 0 20px;
+    margin: 0 0 22px;
 }
 
 .bf-legal-document ul {
@@ -128,8 +146,12 @@ html:has(.bf-legal) {
 }
 
 .bf-legal-document li {
-    margin: 8px 0;
+    margin: 10px 0;
     padding-left: 4px;
+}
+
+.bf-legal-document li::marker {
+    color: var(--muted-foreground);
 }
 
 .bf-legal-document strong {
@@ -143,15 +165,19 @@ html:has(.bf-legal) {
 }
 
 .bf-legal-document hr {
-    height: 1px;
-    margin: 56px 0;
-    border: 0;
-    background: var(--border);
+    display: none;
+}
+
+.bf-legal-table-wrap {
+    width: 100%;
+    margin: 28px 0 34px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 8px;
 }
 
 .bf-legal-document table {
     width: 100%;
-    margin: 28px 0 34px;
     border-collapse: collapse;
     font-size: 13px;
     line-height: 1.55;
@@ -160,9 +186,18 @@ html:has(.bf-legal) {
 .bf-legal-document th,
 .bf-legal-document td {
     padding: 12px 14px;
-    border: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
     text-align: left;
     vertical-align: top;
+}
+
+.bf-legal-document tr > :last-child {
+    border-right: 0;
+}
+
+.bf-legal-document tbody tr:last-child td {
+    border-bottom: 0;
 }
 
 .bf-legal-document th {
@@ -196,23 +231,39 @@ html:has(.bf-legal) {
     }
 
     .bf-legal-document {
-        font-size: 14.5px;
-        line-height: 1.75;
+        font-size: 15.5px;
+        line-height: 1.72;
     }
 
-    .bf-legal-document h1 + p {
+    .bf-legal-document-header {
         margin-bottom: 48px;
     }
 
     .bf-legal-document h2 {
-        margin-top: 50px;
+        margin-top: 46px;
+    }
+
+    .bf-legal-table-wrap {
+        max-width: 100%;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
     }
 
     .bf-legal-document table {
-        display: block;
-        max-width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        min-width: 620px;
+    }
+}
+
+@media (max-width: 380px) {
+    .bf-legal-document-meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .bf-legal-document-meta-dot {
+        display: none;
     }
 }
 
