@@ -965,7 +965,7 @@ function Footer() {
                         <span className="bf-footer-mark">© 2026 BaaSForge</span>
                         <div className="bf-footer-legal">
                             <Link className="bf-footer-link" to="/privacy-policy" reloadDocument>Privacy Policy</Link>
-                            <Link className="bf-footer-link" to="/terms-of-service" reloadDocument>Terms of Service</Link>
+                            <Link className="bf-footer-link" to="/terms-of-use" reloadDocument>Terms of Use</Link>
                         </div>
                     </div>
                 </div>

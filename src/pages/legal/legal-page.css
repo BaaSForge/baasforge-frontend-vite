@@ -1,0 +1,225 @@
+html:has(.bf-legal) {
+    scrollbar-gutter: stable;
+    background: oklch(0.17 0.032 264);
+}
+
+.bf-legal {
+    --background: oklch(0.17 0.032 264);
+    --foreground: oklch(0.96 0.012 260);
+    --muted-foreground: oklch(0.67 0.03 260);
+    --border: oklch(1 0 0 / 12%);
+    --primary: oklch(0.74 0.15 260);
+    --selection: var(--primary);
+    --selection-foreground: oklch(0.15 0.03 264);
+
+    min-height: 100svh;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-optical-sizing: auto;
+}
+
+.bf-legal ::selection {
+    background: var(--selection);
+    color: var(--selection-foreground);
+}
+
+.bf-legal-nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 10;
+    height: 68px;
+    background: oklch(0.17 0.03 263 / 70%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+}
+
+.bf-legal-nav-inner {
+    display: flex;
+    width: 100%;
+    max-width: 1080px;
+    height: 68px;
+    margin: 0 auto;
+    padding: 0 28px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bf-legal-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 9999px;
+    color: var(--foreground);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+}
+
+.bf-legal-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bf-legal-links a {
+    border-radius: 9999px;
+    padding: 8px 13px;
+    color: var(--muted-foreground);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+        color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+        background-color 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.bf-legal-links a[aria-current="page"] {
+    background: oklch(1 0 0 / 7%);
+    color: var(--foreground);
+}
+
+.bf-legal-main {
+    width: 100%;
+    padding: 132px 28px 112px;
+}
+
+.bf-legal-document {
+    width: min(100%, 760px);
+    margin: 0 auto;
+    color: var(--muted-foreground);
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.bf-legal-document h1 {
+    margin: 0 0 12px;
+    color: var(--foreground);
+    font-size: clamp(38px, 7vw, 64px);
+    font-weight: 650;
+    letter-spacing: -0.045em;
+    line-height: 1.02;
+}
+
+.bf-legal-document h1 + p {
+    margin: 0 0 64px;
+    color: var(--muted-foreground);
+    font-size: 13px;
+}
+
+.bf-legal-document h2 {
+    margin: 64px 0 18px;
+    padding-top: 8px;
+    color: var(--foreground);
+    font-size: clamp(21px, 3vw, 27px);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+}
+
+.bf-legal-document p,
+.bf-legal-document ul {
+    margin: 0 0 20px;
+}
+
+.bf-legal-document ul {
+    padding-left: 22px;
+}
+
+.bf-legal-document li {
+    margin: 8px 0;
+    padding-left: 4px;
+}
+
+.bf-legal-document strong {
+    color: color-mix(in oklch, var(--foreground) 92%, var(--muted-foreground));
+    font-weight: 600;
+}
+
+.bf-legal-document a {
+    color: var(--foreground);
+    text-underline-offset: 4px;
+}
+
+.bf-legal-document hr {
+    height: 1px;
+    margin: 56px 0;
+    border: 0;
+    background: var(--border);
+}
+
+.bf-legal-document table {
+    width: 100%;
+    margin: 28px 0 34px;
+    border-collapse: collapse;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.bf-legal-document th,
+.bf-legal-document td {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.bf-legal-document th {
+    background: oklch(1 0 0 / 5%);
+    color: var(--foreground);
+    font-weight: 600;
+}
+
+.bf-legal-document > :last-child {
+    margin-bottom: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .bf-legal-brand:hover,
+    .bf-legal-links a:hover {
+        color: var(--foreground);
+    }
+
+    .bf-legal-links a:hover {
+        background: oklch(1 0 0 / 5%);
+    }
+}
+
+@media (max-width: 640px) {
+    .bf-legal-nav-inner {
+        padding: 0 20px;
+    }
+
+    .bf-legal-main {
+        padding: 112px 20px 80px;
+    }
+
+    .bf-legal-document {
+        font-size: 14.5px;
+        line-height: 1.75;
+    }
+
+    .bf-legal-document h1 + p {
+        margin-bottom: 48px;
+    }
+
+    .bf-legal-document h2 {
+        margin-top: 50px;
+    }
+
+    .bf-legal-document table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .bf-legal-nav {
+        background: var(--background);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
