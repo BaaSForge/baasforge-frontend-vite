@@ -59,9 +59,13 @@ const meta = {
     },
   },
   guides: {
+    display: 'hidden',
     title: 'Guides',
     items: {
-      'nextra-showcase': 'Nextra Showcase',
+      'nextra-showcase': {
+        title: 'Nextra Showcase',
+        display: 'hidden',
+      },
     },
   },
 }

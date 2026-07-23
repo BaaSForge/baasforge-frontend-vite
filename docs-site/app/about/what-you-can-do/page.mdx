@@ -1,5 +1,369 @@
+import {
+  Callout,
+  Cards,
+  Details,
+  Steps,
+  Summary,
+  Tabs,
+} from 'nextra/components'
+
 export const metadata = {
   title: 'What You Can Do With',
 }
 
-# What You Can Do With
+# What You Can Do With BaaSForge?
+
+<Callout type="warning">
+  BaaSForge is **not limited** to the scenarios on this page. These are
+  examples only — you can build many more backends by composing the same
+  unit types for your own product.
+</Callout>
+
+BaaSForge turns backend behaviors into typed **units** — APIs, durable
+workflows, queue workers, and stateful actors — that compose into full
+application architectures. You describe the outcome; the platform owns
+the durability, isolation, and runtime.
+
+<Callout type="important">
+  Every scenario on this page can be built by **explaining it to
+  BaaSForge AI** in project chat. The multi-agent pipeline plans the
+  architecture, writes the units, validates them (typecheck → lint →
+  rules), and prepares a stage release — you do not hand-assemble the
+  stack.
+</Callout>
+
+<Callout type="info">
+  Scenarios below are ordered by what is **hard or awkward on Supabase
+  and Temporal alone**: multi-unit compositions first (process + entity +
+  jobs + HTTP in one app), then workflow-heavy, actor-heavy, and
+  job-pipeline cases. No code — just what you can ship.
+</Callout>
+
+## Building blocks (what you compose)
+
+| Unit | Best for |
+| --- | --- |
+| **API** | Public / private HTTP entry points |
+| **Workflow** | Multi-step, crash-safe processes (days-long sleeps, human waits, compensation) |
+| **Queue worker** | High-volume jobs with retry, DLQ, batch, concurrency, rate limits |
+| **Actor** | Per-entity durable state with sequential, race-free handlers |
+
+### Read the unit definitions first
+
+Before continuing, skim the unit type docs below — the scenarios on this
+page assume you know what each unit does.
+
+<div style={{ marginTop: '1rem' }}>
+  <Cards>
+    <Cards.Card title="API Unit" href="/platform/unit-types/api-unit" />
+    <Cards.Card title="Workflow Unit" href="/platform/unit-types/workflow-unit" />
+    <Cards.Card title="Queue Worker" href="/platform/unit-types/queue-worker-unit" />
+    <Cards.Card title="Actor Unit" href="/platform/unit-types/actor-unit" />
+  </Cards>
+</div>
+
+---
+
+## Why these scenarios are hard elsewhere
+
+| Platform | Gap for the scenarios below |
+| --- | --- |
+| **Supabase** | Strong at exposed Postgres + Edge Functions — weak at durable multi-step orchestration, human-in-the-loop waits, and race-free per-entity compute without DIY locking |
+| **Temporal** | Best-in-class workflows — you still wire HTTP gateways, job queues, entity state, structure, and ops yourself |
+| **BaaSForge** | Same app gets **workflow + worker + actor + API** as first-class units, managed runtimes, and AI that scaffolds the whole graph |
+
+---
+
+## Multi-pattern scenarios (hardest elsewhere)
+
+These need **more than one unit type** working together. That is where
+BaaSForge pulls away from “just Postgres” or “just a workflow engine.”
+
+<Tabs items={['Commerce & marketplaces', 'Fintech & billing', 'SaaS & ops', 'Realtime & entities', 'AI & automation']}>
+  <Tabs.Tab>
+
+### Commerce & marketplaces
+
+1. **End-to-end order fulfillment** — Checkout API starts a durable
+   workflow (charge → reserve inventory → ship). Failure runs
+   compensation. Cart and order lifecycle live in actors; receipt /
+   warehouse emails go through queue workers.
+2. **Marketplace escrow** — Workflow holds funds until delivery
+   confirmation (promise / timeout). Seller and listing state are
+   actors; payout and dispute notifications are queued jobs.
+3. **Flash-sale inventory** — Actor per SKU for race-free stock.
+   Checkout workflow coordinates payment + reservation. Burst
+   notifications and webhooks fan out via rate-limited workers.
+4. **Returns & refunds saga** — Nested workflows: parent order calls
+   child refund / restock workflows; actors track return status;
+   workers push carrier and customer updates.
+5. **Supplier-gated shipping** — Workflow suspends up to days for
+   supplier confirmation; webhook / dashboard resolves the wait;
+   workers dispatch labels when ready.
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+### Fintech & billing
+
+6. **Money transfer with compensation** — Debit / credit / ledger as
+   durable steps with automatic rollback on partial failure; account
+   balances or holds modeled as actors; settlement batches as workers.
+7. **Subscription + dunning** — Trial → charge → failed payment →
+   sleep/retry on day 3 / 7 / 14 → downgrade. Subscription state in an
+   actor; invoice and dunning emails via workers; customer portal via
+   APIs.
+8. **KYC / AML approval gate** — Workflow suspends until a compliance
+   officer acts (or times out). Application entity is an actor; document
+   OCR and watchlist checks are queued jobs.
+9. **Payout / disbursement runs** — Parent workflow fans out child
+   payout workflows; workers handle bank retries and DLQ for permanent
+   failures; merchant wallet actors enforce sequential updates.
+10. **Chargeback & dispute desk** — Actor owns dispute state machine;
+    workflow orchestrates evidence collection windows; workers sync with
+    processors and notify agents.
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+### SaaS & ops
+
+11. **Tenant provisioning over days** — Workflow: create tenant → wait
+    for DNS / webhook → configure integrations → sleep for propagation
+    checks. Tenant actor holds configuration; workers provision cloud
+    resources with concurrency caps.
+12. **Multi-step onboarding checklist** — API collects steps; workflow
+    waits for each external completion; actor tracks progress; workers
+    send nudges on schedules inside the process.
+13. **Partner integration rollout** — Nested workflows per partner;
+    actor per integration connection; workers for rate-limited third-party
+    sync with DLQ and alerts.
+14. **Incident / runbook automation** — Alert API starts a workflow that
+    pages humans (promise), runs remediation steps, and queues side
+    jobs; service health can be an actor per service.
+15. **License & entitlement lifecycle** — Actor per customer license;
+    renew / revoke workflows with compensation; workers push updates to
+    edge caches and email.
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+### Realtime & entities
+
+16. **Shopping cart with abandon recovery** — Actor per cart (add /
+    remove / checkout) with alarms for abandon; checkout starts a
+    fulfillment workflow; workers send recovery campaigns.
+17. **Game lobby / match session** — Actor per room (join, ready,
+    score) with sequential messages; matchmaking jobs on a queue; APIs
+    for clients; post-match rewards as a short workflow.
+18. **IoT device twin fleet** — Actor per device for desired / reported
+    state; provisioning workflow for enroll + certify; telemetry
+    ingest and alerting as workers (batch + rate limits).
+19. **Support ticket desk** — Ticket actor as a state machine; workflow
+    for SLA timers and escalation waits; workers for classification and
+    outbound email.
+20. **Collaborative resource lock** — Actor per resource for lease /
+    heartbeat / release; APIs for clients; timeout cleanup via actor
+    alarms (no row-lock races).
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+### AI & automation
+
+21. **Multi-tool LLM agent run** — Each tool call is a durable workflow
+    step (crash-safe, no duplicate side effects); expensive fan-out work
+    goes to workers; session or conversation state can be an actor.
+22. **Human-reviewed AI pipeline** — Model draft via worker → workflow
+    waits for editor approval → publish step; content entity as actor.
+23. **Document processing plant** — Ingest API enqueues OCR / extract
+    jobs (batch, concurrency); workflow stitches results and waits on
+    missing pages; case actor holds status.
+24. **Fraud hold on checkout** — Scoring worker runs async; workflow
+    holds fulfillment until risk clears or analyst resolves; user risk
+    profile as actor.
+25. **Campaign orchestration** — Workflow sequences channels over days;
+    per-recipient send workers with rate limits and DLQ; campaign actor
+    for live metrics / pause / resume.
+
+  </Tabs.Tab>
+</Tabs>
+
+<Callout>
+  Pattern to notice: **API** for entry, **workflow** for the long process,
+  **actor** for the living entity, **queue worker** for scale-out side
+  effects. That combo is the BaaSForge default — and what you usually
+  assemble from three or more products elsewhere.
+</Callout>
+
+---
+
+## Workflow-led scenarios
+
+Durable orchestration alone (Temporal-class), still simpler as a managed
+unit next to your APIs and jobs.
+
+- Order / payment / fulfillment pipelines that must survive deploys and
+  crashes mid-step
+- Expense, content, or access **approvals** that wait hours or days
+- Long-running **external API** sequences (provision cloud, wait for
+  webhook, continue)
+- **Saga-style** bookings (flight + hotel + charge) with recorded
+  compensation
+- **Parent / child** orchestration — parent suspends until children finish
+- Compliance or audit pipelines with step history as the source of truth
+- Delayed business calendars (renewals, reminders, staged rollouts) via
+  durable sleep — not fragile cron + state tables
+
+<Details>
+  <Summary>Why not “just Temporal” here?</Summary>
+
+  Temporal covers the process. You still need HTTP triggers, background
+  job semantics, entity state, project structure, and someone to run
+  workers. On BaaSForge those are sibling unit types on the same
+  managed runtime — and the AI scaffolds the graph from a description.
+</Details>
+
+---
+
+## Actor-led scenarios
+
+Stateful, sequential entities — the gap Edge Functions and most workflow
+engines do not cover.
+
+- Per-user **shopping cart** or wishlist without optimistic-lock hell
+- **Order / ticket / claim** lifecycle as an enforced state machine
+- **Device twin** or sensor node with alarms (idle, offline, maintain)
+- **Game room**, auction lot, or auction bidder state
+- Per-tenant or per-connection **rate limiter** / quota bucket
+- **Wallet or ledger hold** entity updated one message at a time
+- Collaborative **document / board** presence and version counters
+- Abandoned-session cleanup via actor alarms (not a global cron scan)
+
+<Details>
+  <Summary>Why not “just Postgres rows”?</Summary>
+
+  Rows give you storage, not sequential compute. Concurrent writers race
+  unless you invent locking, outboxes, and workers. Actors give you
+  durable state **plus** a single-writer mailbox per entity ID.
+</Details>
+
+---
+
+## Queue-worker scenarios
+
+When you need reliable async work — not a full multi-step saga.
+
+- High-volume **email / SMS / push** with concurrency and rate limits
+- **Webhook delivery** fan-out with retry backoff and DLQ
+- **Image / video / PDF** processing batches
+- Nightly or burst **import / export** jobs with dedupe
+- Third-party sync that must not stampede vendor APIs
+- Dead-letter handling that alerts and parks poison messages
+- Fan-out from a workflow step into thousands of independent jobs
+
+<Details>
+  <Summary>Why not “just a workflow with one step”?</Summary>
+
+  Workflows shine at multi-step orchestration. Queue workers add pool
+  semantics: priority, batching, concurrency caps, DLQ — without paying
+  for step journals you do not need.
+</Details>
+
+---
+
+## Platform scenarios (AI + architecture)
+
+Not a unit type — still a major “what you can do”:
+
+<Steps>
+### Describe a domain backend in chat
+
+Example: “Marketplace with escrow, KYC, and dunning.” AI proposes
+bounded contexts and which unit types own which behaviors.
+
+### Let AI write and connect units
+
+Creates APIs, workflows, workers, and actors with typed contracts and an
+explicit dependency graph — not a flat pile of functions.
+
+### Stage, promote, roll back
+
+Chat-scoped releases on managed stage / production runtimes. History and
+rollback without running your own cluster.
+
+### Debug with Observability Analyzer
+
+Ask what failed; the agent reads real traces with live unit definitions
+and returns ranked hypotheses — not only static review.
+</Steps>
+
+Additional platform-level scenarios:
+
+- Grow from tens to **thousands of units** with contexts, modules, and a
+  dependency graph the AI can navigate
+- Change one unit and see **impact** on callers via typed imports
+- Keep **secrets** as env keys the AI can name but never read values of
+- Share a **read-only** project / release link as live documentation (Postman-like)
+
+---
+
+## Quick map: ask → what you get
+
+| You say in chat… | Typical unit mix |
+| --- | --- |
+| “Checkout that can refund itself” | API + workflow (compensation) + cart/order actors + notify workers |
+| “Wait for a human before paying out” | Workflow promise + actor + API for approve / reject |
+| “Retry invoices for two weeks” | Workflow sleeps + subscription actor + email workers |
+| “No two updates race on a device” | Device actor (+ optional provisioning workflow) |
+| “Send 100k emails without melting the ESP” | Queue workers (rate limit, batch, DLQ) |
+| “Agent that calls tools safely” | Workflow steps + workers for side effects |
+| “Onboard a tenant over DNS + webhooks” | Workflow + tenant actor + provision workers |
+| “Moderate content with editors” | Workers (score) + workflow (HITL) + content actor |
+
+---
+
+## Scenario checklist (short list)
+
+**Multi-unit**
+
+- [ ] Order / marketplace escrow & fulfillment
+- [ ] Subscription billing + dunning
+- [ ] KYC / approval desks
+- [ ] Tenant / partner provisioning
+- [ ] Cart / lobby / device twin + downstream process
+- [ ] LLM agent runs with durable tool calls
+- [ ] Fraud or risk hold inside checkout
+- [ ] Document / media plants with case state
+
+**Mostly one primary type**
+
+- [ ] Long approvals and delayed calendars (workflow)
+- [ ] Race-free entity lifecycles (actor)
+- [ ] Burst jobs with DLQ and rate limits (queue worker)
+- [ ] Public or partner HTTP surfaces (API)
+
+---
+
+## What this page is not claiming
+
+<Callout type="warning">
+  BaaSForge does not claim “better workflows than Temporal” in isolation.
+  The win is **Temporal-class durability plus workers, actors, APIs,
+  architecture, managed runtimes, and AI** in one product — without
+  assembling Supabase + Temporal + queues + custom entity locking.
+</Callout>
+
+Storage-pattern units (rich table-first CRUD as first-class behaviors,
+realtime client sync, vector search as platform primitives) are on the
+roadmap. Process-heavy and entity-heavy backends are the wedge **today**.
+
+## Continue reading
+
+<Cards>
+  <Cards.Card title="Who We Are" href="/about/who-we-are" />
+  <Cards.Card title="Advantages" href="/about/advantages" />
+  <Cards.Card title="Unit Types" href="/platform/unit-types" />
+  <Cards.Card title="AI Role" href="/development/ai-role" />
+  <Cards.Card title="Getting Started" href="/getting-started" />
+</Cards>

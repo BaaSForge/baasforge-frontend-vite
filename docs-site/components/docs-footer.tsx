@@ -24,7 +24,6 @@ const footerLinks: Array<{ title: string; links: FooterLinkItem[] }> = [
     links: [
       { label: 'Security', href: '/security-billing/security' },
       { label: 'Costs & Billing', href: '/security-billing/costs' },
-      { label: 'Component Showcase', href: '/guides/nextra-showcase' },
     ],
   },
   {
