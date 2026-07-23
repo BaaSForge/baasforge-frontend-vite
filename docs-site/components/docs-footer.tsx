@@ -15,15 +15,16 @@ const footerLinks: Array<{ title: string; links: FooterLinkItem[] }> = [
     links: [
       { label: 'Introduction', href: '/' },
       { label: 'Getting Started', href: '/getting-started' },
-      { label: 'Guides', href: '/guides' },
-      { label: 'API Reference', href: '/api-reference' },
+      { label: 'About', href: '/about/who-we-are' },
+      { label: 'Platform', href: '/platform/glossary' },
+      { label: 'Development', href: '/development/ai-role' },
     ],
   },
   {
-    title: 'Guides',
+    title: 'More',
     links: [
-      { label: 'Authentication', href: '/guides/authentication' },
-      { label: 'Deployment', href: '/guides/deployment' },
+      { label: 'Security', href: '/security-billing/security' },
+      { label: 'Costs & Billing', href: '/security-billing/costs' },
       { label: 'Component Showcase', href: '/guides/nextra-showcase' },
     ],
   },
