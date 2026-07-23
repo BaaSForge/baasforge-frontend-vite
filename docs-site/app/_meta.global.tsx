@@ -1,7 +1,9 @@
 import type { MetaRecord } from 'nextra'
 
 const meta = {
-  index: 'Introduction',
+  index: {
+    display: 'hidden',
+  },
   'getting-started': 'Getting Started',
   about: {
     title: 'About',

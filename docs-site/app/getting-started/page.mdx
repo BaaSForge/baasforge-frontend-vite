@@ -1,22 +1,59 @@
+import { Callout, Cards, Steps } from 'nextra/components'
+
 export const metadata = {
   title: 'Getting Started',
 }
 
 # Getting Started
 
-Create an account, open the dashboard, and spin up your first project in
-a few minutes.
+Sign up, then follow the in-app **Welcome tutorials** to go from zero to a deployed API.
 
-## 1. Sign in
+<Callout type="important">
+  **You can skip the docs and learn in the app.** After you log in, live tutorials on the dashboard teach you everything you need—step by step, while you do the work. We're continually expanding them so more of the platform is covered without reading documentation.
 
-Go to [baasforge.com/login](/login) and authenticate with your account.
+  Reopen tutorials anytime from the **inbox** in the top right of the dashboard.
+</Callout>
 
-## 2. Create a project
+## Quick start
 
-From the dashboard, create a new project. Give it a clear name — this
-becomes the root for your APIs and conversations.
+The welcome tutorials walk you through each step below in order.
 
-## 3. Open a conversation
+<Steps>
+### Sign up
 
-Use the project conversation to describe the API you want. BaaSForge
-helps you generate units and wire them into a runtime.
+Sign up with Google or GitHub on the [login page](/login). BaaSForge opens the **Welcome to BaaS Forge** dialog on your first visit.
+
+### Your first project
+
+Get familiar with the dashboard and create your first project.
+
+### Write and call your API
+
+Describe an API in the project chat, review the generated units, deploy to **stage**, and call your endpoint with the built-in HTTP client.
+
+### Debug and release
+
+Use **traces** to see what happened on each request, ask the AI what went wrong, update your units, redeploy to stage, then **release to production**.
+</Steps>
+
+## What you will have done
+
+By the end of the tutorials you will have:
+
+- Created a project
+- Written and called an API
+- Traced and debugged a request
+- Released to production
+
+<Callout>
+  To roll back to an older release, see [Release History & Rollback](/development/release-history). A dedicated **Units and rollbacks** tutorial is on the way.
+</Callout>
+
+## Learn more
+
+<Cards>
+  <Cards.Card title="Running APIs & Units" href="/development/running-apis-units" />
+  <Cards.Card title="Tracing & Debugging" href="/development/tracing" />
+  <Cards.Card title="Releases" href="/development/releases" />
+  <Cards.Card title="Platform Glossary" href="/platform/glossary" />
+</Cards>

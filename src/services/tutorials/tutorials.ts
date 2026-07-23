@@ -56,7 +56,7 @@ export const TUTORIALS: ReadonlyArray<Tutorial> = [
         groupId: WELCOME_TUTORIALS_GROUP_ID,
         title: "Debug and release",
         description:
-            "Use traces to tell the AI what went wrong, update your units, redeploy to stage, then release to production.",
+            "Use traces to ask the AI what went wrong, update your units, redeploy to stage, then release to production.",
         icon: SearchCode,
     },
     {
