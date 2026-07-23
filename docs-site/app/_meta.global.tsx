@@ -9,7 +9,7 @@ const meta = {
     title: 'About',
     items: {
       'who-we-are': 'Who We Are',
-      'what-you-can-do': 'What You Can Do',
+      'what-you-can-do': 'What You Can Do With',
       advantages: 'Advantages',
       'why-still-needed': 'Why Still Needed',
       'future-plans': 'Future Plans',
