@@ -557,7 +557,7 @@ function What({ visible, compact }: { visible: boolean; compact: boolean }) {
                             <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> we'd had
                         </span>
                     </h2>
-                    <p className="mt-5 max-w-[840px] text-[clamp(20px,2.6vw,26px)] leading-[1.5] text-muted-foreground">Describe what your backend should do. AI writes it, ships it to production, and knows what's broken before your users do.</p>
+                    <p className="mt-5 max-w-[840px] text-[clamp(20px,2.6vw,26px)] leading-[1.5] text-muted-foreground">Describe what your backend should do. AI writes it, you ship it to production, then AI knows what's broken before your users do.</p>
                     <div className="bf-chip-row">{["AI Chat", "CI/CD", "Monitoring", "Live Debugging", "Version Control"].map((chip) => <span key={chip} className="bf-chip">{chip}</span>)}</div>
                 </div>
                 <Dashboard compact={compact} />

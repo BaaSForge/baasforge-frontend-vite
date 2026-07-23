@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "next dev --port 1220",
+    "dev": "kill -9 $(lsof -ti :1220) 2>/dev/null || true; next dev --port 1220",
     "build": "next build",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
     "preview:ssr": "node scripts/preview-static.mjs"

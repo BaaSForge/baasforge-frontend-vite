@@ -9,6 +9,8 @@ const withNextra = nextra({
   search: { codeblocks: false },
 })
 
+const mermaidComponent = path.join(__dirname, 'components/mermaid.tsx')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
@@ -17,6 +19,18 @@ const nextConfig = {
     unoptimized: true,
   },
   outputFileTracingRoot: __dirname,
+  turbopack: {
+    resolveAlias: {
+      '@theguild/remark-mermaid/mermaid': mermaidComponent,
+    },
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@theguild/remark-mermaid/mermaid': mermaidComponent,
+    }
+    return config
+  },
 }
 
 export default withNextra(nextConfig)

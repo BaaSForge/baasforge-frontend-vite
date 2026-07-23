@@ -24,18 +24,18 @@ exposes **backend behaviors** — through unit types that normalize storage
 and compute, so you don't assemble a stack.
 
 <Callout type="important">
-  We are not a BaaS (expose-the-database) and not a workflow engine. We
-  are a **behavior-first** platform: compute and storage expressed as
-  unit types and SDK primitives, not as a tech stack you operate.
+  Actually BaaS is only part of what we do. We are a **behavior-first** platform —
+  compute, storage, workflows, deploy, and debug as unit types and
+  SDK primitives, not a stack you assemble or a single product category.
 </Callout>
 
-## The question we answer
+## What different platforms answer to
 
 | Platform | Answers |
 | --- | --- |
 | Supabase / Firebase | *How do I expose and query my database?* |
 | Temporal | *How do I run one durable workflow engine?* |
-| **BaaSForge** | *How do I build any backend app from behaviors — compute, storage patterns, AI, deploy, debug — without assembling a stack?* |
+| **BaaSForge** | *How do I build any backend app from behaviors — compute, storage patterns, deploy, debug — without assembling a stack?* |
 
 ## Two systems, one product
 
@@ -47,6 +47,8 @@ runtimes (stage + production per project).
 | --- | --- |
 | **Control plane** | Dashboard API, auth, multi-agent chat, releases, billing, trace query |
 | **Execution plane** | Unit runtime, workflow / queue / actor workers, traces export |
+
+<div style={{ height: '1.5rem' }} />
 
 ```mermaid
 flowchart TB
@@ -74,7 +76,7 @@ flowchart TB
   Chat --> Rel
   Rel --> runtime
   Obs --> runtime
-  Web --> API
+  Web --> dashboard
   API --> WF
   API --> WQ
   API --> AC
@@ -100,26 +102,6 @@ JavaScript function with a four-segment path:
 
 Example: `billing.payments.workflow.charge`
 
-<Tabs items={['API', 'Workflow', 'Queue Worker', 'Actor']}>
-  <Tabs.Tab>
-    HTTP entry points — request-scoped, synchronous. Public trigger URLs
-    on stage and production runtimes.
-  </Tabs.Tab>
-  <Tabs.Tab>
-    Durable orchestration — multi-step, crash-resilient, long-running.
-    Temporal-class durability with `ctx.run`, sleep, promises, and
-    compensation.
-  </Tabs.Tab>
-  <Tabs.Tab>
-    Background jobs — pull-based with retry, DLQ, batch, concurrency,
-    rate limits, and dedupe.
-  </Tabs.Tab>
-  <Tabs.Tab>
-    Stateful entities — per-instance mailbox, persisted state, sequential
-    handlers (carts, rooms, device twins).
-  </Tabs.Tab>
-</Tabs>
-
 | Unit type | Role | Model |
 | --- | --- | --- |
 | `api` | HTTP entry points | Request-scoped, synchronous |
@@ -130,6 +112,10 @@ Example: `billing.payments.workflow.charge`
 Units live in **bounded contexts** and form an explicit **dependency
 graph** — so both humans and AI can reason about large backends without
 scanning every file.
+
+<div style={{ marginTop: '1.5rem' }}>
+  <Cards.Card title="See all unit types" href="/platform/unit-types" arrow />
+</div>
 
 ## How the product works
 
@@ -143,7 +129,7 @@ fulfillment, dunning, approvals, entity state, and more.
 
 A multi-agent pipeline (Planner → Architecture / Solution analyzers →
 Developer) writes units grounded in our SDK. Nothing is saved until
-typecheck, lint, and project rules pass.
+typecheck, lint, and some technical rules pass.
 
 ### Stage, then production
 
@@ -182,8 +168,8 @@ not a bolt-on assistant.
 
 <Callout>
   The AI doesn't just write code — it writes **your** architecture,
-  validates it against **your** rules, ships it to **your** stage or
-  production, and explains failures from **your** traces.
+  validates it against **your** rules, you ship it to **your** stage or
+  production, and AI can explain failures from **your** traces.
 </Callout>
 
 ## Where we sit
@@ -223,7 +209,7 @@ quadrantChart
 | Primitives | One primary model | `api` + `workflow` + `queue_worker` + `actor` |
 | Operations | You run workers / clusters | Platform runs the workers |
 | Structure | Your repos | Bounded contexts + dependency graph |
-| AI | None or external | Dashboard agents + deploy + traces |
+| AI | None or external | Dashboard agents + traces |
 
 <Details>
   <Summary>Messaging we use — and what we avoid</Summary>
@@ -258,7 +244,7 @@ Signals that fit:
 
 <Callout type="warning">
   **Anti-fit (today):** Teams that want raw SQL control and table-first
-  modeling with no interest in unit architecture. Storage-pattern units
+  modeling with no interest in unit architecture. New storage-pattern units
   are on the roadmap — until then, a table-centric BaaS may fit better
   for pure CRUD.
 </Callout>
@@ -269,19 +255,19 @@ What users see vs. what the platform runs:
 
 <FileTree>
   <FileTree.Folder name="BaaSForge" defaultOpen>
-    <FileTree.Folder name="control-plane" defaultOpen>
+    <FileTree.Folder name="control-plane (users see)" defaultOpen>
       <FileTree.File name="dashboard + auth" />
       <FileTree.File name="multi-agent chat" />
       <FileTree.File name="releases + technical reviewer" />
       <FileTree.File name="trace query + billing" />
     </FileTree.Folder>
-    <FileTree.Folder name="execution-plane" defaultOpen>
+    <FileTree.Folder name="execution-plane (hidden from users)" defaultOpen>
       <FileTree.File name="api / workflow / queue / actor workers" />
       <FileTree.File name="QuickJS unit runtime" />
       <FileTree.File name="@sdk primitives" />
       <FileTree.File name="traces export" />
     </FileTree.Folder>
-    <FileTree.Folder name="managed-engines">
+    <FileTree.Folder name="managed-engines (hidden from users)" defaultOpen>
       <FileTree.File name="Redis · NATS · Postgres (platform-owned)" />
     </FileTree.Folder>
   </FileTree.Folder>
