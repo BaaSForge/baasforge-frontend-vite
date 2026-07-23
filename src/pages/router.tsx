@@ -12,6 +12,8 @@ import ProjectRuntimePage from "./dashboard/projects/[projectId]/runtimes/[runti
 import ProjectRuntimeUnitsAndReleasesPage from "./dashboard/projects/[projectId]/runtimes/[runtimeId]/units-releases/page";
 import ProjectUnitsAndReleasesPage from "./dashboard/projects/[projectId]/units-and-releases/page";
 import HomePage from "./home/page";
+import PrivacyPolicyPage from "./legal/privacy-policy/page";
+import TermsOfUsePage from "./legal/terms-of-use/page";
 import { RootLayout } from "./root-layout";
 import { ActivePage, buildRouteExports, toRouterRoutes, type AppRouteObject, type PagePaths } from "./routes";
 
@@ -229,6 +231,18 @@ export const appRoutes = [
                 path: "500",
                 page: ActivePage.SERVER_ERROR,
                 element: <ServerErrorPage />,
+            },
+            {
+                path: "privacy-policy",
+                element: <PrivacyPolicyPage />,
+            },
+            {
+                path: "terms-of-use",
+                element: <TermsOfUsePage />,
+            },
+            {
+                path: "terms-of-service",
+                element: <Navigate to="/terms-of-use" replace />,
             },
             {
                 path: "*",
