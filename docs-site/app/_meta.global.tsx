@@ -20,9 +20,7 @@ const meta = {
     items: {
       glossary: 'Glossary',
       'runtime-environment': 'Runtime Environment',
-      'data-storage': 'Data Storage',
       units: 'Units',
-      'unit-versioning': 'Unit Versioning',
       sdk: 'SDK',
       'unit-types': {
         title: 'Unit Types',
