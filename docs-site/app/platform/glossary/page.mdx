@@ -34,7 +34,6 @@ a dedicated page exists.
 <Cards>
   <Cards.Card title="Who We Are" href="/about/who-we-are" />
   <Cards.Card title="Units" href="/platform/units" />
-  <Cards.Card title="Unit Types" href="/platform/unit-types" />
   <Cards.Card title="SDK" href="/platform/sdk" />
   <Cards.Card title="Releases" href="/platform/releases" />
   <Cards.Card title="Getting Started" href="/getting-started" />
@@ -53,7 +52,7 @@ a dedicated page exists.
 | **Execution plane** | Managed unit runtime: API / workflow / queue / actor workers and trace export. This is internal and users don't see it. | [Who We Are](/about/who-we-are) |
 | **Project** | Top-level workspace; owns chats, units, runtimes, variables, releases, and usage. | [Getting Started](/getting-started) |
 | **Unit** | Core primitive: a TypeScript/JavaScript capability with a stable four-segment path. | [Units](/platform/units) |
-| **Unit type** | Path segment that selects the runtime model: `api`, `workflow`, `queue_worker`, `actor`, or `common`. | [Unit Types](/platform/unit-types) |
+| **Unit type** | Path segment that selects the runtime model: `api`, `workflow`, `queue_worker`, `actor`, or `common`. | [Units](/platform/units) |
 | **Unit path** | Canonical identity: `{context}.{module}.{unit_type}.{unit_name}` (e.g. `billing.payments.workflow.charge`). | [Units](/platform/units) |
 | **Context** | First path segment of unit's path — a bounded domain grouping (e.g. `billing`). | [Units](/platform/units) |
 | **Module** | Second path segment under a context (e.g. `payments`). | [Units](/platform/units) |
@@ -69,11 +68,11 @@ a dedicated page exists.
 
 | Term | Meaning | Learn more |
 | --- | --- | --- |
-| **API unit** (`api`) | HTTP request–response unit; entry `handleRequest(req, res)`; auto-documented on deploy. | [API Unit](/platform/unit-types/api-unit) |
-| **Workflow unit** (`workflow`) | Durable multi-step orchestration that survives crashes, restarts, and redeploys. | [Workflow Unit](/platform/unit-types/workflow-unit) |
-| **Queue Worker unit** (`queue_worker`) | Background job processor with retry, DLQ, batch, concurrency, and rate limits. | [Queue Worker Unit](/platform/unit-types/queue-worker-unit) |
-| **Actor unit** (`actor`) | Per-entity durable state with a sequential mailbox (one writer per `actor_id`). | [Actor Unit](/platform/unit-types/actor-unit) |
-| **Common unit** (`common`) | Shared library unit; value-importable by other units; no public trigger URL. | [Common Unit](/platform/unit-types/common-unit) |
+| **API unit** (`api`) | HTTP request–response unit; entry `handleRequest(req, res)`; auto-documented on deploy. | [API Unit](/platform/units/api-unit) |
+| **Workflow unit** (`workflow`) | Durable multi-step orchestration that survives crashes, restarts, and redeploys. | [Workflow Unit](/platform/units/workflow-unit) |
+| **Queue Worker unit** (`queue_worker`) | Background job processor with retry, DLQ, batch, concurrency, and rate limits. | [Queue Worker Unit](/platform/units/queue-worker-unit) |
+| **Actor unit** (`actor`) | Per-entity durable state with a sequential mailbox (one writer per `actor_id`). | [Actor Unit](/platform/units/actor-unit) |
+| **Common unit** (`common`) | Shared library unit; value-importable by other units; no public trigger URL. | [Common Unit](/platform/units/common-unit) |
 
 <Callout type="warning">
   In the **unit path**, the type is always underscored (e.g. `queue_worker`). Hyphenated
@@ -172,7 +171,7 @@ a dedicated page exists.
 | Term | Meaning | Learn more |
 | --- | --- | --- |
 | **Trigger URL** | Platform-owned public URL for a unit; not user-customizable. | [Running APIs & Units](/platform/running-apis-units) |
-| **API trigger** | `/api/v1/trigger/{project_id}/{context}/{module}/{unit_name}`. | [API Unit](/platform/unit-types/api-unit) |
+| **API trigger** | `/api/v1/trigger/{project_id}/{context}/{module}/{unit_name}`. | [API Unit](/platform/units/api-unit) |
 | **Stage API trigger** | Same path under `.../stage/{runtime_id}/...`. | [Running APIs & Units](/platform/running-apis-units) |
 
 ---

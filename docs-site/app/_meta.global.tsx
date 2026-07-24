@@ -19,9 +19,8 @@ const meta = {
     title: 'Platform',
     items: {
       glossary: 'Glossary',
-      units: 'Units',
-      'unit-types': {
-        title: 'Unit Types',
+      units: {
+        title: 'Units',
         items: {
           'api-unit': 'API Unit',
           'common-unit': 'Common Unit',

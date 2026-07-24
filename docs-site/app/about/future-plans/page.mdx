@@ -20,7 +20,7 @@ What ships today covers process-heavy and entity-heavy backends. What comes next
 <Callout type="info">
   Roadmap items below are **directional**. Timing and order can shift as we
   learn from production usage. Shipping status of compute units is always
-  authoritative under [Unit Types](/platform/unit-types).
+  authoritative under [Units](/platform/units).
 </Callout>
 
 ## Where we are today
@@ -28,12 +28,12 @@ What ships today covers process-heavy and entity-heavy backends. What comes next
 Four compute unit types are available now. Storage-pattern units, stream/realtime compute, marketplace, seats, and a full monitoring dashboard are still ahead.
 
 <Cards>
-  <Cards.Card title="All unit types" href="/platform/unit-types" />
-  <Cards.Card title="API Unit" href="/platform/unit-types/api-unit" />
-  <Cards.Card title="Workflow Unit" href="/platform/unit-types/workflow-unit" />
-  <Cards.Card title="Queue Worker Unit" href="/platform/unit-types/queue-worker-unit" />
-  <Cards.Card title="Actor Unit" href="/platform/unit-types/actor-unit" />
-  <Cards.Card title="Common Unit" href="/platform/unit-types/common-unit" />
+  <Cards.Card title="All units" href="/platform/units" />
+  <Cards.Card title="API Unit" href="/platform/units/api-unit" />
+  <Cards.Card title="Workflow Unit" href="/platform/units/workflow-unit" />
+  <Cards.Card title="Queue Worker Unit" href="/platform/units/queue-worker-unit" />
+  <Cards.Card title="Actor Unit" href="/platform/units/actor-unit" />
+  <Cards.Card title="Common Unit" href="/platform/units/common-unit" />
 </Cards>
 
 | Available today | On the roadmap |
@@ -118,7 +118,7 @@ New unit types earn a place only when they introduce a **distinct** computation,
 | **Stream processing** | Continuous, windowed aggregation over unbounded event flows | Fraud scores, analytics projections, CQRS read models |
 | **WebSocket / realtime** | Persistent bidirectional client connections | Live dashboards, chat, collaborative cursors, push to devices |
 
-See [Unit Types](/platform/unit-types) for everything available **now**.
+See [Units](/platform/units) for everything available **now**.
 
 <Details>
   <Summary>Why cron is a trigger — not its own unit type</Summary>
@@ -172,7 +172,7 @@ What we will **not** ship: “here is your Postgres connection string; write que
 | **Messaging** | Platform bus + future messaging behaviors | User-operated Kafka clusters as the product |
 
 <Cards>
-  <Cards.Card title="Current compute units" href="/platform/unit-types" />
+  <Cards.Card title="Current compute units" href="/platform/units" />
 </Cards>
 
 <Callout type="important">
@@ -343,6 +343,6 @@ flowchart TB
   <Cards.Card title="Who We Are" href="/about/who-we-are" />
   <Cards.Card title="What You Can Do With" href="/about/what-you-can-do" />
   <Cards.Card title="Advantages" href="/about/advantages" />
-  <Cards.Card title="Unit Types" href="/platform/unit-types" />
+  <Cards.Card title="Units" href="/platform/units" />
   <Cards.Card title="Tracing & Debugging" href="/platform/tracing" />
 </Cards>
