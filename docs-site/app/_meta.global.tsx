@@ -13,7 +13,6 @@ const meta = {
       advantages: 'Advantages',
       'why-still-needed': 'Why Still Needed',
       'future-plans': 'Future Plans',
-      'open-source': 'Open Source',
     },
   },
   platform: {

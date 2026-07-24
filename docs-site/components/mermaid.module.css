@@ -1,0 +1,133 @@
+.root {
+  position: relative;
+}
+
+.chart :global(svg) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.expandBtn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid light-dark(rgb(229 231 235), rgb(64 64 64));
+  border-radius: 0.375rem;
+  background: light-dark(rgb(255 255 255), rgb(23 23 23));
+  color: light-dark(rgb(75 85 99), rgb(212 212 212));
+  cursor: pointer;
+  opacity: 0.9;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.expandBtn:hover {
+  opacity: 1;
+  color: light-dark(rgb(17 24 39), rgb(250 250 250));
+  background: light-dark(rgb(249 250 251), rgb(38 38 38));
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 96vw);
+  height: min(100%, 92dvh);
+  max-width: 96vw;
+  max-height: 92dvh;
+  padding: 2.5rem 0.75rem 0.75rem;
+  border-radius: 0.5rem;
+  background: light-dark(rgb(255 255 255), rgb(23 23 23));
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.25);
+}
+
+@media (min-width: 768px) {
+  .overlay {
+    padding: 1.5rem;
+  }
+
+  .modal {
+    width: min(100%, 92vw);
+    height: min(100%, 90dvh);
+    max-width: 92vw;
+    max-height: 90dvh;
+    padding: 2.75rem 1.25rem 1.25rem;
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid light-dark(rgb(229 231 235), rgb(64 64 64));
+  border-radius: 0.375rem;
+  background: light-dark(rgb(255 255 255), rgb(23 23 23));
+  color: light-dark(rgb(75 85 99), rgb(212 212 212));
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.closeBtn:hover {
+  color: light-dark(rgb(17 24 39), rgb(250 250 250));
+  background: light-dark(rgb(249 250 251), rgb(38 38 38));
+}
+
+.modalChart {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  cursor: grab;
+  touch-action: none;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalChartDragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.modalChartInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: content-box;
+  min-width: 100%;
+  min-height: 100%;
+  width: max-content;
+  height: max-content;
+  padding: 1rem;
+}
+
+.modalChartInner :global(svg) {
+  display: block;
+  flex-shrink: 0;
+  max-width: none !important;
+  max-height: none !important;
+}
