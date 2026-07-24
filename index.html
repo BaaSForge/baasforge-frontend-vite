@@ -2,12 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(w.location.hostname)) return;
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-K7DXD9RJ");
+    </script>
+    <!-- End Google Tag Manager -->
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="BaaSForge is an AI backend platform that turns plain-language requirements into production-ready APIs, workflows, workers, and data units." />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#080f1e" />
@@ -28,7 +43,7 @@
     <meta name="twitter:image" content="https://baasforge.com/og-preview.jpg" />
     <meta name="twitter:image:alt" content="BaaSForge — AI backend platform" />
     <title>BaaSForge | AI Backend Platform</title>
-    <script type="application/ld+json">
+    <script id="baasforge-homepage-schema" type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
@@ -50,6 +65,17 @@
     </script>
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+      <iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-K7DXD9RJ"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+        title="Google Tag Manager"
+      ></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/entry-client.tsx"></script>
   </body>
