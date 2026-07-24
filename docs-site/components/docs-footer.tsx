@@ -16,7 +16,6 @@ const footerLinks: Array<{ title: string; links: FooterLinkItem[] }> = [
       { label: 'Getting Started', href: '/getting-started' },
       { label: 'About', href: '/about/who-we-are' },
       { label: 'Platform', href: '/platform/glossary' },
-      { label: 'Development', href: '/development/ai-role' },
     ],
   },
   {

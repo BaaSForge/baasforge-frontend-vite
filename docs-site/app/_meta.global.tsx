@@ -19,9 +19,7 @@ const meta = {
     title: 'Platform',
     items: {
       glossary: 'Glossary',
-      'runtime-environment': 'Runtime Environment',
       units: 'Units',
-      sdk: 'SDK',
       'unit-types': {
         title: 'Unit Types',
         items: {
@@ -32,13 +30,9 @@ const meta = {
           'queue-worker-unit': 'Queue Worker Unit',
         },
       } as MetaRecord[string],
-    } as MetaRecord,
-  },
-  development: {
-    title: 'Development',
-    items: {
+      sdk: 'SDK',
       'ai-role': 'AI Role',
-      'execution-environments': 'Execution Environments',
+      runtimes: 'Runtimes',
       releases: 'Releases',
       'avoiding-conflicts': 'Avoiding Conflicts',
       'release-history': 'Release History & Rollback',
@@ -46,23 +40,13 @@ const meta = {
       'running-apis-units': 'Running APIs & Units',
       'auto-api-docs': 'Auto API Docs',
       tracing: 'Tracing & Debugging',
-    },
+    } as MetaRecord,
   },
   'security-billing': {
     title: 'Security & Billing',
     items: {
       security: 'Security',
       costs: 'Costs & Billing',
-    },
-  },
-  guides: {
-    display: 'hidden',
-    title: 'Guides',
-    items: {
-      'nextra-showcase': {
-        title: 'Nextra Showcase',
-        display: 'hidden',
-      },
     },
   },
 }

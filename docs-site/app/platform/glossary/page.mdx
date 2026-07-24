@@ -36,7 +36,7 @@ a dedicated page exists.
   <Cards.Card title="Units" href="/platform/units" />
   <Cards.Card title="Unit Types" href="/platform/unit-types" />
   <Cards.Card title="SDK" href="/platform/sdk" />
-  <Cards.Card title="Releases" href="/development/releases" />
+  <Cards.Card title="Releases" href="/platform/releases" />
   <Cards.Card title="Getting Started" href="/getting-started" />
 </Cards>
 
@@ -59,9 +59,9 @@ a dedicated page exists.
 | **Module** | Second path segment under a context (e.g. `payments`). | [Units](/platform/units) |
 | **Unit name** | Last path segment (`unit_name_slug`); lowercase letters and hyphens only. | [Units](/platform/units) |
 | **depends_on** | Explicit dependency list of other unit paths (from `@units/*` type imports). | [Units](/platform/units) |
-| **Project isolation** | Every runtime and SDK call is scoped by project — no cross-project access. | [Runtime Environment](/platform/runtime-environment) |
+| **Project isolation** | Every runtime and SDK call is scoped by project — no cross-project access. | [Runtimes](/platform/runtimes) |
 | **Managed engines** | Platform-owned Redis, NATS, Postgres, and similar — never exposed as raw vendor APIs. | [Who We Are](/about/who-we-are) |
-| **QuickJS** | Embedded JavaScript engine that executes unit code on the execution plane. | [Runtime Environment](/platform/runtime-environment) |
+| **QuickJS** | Embedded JavaScript engine that executes unit code on the execution plane. | [Runtimes](/platform/runtimes) |
 
 ---
 
@@ -95,36 +95,36 @@ a dedicated page exists.
 
 | Term | Meaning | Learn more |
 | --- | --- | --- |
-| **Runtime** | Managed execution instance for a project in Stage or Production. | [Runtime Environment](/platform/runtime-environment) |
-| **Environment** | `stage` or `prod`. | [Execution Environments](/development/execution-environments) |
-| **Stage** | Pre-production environment for validate / test before promote. | [Execution Environments](/development/execution-environments) |
-| **Production** | Live customer-facing environment (`prod`). | [Execution Environments](/development/execution-environments) |
-| **Idle runtime** | Runtime with no live release attached. | [Runtime Environment](/platform/runtime-environment) |
-| **Busy / live runtime** | Runtime currently serving a live release. | [Runtime Environment](/platform/runtime-environment) |
-| **Live release** | Release currently attached to a runtime. | [Releases](/development/releases) |
-| **Swap live release** | Detach the current stage live release and attach another. | [Releases](/development/releases) |
+| **Runtime** | Managed execution instance for a project in Stage or Production. | [Runtimes](/platform/runtimes) |
+| **Environment** | `stage` or `prod`. | [Runtimes](/platform/runtimes) |
+| **Stage** | Pre-production environment for validate / test before promote. | [Runtimes](/platform/runtimes) |
+| **Production** | Live customer-facing environment (`prod`). | [Runtimes](/platform/runtimes) |
+| **Idle runtime** | Runtime with no live release attached. | [Runtimes](/platform/runtimes) |
+| **Busy / live runtime** | Runtime currently serving a live release. | [Runtimes](/platform/runtimes) |
+| **Live release** | Release currently attached to a runtime. | [Releases](/platform/releases) |
+| **Swap live release** | Detach the current stage live release and attach another. | [Releases](/platform/releases) |
 ---
 
 ## Releases & deploy
 
 | Term | Meaning | Learn more |
 | --- | --- | --- |
-| **Release** | Deployable snapshot of validated unit changes, tied to a chat session. | [Releases](/development/releases) |
-| **Revision** | Platform versioning term (not “version”): integer for units, dotted number for releases (e.g. `15.4`). | [Releases](/development/releases) |
-| **Unit revision** | Integer version of a logical unit path within a chat. | [Releases](/development/releases) |
-| **Release revision** | Release-level revision derived from the production baseline + chat changes. | [Releases](/development/releases) |
-| **Stage release** | Release marked for stage; deploy to a stage runtime first. | [Releases](/development/releases) |
-| **Production release** | Non-stage release promoted to production after stage proof. | [Releases](/development/releases) |
-| **Base production release** | Production baseline a chat session started from. | [Releases](/development/releases) |
-| **Stale base release** | Live production moved to a release not from this chat — warn, still allow work. | [Avoiding Conflicts](/development/avoiding-conflicts) |
-| **Draft unit** | Unit change not yet published to live. | [Releases](/development/releases) |
-| **Published unit** | Unit released to production runtime. | [Releases](/development/releases) |
-| **Rejected unit** | AI-introduced change discarded by the user. | [Releases](/development/releases) |
-| **Release controller** | Chat UI to review changes and deploy a revision to stage or production. | [Releases](/development/releases) |
-| **Reject controller** | Chat UI to reject unit changes from a step. | [Releases](/development/releases) |
-| **Rollback** | Promote any historical revision back to production. | [Release History](/development/release-history) |
-| **Effective unit set** | Baseline production units overlaid with in-chat session created / modified / removed units in that chat session. | [Releases](/development/releases) |
-| **Technical reviewer** | Automatic validation gate: compiler → lint → rules before a unit row is saved by the AI. | [AI Role](/development/ai-role) |
+| **Release** | Deployable snapshot of validated unit changes, tied to a chat session. | [Releases](/platform/releases) |
+| **Revision** | Platform versioning term (not “version”): integer for units, dotted number for releases (e.g. `15.4`). | [Releases](/platform/releases) |
+| **Unit revision** | Integer version of a logical unit path within a chat. | [Releases](/platform/releases) |
+| **Release revision** | Release-level revision derived from the production baseline + chat changes. | [Releases](/platform/releases) |
+| **Stage release** | Release marked for stage; deploy to a stage runtime first. | [Releases](/platform/releases) |
+| **Production release** | Non-stage release promoted to production after stage proof. | [Releases](/platform/releases) |
+| **Base production release** | Production baseline a chat session started from. | [Releases](/platform/releases) |
+| **Stale base release** | Live production moved to a release not from this chat — warn, still allow work. | [Avoiding Conflicts](/platform/avoiding-conflicts) |
+| **Draft unit** | Unit change not yet published to live. | [Releases](/platform/releases) |
+| **Published unit** | Unit released to production runtime. | [Releases](/platform/releases) |
+| **Rejected unit** | AI-introduced change discarded by the user. | [Releases](/platform/releases) |
+| **Release controller** | Chat UI to review changes and deploy a revision to stage or production. | [Releases](/platform/releases) |
+| **Reject controller** | Chat UI to reject unit changes from a step. | [Releases](/platform/releases) |
+| **Rollback** | Promote any historical revision back to production. | [Release History](/platform/release-history) |
+| **Effective unit set** | Baseline production units overlaid with in-chat session created / modified / removed units in that chat session. | [Releases](/platform/releases) |
+| **Technical reviewer** | Automatic validation gate: compiler → lint → rules before a unit row is saved by the AI. | [AI Role](/platform/ai-role) |
 
 ---
 
@@ -132,10 +132,10 @@ a dedicated page exists.
 
 | Term | Meaning | Learn more |
 | --- | --- | --- |
-| **Variables / Runtime variables** | Env keys configured per project runtime. | [Variables](/development/variables) |
-| **Non-encrypted variables** | Plain runtime env values. | [Variables](/development/variables) |
-| **Encrypted variables / secrets** | Encrypted values; AI sees **key names only**, never values. | [Variables](/development/variables) · [Security](/security-billing/security) |
-| **Env key** | Variable name discoverable AI. | [Variables](/development/variables) |
+| **Variables / Runtime variables** | Env keys configured per project runtime. | [Variables](/platform/variables) |
+| **Non-encrypted variables** | Plain runtime env values. | [Variables](/platform/variables) |
+| **Encrypted variables / secrets** | Encrypted values; AI sees **key names only**, never values. | [Variables](/platform/variables) · [Security](/security-billing/security) |
+| **Env key** | Variable name discoverable AI. | [Variables](/platform/variables) |
 
 ---
 
@@ -143,27 +143,27 @@ a dedicated page exists.
 
 | Term | Meaning | Learn more |
 | --- | --- | --- |
-| **Chat session** | Multi-agent conversation scoped to a production baseline release. | [AI Role](/development/ai-role) |
-| **Multi-agent chat** | Pipeline of specialized agents — not a generic copilot. | [AI Role](/development/ai-role) |
-| **Planner** | Coordinator agent: routes intent and turns a description into an architecture plan. | [AI Role](/development/ai-role) |
-| **Architecture Analyzer** | Maps existing units, gaps, and contracts — does not invent solutions. | [AI Role](/development/ai-role) |
-| **Solution Analyzer** | Evaluates approaches / trade-offs before implementation. | [AI Role](/development/ai-role) |
-| **Developer / Programmer** | Implements create / modify / remove unit changes. | [AI Role](/development/ai-role) |
-| **Observability Analyzer** | Explains failures from live traces plus live unit definitions. | [Tracing](/development/tracing) |
-| **Debug** | Attach release / trace IDs into chat for the Observability Analyzer. | [Tracing](/development/tracing) |
+| **Chat session** | Multi-agent conversation scoped to a production baseline release. | [AI Role](/platform/ai-role) |
+| **Multi-agent chat** | Pipeline of specialized agents — not a generic copilot. | [AI Role](/platform/ai-role) |
+| **Planner** | Coordinator agent: routes intent and turns a description into an architecture plan. | [AI Role](/platform/ai-role) |
+| **Architecture Analyzer** | Maps existing units, gaps, and contracts — does not invent solutions. | [AI Role](/platform/ai-role) |
+| **Solution Analyzer** | Evaluates approaches / trade-offs before implementation. | [AI Role](/platform/ai-role) |
+| **Developer / Programmer** | Implements create / modify / remove unit changes. | [AI Role](/platform/ai-role) |
+| **Observability Analyzer** | Explains failures from live traces plus live unit definitions. | [Tracing](/platform/tracing) |
+| **Debug** | Attach release / trace IDs into chat for the Observability Analyzer. | [Tracing](/platform/tracing) |
 ---
 
 ## Observability
 
 | Term | Meaning | Learn more |
 | --- | --- | --- |
-| **Trace / Trace ID** | OpenTelemetry / W3C request identity for a unit invocation. | [Tracing](/development/tracing) |
-| **Span** | Individual timed operation inside a trace. | [Tracing](/development/tracing) |
+| **Trace / Trace ID** | OpenTelemetry / W3C request identity for a unit invocation. | [Tracing](/platform/tracing) |
+| **Span** | Individual timed operation inside a trace. | [Tracing](/platform/tracing) |
 | **Secret masking** | Sensitive values masked in traces before AI or UI display. | [Security](/security-billing/security) |
-| **Live interaction** | Built-in HTTP / trigger client to call a deployed unit. | [Running APIs & Units](/development/running-apis-units) |
-| **Auto API docs** | Docs derived from API unit types and routes — no hand-written OpenAPI. | [Auto API Docs](/development/auto-api-docs) |
-| **Built-in HTTP client** | Try-it client against stage / production endpoints. | [Running APIs & Units](/development/running-apis-units) |
-| **Documentation share** | Time-limited read-only public docs URL (API units). | [Auto API Docs](/development/auto-api-docs) |
+| **Live interaction** | Built-in HTTP / trigger client to call a deployed unit. | [Running APIs & Units](/platform/running-apis-units) |
+| **Auto API docs** | Docs derived from API unit types and routes — no hand-written OpenAPI. | [Auto API Docs](/platform/auto-api-docs) |
+| **Built-in HTTP client** | Try-it client against stage / production endpoints. | [Running APIs & Units](/platform/running-apis-units) |
+| **Documentation share** | Time-limited read-only public docs URL (API units). | [Auto API Docs](/platform/auto-api-docs) |
 
 ---
 
@@ -171,9 +171,9 @@ a dedicated page exists.
 
 | Term | Meaning | Learn more |
 | --- | --- | --- |
-| **Trigger URL** | Platform-owned public URL for a unit; not user-customizable. | [Running APIs & Units](/development/running-apis-units) |
+| **Trigger URL** | Platform-owned public URL for a unit; not user-customizable. | [Running APIs & Units](/platform/running-apis-units) |
 | **API trigger** | `/api/v1/trigger/{project_id}/{context}/{module}/{unit_name}`. | [API Unit](/platform/unit-types/api-unit) |
-| **Stage API trigger** | Same path under `.../stage/{runtime_id}/...`. | [Running APIs & Units](/development/running-apis-units) |
+| **Stage API trigger** | Same path under `.../stage/{runtime_id}/...`. | [Running APIs & Units](/platform/running-apis-units) |
 
 ---
 
