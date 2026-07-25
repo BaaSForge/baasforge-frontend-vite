@@ -490,11 +490,12 @@ Readonly peeks (**Read state**) can extend idle — passivation is not only “n
 
 Secrets belong in dashboard **Variables** (Select project → **Variables**). The AI discovers configured keys automatically.
 
-## Stage vs production isolation
+## Persistence isolation
 
 | Concern | Behavior |
 | --- | --- |
 | Same unit path on stage A vs stage B vs production | Separate state — never shared |
+| Same unit path, different revisions, same runtime | Same state and data — revisions share persistence on that runtime |
 | Same `actorId` across those environments | Still separate instances |
 | Homonymous paths via SDK chains | Runtime scope stays with the caller’s stage / production |
 
