@@ -125,7 +125,7 @@ Because prompts and generated code may be embedded in deployed backend infrastru
 
 ## 9. Cookies
 
-We use strictly necessary cookies (authentication, session state), analytics cookies (to understand product usage), and, if you opt in, marketing cookies. On first visit from the EEA and UK, you will see a cookie banner allowing you to accept or reject non-essential cookies before they are set. You can change your preferences at any time via **[baasforge.com/cookie-settings]**.
+We use strictly necessary cookies (authentication, session state), analytics cookies (to understand product usage), and, if you opt in, marketing cookies. On first visit, you will see a cookie banner allowing you to accept or reject non-essential cookies before they are set. You can change your preferences at any time via [Cookie settings](/cookie-settings).
 
 ---
 
@@ -163,7 +163,7 @@ If you are a resident of California, Colorado, Connecticut, Virginia, Utah, or a
 - The right to opt out of "sale" or "sharing" of personal data (including for cross-context behavioral advertising), and out of certain profiling
 - The right to non-discrimination for exercising these rights
 
-**Sale and sharing.** BaaSForge does not sell personal data for money. If our use of analytics or marketing cookies is considered "sharing" under California law because it involves cross-context behavioral advertising, you can opt out via **[baasforge.com/cookie-settings]** or by sending a recognized opt-out preference signal (such as Global Privacy Control), which we will honor for browsers where it is detectable.
+**Sale and sharing.** BaaSForge does not sell personal data for money. If our use of analytics or marketing cookies is considered "sharing" under California law because it involves cross-context behavioral advertising, you can opt out via [Cookie settings](/cookie-settings) or by sending a recognized opt-out preference signal (such as Global Privacy Control), which we will honor for browsers where it is detectable.
 
 **Sensitive personal information.** We do not use sensitive personal information (as defined under CPRA) for purposes beyond what is necessary to provide the Services.
 

@@ -20,6 +20,7 @@ import { ActivePage, buildRouteExports, toRouterRoutes, type AppRouteObject, typ
 const GeneralErrorPage = lazy(() => import("./errors/global/page"));
 const NotFoundPage = lazy(() => import("./errors/not-found/page"));
 const ServerErrorPage = lazy(() => import("./errors/server/page"));
+const CookieSettingsPage = lazy(() => import("./legal/cookie-settings/page"));
 
 const DashboardPage = lazy(() => import("./dashboard/page"));
 const DashboardPackagesPage = lazy(() => import("./dashboard/packages/page"));
@@ -239,6 +240,10 @@ export const appRoutes = [
             {
                 path: "terms-of-use",
                 element: <TermsOfUsePage />,
+            },
+            {
+                path: "cookie-settings",
+                element: <CookieSettingsPage />,
             },
             {
                 path: "terms-of-service",

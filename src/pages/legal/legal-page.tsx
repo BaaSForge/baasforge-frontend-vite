@@ -129,6 +129,9 @@ export function LegalPage({ canonicalPath, content, dateModified, description, t
                         <Link to="/terms-of-use" aria-current={canonicalPath === "/terms-of-use" ? "page" : undefined}>
                             Terms
                         </Link>
+                        <Link to="/cookie-settings" aria-current={canonicalPath === "/cookie-settings" ? "page" : undefined}>
+                            Cookies
+                        </Link>
                     </nav>
                 </div>
             </header>

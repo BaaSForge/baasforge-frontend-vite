@@ -8,9 +8,22 @@ import { absorbNextClick } from "@/lib/absorb-next-click";
 import { TOAST_PORTAL_ID } from "@/lib/toast-portal";
 import { useOverlayOpenRegistration } from "@/modules/app-state/use-overlay-open-registration";
 
-function Drawer({ open, onOpenChange, ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
-    const handleOpenChange = useOverlayOpenRegistration("modal", open, onOpenChange);
-    return <DrawerPrimitive.Root data-slot="drawer" open={open} onOpenChange={handleOpenChange} {...props} />;
+function Drawer({
+    open,
+    onOpenChange,
+    modal = true,
+    ...props
+}: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+    const handleOpenChange = useOverlayOpenRegistration("modal", modal === false ? false : open, onOpenChange);
+    return (
+        <DrawerPrimitive.Root
+            data-slot="drawer"
+            open={open}
+            onOpenChange={handleOpenChange}
+            modal={modal}
+            {...props}
+        />
+    );
 }
 
 function DrawerTrigger({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Trigger>) {
@@ -42,11 +55,15 @@ function DrawerContent({
     className,
     children,
     dismissOnOverlayClick = true,
+    showOverlay = true,
+    showDragHandle = true,
     onPointerDownOutside: onPointerDownOutsideProp,
     onCloseAutoFocus: onCloseAutoFocusProp,
     ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content> & {
     dismissOnOverlayClick?: boolean;
+    showOverlay?: boolean;
+    showDragHandle?: boolean;
 }) {
     const handlePointerDownOutside: React.ComponentProps<typeof DrawerPrimitive.Content>["onPointerDownOutside"] = (e) => {
         if (e.target instanceof Element && e.target.closest(`#${TOAST_PORTAL_ID}`)) {
@@ -65,7 +82,9 @@ function DrawerContent({
 
     return (
         <DrawerPortal data-slot="drawer-portal">
-            <DrawerOverlay className={dismissOnOverlayClick ? undefined : "pointer-events-none"} />
+            {showOverlay ? (
+                <DrawerOverlay className={dismissOnOverlayClick ? undefined : "pointer-events-none"} />
+            ) : null}
             <DrawerPrimitive.Content
                 data-slot="drawer-content"
                 onPointerDownOutside={handlePointerDownOutside}
@@ -81,7 +100,9 @@ function DrawerContent({
                 )}
                 {...props}
             >
-                <div className="bg-muted mx-auto mt-4 hidden h-2 w-[100px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+                {showDragHandle ? (
+                    <div className="bg-muted mx-auto mt-4 hidden h-2 w-[100px] shrink-0 rounded-full group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
+                ) : null}
                 {children}
             </DrawerPrimitive.Content>
         </DrawerPortal>
