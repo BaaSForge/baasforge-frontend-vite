@@ -1,4 +1,11 @@
-import { Callout } from 'nextra/components'
+import {
+  Callout,
+  Cards,
+  Details,
+  Steps,
+  Summary,
+  Tabs,
+} from 'nextra/components'
 
 export const metadata = {
   title: 'Variables',
@@ -6,6 +13,110 @@ export const metadata = {
 
 # Variables
 
-<Callout type="info">
-  **Coming soon.** This page is under construction — check back shortly.
+**Variables** are per-runtime environment keys you configure in the dashboard. Unit code reads them at invoke time via the [SDK](/platform/sdk) (`sdk.getSecureEnv`) — not from hardcoded strings in source.
+
+Use them for API keys, tokens, webhook secrets, callback URLs, feature flags, and any other value that differs by stage vs production or should stay out of unit source.
+
+<Callout type="important">
+  Prefer Variables over putting config or secrets in unit code or chat. You manage values in the dashboard; the AI wires reads by **key name**. You never need to tell the AI how to call `getSecureEnv` — the platform already trains and enforces that.
 </Callout>
+
+## Plain vs encrypted
+
+| Tab | Store | Typical use |
+| --- | --- | --- |
+| **Non-encrypted** | Plaintext | Non-secret config — callback URLs, public base URLs, mode flags |
+| **Encrypted** | Encrypted at rest (AES-256-GCM per runtime) | Secrets — API keys, signing secrets, passwords, tokens |
+
+Same key name can have a **different value on each runtime** (Stage 1, Stage 2, Production). Changing Stage 1 does not change Production — see [Runtimes](/platform/runtimes).
+
+<Callout type="warning">
+  Put anything that must not leak in **Encrypted**. Non-encrypted values are visible in the Variables table without a reveal step.
+</Callout>
+
+## Security
+
+| Who / where | What is visible |
+| --- | --- |
+| **AI agents** | Key **names** and whether a key is encrypted — **never** values |
+| **Traces** | Encrypted values are redacted (shown as `[MASKED:KEY_NAME]` when they appear in span data) |
+| **You (dashboard)** | Non-encrypted: shown in the table. Encrypted: masked (`••••••`); reveal temporarily when you need to check |
+
+If a plan needs a key that is missing, the Planner asks you to add it under Variables before implementation continues. Details: [AI Role](/platform/ai-role).
+
+## Updates without redeploy
+
+Changing a variable (or deleting it) invalidates the runtime cache immediately. The **next invoke** on that runtime loads the new value — stage and production alike. No release or redeploy required for value-only changes.
+
+## Manage in the dashboard
+
+Select project → sidebar **Variables**.
+
+<Tabs items={['Add', 'Edit / reveal', 'Delete']}>
+  <Tabs.Tab>
+    <Steps>
+    ### Open the right tab
+
+    **Non-encrypted** or **Encrypted**.
+
+    ### Add variable
+
+    Set a clear key (e.g. `STRIPE_SECRET_KEY`, not `SSK`) and a value per runtime that needs it.
+
+    ### Save
+
+    Leave a runtime blank if that environment should not have the key yet (`Not set`).
+    </Steps>
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Open the variable → edit values per runtime.
+
+    For **encrypted** keys: values stay hidden until you reveal (auto-hides after a few seconds). On edit, leave a runtime empty to keep its current secret.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Delete removes the key from **every** runtime in the project. Cannot be undone.
+  </Tabs.Tab>
+</Tabs>
+
+### Key rules
+
+- Uppercase English letters, digits, and underscores only (`A–Z`, `0–9`, `_`)
+- Prefer descriptive names so the AI can match intent (`WEBHOOK_SIGNING_SECRET`, not `WH_SS`)
+
+## How units read them
+
+At runtime, units call `sdk.getSecureEnv("YOUR_KEY")` (works for both plain and encrypted — encrypted values are decrypted for that invoke only). Full host API: [SDK → Secrets and variables](/platform/sdk#secrets-and-variables).
+
+You do not write this yourself. Describe the product need in Develop chat; the AI discovers configured keys and uses them. Hardcoded secrets in unit source are rejected by platform rules.
+
+```typescript copy filename="example — AI-authored"
+import { sdk } from "@sdk";
+
+const apiKey = sdk.getSecureEnv("STRIPE_SECRET_KEY");
+```
+
+<Callout type="info">
+  There is **no IDE** for unit code. Focus on business logic in chat; the platform handles how secrets are read and validated.
+</Callout>
+
+## Related docs
+
+<Cards>
+  <Cards.Card title="SDK" href="/platform/sdk" />
+  <Cards.Card title="Runtimes" href="/platform/runtimes" />
+  <Cards.Card title="AI Role" href="/platform/ai-role" />
+  <Cards.Card title="Common Unit" href="/platform/units/common-unit" />
+  <Cards.Card title="Glossary" href="/platform/glossary" />
+</Cards>
+
+<Details>
+  <Summary>Quick cheat sheet</Summary>
+
+| Goal | Where |
+| --- | --- |
+| Add / edit keys | Select project → **Variables** |
+| Secret vs config | **Encrypted** vs **Non-encrypted** |
+| Per-environment values | Same key, different cell per runtime |
+| After a value change | Next invoke — no redeploy |
+| How code reads | `sdk.getSecureEnv` — see [SDK](/platform/sdk) |
+</Details>
