@@ -9,6 +9,7 @@ import {
 
 export const metadata = {
   title: 'Releases',
+  asIndexPage: true,
 }
 
 # Releases
@@ -149,21 +150,21 @@ Releases follow a **linear** production line (trunk-based): there is one live pr
 You do **not** maintain two independent long-lived release branches that both keep growing. New work should continue from current production (usually a **new chat**). If production moved ahead via another chat, this session will show a **stale base** warning — shipping from it can replace newer production work (useful for intentional rollback; risky if accidental).
 
 <Callout type="warning">
-  The platform warns on stale-base chats; it does not block you. Confirm only when you mean to overwrite live production. Details: [Avoiding Conflicts](/platform/avoiding-conflicts).
+  The platform warns on stale-base chats; it does not block you. Confirm only when you mean to overwrite live production. Details: [Avoiding Conflicts](/platform/releases/avoiding-conflicts).
 </Callout>
 
 ## Rollback
 
 Yes — you can put a previous production revision live again from release history (Units & Releases sidebar → deploy an older revision). That is a deliberate overwrite of whatever is live now.
 
-Deep dive: [Release History & Rollback](/platform/release-history).
+Deep dive: [Release History & Rollback](/platform/releases/release-history).
 
 ## Related docs
 
 <Cards>
   <Cards.Card title="Runtimes" href="/platform/runtimes" />
-  <Cards.Card title="Avoiding Conflicts" href="/platform/avoiding-conflicts" />
-  <Cards.Card title="Release History & Rollback" href="/platform/release-history" />
+  <Cards.Card title="Avoiding Conflicts" href="/platform/releases/avoiding-conflicts" />
+  <Cards.Card title="Release History & Rollback" href="/platform/releases/release-history" />
   <Cards.Card title="Live interaction" href="/platform/live-interaction" />
   <Cards.Card title="Units" href="/platform/units" />
   <Cards.Card title="AI Role" href="/platform/ai-role" />

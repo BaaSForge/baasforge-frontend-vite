@@ -1,0 +1,92 @@
+import {
+  Callout,
+  Cards,
+  Details,
+  Steps,
+  Summary,
+} from 'nextra/components'
+
+export const metadata = {
+  title: 'Release History & Rollback',
+}
+
+# Release History & Rollback
+
+Every production release stays in history. You can point production back at any previous revision — then point it forward again — as many times as you need. That control is yours in the dashboard; the AI cannot deploy or roll back.
+
+How releases are created (stage → production): [Releases](/platform/releases).
+
+<Callout type="important">
+  **History is production-only.** The Units & Releases sidebar lists production releases. Stage runtimes show their current live release under **Runtimes** → that stage → **Open Units** — not this history list.
+</Callout>
+
+## Open history
+
+Select project → **Units & Releases**.
+
+The secondary sidebar lists production revisions (newest first). The one attached to the production runtime is marked **Live**. Click a revision to browse its units (**New units** / **All units**).
+
+| Action | Where |
+| --- | --- |
+| Open the intro chat | Release card **⋮** → **Open chat session** |
+| See what production runs now | The **Live** card (or open production → **Open Units**) |
+
+Dimmed cards are off the current live → ancestor line (common after a rollback) or not yet shipped to production. They remain in the list and can still be deployed.
+
+## Roll back
+
+Rollback means: attach an older production revision as the live release. It does **not** delete newer revisions — they stay in history so you can return to them.
+
+<Steps>
+### Open Units & Releases
+
+Select project → **Units & Releases**.
+
+### Pick the older revision
+
+In the sidebar, open the revision you want live again (or use its **⋮** menu without opening it).
+
+### Deploy to production
+
+Release card **⋮** → **Deploy to production** → confirm.
+
+Production swaps to that revision. The previous live release stays in the list (no longer marked **Live**).
+</Steps>
+
+<Callout type="info">
+  You can redeploy the revision you just left — or any other production revision — the same way. Roll back and forward as often as needed; each deploy only changes which revision is **Live**.
+</Callout>
+
+After a rollback, Develop chats whose base matches the restored production lose the **Stale base** warning. Details: [Avoiding Conflicts](/platform/releases/avoiding-conflicts).
+
+## Data stays — shape may not fit
+
+Deploying or rolling back **does not wipe** production unit data (actor state, workflow instances, queue jobs, and similar). Only the live unit code changes — like upgrading an app in place.
+
+<Callout type="warning">
+  Newer units may have **written or reshaped** that durable data. If you roll back to older units, those units may not understand fields, formats, or records the newer release created. Confirm the older revision can safely read (and leave) the data that already exists — or expect broken handlers / unexpected behavior until you move forward again or repair data.
+</Callout>
+
+Prefer validating risky unit/data changes on **stage** before production. See [Live interaction](/platform/live-interaction).
+
+## Related docs
+
+<Cards>
+  <Cards.Card title="Releases" href="/platform/releases" />
+  <Cards.Card title="Avoiding Conflicts" href="/platform/releases/avoiding-conflicts" />
+  <Cards.Card title="Runtimes" href="/platform/runtimes" />
+  <Cards.Card title="Live interaction" href="/platform/live-interaction" />
+</Cards>
+
+<Details>
+  <Summary>Quick reference</Summary>
+
+  | Question | Answer |
+  | --- | --- |
+  | Where is history? | Select project → **Units & Releases** (production only) |
+  | Who can roll back? | You — never the AI |
+  | How? | Release **⋮** → **Deploy to production** |
+  | Are newer releases deleted? | No — stay listed; redeploy anytime |
+  | Does deploy clear data? | No — code swaps; durable data remains |
+  | Main risk? | Older units may not understand data written by newer ones |
+</Details>

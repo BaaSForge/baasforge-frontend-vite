@@ -32,9 +32,13 @@ const meta = {
       sdk: 'SDK',
       'ai-role': 'AI Role',
       runtimes: 'Runtimes',
-      releases: 'Releases',
-      'avoiding-conflicts': 'Avoiding Conflicts',
-      'release-history': 'Release History & Rollback',
+      releases: {
+        title: 'Releases',
+        items: {
+          'avoiding-conflicts': 'Avoiding Conflicts',
+          'release-history': 'Release History & Rollback',
+        },
+      } as MetaRecord[string],
       variables: 'Variables',
       'live-interaction': 'Live interaction',
       'auto-api-docs': 'Auto API Docs',
