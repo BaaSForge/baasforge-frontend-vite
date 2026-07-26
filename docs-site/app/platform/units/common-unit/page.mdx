@@ -28,7 +28,7 @@ Example: `billing.shared.common.money`
 The AI uses this path in `@units/…` imports. You work with the unit through the dashboard (browse, release, ask the AI to change it) — you do not construct the path yourself.
 
 <Callout type="important">
-Common units are **importable**, not **callable**. Ask the AI to put shared code in a common unit and import it from executable units (`api`, `workflow`, `actor`, `queue_worker`). Do not expect a public URL or try-it client for a common unit.
+Common units are **importable**, not **callable**. Describe shared logic in product terms (e.g. “format money the same way everywhere we show prices”); the AI places it in a common unit and imports it from the units that need it. Do not expect a public URL or try-it client for a common unit.
 </Callout>
 
 ## What they are for
@@ -334,20 +334,20 @@ The same pattern works for workflow and queue-worker SDK helpers inside a common
 
 ## Create and change common units (Develop)
 
-There is no code editor for units. You describe the shared library; the AI creates or modifies the common unit and wires imports in callers.
+There is no code editor for units. Describe the shared product logic; the AI creates or modifies the common unit and wires imports in callers.
 
 <Steps>
 ### Open Develop
 
 Select your project → sidebar **Develop** → open or start a conversation.
 
-### Ask for a shared library
+### Describe the shared behavior
 
-Example prompt: *“Create a common unit for money formatting and use it from list-orders and create-order.”*
+Example: *“Format money the same way on list-orders and create-order — currency, decimals, and rounding must match everywhere we show a price.”*
 
 ### Review the draft
 
-The AI creates/modifies the common unit and updates dependents. Drafts are not live until you release.
+The AI creates or updates the shared helpers and the units that use them. Drafts are not live until you release.
 
 ### Release to stage
 
@@ -440,7 +440,7 @@ When a common unit’s exports change, the AI automatically scans dependents and
 
 <Details>
   <Summary>Trying to “call” a common unit like an API</Summary>
-  Commons have no URL. Ask the AI to import them from an executable unit, then trigger that unit.
+  Commons have no URL. Ask the AI to use the shared logic from the HTTP endpoint (or other entrypoint) you actually call, then trigger that entrypoint.
 </Details>
 
 <Details>

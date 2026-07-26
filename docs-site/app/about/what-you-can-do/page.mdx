@@ -279,13 +279,15 @@ Not a unit type — still a major “what you can do”:
 <Steps>
 ### Describe a domain backend in chat
 
-Example: “Marketplace with escrow, KYC, and dunning.” AI proposes
-bounded contexts and which unit types own which behaviors.
+Example: “Marketplace with escrow, KYC, and dunning.” Speak in product
+terms — you do not need to name unit types. The AI proposes the
+architecture and which platform primitives own which behaviors.
 
 ### Let AI write and connect units
 
 Creates APIs, workflows, workers, and actors with typed contracts and an
-explicit dependency graph — not a flat pile of functions.
+explicit dependency graph — not a flat pile of functions. You asked for
+outcomes; the AI chose the unit mix.
 
 ### Stage, promote, roll back
 
@@ -310,7 +312,10 @@ Additional platform-level scenarios:
 
 ## Quick map: ask → what you get
 
-| You say in chat… | Typical unit mix |
+Say the left column. You do **not** need to mention the right column —
+that is what the AI typically builds for you.
+
+| You say in chat… | What the AI typically builds |
 | --- | --- |
 | “Checkout that can refund itself” | API + workflow (compensation) + cart/order actors + notify workers |
 | “Wait for a human before paying out” | Workflow promise + actor + API for approve / reject |

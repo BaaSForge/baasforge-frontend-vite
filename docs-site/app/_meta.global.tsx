@@ -36,7 +36,7 @@ const meta = {
       'avoiding-conflicts': 'Avoiding Conflicts',
       'release-history': 'Release History & Rollback',
       variables: 'Variables',
-      'running-apis-units': 'Running APIs & Units',
+      'live-interaction': 'Live interaction',
       'auto-api-docs': 'Auto API Docs',
       tracing: 'Tracing & Debugging',
     } as MetaRecord,

@@ -16,7 +16,7 @@ export const metadata = {
 The **SDK** (`@sdk`) is the only bridge between unit code and the BaaSForge execution plane. Unit TypeScript is a **blueprint**: the AI authors it; the Rust runtime loads, validates, and runs it (QuickJS workers). Durable mailboxes, queues, workflow journals, secrets, and cross-unit delivery are platform work — not libraries you install.
 
 <Callout type="important">
-There is **no IDE** for unit code. Describe business behavior in chat; the AI writes units that import `@sdk`. Platform rules (types, sync helpers, path shapes, isolation) are already taught to the AI and enforced by the technical reviewer — you do not need to prompt technical coding rules.
+There is **no IDE** for unit code. Describe business behavior in chat; the AI writes units that import `@sdk`. You do not need to name unit types or SDK helpers. The AI is trained on platform rules (types, sync helpers, path shapes, isolation), and the technical reviewer enforces them.
 </Callout>
 
 ```mermaid

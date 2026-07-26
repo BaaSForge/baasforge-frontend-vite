@@ -128,20 +128,20 @@ sequenceDiagram
 
 ## Create and change actors (Develop)
 
-There is no code editor for units. Describe the entity and operations; the AI creates or modifies the actor unit and wires callers.
+There is no code editor for units. Describe the product behavior; the AI chooses unit types (including actors when per-entity state fits), writes the code, and wires callers.
 
 <Steps>
 ### Open Develop
 
 Select your project → sidebar **Develop** → open or start a conversation.
 
-### Describe the entity
+### Describe the behavior
 
-Example: *“Create a cart actor with addItem, removeItem, and getState. Key instances by cart id. Call it from create-order API.”*
+Example: *“Each shopper has one active cart: add and remove items, change quantities, and read the cart. Different shoppers must not share carts. Checkout should use that cart, then clear it only after payment succeeds.”*
 
 ### Review the draft
 
-The AI produces the actor and updates dependents. Drafts are not live until you release.
+The AI produces the units and updates dependents. Drafts are not live until you release.
 
 ### Release to stage
 
@@ -153,7 +153,7 @@ In the release controller: **Release Stage** → pick a stage runtime → **Depl
 </Steps>
 
 <Callout type="info">
-You do not need to tell the AI how to structure exports, name Input/Output types, or pick SDK helpers — the platform already instructs and reviews those rules. Focus on business behavior (what the entity stores and which operations it supports).
+You do not need to name unit types (actor, workflow, API, …), exports, or SDK helpers. Speak in product terms — what the entity stores, which operations it supports, and who calls it. The AI is trained on platform rules and the technical reviewer enforces them.
 </Callout>
 
 ## Live interaction (dashboard)

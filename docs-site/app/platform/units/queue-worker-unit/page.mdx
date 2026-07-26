@@ -132,20 +132,20 @@ sequenceDiagram
 
 ## Create and change queue workers (Develop)
 
-There is no code editor for units. Describe the job and failure behavior; the AI creates or modifies the queue worker and wires callers.
+There is no code editor for units. Describe the background work and failure policy; the AI chooses unit types (including queue workers when fire-and-forget jobs fit), writes the code, and wires callers.
 
 <Steps>
 ### Open Develop
 
 Select your project → sidebar **Develop** → open or start a conversation.
 
-### Describe the job
+### Describe the behavior
 
-Example: *“Create a send-welcome-email queue worker. Enqueue it from the signup API. Retry transient provider errors up to 5 times. If it permanently fails, alert ops in the dead-letter handler. Prefer batching when many signups arrive at once.”*
+Example: *“After signup, send a welcome email without slowing down the signup response. Retry if the email provider is temporarily down (up to a few tries). If it permanently fails, alert ops. When many people sign up at once, batch sends so we do not overwhelm the provider.”*
 
 ### Review the draft
 
-The AI produces the worker and updates dependents. Drafts are not live until you release.
+The AI produces the units and updates dependents. Drafts are not live until you release.
 
 ### Release to stage
 
@@ -157,7 +157,7 @@ In the release controller: **Release Stage** → pick a stage runtime → **Depl
 </Steps>
 
 <Callout type="info">
-You do not need to tell the AI how to structure exports, name `Input` / `Output`, pick SDK helpers, or configure retry shapes — the platform already instructs and reviews those rules. Focus on business behavior (what the job does, when it should retry, what happens on permanent failure, who enqueues it).
+You do not need to name unit types (queue worker, API, …), exports, SDK helpers, or retry metadata shapes. Speak in product terms — what the job does, when it should retry, what happens on permanent failure, and what triggers it. The AI is trained on platform rules and the technical reviewer enforces them.
 </Callout>
 
 ## Live interaction (dashboard)
@@ -553,7 +553,7 @@ Sync SDK helpers return plain values — unit code must not `await sdk.xxxSync(�
 | `rateLimit` | Intended `{ max, window }` cap on starts per window |
 | `deadLetter` | `{ enabled }` — DLQ intent alongside `onDeadLetter` |
 
-Describe desired retry / batch / timeout behavior in product language; the AI fills metadata.
+Describe retry, batching, and timeout needs in product language; the AI fills metadata. You do not need to name metadata fields.
 
 ## Calling other units from a queue worker
 
