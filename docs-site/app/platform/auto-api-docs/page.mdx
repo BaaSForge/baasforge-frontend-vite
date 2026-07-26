@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components'
+import { Callout, Cards, Steps, Tabs } from 'nextra/components'
 
 export const metadata = {
   title: 'Auto API Docs',
@@ -6,6 +6,128 @@ export const metadata = {
 
 # Auto API Docs
 
-<Callout type="info">
-  **Coming soon.** This page is under construction — check back shortly.
+OpenAPI-style docs for every **API** unit — generated from the unit’s typed contract and HTTP method, with a built-in try-it client ([Live interaction](/platform/live-interaction)).
+
+**Why it exists:** share a read-only docs link with teammates or partners who are **not** project owners on the platform. They can browse API shapes and send test requests without signing in or seeing private units.
+
+<Callout type="important">
+  You do **not** need to ask the AI to write OpenAPI, Scalar, or “API docs.” When the AI creates an API unit, the platform extracts types, builds the docs, and wires Live interaction automatically.
 </Callout>
+
+## How docs are produced
+
+The AI authors each API unit with a fixed contract. The platform turns that into JSON Schema → OpenAPI → the dashboard / share UI (powered by <a href="https://scalar.com/" target="_blank" rel="noopener noreferrer nofollow">Scalar</a>).
+
+| Source | Becomes |
+| --- | --- |
+| Unit `method` (GET, POST, …) | Operation verb |
+| `export type RequestBody` | Request body schema (`never` = no body) |
+| `export type QueryParams` | Query parameter schema (`never` = none) |
+| `export type ResponseBody` | Response schema (must be a concrete object — not `never`) |
+| Trigger path | Server + path in the try-it client |
+
+If the try-it form looks wrong, ask the AI to fix the unit’s types or handler — not to “update the docs.”
+
+Full contract rules: [API Unit](/platform/units/api-unit).
+
+## Example contract (what drives the docs)
+
+Ask for product behavior (e.g. “echo a JSON body”). The AI produces something like:
+
+```typescript copy filename="echo.ts"
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { text } from "node:stream/consumers";
+
+export type RequestBody = Record<string, unknown>;
+export type QueryParams = never;
+export type ResponseBody = { echoed: Record<string, unknown>; method: string };
+
+export async function handleRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+): Promise<void> {
+  const raw = await text(req);
+  let body: Record<string, unknown> = {};
+  if (raw) {
+    try {
+      body = JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      body = { raw };
+    }
+  }
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(
+    JSON.stringify({
+      echoed: body,
+      method: req.method ?? "UNKNOWN",
+    } satisfies ResponseBody),
+  );
+}
+```
+
+Those exports are what fill request/query/response fields in Live interaction and on a documentation share link.
+
+## View as a project member
+
+Docs + try-it live on the unit card under **Live interaction** (only when that release is **live** on the runtime you opened).
+
+<Tabs items={['Stage', 'Production']}>
+  <Tabs.Tab>
+    Select project → **Runtimes** → stage runtime → **Open Units** → **All units** → API unit → **Live interaction** → **Test Request** → **Send**.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Select project → **Units & Releases** (or production runtime → **Open Units**) → **All units** → API unit → **Live interaction** → **Test Request** → **Send**.
+  </Tabs.Tab>
+</Tabs>
+
+Details (auth notes, cookies, non-API units): [Live interaction](/platform/live-interaction).
+
+## Share with people outside the project
+
+A **documentation share** link is a public, time-limited URL: no login, **API units only**, docs + try-it. Actors, workflows, and queue workers stay private.
+
+### Create or manage a link
+
+<Steps>
+### Open the release’s All units list
+
+Select project → **Units & Releases** → **All units**  
+(or a runtime → **Open Units** → **All units**).
+
+### Open Share documentation
+
+At the top of the list → **Share documentation** → **Share**.
+
+### Pick expiry
+
+**1 day** · **3 days** · **7 days** · **1 month** · **6 months** · **Forever**.
+
+### Generate and copy
+
+**Generate** → copy the URL. Anyone with it can open the docs without signing in.
+</Steps>
+
+| Action | Effect |
+| --- | --- |
+| **Re-generate** | New secret + expiry; the previous URL stops working immediately |
+| **Revoke share** | Current link stops working; generate again later when needed |
+
+<Callout type="warning">
+  Share links expose **public API** try-it against real trigger URLs for that project. Prefer short expiry for external sharing; revoke when the review is done. Treat API triggers as internet-facing — ask the AI to add auth inside units when endpoints must be private.
+</Callout>
+
+### What recipients see
+
+- Unit list for the **release** in the link (API units only)
+- Explanation note + typed request / query / response
+- **Live interaction** to send test requests
+- No project dashboard, Develop chat, actors, workflows, or queue workers
+
+## Related
+
+<Cards>
+  <Cards.Card title="Live interaction" href="/platform/live-interaction" />
+  <Cards.Card title="API Unit" href="/platform/units/api-unit" />
+  <Cards.Card title="Releases" href="/platform/releases" />
+  <Cards.Card title="AI Role" href="/platform/ai-role" />
+</Cards>
