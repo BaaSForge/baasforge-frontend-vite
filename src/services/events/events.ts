@@ -1,5 +1,5 @@
 import type { ChatMessageResponse } from "@/modules/project-chat/types";
-import type { ToolCreateUnitPayload } from "@/modules/project-chat/payloads";
+import type { ToolCreateUnitPayload, ToolModifyUnitPayload } from "@/modules/project-chat/payloads";
 
 export const events = {
     TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED: "tutorial-primary-action-button-clicked",
@@ -27,6 +27,7 @@ export const events = {
     RELEASE_UNITS_LOADED_EVENT: "release-units-loaded",
     MESSAGE_RECEIVED_EVENT: "message-received",
     CREATE_UNIT_RECEIVED_EVENT: "create-unit-received",
+    MODIFY_UNIT_RECEIVED_EVENT: "modify-unit-received",
     RELEASE_CONTROLLER_RECEIVED_EVENT: "release-controller-received",
     STAGE_DEPLOY_MODAL_OPENED_EVENT: "stage-deploy-modal-opened",
     STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT: "stage-deploy-on-runtime-done",
@@ -62,7 +63,7 @@ export type AppEventPayloadMap = {
     [events.PROJECT_CREATED_EVENT]: { projectId: string };
     [events.DEVELOP_BUTTON_CLICKED_EVENT]: undefined;
     [events.CHAT_COMPOSER_INPUT_FOCUSED_EVENT]: undefined;
-    [events.CHAT_COMPOSER_FILL_PROMPT_EVENT]: { text: string };
+    [events.CHAT_COMPOSER_FILL_PROMPT_EVENT]: { text: string; append?: boolean };
     [events.CHAT_SESSION_CREATED_EVENT]: { chatSessionId: string };
     [events.UNIT_ID_BADGE_COPIED_EVENT]: { unitId: string };
     [events.UNIT_CHANGES_MODAL_OPENED_EVENT]: undefined;
@@ -72,6 +73,7 @@ export type AppEventPayloadMap = {
     [events.RELEASE_UNITS_LOADED_EVENT]: undefined;
     [events.MESSAGE_RECEIVED_EVENT]: undefined;
     [events.CREATE_UNIT_RECEIVED_EVENT]: ChatMessageResponse<ToolCreateUnitPayload>;
+    [events.MODIFY_UNIT_RECEIVED_EVENT]: ChatMessageResponse<ToolModifyUnitPayload>;
     [events.RELEASE_CONTROLLER_RECEIVED_EVENT]: undefined;
     [events.STAGE_DEPLOY_MODAL_OPENED_EVENT]: undefined;
     [events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT]: string | undefined;

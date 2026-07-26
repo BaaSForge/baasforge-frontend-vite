@@ -9,7 +9,7 @@ export type ScrollHint = {
     icon: ScrollHintIcon;
 };
 
-const VIEWPORT_EDGE_EPSILON_PX = 1;
+const VIEWPORT_EDGE_EPSILON_PX = 10;
 
 function getScrollAxisDirections(rect: DOMRect, viewport: ViewportSize): ScrollAxisDirection[] {
     const directions: ScrollAxisDirection[] = [];

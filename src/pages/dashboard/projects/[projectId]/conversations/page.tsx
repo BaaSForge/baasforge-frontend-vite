@@ -288,7 +288,16 @@ function ProjectConversationsContent() {
 
     useEffect(() => {
         return listenAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, (event) => {
-            applyComposerPrefill({ text: event.detail.text });
+            const { text, append } = event.detail;
+            if (append) {
+                setMessageInput((prev) => {
+                    const trimmed = prev.trimEnd();
+                    if (!trimmed) return text;
+                    return `${trimmed}\n\n${text}`;
+                });
+                return;
+            }
+            applyComposerPrefill({ text });
         });
     }, [applyComposerPrefill]);
 

@@ -1,5 +1,5 @@
 import { ChatMessageType, ChatSessionRoleType, type ChatMessageResponse } from "@/modules/project-chat/types";
-import type { ToolCreateUnitPayload } from "@/modules/project-chat/payloads";
+import type { ToolCreateUnitPayload, ToolModifyUnitPayload } from "@/modules/project-chat/payloads";
 
 import { triggerAppEvent } from "./event-bus";
 import { events } from "./events";
@@ -13,6 +13,13 @@ export function emitTutorialChatMessageEvents(message: ChatMessageResponse): voi
         const payload = message.payload as ToolCreateUnitPayload | null;
         if (payload?.created_unit) {
             triggerAppEvent(events.CREATE_UNIT_RECEIVED_EVENT, message as ChatMessageResponse<ToolCreateUnitPayload>);
+        }
+    }
+
+    if (message.type === ChatMessageType.ToolModifyUnit) {
+        const payload = message.payload as ToolModifyUnitPayload | null;
+        if (payload?.revised_unit) {
+            triggerAppEvent(events.MODIFY_UNIT_RECEIVED_EVENT, message as ChatMessageResponse<ToolModifyUnitPayload>);
         }
     }
 

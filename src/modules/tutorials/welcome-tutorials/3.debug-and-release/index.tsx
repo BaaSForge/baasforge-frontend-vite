@@ -10,7 +10,7 @@ import { events, listenAppEvent, triggerAppEvent } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { useDebouncedEffect } from "@/hooks/use-debounced-effect";
 import { scrollWindowByWhenSettled } from "@/lib/dom";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
@@ -21,20 +21,48 @@ import {
     APP_START_DEBUG_LETS_START_BUTTON_ID,
     APP_START_DEBUG_TRACE_IDS_INPUT_ID,
 } from "@/modules/layout/components/start-debug-modal";
-import { APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID, APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID, assignLastReleaseControllerProdButtonSpotlightId, assignLastReleaseControllerProdReleaseLinkSpotlightId } from "@/pages/dashboard/projects/[projectId]/conversations/components/message/release-controller-tutorial-targets";
+import { APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID, APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID, APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID, APP_STAGE_DEPLOY_MODAL_ID, assignLastReleaseControllerProdButtonSpotlightId, assignLastReleaseControllerProdReleaseLinkSpotlightId, assignLastReleaseControllerStageButtonSpotlightId } from "@/pages/dashboard/projects/[projectId]/conversations/components/message/release-controller-tutorial-targets";
 import type { WriteAndCallExtra } from "../2.write-and-call-your-api";
 import { TUTORIAL_ID as WRITE_AND_CALL_TUTORIAL_ID } from "../2.write-and-call-your-api";
 import { getRuntimeCardChatSessionButtonId } from "@/components/runtime-card";
 import { APP_RELEASE_UNITS_FILTER_INPUT_ID } from "@/modules/project/release-units-all/release-units-all-panel";
 import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId, tutorialFirstUnitScalarTraceIdCopyButtonId } from "./tutorial-target-ids";
+import { APP_CHAT_COMPOSER_ID } from "@/pages/dashboard/projects/[projectId]/conversations/components/controls";
 
 export type DebugAndReleaseExtra = {
     traceId: string;
+    debugChatSessionId: string;
 };
 
 const LAYOUT_SETTLE_DEBOUNCE_MS = 250;
 
 const TUTORIAL_ID = "debug-and-release" as const;
+
+const TUTORIAL_DEBUG_PROMPT =
+    "I called an API unit, but it returned `hello world` instead of `hello from the API!`. Find why it's returning the wrong response, then update the unit so it returns `hello from the API!`.";
+
+function FillPromptButton() {
+    const [filled, setFilled] = useState(false);
+
+    return (
+        <Button
+            type="button"
+            variant="default"
+            size="xs"
+            className="ml-auto"
+            disabled={filled}
+            onClick={() => {
+                triggerAppEvent(events.CHAT_COMPOSER_FILL_PROMPT_EVENT, {
+                    text: TUTORIAL_DEBUG_PROMPT,
+                    append: true,
+                });
+                setFilled(true);
+            }}
+        >
+            Fill the prompt
+        </Button>
+    );
+}
 
 const STEPS = [
     "overview",
@@ -53,13 +81,7 @@ const STEPS = [
     "waiting-for-unit-updating",
     "deploy-to-stage",
     "choose-stage-runtime",
-    "deploy-to-production",
-    "go-to-production",
-    "filter-unit-by-id",
-    "call-unit-live-interaction",
-    "start-scalar-http-client",
-    "send-scalar-http-request",
-    "review-new-response-body",
+    "second-deploy-to-production",
     "done",
 ] as const;
 
@@ -67,6 +89,9 @@ export function DebugAndReleaseTutorial() {
     const appState = useAppState();
     const loadWriteAndCallTutorialMetadata = useLoadTutorialMetadata<WriteAndCallExtra>(
         WELCOME_TUTORIALS_GROUP_ID, WRITE_AND_CALL_TUTORIAL_ID,
+    );
+    const loadDebugTutorialMetadata = useLoadTutorialMetadata<DebugAndReleaseExtra>(
+        WELCOME_TUTORIALS_GROUP_ID, TUTORIAL_ID,
     );
     const { currentStep, goNext, goTo, goToInterrupted, mergeTutorialMetadata, loadTutorialMetadata } = useTutorialSteps<
         typeof STEPS,
@@ -836,6 +861,265 @@ export function DebugAndReleaseTutorial() {
             appState.debugModalValidatedTraceId,
             loadTutorialMetadata,
             isInPreviousProject,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "chat-composer-input") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.NEW_CHAT) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(APP_CHAT_COMPOSER_ID);
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Start a debug conversation</p>
+                    <p className="text-muted-foreground mt-1">
+                        Send this message to ask AI why the API returned the wrong text, then update the unit so it
+                        returns `hello from the API!` instead of `hello world`.
+                    </p>
+                    <blockquote className="my-4 border-l-2 border-muted pl-3 text-sm text-muted-foreground">
+                        {TUTORIAL_DEBUG_PROMPT}
+                    </blockquote>
+                </>,
+                <FillPromptButton />,
+            );
+
+            return listenAppEvent(events.CHAT_SESSION_CREATED_EVENT, (event) => {
+                mergeTutorialMetadata({
+                    debugChatSessionId: event.detail.chatSessionId,
+                });
+                goNext();
+            });
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            mergeTutorialMetadata,
+            appState.activePage,
+            appState.pathParams,
+            loadTutorialMetadata,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    )
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "waiting-for-unit-updating") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.CHAT) {
+                goTo("debug-button");
+                return;
+            }
+
+            const { debugChatSessionId } = await loadDebugTutorialMetadata();
+            
+            if (appState.pathParams?.conversationId !== debugChatSessionId) {
+                goTo("debug-button");
+                return;
+            }
+
+            clearTutorialSpotlight();
+
+            return listenAppEvent(events.MODIFY_UNIT_RECEIVED_EVENT, (event) => {
+                if (event.detail.chat_session_id !== debugChatSessionId) {
+                    return;
+                }
+
+                goNext();
+            });
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            mergeTutorialMetadata,
+            appState.pathParams,
+            appState.activePage,
+            loadTutorialMetadata,
+            loadDebugTutorialMetadata,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    )
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "deploy-to-stage") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.CHAT) {
+                goTo("debug-button");
+                return;
+            }
+
+            const { debugChatSessionId } = await loadDebugTutorialMetadata();
+
+            if (appState.pathParams?.conversationId !== debugChatSessionId) {
+                goTo("debug-button");
+                return;
+            }
+
+            assignLastReleaseControllerStageButtonSpotlightId();
+
+            setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_STAGE_BUTTON_ID);
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Deploy to stage</p>
+                    <p className="text-muted-foreground mt-1">
+                        Click the latest release button at the bottom to open the deploy modal.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.STAGE_DEPLOY_MODAL_OPENED_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            appState.activePage,
+            appState.pathParams,
+            loadTutorialMetadata,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "choose-stage-runtime") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.CHAT) {
+                goTo("debug-button");
+                return;
+            }
+
+            const { debugChatSessionId } = await loadDebugTutorialMetadata();
+
+            if (appState.pathParams?.conversationId !== debugChatSessionId) {
+                goTo("debug-button");
+                return;
+            }
+
+            if (!appState.isStageDeployModalOpen) {
+                goTo("deploy-to-stage");
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(APP_STAGE_DEPLOY_MODAL_ID, { zIndexLayout: 'modal' });
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Choose a stage runtime</p>
+                    <p className="text-muted-foreground mt-1">
+                        Pick a stage runtime and deploy your release. You can deploy to an idle runtime or swap an
+                        existing live release.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            appState.activePage,
+            appState.pathParams,
+            appState.isStageDeployModalOpen,
+            mergeTutorialMetadata,
+            loadTutorialMetadata,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "second-deploy-to-production") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.CHAT) {
+                goTo("debug-button");
+                return;
+            }
+
+            const { debugChatSessionId } = await loadDebugTutorialMetadata();
+
+            if (appState.pathParams?.conversationId !== debugChatSessionId) {
+                goTo("debug-button");
+                return;
+            }
+
+            assignLastReleaseControllerProdReleaseLinkSpotlightId();
+
+            const linkElement = document.getElementById(APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID);
+
+            if (linkElement) {
+                goNext();
+                return;
+            }
+
+            assignLastReleaseControllerProdButtonSpotlightId();
+            setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID);
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Deploy new release to production</p>
+                    <p className="text-muted-foreground mt-1">
+                        Click the latest release button at the bottom to deploy the new release to the production.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.PROD_DEPLOY_DONE_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            isInPreviousProject,
+            loadWriteAndCallTutorialMetadata,
+            appState.activePage,
+            appState.pathParams,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
