@@ -17,6 +17,10 @@ export function emitStageReleaseBadgeClicked(): void {
     triggerAppEvent(events.STAGE_RELEASE_BADGE_CLICKED_EVENT);
 }
 
+export function emitProdReleaseBadgeClicked(): void {
+    triggerAppEvent(events.PROD_RELEASE_BADGE_CLICKED_EVENT);
+}
+
 export function emitUnitLiveInteractionClicked(): void {
     triggerAppEvent(events.UNIT_LIVE_INTERACTION_CLICKED_EVENT);
 }

@@ -9,6 +9,7 @@ import { Rocket } from "lucide-react";
 import { prodReleaseDisabledTooltip, prodReleaseRowView } from "./release-controller-row-view-models";
 import { APP_RELEASE_CONTROLLER_PROD_BUTTON_DATA_ATTR, APP_RELEASE_CONTROLLER_PROD_RELEASE_LINK_DATA_ATTR } from "./release-controller-tutorial-targets";
 import type { ReleaseControllerActions } from "./use-release-controller-actions";
+import { emitProdReleaseBadgeClicked } from "@/services/events";
 
 export function ReleaseControllerThreadProdRow({
     actions,
@@ -30,7 +31,11 @@ export function ReleaseControllerThreadProdRow({
                 className={cn("inline-flex min-w-0", className)}
                 {...{ [APP_RELEASE_CONTROLLER_PROD_RELEASE_LINK_DATA_ATTR]: "" }}
             >
-                <CompactReleaseBadge release={prodRelease} projectId={projectId} />
+                <CompactReleaseBadge
+                    release={prodRelease}
+                    projectId={projectId}
+                    onLinkClick={() => emitProdReleaseBadgeClicked()}
+                />
             </div>
         );
     }

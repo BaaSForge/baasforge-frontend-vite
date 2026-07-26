@@ -5,20 +5,23 @@ import { pinToTop, setTargetSpotlightOverlayElementId, SpotlightPrimaryActionBut
 import { setSpotlightContentToRender } from "@/components/target-spotlight-overlay/lib/spotlight-renderer";
 import { ActivePage, useAppState } from "@/modules/app-state";
 import { useLoadTutorialMetadata, useTutorialSteps } from "@/modules/tutorials/hooks/use-tutorial-steps";
-import { events, listenAppEvent } from "@/services/events";
+import { events, listenAppEvent, triggerAppEvent } from "@/services/events";
 import { WELCOME_TUTORIALS_GROUP_ID } from "@/services/tutorials";
 import { useDebouncedEffect } from "@/hooks/use-debounced-effect";
 import { scrollWindowByWhenSettled } from "@/lib/dom";
 import { useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky-breadcrumb-bar";
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { clearTutorialSpotlight } from "../../hooks/use-tutorial-stop-listener";
 import { isSubRouteOfPage } from "@/pages/routes";
 import { APP_RUNTIMES_MENU_BUTTON_ID } from "@/modules/layout/components/nav-projects";
-import { APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID, assignLastReleaseControllerProdButtonSpotlightId } from "@/pages/dashboard/projects/[projectId]/conversations/components/message/release-controller-tutorial-targets";
+import { APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID, APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID, assignLastReleaseControllerProdButtonSpotlightId, assignLastReleaseControllerProdReleaseLinkSpotlightId } from "@/pages/dashboard/projects/[projectId]/conversations/components/message/release-controller-tutorial-targets";
 import type { WriteAndCallExtra } from "../2.write-and-call-your-api";
 import { TUTORIAL_ID as WRITE_AND_CALL_TUTORIAL_ID } from "../2.write-and-call-your-api";
 import { getRuntimeCardChatSessionButtonId } from "@/components/runtime-card";
+import { APP_RELEASE_UNITS_FILTER_INPUT_ID } from "@/modules/project/release-units-all/release-units-all-panel";
+import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarResponseHeadersButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId } from "./tutorial-target-ids";
 
 type DebugAndReleaseExtra = never;
 
@@ -32,6 +35,12 @@ const STEPS = [
     "open-runtimes-page",
     "open-runtime-chat-session",
     "deploy-to-production",
+    "go-to-production",
+    "filter-unit-by-id",
+    "call-unit-live-interaction",
+    "start-scalar-http-client",
+    "send-scalar-http-request",
+    "copy-scalar-trace-id",
     "done",
 ] as const;
 
@@ -278,6 +287,15 @@ export function DebugAndReleaseTutorial() {
                 return;
             }
 
+            assignLastReleaseControllerProdReleaseLinkSpotlightId();
+
+            const linkElement = document.getElementById(APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID);
+
+            if (linkElement) {
+                goNext();
+                return;
+            }
+
             assignLastReleaseControllerProdButtonSpotlightId();
             setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID);
 
@@ -303,7 +321,366 @@ export function DebugAndReleaseTutorial() {
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
-    
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "go-to-production") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.CHAT) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            const { chatSessionId } = await loadWriteAndCallTutorialMetadata();
+
+            if (appState.pathParams?.conversationId !== chatSessionId) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            assignLastReleaseControllerProdReleaseLinkSpotlightId();
+            setTargetSpotlightOverlayElementId(APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID);
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Open the production release page</p>
+                    <p className="text-muted-foreground mt-1">
+                        Click again on the production release badge to open the release page and inspect your deployed units.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.PROD_RELEASE_BADGE_CLICKED_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            isInPreviousProject,
+            loadWriteAndCallTutorialMetadata,
+            appState.activePage,
+            appState.pathParams,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "filter-unit-by-id") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.UNITS_RELEASES_DETAIL) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            const { firstUnitId } = await loadWriteAndCallTutorialMetadata();
+
+            if (firstUnitId === undefined) {
+                goToInterrupted();
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(APP_RELEASE_UNITS_FILTER_INPUT_ID);
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Filter units by ID</p>
+                    <p className="text-muted-foreground mt-1">
+                        Filter units by it's ID using this input. Use the button below to fill the ID we
+                        copied earlier or paste it manually.
+                    </p>
+                </>,
+                <Button
+                    type="button"
+                    variant="default"
+                    size="xs"
+                    className={"ml-auto"}
+                    onClick={() => {
+                        triggerAppEvent(events.RELEASE_UNITS_FILTER_FILL_UNIT_ID_EVENT, { unitId: firstUnitId });
+                    }}
+                >
+                    Fill unit ID
+                </Button>
+            );
+
+            return listenAppEvent(events.RELEASE_UNITS_FILTER_APPLIED_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            isInPreviousProject,
+            appState.activePage,
+            goToInterrupted,
+            loadWriteAndCallTutorialMetadata,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "call-unit-live-interaction") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.UNITS_RELEASES_DETAIL) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            const { firstUnitId } = await loadWriteAndCallTutorialMetadata();
+
+            if (firstUnitId === undefined) {
+                goToInterrupted();
+                return;
+            }
+
+            const unitsPaths = appState.searchParams.units_paths ?? [];
+
+            if (!unitsPaths.includes(firstUnitId)) {
+                goTo("filter-unit-by-id");
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitLiveInteractionButtonId(firstUnitId));
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Expand live interaction section</p>
+                    <p className="text-muted-foreground mt-1">
+                        Click Live interaction to open the built-in client to continue.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.UNIT_LIVE_INTERACTION_CLICKED_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            appState.activePage,
+            appState.pathParams,
+            appState.searchParams,
+            loadWriteAndCallTutorialMetadata,
+            goToInterrupted,
+            isInPreviousProject,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "start-scalar-http-client") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.UNITS_RELEASES_DETAIL) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            const { firstUnitId } = await loadWriteAndCallTutorialMetadata();
+
+            if (firstUnitId === undefined) {
+                goToInterrupted();
+                return;
+            }
+
+            const unitsPaths = appState.searchParams.units_paths ?? [];
+
+            if (!unitsPaths.includes(firstUnitId)) {
+                goTo("filter-unit-by-id");
+                return;
+            }
+
+            if (!appState.liveInteractionOpenUnitIds.includes(firstUnitId)) {
+                goTo("call-unit-live-interaction");
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarTestRequestButtonId(firstUnitId));
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Open the HTTP client modal</p>
+                    <p className="text-muted-foreground mt-1">
+                        Click Test Request to open the built-in client modal.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.SCALAR_TEST_REQUEST_CLICKED_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            appState.activePage,
+            appState.pathParams,
+            appState.searchParams,
+            appState.liveInteractionOpenUnitIds,
+            loadWriteAndCallTutorialMetadata,
+            goToInterrupted,
+            isInPreviousProject,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "send-scalar-http-request") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.UNITS_RELEASES_DETAIL) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            const { firstUnitId } = await loadWriteAndCallTutorialMetadata();
+
+            if (firstUnitId === undefined) {
+                goToInterrupted();
+                return;
+            }
+
+            const unitsPaths = appState.searchParams.units_paths ?? [];
+
+            if (!unitsPaths.includes(firstUnitId)) {
+                goTo("filter-unit-by-id");
+                return;
+            }
+
+            if (appState.scalarClientModalOpenUnitId !== firstUnitId) {
+                goTo("start-scalar-http-client");
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarSendButtonId(firstUnitId), { zIndexLayout: 'toast' });
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Send your request</p>
+                    <p className="text-muted-foreground mt-1">
+                        Click Send to call your API and get the response. This is the production call, it will return the trace ID too.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.SCALAR_SEND_CLICKED_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            appState.activePage,
+            appState.pathParams,
+            appState.searchParams,
+            appState.scalarClientModalOpenUnitId,
+            loadWriteAndCallTutorialMetadata,
+            goToInterrupted,
+            isInPreviousProject,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "copy-scalar-trace-id") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (appState.activePage !== ActivePage.UNITS_RELEASES_DETAIL) {
+                goTo("open-runtime-chat-session");
+                return;
+            }
+
+            const { firstUnitId } = await loadWriteAndCallTutorialMetadata();
+
+            if (firstUnitId === undefined) {
+                goToInterrupted();
+                return;
+            }
+
+            const unitsPaths = appState.searchParams.units_paths ?? [];
+
+            if (!unitsPaths.includes(firstUnitId)) {
+                goTo("filter-unit-by-id");
+                return;
+            }
+
+            if (appState.scalarClientModalOpenUnitId !== firstUnitId) {
+                goTo("start-scalar-http-client");
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarResponseHeadersButtonId(firstUnitId), { zIndexLayout: 'toast' });
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Response headers</p>
+                    <p className="text-muted-foreground mt-1">
+                        Here are the response headers from your call.
+                        <br />
+                        Copy the value of{" "}
+                        <code className="text-foreground">X-Trace-Id</code> header to debug this trace.
+                    </p>
+                </>,
+                <SpotlightPrimaryActionButton>Copied it.</SpotlightPrimaryActionButton>,
+            );
+
+            return listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            appState.activePage,
+            appState.pathParams,
+            appState.searchParams,
+            appState.scalarClientModalOpenUnitId,
+            loadWriteAndCallTutorialMetadata,
+            goToInterrupted,
+            isInPreviousProject,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
     useEffect(() => {
         if (currentStep !== "done") return;
 

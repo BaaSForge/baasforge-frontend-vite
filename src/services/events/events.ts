@@ -32,6 +32,7 @@ export const events = {
     STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT: "stage-deploy-on-runtime-done",
     PROD_DEPLOY_DONE_EVENT: "prod-deploy-done",
     STAGE_RELEASE_BADGE_CLICKED_EVENT: "stage-release-badge-clicked",
+    PROD_RELEASE_BADGE_CLICKED_EVENT: "prod-release-badge-clicked",
     UNIT_LIVE_INTERACTION_CLICKED_EVENT: "unit-live-interaction-clicked",
     SCALAR_TEST_REQUEST_CLICKED_EVENT: "scalar-test-request-clicked",
     SCALAR_SEND_CLICKED_EVENT: "scalar-send-clicked",
@@ -72,6 +73,7 @@ export type AppEventPayloadMap = {
     [events.STAGE_DEPLOY_ON_RUNTIME_DONE_EVENT]: string | undefined;
     [events.PROD_DEPLOY_DONE_EVENT]: undefined;
     [events.STAGE_RELEASE_BADGE_CLICKED_EVENT]: undefined;
+    [events.PROD_RELEASE_BADGE_CLICKED_EVENT]: undefined;
     [events.UNIT_LIVE_INTERACTION_CLICKED_EVENT]: undefined;
     [events.SCALAR_TEST_REQUEST_CLICKED_EVENT]: undefined;
     [events.SCALAR_SEND_CLICKED_EVENT]: undefined;
