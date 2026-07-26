@@ -26,6 +26,7 @@ import { events, triggerAppEvent } from "@/services/events";
 import { cn } from "@/lib/utils";
 
 export const APP_DEVELOP_BUTTON_ID = "app-develop-button";
+export const APP_DEBUG_BUTTON_ID = "app-debug-button";
 export const APP_RUNTIMES_MENU_BUTTON_ID = "app-runtimes-menu-button";
 
 const VISIBLE_CHAT_SESSIONS_COUNT = 5;
@@ -120,6 +121,7 @@ export function NavProjects() {
                                     <Button
                                         size="sm"
                                         style={{ height: "2rem", minHeight: "2rem" }}
+                                        id={APP_DEBUG_BUTTON_ID}
                                         className={cn(
                                             "min-w-0 flex-[1]",
                                             debugToolbarActiveToneClassName,

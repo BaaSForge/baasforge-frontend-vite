@@ -2,6 +2,8 @@
 
 import * as React from "react";
 
+import { appStateStore } from "@/modules/app-state/store";
+
 import { StartDebugModal } from "./start-debug-modal";
 
 type StartDebugModalContextValue = {
@@ -21,6 +23,10 @@ export function StartDebugModalProvider({ children }: { children: React.ReactNod
         }),
         [],
     );
+
+    React.useEffect(() => {
+        appStateStore.getState().setDebugModalOpen(open);
+    }, [open]);
 
     return (
         <StartDebugModalContext.Provider value={value}>

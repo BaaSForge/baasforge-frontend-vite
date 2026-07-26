@@ -28,17 +28,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { getApiErrorMessage } from "@/lib/errors";
+import { appStateStore } from "@/modules/app-state/store";
 import { useProjectLiveReleaseByRevisionQuery, useProjectTracesByIdsQuery } from "@/modules/project/queries";
 import { isValidReleaseRevisionString } from "@/modules/project/release-revision";
 import type { ReleaseResponse } from "@/modules/project/types";
 import { PlatformEnvironmentType } from "@/modules/project/types";
 
+import { events, listenAppEvent, triggerAppEvent } from "@/services/events";
+
 import { StartDebugModalBgIllustration } from "./start-debug-modal-bg";
+
+export const APP_START_DEBUG_TRACE_IDS_INPUT_ID = "start-debug-trace-ids";
+export const APP_START_DEBUG_LETS_START_BUTTON_ID = "app-start-debug-lets-start-button";
 
 type StartDebugModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
+
+function pasteTraceIdIntoInput(traceId: string): void {
+    const input = document.getElementById(APP_START_DEBUG_TRACE_IDS_INPUT_ID);
+    if (!(input instanceof HTMLInputElement)) return;
+
+    input.focus();
+    const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    valueSetter?.call(input, traceId);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", code: "Enter", bubbles: true, cancelable: true }),
+    );
+}
 
 const SAMPLE_RELEASE_ERROR = "";
 const RELEASE_LOOKUP_DEBOUNCE_MS = 1000;
@@ -111,6 +130,22 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
         setReleaseEnv("stage");
         setReleaseRevision("");
         setLeaveChatConfirm(null);
+    }, [open]);
+
+    React.useEffect(() => {
+        if (!open) return;
+
+        return listenAppEvent(events.START_DEBUG_MODAL_PASTE_TRACE_ID_EVENT, (event) => {
+            const traceId = event.detail.traceId.trim();
+            if (!traceId) return;
+
+            pasteTraceIdIntoInput(traceId);
+
+            setTraceIds((prev) => {
+                if (prev.includes(traceId)) return prev;
+                return [...prev, traceId].sort((a, b) => a.localeCompare(b));
+            });
+        });
     }, [open]);
 
     const traceIdsNormalized = React.useMemo(
@@ -221,6 +256,14 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
 
     const tracesAttempted = debouncedTraceIds.length > 0;
     const canNavigate = tracesAttempted ? canStartWithTraces : canStartWithRelease;
+
+    React.useEffect(() => {
+        if (!open || !canStartWithTraces || traceConsensus?.ok !== true) {
+            appStateStore.getState().setDebugModalValidatedTraceId(null);
+            return;
+        }
+        appStateStore.getState().setDebugModalValidatedTraceId(traceConsensus.traceIdsForPayload[0] ?? null);
+    }, [open, canStartWithTraces, traceConsensus]);
 
     const performNavigateToDebug = React.useCallback(
         (path: string) => {
@@ -458,7 +501,7 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                             />
                             <div className={`flex flex-col gap-3 ${PADDINGS}`}>
                                 <FreeformMultiCombobox
-                                    id="start-debug-trace-ids"
+                                    id={APP_START_DEBUG_TRACE_IDS_INPUT_ID}
                                     label="by trace id"
                                     placeholder="Trace id, press Enter to add multiple"
                                     value={traceIds}
@@ -493,11 +536,15 @@ export function StartDebugModal({ open, onOpenChange }: StartDebugModalProps) {
                     </div>
                     <CentricModalFooter className="flex flex-col items-stretch gap-2">
                         <Button
+                            id={APP_START_DEBUG_LETS_START_BUTTON_ID}
                             type="button"
                             size="default"
                             disabled={!canNavigate}
                             className="h-11 w-full gap-2.5 text-base"
-                            onClick={handleLetsStart}
+                            onClick={() => {
+                                triggerAppEvent(events.START_DEBUG_LETS_START_CLICKED_EVENT);
+                                handleLetsStart();
+                            }}
                         >
                             <Play className="size-4 shrink-0" aria-hidden />
                             let&apos;s start

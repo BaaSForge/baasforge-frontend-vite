@@ -4,6 +4,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 import * as React from "react";
 
+import { preventDismissIfTargetSpotlightOverlayOutsideEvent } from "@/components/target-spotlight-overlay/lib/outside-event";
 import { cn } from "@/lib/utils";
 import { absorbNextClick } from "@/lib/absorb-next-click";
 import { TOAST_PORTAL_ID } from "@/lib/toast-portal";
@@ -54,6 +55,11 @@ function DialogContent({
     const handlePointerDownOutside: React.ComponentProps<typeof DialogPrimitive.Content>["onPointerDownOutside"] = (e) => {
         if (e.target instanceof Element && e.target.closest(`#${TOAST_PORTAL_ID}`)) {
             e.preventDefault();
+            onPointerDownOutsideProp?.(e);
+            return;
+        }
+        preventDismissIfTargetSpotlightOverlayOutsideEvent(e);
+        if (e.defaultPrevented) {
             onPointerDownOutsideProp?.(e);
             return;
         }

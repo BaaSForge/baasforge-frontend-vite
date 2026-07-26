@@ -18,6 +18,8 @@ export function useAppState(): AppState {
             isAnyModalOpen: state.isAnyModalOpen,
             isAnyAlertOpen: state.isAnyAlertOpen,
             isStageDeployModalOpen: state.isStageDeployModalOpen,
+            debugModalOpen: state.debugModalOpen,
+            debugModalValidatedTraceId: state.debugModalValidatedTraceId,
             activePage: state.activePage,
             pathParams: state.pathParams,
             pathname: state.pathname,

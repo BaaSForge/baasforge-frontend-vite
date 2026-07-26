@@ -3,6 +3,7 @@
 import { emitSignupTutorialOpen } from "@/components/signup-tutorial-nudge";
 import { pinToTop, setTargetSpotlightOverlayElementId, SpotlightPrimaryActionButton } from "@/components/target-spotlight-overlay";
 import { setSpotlightContentToRender } from "@/components/target-spotlight-overlay/lib/spotlight-renderer";
+import { closeScalarClientModal } from "@/components/scalar-http-operation-client/close-scalar-client-modal";
 import { ActivePage, useAppState } from "@/modules/app-state";
 import { useLoadTutorialMetadata, useTutorialSteps } from "@/modules/tutorials/hooks/use-tutorial-steps";
 import { events, listenAppEvent, triggerAppEvent } from "@/services/events";
@@ -15,7 +16,11 @@ import { APP_SIDEBAR_TOGGLE_BUTTON_ID } from "@/modules/layout/components/sticky
 import { APP_PROJECTS_MENU_BUTTON_ID } from "@/modules/layout/components/project-switcher";
 import { clearTutorialSpotlight } from "../../hooks/use-tutorial-stop-listener";
 import { isSubRouteOfPage } from "@/pages/routes";
-import { APP_RUNTIMES_MENU_BUTTON_ID } from "@/modules/layout/components/nav-projects";
+import { APP_DEBUG_BUTTON_ID, APP_RUNTIMES_MENU_BUTTON_ID } from "@/modules/layout/components/nav-projects";
+import {
+    APP_START_DEBUG_LETS_START_BUTTON_ID,
+    APP_START_DEBUG_TRACE_IDS_INPUT_ID,
+} from "@/modules/layout/components/start-debug-modal";
 import { APP_LAST_RELEASE_CONTROLLER_PROD_BUTTON_ID, APP_LAST_RELEASE_CONTROLLER_PROD_RELEASE_LINK_ID, assignLastReleaseControllerProdButtonSpotlightId, assignLastReleaseControllerProdReleaseLinkSpotlightId } from "@/pages/dashboard/projects/[projectId]/conversations/components/message/release-controller-tutorial-targets";
 import type { WriteAndCallExtra } from "../2.write-and-call-your-api";
 import { TUTORIAL_ID as WRITE_AND_CALL_TUTORIAL_ID } from "../2.write-and-call-your-api";
@@ -43,6 +48,18 @@ const STEPS = [
     "start-scalar-http-client",
     "send-scalar-http-request",
     "copy-scalar-trace-id",
+    "debug-button",
+    "chat-composer-input",
+    "waiting-for-unit-updating",
+    "deploy-to-stage",
+    "choose-stage-runtime",
+    "deploy-to-production",
+    "go-to-production",
+    "filter-unit-by-id",
+    "call-unit-live-interaction",
+    "start-scalar-http-client",
+    "send-scalar-http-request",
+    "review-new-response-body",
     "done",
 ] as const;
 
@@ -51,7 +68,7 @@ export function DebugAndReleaseTutorial() {
     const loadWriteAndCallTutorialMetadata = useLoadTutorialMetadata<WriteAndCallExtra>(
         WELCOME_TUTORIALS_GROUP_ID, WRITE_AND_CALL_TUTORIAL_ID,
     );
-    const { currentStep, goNext, goTo, goToInterrupted, mergeTutorialMetadata } = useTutorialSteps<
+    const { currentStep, goNext, goTo, goToInterrupted, mergeTutorialMetadata, loadTutorialMetadata } = useTutorialSteps<
         typeof STEPS,
         DebugAndReleaseExtra
     >(WELCOME_TUTORIALS_GROUP_ID, TUTORIAL_ID, STEPS);
@@ -688,7 +705,10 @@ export function DebugAndReleaseTutorial() {
                 </>,
             );
 
-            return listenAppEvent(events.SCALAR_TRACE_ID_COPIED_EVENT, goNext);
+            return listenAppEvent(events.SCALAR_TRACE_ID_COPIED_EVENT, () => {
+                closeScalarClientModal();
+                goNext();
+            });
         },
         [
             currentStep,
@@ -700,6 +720,121 @@ export function DebugAndReleaseTutorial() {
             appState.scalarClientModalOpenUnitId,
             loadWriteAndCallTutorialMetadata,
             goToInterrupted,
+            isInPreviousProject,
+        ],
+        LAYOUT_SETTLE_DEBOUNCE_MS,
+    );
+
+    useDebouncedEffect(
+        async () => { // eslint-disable-line react-hooks/exhaustive-deps
+            if (currentStep !== "debug-button") return;
+
+            const isPreviousProject = await isInPreviousProject();
+
+            if (!isPreviousProject) {
+                goTo("choose-previous-tutorial-project");
+                return;
+            }
+
+            if (!appState.isMainSidebarOpen) {
+                const cancelPendingScroll = !appState.isBreadcrumbStickyVisible
+                    ? scrollWindowByWhenSettled({ top: -10 })
+                    : undefined;
+
+                setTargetSpotlightOverlayElementId(APP_SIDEBAR_TOGGLE_BUTTON_ID, { zIndexLayout: 'layout' });
+
+                setSpotlightContentToRender(
+                    <>
+                        <p className="font-medium">Open the sidebar</p>
+                        <p className="text-muted-foreground mt-1">
+                            Use this button to open the sidebar and continue with the tutorial.
+                        </p>
+                    </>,
+                );
+
+                return () => {
+                    cancelPendingScroll?.();
+                }
+            }
+
+            if (appState.debugModalValidatedTraceId !== null) {
+                setTargetSpotlightOverlayElementId(APP_START_DEBUG_LETS_START_BUTTON_ID, { zIndexLayout: 'modal' });
+
+                setSpotlightContentToRender(
+                    <>
+                        <p className="font-medium">Start the debug session</p>
+                        <p className="text-muted-foreground mt-1">
+                            Click let&apos;s start to open a chat session with this trace included.
+                        </p>
+                    </>,
+                );
+
+                return listenAppEvent(events.START_DEBUG_LETS_START_CLICKED_EVENT, goNext);
+            }
+
+            if (appState.debugModalOpen) {
+                const { traceId } = await loadTutorialMetadata();
+
+                if (traceId === undefined || traceId.trim() === "") {
+                    goToInterrupted();
+                    return;
+                }
+
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+
+                setTargetSpotlightOverlayElementId(APP_START_DEBUG_TRACE_IDS_INPUT_ID, { zIndexLayout: 'modal' });
+
+                setSpotlightContentToRender(
+                    <>
+                        <p className="font-medium">Paste the trace ID</p>
+                        <p className="text-muted-foreground mt-1">
+                            Paste the trace ID you copied in the previous step into this input so we can look it up.
+                            Use backslash to remove a trace id.
+                        </p>
+                    </>,
+                    <Button
+                        type="button"
+                        variant="default"
+                        size="xs"
+                        className={"ml-auto"}
+                        onClick={() => {
+                            triggerAppEvent(events.START_DEBUG_MODAL_PASTE_TRACE_ID_EVENT, { traceId });
+                        }}
+                    >
+                        paste that trace id
+                    </Button>,
+                );
+
+                return;
+            }
+
+            setTargetSpotlightOverlayElementId(APP_DEBUG_BUTTON_ID, { zIndexLayout: 'layout' });
+
+            setSpotlightContentToRender(
+                <>
+                    <p className="font-medium">Open the debug modal</p>
+                    <p className="text-muted-foreground mt-1">
+                        Click the Debug button to open the debug modal.
+                    </p>
+                </>,
+            );
+
+            return listenAppEvent(events.DEVELOP_BUTTON_CLICKED_EVENT, goNext);
+        },
+        [
+            currentStep,
+            goNext,
+            goTo,
+            goToInterrupted,
+            appState.isBreadcrumbStickyVisible,
+            appState.isMainSidebarOpen,
+            appState.pathname,
+            appState.pathParams,
+            appState.debugModalOpen,
+            appState.debugModalValidatedTraceId,
+            loadTutorialMetadata,
             isInPreviousProject,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,

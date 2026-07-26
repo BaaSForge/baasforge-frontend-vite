@@ -40,6 +40,8 @@ export const events = {
     SCALAR_TRACE_ID_COPIED_EVENT: "scalar-trace-id-copied",
     RUNTIMES_MENU_BUTTON_CLICKED_EVENT: "runtimes-menu-button-clicked",
     RUNTIME_CARD_CHAT_SESSION_BUTTON_CLICKED_EVENT: "runtime-card-chat-session-button-clicked",
+    START_DEBUG_MODAL_PASTE_TRACE_ID_EVENT: "start-debug-modal-paste-trace-id",
+    START_DEBUG_LETS_START_CLICKED_EVENT: "start-debug-lets-start-clicked",
 } as const;
 
 export type AppEventName = (typeof events)[keyof typeof events];
@@ -83,4 +85,6 @@ export type AppEventPayloadMap = {
     [events.SCALAR_TRACE_ID_COPIED_EVENT]: { traceId: string };
     [events.RUNTIMES_MENU_BUTTON_CLICKED_EVENT]: undefined;
     [events.RUNTIME_CARD_CHAT_SESSION_BUTTON_CLICKED_EVENT]: { runtimeId: string; chatSessionId: string };
+    [events.START_DEBUG_MODAL_PASTE_TRACE_ID_EVENT]: { traceId: string };
+    [events.START_DEBUG_LETS_START_CLICKED_EVENT]: undefined;
 };

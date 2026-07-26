@@ -14,6 +14,8 @@ export type AppState = {
     isAnyModalOpen: boolean;
     isAnyAlertOpen: boolean;
     isStageDeployModalOpen: boolean;
+    debugModalOpen: boolean;
+    debugModalValidatedTraceId: string | null;
     activePage: (typeof ActivePage)[keyof typeof ActivePage];
     pathParams: PathParams;
     pathname: string;
@@ -39,6 +41,8 @@ type AppStateActions = {
     setUnitLiveInteractionOpen: (unitId: string, open: boolean) => void;
     setScalarClientModalOpenUnitId: (unitId: string | null) => void;
     setStageDeployModalOpen: (open: boolean) => void;
+    setDebugModalOpen: (open: boolean) => void;
+    setDebugModalValidatedTraceId: (traceId: string | null) => void;
 };
 
 export type AppStateStore = AppState & AppStateActions;
@@ -133,6 +137,8 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
     isAnyModalOpen: false,
     isAnyAlertOpen: false,
     isStageDeployModalOpen: false,
+    debugModalOpen: false,
+    debugModalValidatedTraceId: null,
     activePage: ActivePage.UNKNOWN,
     pathParams: {},
     pathname: "",
@@ -231,5 +237,13 @@ export const appStateStore = createStore<AppStateStore>((set, get) => ({
     setStageDeployModalOpen: (open) => {
         if (get().isStageDeployModalOpen === open) return;
         set({ isStageDeployModalOpen: open });
+    },
+    setDebugModalOpen: (open) => {
+        if (get().debugModalOpen === open) return;
+        set(open ? { debugModalOpen: true } : { debugModalOpen: false, debugModalValidatedTraceId: null });
+    },
+    setDebugModalValidatedTraceId: (traceId) => {
+        if (get().debugModalValidatedTraceId === traceId) return;
+        set({ debugModalValidatedTraceId: traceId });
     },
 }));

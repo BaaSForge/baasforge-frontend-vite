@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
+import { preventDismissIfTargetSpotlightOverlayOutsideEvent } from "@/components/target-spotlight-overlay/lib/outside-event";
 import { cn } from "@/lib/utils";
 import { absorbNextClick } from "@/lib/absorb-next-click";
 import { TOAST_PORTAL_ID } from "@/lib/toast-portal";
@@ -68,6 +69,11 @@ function DrawerContent({
     const handlePointerDownOutside: React.ComponentProps<typeof DrawerPrimitive.Content>["onPointerDownOutside"] = (e) => {
         if (e.target instanceof Element && e.target.closest(`#${TOAST_PORTAL_ID}`)) {
             e.preventDefault();
+            onPointerDownOutsideProp?.(e);
+            return;
+        }
+        preventDismissIfTargetSpotlightOverlayOutsideEvent(e);
+        if (e.defaultPrevented) {
             onPointerDownOutsideProp?.(e);
             return;
         }
