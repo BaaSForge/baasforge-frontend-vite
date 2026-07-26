@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components'
+import { Callout, Cards, Tabs } from 'nextra/components'
 
 export const metadata = {
   title: 'Live interaction',
@@ -6,6 +6,78 @@ export const metadata = {
 
 # Live interaction
 
+Built-in HTTP client (Postman-style) to call a **live** unit from the dashboard — mainly to test a release or let the team invoke APIs you just shipped. Powered by <a href="https://scalar.com/" target="_blank" rel="noopener noreferrer nofollow">Scalar</a>; the platform supplies the OpenAPI operation from your unit metadata.
+
 <Callout type="info">
-  **Coming soon.** This page is under construction — check back shortly.
+  The AI generates the [Auto API Docs](/platform/auto-api-docs) (OpenAPI) for each unit automatically. You do not need to ask the AI for anything extra to use this HTTP client — body and query fields are pre-filled from that docs metadata.
 </Callout>
+
+## Open it
+
+Only on the release that is **currently live** on that runtime (historical revisions: browse only).
+
+<Tabs items={['Stage', 'Production']}>
+  <Tabs.Tab>
+    Select project → **Runtimes** → stage runtime → **Open Units** → **All units** → unit → **Live interaction** → **Test Request** → **Send**.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Select project → **Units & Releases** (or production runtime → **Open Units**) → **All units** → unit → **Live interaction** → **Test Request** → **Send**.
+  </Tabs.Tab>
+</Tabs>
+
+<Callout type="error">
+  Production Live interaction hits real traffic and data. Prefer stage for everyday checks.
+</Callout>
+
+## Which units
+
+| Unit | Live interaction | Outside the platform |
+| --- | --- | --- |
+| **API** | Yes — public trigger URL | Yes — any HTTP client (`curl`, Postman, …) |
+| **Actor / workflow / queue worker** | Yes — private platform triggers (must be logged in) | **No** — not callable from external HTTP clients |
+| **Common** | **No** (no trigger) | — |
+
+Non-API Live interaction is for **test and debugging**. For most product flows you do not need it: ask the AI for an **API** unit that uses `sdk.*` to call actors / workflows / queue workers, then call that API (Live interaction or any client).
+
+Details per type: [API](/platform/units/api-unit) · [Actor](/platform/units/actor-unit) · [Workflow](/platform/units/workflow-unit) · [Queue worker](/platform/units/queue-worker-unit) · [Common](/platform/units/common-unit).
+
+## Prefill from Auto API Docs
+
+For API units, the client is built from the same metadata as [Auto API Docs](/platform/auto-api-docs) — method, `RequestBody`, `QueryParams`, `ResponseBody` — so body and query fields are pre-filled. If the form looks wrong, ask the AI to fix the unit types (not the client).
+
+## Response
+
+After **Send**:
+
+- **Response body**
+- **Response headers** — including **`X-Trace-Id`** (use with [Tracing & Debugging](/platform/tracing) / sidebar **Debug**)
+
+<Callout type="info">
+  You do **not** need this client to get `X-Trace-Id`. Every trigger response (including external clients) returns that header.
+</Callout>
+
+After a test, the dashboard can stream the run into the Develop assistant — see [AI Role](/platform/ai-role).
+
+## Auth on API units
+
+API triggers are **public by default**. If an endpoint should be private to your users, ask the AI to guard it (auth, signatures, secrets checks) inside the unit — URL obscurity is not enough.
+
+## Limits
+
+<Callout type="warning">
+  **Cookies are not sent** through this HTTP client (browser / site security). This may change later. Prefer header- or body-based auth when testing protected APIs here.
+</Callout>
+
+## Document sharing
+
+Teammates without project access can use Live interaction on **API** units via a **documentation share** link (read-only public docs + try-it). They **cannot** call actors, workflows, or queue workers — those stay private to the platform. See [Auto API Docs](/platform/auto-api-docs).
+
+## Related
+
+<Cards>
+  <Cards.Card title="Auto API Docs" href="/platform/auto-api-docs" />
+  <Cards.Card title="API Unit" href="/platform/units/api-unit" />
+  <Cards.Card title="Releases" href="/platform/releases" />
+  <Cards.Card title="Tracing & Debugging" href="/platform/tracing" />
+  <Cards.Card title="SDK" href="/platform/sdk" />
+</Cards>
