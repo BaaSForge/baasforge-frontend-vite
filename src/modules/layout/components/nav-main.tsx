@@ -1,4 +1,4 @@
-import { ChevronRight, Folder, Settings2 } from "lucide-react";
+import { BookOpen, ChevronRight, Folder, Home, Settings2 } from "lucide-react";
 import { Link, useLocation } from "react-router";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -16,6 +16,17 @@ import {
 } from "@/components/ui/sidebar";
 
 const MAIN_NAV_ITEMS = [
+    {
+        title: "Home",
+        url: "/",
+        icon: Home,
+    },
+    {
+        title: "Docs",
+        url: "/docs",
+        icon: BookOpen,
+        external: true,
+    },
     {
         title: "Projects",
         url: "#",
@@ -49,9 +60,31 @@ export function NavMain() {
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {MAIN_NAV_ITEMS.map((item) => {
-                    const isParentOpen = item.items?.some((sub) => isPathUnderItem(pathname, sub.url)) ?? false;
+                    if (!item.items?.length) {
+                        const isActive = item.url === "/" ? pathname === "/" : isPathUnderItem(pathname, item.url);
 
-                    if (isCollapsed && item.items?.length) {
+                        return (
+                            <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
+                                    {item.external ? (
+                                        <a href={item.url}>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </a>
+                                    ) : (
+                                        <Link to={item.url}>
+                                            {item.icon && <item.icon />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    )}
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        );
+                    }
+
+                    const isParentOpen = item.items.some((sub) => isPathUnderItem(pathname, sub.url));
+
+                    if (isCollapsed) {
                         return (
                             <DropdownMenu key={item.title} modal={false}>
                                 <SidebarMenuItem>
@@ -96,7 +129,7 @@ export function NavMain() {
                                 </CollapsibleTrigger>
                                 <CollapsibleContent>
                                     <SidebarMenuSub>
-                                        {item.items?.map((subItem) => {
+                                        {item.items.map((subItem) => {
                                             const isActive = pathname === subItem.url;
 
                                             return (
