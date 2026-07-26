@@ -912,6 +912,7 @@ export function DebugAndReleaseTutorial() {
             appState.activePage,
             appState.pathParams,
             loadTutorialMetadata,
+            isInPreviousProject,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     )
@@ -958,6 +959,7 @@ export function DebugAndReleaseTutorial() {
             appState.activePage,
             loadTutorialMetadata,
             loadDebugTutorialMetadata,
+            isInPreviousProject,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     )
@@ -1007,6 +1009,8 @@ export function DebugAndReleaseTutorial() {
             appState.activePage,
             appState.pathParams,
             loadTutorialMetadata,
+            isInPreviousProject,
+            loadDebugTutorialMetadata,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
@@ -1062,6 +1066,8 @@ export function DebugAndReleaseTutorial() {
             appState.isStageDeployModalOpen,
             mergeTutorialMetadata,
             loadTutorialMetadata,
+            isInPreviousProject,
+            loadDebugTutorialMetadata,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
@@ -1120,6 +1126,7 @@ export function DebugAndReleaseTutorial() {
             loadWriteAndCallTutorialMetadata,
             appState.activePage,
             appState.pathParams,
+            loadDebugTutorialMetadata,
         ],
         LAYOUT_SETTLE_DEBOUNCE_MS,
     );
