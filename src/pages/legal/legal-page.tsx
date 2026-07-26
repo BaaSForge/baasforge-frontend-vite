@@ -162,6 +162,9 @@ export function LegalPage({ canonicalPath, content, dateModified, description, t
                         <span>BaaSForge</span>
                     </Link>
                     <nav className="bf-legal-links" aria-label="Legal">
+                        <Link to="/docs" reloadDocument>
+                            Docs
+                        </Link>
                         <Link to="/privacy-policy" aria-current={canonicalPath === "/privacy-policy" ? "page" : undefined}>
                             Privacy
                         </Link>
