@@ -36,6 +36,8 @@ export const events = {
     UNIT_LIVE_INTERACTION_CLICKED_EVENT: "unit-live-interaction-clicked",
     SCALAR_TEST_REQUEST_CLICKED_EVENT: "scalar-test-request-clicked",
     SCALAR_SEND_CLICKED_EVENT: "scalar-send-clicked",
+    SCALAR_HTTP_RESPONSE_RECEIVED_EVENT: "scalar-http-response-received",
+    SCALAR_TRACE_ID_COPIED_EVENT: "scalar-trace-id-copied",
     RUNTIMES_MENU_BUTTON_CLICKED_EVENT: "runtimes-menu-button-clicked",
     RUNTIME_CARD_CHAT_SESSION_BUTTON_CLICKED_EVENT: "runtime-card-chat-session-button-clicked",
 } as const;
@@ -77,6 +79,8 @@ export type AppEventPayloadMap = {
     [events.UNIT_LIVE_INTERACTION_CLICKED_EVENT]: undefined;
     [events.SCALAR_TEST_REQUEST_CLICKED_EVENT]: undefined;
     [events.SCALAR_SEND_CLICKED_EVENT]: undefined;
+    [events.SCALAR_HTTP_RESPONSE_RECEIVED_EVENT]: { traceId: string };
+    [events.SCALAR_TRACE_ID_COPIED_EVENT]: { traceId: string };
     [events.RUNTIMES_MENU_BUTTON_CLICKED_EVENT]: undefined;
     [events.RUNTIME_CARD_CHAT_SESSION_BUTTON_CLICKED_EVENT]: { runtimeId: string; chatSessionId: string };
 };

@@ -21,9 +21,11 @@ import type { WriteAndCallExtra } from "../2.write-and-call-your-api";
 import { TUTORIAL_ID as WRITE_AND_CALL_TUTORIAL_ID } from "../2.write-and-call-your-api";
 import { getRuntimeCardChatSessionButtonId } from "@/components/runtime-card";
 import { APP_RELEASE_UNITS_FILTER_INPUT_ID } from "@/modules/project/release-units-all/release-units-all-panel";
-import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarResponseHeadersButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId } from "./tutorial-target-ids";
+import { tutorialFirstUnitLiveInteractionButtonId, tutorialFirstUnitScalarSendButtonId, tutorialFirstUnitScalarTestRequestButtonId, tutorialFirstUnitScalarTraceIdCopyButtonId } from "./tutorial-target-ids";
 
-type DebugAndReleaseExtra = never;
+export type DebugAndReleaseExtra = {
+    traceId: string;
+};
 
 const LAYOUT_SETTLE_DEBOUNCE_MS = 250;
 
@@ -49,7 +51,7 @@ export function DebugAndReleaseTutorial() {
     const loadWriteAndCallTutorialMetadata = useLoadTutorialMetadata<WriteAndCallExtra>(
         WELCOME_TUTORIALS_GROUP_ID, WRITE_AND_CALL_TUTORIAL_ID,
     );
-    const { currentStep, goNext, goTo, goToInterrupted } = useTutorialSteps<
+    const { currentStep, goNext, goTo, goToInterrupted, mergeTutorialMetadata } = useTutorialSteps<
         typeof STEPS,
         DebugAndReleaseExtra
     >(WELCOME_TUTORIALS_GROUP_ID, TUTORIAL_ID, STEPS);
@@ -597,12 +599,36 @@ export function DebugAndReleaseTutorial() {
                 </>,
             );
 
-            return listenAppEvent(events.SCALAR_SEND_CLICKED_EVENT, goNext);
+            let sendClicked = false;
+            let advanced = false;
+
+            const advanceWithTraceId = (traceId: string) => {
+                if (!sendClicked || advanced) return;
+                const trimmed = traceId.trim();
+                if (!trimmed) return;
+                advanced = true;
+                mergeTutorialMetadata({ traceId: trimmed });
+                goNext();
+            };
+
+            const stopListeningSend = listenAppEvent(events.SCALAR_SEND_CLICKED_EVENT, () => {
+                sendClicked = true;
+            });
+
+            const stopListeningResponse = listenAppEvent(events.SCALAR_HTTP_RESPONSE_RECEIVED_EVENT, (event) => {
+                advanceWithTraceId(event.detail.traceId);
+            });
+
+            return () => {
+                stopListeningSend();
+                stopListeningResponse();
+            };
         },
         [
             currentStep,
             goNext,
             goTo,
+            mergeTutorialMetadata,
             appState.activePage,
             appState.pathParams,
             appState.searchParams,
@@ -649,22 +675,20 @@ export function DebugAndReleaseTutorial() {
                 return;
             }
 
-            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarResponseHeadersButtonId(firstUnitId), { zIndexLayout: 'toast' });
+            setTargetSpotlightOverlayElementId(tutorialFirstUnitScalarTraceIdCopyButtonId(firstUnitId), { zIndexLayout: 'toast' });
 
             setSpotlightContentToRender(
                 <>
-                    <p className="font-medium">Response headers</p>
+                    <p className="font-medium">Copy the trace ID</p>
                     <p className="text-muted-foreground mt-1">
-                        Here are the response headers from your call.
-                        <br />
-                        Copy the value of{" "}
-                        <code className="text-foreground">X-Trace-Id</code> header to debug this trace.
+                        Click Copy next to{" "}
+                        <code className="text-foreground">X-Trace-Id</code> to copy it for debugging this
+                        trace.
                     </p>
                 </>,
-                <SpotlightPrimaryActionButton>Copied it.</SpotlightPrimaryActionButton>,
             );
 
-            return listenAppEvent(events.TUTORIAL_PRIMARY_ACTION_BUTTON_CLICKED, goNext);
+            return listenAppEvent(events.SCALAR_TRACE_ID_COPIED_EVENT, goNext);
         },
         [
             currentStep,

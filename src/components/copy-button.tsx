@@ -15,6 +15,7 @@ export type CopyButtonProps = Omit<ButtonProps, "onClick" | "children" | "type">
     showLabel?: boolean;
     tooltip?: string;
     disableWhenEmpty?: boolean;
+    onCopied?: (text: string) => void;
 };
 
 export function CopyButton({
@@ -25,6 +26,7 @@ export function CopyButton({
     showLabel = true,
     tooltip,
     disableWhenEmpty = true,
+    onCopied,
     className,
     disabled,
     size = "xs",
@@ -50,7 +52,9 @@ export function CopyButton({
             aria-label={showLabel ? undefined : isCopied ? copiedLabel : ariaLabel}
             onClick={() => {
                 if (mergedDisabled) return;
-                void copy(textToCopy, copyId);
+                void copy(textToCopy, copyId).then((result) => {
+                    if (result.success) onCopied?.(textToCopy);
+                });
             }}
             {...rest}
         >

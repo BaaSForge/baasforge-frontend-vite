@@ -14,6 +14,10 @@ export function tutorialFirstUnitScalarResponseHeadersButtonId(unitId: string): 
     return `tutorial-first-unit-scalar-response-headers-${unitId}`;
 }
 
+export function tutorialFirstUnitScalarTraceIdCopyButtonId(unitId: string): string {
+    return `tutorial-first-unit-scalar-trace-id-copy-${unitId}`;
+}
+
 export function tutorialFirstUnitScalarResponseBodySectionId(unitId: string): string {
     return `tutorial-first-unit-scalar-response-body-${unitId}`;
 }

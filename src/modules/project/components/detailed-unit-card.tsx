@@ -77,6 +77,7 @@ export type DetailedUnitCardProps = {
     tutorialScalarTestRequestTargetId?: string;
     tutorialScalarSendTargetId?: string;
     tutorialScalarResponseHeadersTargetId?: string;
+    tutorialScalarTraceIdCopyTargetId?: string;
     tutorialScalarResponseBodyTargetId?: string;
     /** When live interaction or dependencies panel is expanded (for host-driven chrome, e.g. opacity). */
     onPanelEmphasisChange?: (emphasis: boolean) => void;
@@ -99,6 +100,7 @@ export function DetailedUnitCard({
     tutorialScalarTestRequestTargetId,
     tutorialScalarSendTargetId,
     tutorialScalarResponseHeadersTargetId,
+    tutorialScalarTraceIdCopyTargetId,
     tutorialScalarResponseBodyTargetId,
     onPanelEmphasisChange,
 }: DetailedUnitCardProps) {
@@ -339,6 +341,7 @@ export function DetailedUnitCard({
                                             tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
                                             tutorialScalarSendTargetId={tutorialScalarSendTargetId}
                                             tutorialScalarResponseHeadersTargetId={tutorialScalarResponseHeadersTargetId}
+                                            tutorialScalarTraceIdCopyTargetId={tutorialScalarTraceIdCopyTargetId}
                                             tutorialScalarResponseBodyTargetId={tutorialScalarResponseBodyTargetId}
                                         />
                                     ) : unit.unit_type === "actor" ? (

@@ -16,6 +16,7 @@ import { useTutorialScalarTestRequestTarget } from "./use-tutorial-scalar-test-r
 import { useTutorialScalarSendTarget } from "./use-tutorial-scalar-send-target";
 import { useTutorialScalarResponseHeadersTarget } from "./use-tutorial-scalar-response-headers-target";
 import { useTutorialScalarResponseBodyTarget } from "./use-tutorial-scalar-response-body-target";
+import { useScalarTraceIdCopyButton } from "./use-scalar-trace-id-copy-button";
 import { useScalarClientModalAppStateSync } from "./use-scalar-client-modal-app-state-sync";
 
 const ApiReferenceReactLazy = lazy(() =>
@@ -168,6 +169,7 @@ export type ScalarHttpOperationClientProps = {
     tutorialScalarTestRequestTargetId?: string;
     tutorialScalarSendTargetId?: string;
     tutorialScalarResponseHeadersTargetId?: string;
+    tutorialScalarTraceIdCopyTargetId?: string;
     tutorialScalarResponseBodyTargetId?: string;
     unitId?: string;
 };
@@ -187,6 +189,7 @@ export function ScalarHttpOperationClient({
     tutorialScalarTestRequestTargetId,
     tutorialScalarSendTargetId,
     tutorialScalarResponseHeadersTargetId,
+    tutorialScalarTraceIdCopyTargetId,
     tutorialScalarResponseBodyTargetId,
     unitId,
 }: ScalarHttpOperationClientProps) {
@@ -197,6 +200,7 @@ export function ScalarHttpOperationClient({
     useScalarClientModalAppStateSync(rootRef, unitId);
     useTutorialScalarSendTarget(tutorialScalarSendTargetId);
     useTutorialScalarResponseHeadersTarget(tutorialScalarResponseHeadersTargetId);
+    useScalarTraceIdCopyButton(tutorialScalarTraceIdCopyTargetId);
     useTutorialScalarResponseBodyTarget(tutorialScalarResponseBodyTargetId);
 
     const configuration = useMemo((): AnyApiReferenceConfiguration => {

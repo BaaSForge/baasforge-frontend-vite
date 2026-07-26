@@ -9,6 +9,7 @@ import {
     tutorialFirstUnitScalarResponseHeadersButtonId,
     tutorialFirstUnitScalarSendButtonId,
     tutorialFirstUnitScalarTestRequestButtonId,
+    tutorialFirstUnitScalarTraceIdCopyButtonId,
 } from "@/modules/tutorials/welcome-tutorials/2.write-and-call-your-api/tutorial-target-ids";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -47,6 +48,8 @@ export function AllUnitsUnitRow({
         tutorialFirstUnitScalarSendButtonId(unit.id);
     const tutorialScalarResponseHeadersTargetId =
         tutorialFirstUnitScalarResponseHeadersButtonId(unit.id);
+    const tutorialScalarTraceIdCopyTargetId =
+        tutorialFirstUnitScalarTraceIdCopyButtonId(unit.id);
     const tutorialScalarResponseBodyTargetId =
         tutorialFirstUnitScalarResponseBodySectionId(unit.id);
 
@@ -70,6 +73,7 @@ export function AllUnitsUnitRow({
                 tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
                 tutorialScalarSendTargetId={tutorialScalarSendTargetId}
                 tutorialScalarResponseHeadersTargetId={tutorialScalarResponseHeadersTargetId}
+                tutorialScalarTraceIdCopyTargetId={tutorialScalarTraceIdCopyTargetId}
                 tutorialScalarResponseBodyTargetId={tutorialScalarResponseBodyTargetId}
                 onPanelEmphasisChange={setEmphasisPanels}
                 leadingHeaderToolbar={

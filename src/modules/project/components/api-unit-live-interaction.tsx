@@ -30,6 +30,7 @@ export type ApiUnitLiveInteractionProps = {
     tutorialScalarTestRequestTargetId?: string;
     tutorialScalarSendTargetId?: string;
     tutorialScalarResponseHeadersTargetId?: string;
+    tutorialScalarTraceIdCopyTargetId?: string;
     tutorialScalarResponseBodyTargetId?: string;
 };
 
@@ -43,6 +44,7 @@ export function ApiUnitLiveInteraction({
     tutorialScalarTestRequestTargetId,
     tutorialScalarSendTargetId,
     tutorialScalarResponseHeadersTargetId,
+    tutorialScalarTraceIdCopyTargetId,
     tutorialScalarResponseBodyTargetId,
 }: ApiUnitLiveInteractionProps) {
     const meta = readApiUnitMetadata(unit);
@@ -79,6 +81,7 @@ export function ApiUnitLiveInteraction({
             tutorialScalarTestRequestTargetId={tutorialScalarTestRequestTargetId}
             tutorialScalarSendTargetId={tutorialScalarSendTargetId}
             tutorialScalarResponseHeadersTargetId={tutorialScalarResponseHeadersTargetId}
+            tutorialScalarTraceIdCopyTargetId={tutorialScalarTraceIdCopyTargetId}
             tutorialScalarResponseBodyTargetId={tutorialScalarResponseBodyTargetId}
         />
     );

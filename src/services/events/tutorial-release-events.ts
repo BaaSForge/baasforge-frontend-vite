@@ -32,3 +32,11 @@ export function emitScalarTestRequestClicked(): void {
 export function emitScalarSendClicked(): void {
     triggerAppEvent(events.SCALAR_SEND_CLICKED_EVENT);
 }
+
+export function emitScalarHttpResponseReceived(payload: { traceId: string }): void {
+    triggerAppEvent(events.SCALAR_HTTP_RESPONSE_RECEIVED_EVENT, payload);
+}
+
+export function emitScalarTraceIdCopied(payload: { traceId: string }): void {
+    triggerAppEvent(events.SCALAR_TRACE_ID_COPIED_EVENT, payload);
+}
