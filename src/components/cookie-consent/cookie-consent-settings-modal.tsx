@@ -16,10 +16,17 @@ import {
     useCookieConsentSettingsOpen,
     type CookieConsentPreferences,
 } from "@/services/cookie-consent";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 
 type CookieConsentDraft = Pick<CookieConsentPreferences, "analytics" | "marketing">;
+
+function draftFromPreferences(preferences: CookieConsentPreferences | null): CookieConsentDraft {
+    return {
+        analytics: preferences?.analytics ?? false,
+        marketing: preferences?.marketing ?? false,
+    };
+}
 
 function CookieConsentCategories({
     draft,
@@ -74,18 +81,15 @@ export function CookieConsentSettingsModal() {
     const open = useCookieConsentSettingsOpen();
     const preferences = useCookieConsentPreferences();
     const { acceptAll, rejectAll, setPreferences, setSettingsOpen } = useCookieConsentActions();
-    const [draft, setDraft] = useState<CookieConsentDraft>({
-        analytics: preferences?.analytics ?? false,
-        marketing: preferences?.marketing ?? false,
-    });
+    const [draft, setDraft] = useState(() => draftFromPreferences(preferences));
+    const [draftOpen, setDraftOpen] = useState(open);
 
-    useEffect(() => {
-        if (!open) return;
-        setDraft({
-            analytics: preferences?.analytics ?? false,
-            marketing: preferences?.marketing ?? false,
-        });
-    }, [open, preferences]);
+    if (open !== draftOpen) {
+        setDraftOpen(open);
+        if (open) {
+            setDraft(draftFromPreferences(preferences));
+        }
+    }
 
     return (
         <CentricModal open={open} onOpenChange={setSettingsOpen} dismissOnOverlayClick>
