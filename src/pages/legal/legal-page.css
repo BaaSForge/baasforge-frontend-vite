@@ -63,13 +63,18 @@ html:has(.bf-legal) {
     gap: 6px;
 }
 
-.bf-legal-links a {
+.bf-legal-links a,
+.bf-legal-links button {
+    border: 0;
     border-radius: 9999px;
     padding: 8px 13px;
+    background: transparent;
     color: var(--muted-foreground);
+    font: inherit;
     font-size: 13px;
     font-weight: 500;
     text-decoration: none;
+    cursor: pointer;
     transition:
         color 160ms cubic-bezier(0.23, 1, 0.32, 1),
         background-color 160ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -159,9 +164,16 @@ html:has(.bf-legal) {
     font-weight: 600;
 }
 
-.bf-legal-document a {
+.bf-legal-document a,
+.bf-legal-document .bf-legal-inline-action {
+    border: 0;
+    padding: 0;
+    background: transparent;
     color: var(--foreground);
+    font: inherit;
+    text-decoration: underline;
     text-underline-offset: 4px;
+    cursor: pointer;
 }
 
 .bf-legal-document hr {
@@ -212,11 +224,13 @@ html:has(.bf-legal) {
 
 @media (hover: hover) and (pointer: fine) {
     .bf-legal-brand:hover,
-    .bf-legal-links a:hover {
+    .bf-legal-links a:hover,
+    .bf-legal-links button:hover {
         color: var(--foreground);
     }
 
-    .bf-legal-links a:hover {
+    .bf-legal-links a:hover,
+    .bf-legal-links button:hover {
         background: oklch(1 0 0 / 5%);
     }
 }

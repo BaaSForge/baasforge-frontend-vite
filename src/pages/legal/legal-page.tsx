@@ -1,5 +1,6 @@
 import { AppLogoSquare } from "@/components/logo/app-logo-square";
-import { useEffect } from "react";
+import { openCookieSettings } from "@/services/cookie-consent";
+import { Children, cloneElement, isValidElement, useEffect, type ReactNode } from "react";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router";
@@ -15,6 +16,38 @@ type LegalPageProps = {
     title: string;
 };
 
+const COOKIE_SETTINGS_MARKER = "{{cookie-settings}}";
+
+function CookieSettingsButton() {
+    return (
+        <button type="button" className="bf-legal-inline-action" onClick={() => openCookieSettings()}>
+            Cookie settings
+        </button>
+    );
+}
+
+function injectCookieSettingsControls(children: ReactNode): ReactNode {
+    return Children.map(children, (child) => {
+        if (typeof child === "string") {
+            if (!child.includes(COOKIE_SETTINGS_MARKER)) return child;
+
+            return child.split(COOKIE_SETTINGS_MARKER).flatMap((part, index) =>
+                index === 0
+                    ? [part]
+                    : [<CookieSettingsButton key={`cookie-settings-${index}`} />, part],
+            );
+        }
+
+        if (isValidElement<{ children?: ReactNode }>(child) && child.props.children != null) {
+            return cloneElement(child, {
+                children: injectCookieSettingsControls(child.props.children),
+            });
+        }
+
+        return child;
+    });
+}
+
 const legalMarkdownComponents: Components = {
     table({ children }) {
         return (
@@ -22,6 +55,12 @@ const legalMarkdownComponents: Components = {
                 <table>{children}</table>
             </div>
         );
+    },
+    p({ children }) {
+        return <p>{injectCookieSettingsControls(children)}</p>;
+    },
+    li({ children }) {
+        return <li>{injectCookieSettingsControls(children)}</li>;
     },
 };
 
@@ -129,9 +168,9 @@ export function LegalPage({ canonicalPath, content, dateModified, description, t
                         <Link to="/terms-of-use" aria-current={canonicalPath === "/terms-of-use" ? "page" : undefined}>
                             Terms
                         </Link>
-                        <Link to="/cookie-settings" aria-current={canonicalPath === "/cookie-settings" ? "page" : undefined}>
+                        <button type="button" onClick={() => openCookieSettings()}>
                             Cookies
-                        </Link>
+                        </button>
                     </nav>
                 </div>
             </header>

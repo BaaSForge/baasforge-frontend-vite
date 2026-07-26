@@ -44,16 +44,18 @@ export function CookieConsentBanner() {
                             .
                         </DrawerDescription>
                     </DrawerHeader>
-                    <DrawerFooter className="flex-col gap-2 px-0 sm:flex-row sm:justify-end">
-                        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => rejectAll()}>
-                            Reject non-essential
-                        </Button>
+                    <DrawerFooter className="flex-col gap-2 px-0 md:px-0 sm:flex-row sm:items-center sm:justify-between">
                         <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={() => openSettings()}>
                             Cookie settings
                         </Button>
-                        <Button type="button" className="w-full sm:w-auto" onClick={() => acceptAll()}>
-                            Accept all
-                        </Button>
+                        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                            <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => rejectAll()}>
+                                Reject non-essential
+                            </Button>
+                            <Button type="button" className="w-full sm:w-auto" onClick={() => acceptAll()}>
+                                Accept all
+                            </Button>
+                        </div>
                     </DrawerFooter>
                 </div>
             </DrawerContent>
