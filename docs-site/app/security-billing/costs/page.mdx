@@ -30,7 +30,7 @@ Costs accumulate in real time and are visible in the dashboard during the billin
 | --- | --- | --- |
 | **Compute** | GB·ms of function execution (1 ms minimum) | `usage (GB·ms) × compute rate × subscription discount` |
 | **Active storage** (hot) | GB·ms of RAM / actively used memory | `usage (GB·ms) × active storage rate × subscription discount` |
-| **Retained storage** (cold) | GB·ms of retained disk | `usage (GB·ms) × retained storage rate × subscription discount` |
+| **Disk storage** | GB·ms of retained block disk | `usage (GB·ms) × disk storage rate × subscription discount` |
 | **LLM tokens** | Input + output tokens per model call | `tokens × provider list rate × (1 + platform margin) × subscription discount` |
 
 <Callout type="info">
@@ -48,15 +48,21 @@ cost = memory_GB × duration_ms × compute_rate × subscription_discount
 
 ### Storage
 
-Storage is split into two tiers:
+Storage is split into two tiers today:
 
 - **Active (hot)** — memory / data kept warm for fast access
-- **Retained (cold)** — data kept on disk when not actively used
+- **Disk** — block disk capacity retained when data is not in active memory
 
 ```
-hot_cost  = size_GB × time_ms × active_storage_rate  × subscription_discount
-cold_cost = size_GB × time_ms × retained_storage_rate × subscription_discount
+hot_cost  = size_GB × time_ms × active_storage_rate × subscription_discount
+disk_cost = size_GB × time_ms × disk_storage_rate   × subscription_discount
 ```
+
+<Callout type="info">
+  **Disk storage is block/disk, not object storage** (it is closer to local or
+  attached volume pricing than S3-style buckets). Object storage will be added
+  as a **separate metered cost** soon.
+</Callout>
 
 ### LLM tokens
 
@@ -127,7 +133,7 @@ Conversion used everywhere below:
 | --- | --- | --- | --- |
 | Compute | **$8×10⁻⁹** | **$0.0288** | **$21.024** |
 | Active storage (hot) | **$1.5×10⁻⁹** | **$0.0054** | **$3.942** |
-| Retained storage (cold) | **$2.5×10⁻¹¹** | **$0.00009** | **$0.0657** |
+| Disk storage | **$2.5×10⁻¹¹** | **$0.00009** | **$0.0657** |
 
 <Tabs items={['Tier 1–2', 'Tier 3 (−15%)', 'Tier 4 (−30%)']}>
   <Tabs.Tab>
@@ -136,7 +142,7 @@ Conversion used everywhere below:
     | --- | --- | --- | --- |
     | Compute | $8×10⁻⁹ | $0.0288 | **$21.024** |
     | Active storage | $1.5×10⁻⁹ | $0.0054 | **$3.942** |
-    | Retained storage | $2.5×10⁻¹¹ | $0.00009 | **$0.0657** |
+    | Disk storage | $2.5×10⁻¹¹ | $0.00009 | **$0.0657** |
 
   </Tabs.Tab>
   <Tabs.Tab>
@@ -147,7 +153,7 @@ Conversion used everywhere below:
     | --- | --- | --- | --- |
     | Compute | $6.8×10⁻⁹ | $0.02448 | **$17.8704** |
     | Active storage | $1.275×10⁻⁹ | $0.00459 | **$3.3507** |
-    | Retained storage | $2.125×10⁻¹¹ | $0.0000765 | **$0.055845** |
+    | Disk storage | $2.125×10⁻¹¹ | $0.0000765 | **$0.055845** |
 
   </Tabs.Tab>
   <Tabs.Tab>
@@ -158,7 +164,7 @@ Conversion used everywhere below:
     | --- | --- | --- | --- |
     | Compute | $5.6×10⁻⁹ | $0.02016 | **$14.7168** |
     | Active storage | $1.05×10⁻⁹ | $0.00378 | **$2.7594** |
-    | Retained storage | $1.75×10⁻¹¹ | $0.000063 | **$0.04599** |
+    | Disk storage | $1.75×10⁻¹¹ | $0.000063 | **$0.04599** |
 
   </Tabs.Tab>
 </Tabs>
@@ -178,8 +184,8 @@ Memory uses **1024 MB = 1 GB** (same convention as typical serverless billing).
 | **512 MB** (= 0.5 GB) hot storage always on (730 h) | **$1.971** |
 | **1 GB** hot storage always on (730 h) | **$3.942** |
 | **5 GB** hot storage always on (730 h) | **$19.71** |
-| **1 GB** cold storage always on (730 h) | **$0.0657** |
-| **10 GB** cold storage always on (730 h) | **$0.657** |
+| **1 GB** disk always on (730 h) | **$0.0657** |
+| **10 GB** disk always on (730 h) | **$0.657** |
 
 ```
 128 MB × 1M calls × 100 ms:
@@ -199,7 +205,7 @@ Memory uses **1024 MB = 1 GB** (same convention as typical serverless billing).
 | Variable | Meaning |
 | --- | --- |
 | Provider list price | Published $/1M input and $/1M output tokens from the model vendor |
-| Platform margin | Markup on top of that list price (`rate × (1 + margin)`) — currently **margin = 2.0**, so you pay **3×** the provider list rate before subscription discount |
+| Platform margin | Markup on top of that list price (`rate × (1 + margin)`) — currently **margin = 0.25**, so you pay **1.25×** the provider list rate before subscription discount |
 | Subscription discount | Same tier table as compute/storage |
 | Current model | **Gemini 3.1 Flash Lite Preview** — list **$0.25 / 1M input**, **$1.50 / 1M output** ([Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing)) |
 
@@ -212,18 +218,19 @@ customer_token_rate =
 
 **Gemini 3.1 Flash Lite Preview — what you pay (before tier discount):**
 
-| Direction | Provider list | × (1 + 2.0) customer rate |
+| Direction | Provider list | × (1 + 0.25) customer rate |
 | --- | --- | --- |
-| Input | $0.25 / 1M | **$0.75 / 1M** |
-| Output | $1.50 / 1M | **$4.50 / 1M** |
+| Input | $0.25 / 1M | **$0.3125 / 1M** |
+| Output | $1.50 / 1M | **$1.875 / 1M** |
 
 | Example (Tier 1) | Cost |
 | --- | --- |
-| **1M** input tokens | **$0.75** |
-| **100k** output tokens | **$0.45** |
-| **1M** input + **100k** output | **$1.20** |
+| **1M** input tokens | **$0.3125** |
+| **100k** output tokens | **$0.1875** |
+| **1M** input + **100k** output | **$0.50** |
 
 Tier 3 multiplies those by `0.85`; Tier 4 by `0.70`.
+
 ---
 
 ## Package limits
@@ -246,10 +253,11 @@ Each package tier also caps how many **projects** and **stage runtimes** you can
 
 ## Summary
 
-1. You pay for **compute**, **hot storage**, **cold storage**, and **LLM tokens**.
+1. You pay for **compute**, **hot storage**, **disk storage**, and **LLM tokens**.
 2. Higher tiers get a **subscription discount** on those usage rates (up to 30% off on Tier 4).
 3. Choosing **annual billing** takes **20% off the subscription plan fee** for the year (not usage).
-4. LLM bills follow provider list prices + our margin; we currently use Gemini 3.1 Flash Lite Preview.
+4. LLM bills follow provider list prices + our margin (**1.25×** today); we currently use Gemini 3.1 Flash Lite Preview.
+5. Disk is **block storage**, not object storage — object storage will be a separate meter soon.
 
 <Callout type="warning">
   Rates, margins, discounts, and package limits can change. When they do, we
