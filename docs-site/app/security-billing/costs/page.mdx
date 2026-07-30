@@ -1,4 +1,4 @@
-import { Callout } from 'nextra/components'
+import { Callout, Cards, Tabs } from 'nextra/components'
 
 export const metadata = {
   title: 'Costs & Billing',
@@ -6,6 +6,238 @@ export const metadata = {
 
 # Costs & Billing
 
-<Callout type="info">
-  **Coming soon.** This page is under construction — check back shortly.
+BaaSForge is **pay-as-you-go**: you are charged only for metered usage (compute, storage, and LLM tokens). There is no separate subscription, per-project, or per-unit fee today.
+
+Costs accumulate in real time and are visible in the dashboard during the billing period.
+
+<Callout type="warning">
+  **Prices may change over time.** When rates or discounts change, we will notify
+  you in advance. This page reflects the current configuration.
 </Callout>
+
+<Cards>
+  <Cards.Card title="What you pay for" href="#what-you-pay-for" />
+  <Cards.Card title="Discounts" href="#discounts" />
+  <Cards.Card title="Rates in plain language" href="#rates-in-plain-language" />
+  <Cards.Card title="Package limits" href="#package-limits" />
+</Cards>
+
+---
+
+## What you pay for
+
+| Cost | Metered by | How it is calculated |
+| --- | --- | --- |
+| **Compute** | GB·ms of function execution (1 ms minimum) | `usage (GB·ms) × compute rate × subscription discount` |
+| **Active storage** (hot) | GB·ms of RAM / actively used memory | `usage (GB·ms) × active storage rate × subscription discount` |
+| **Retained storage** (cold) | GB·ms of retained disk | `usage (GB·ms) × retained storage rate × subscription discount` |
+| **LLM tokens** | Input + output tokens per model call | `tokens × provider list rate × (1 + platform margin) × subscription discount` |
+
+<Callout type="info">
+  Platform fees (subscription, per-project, per-unit, per-stage-runtime) are
+  currently **$0** and are not charged. Usage rates above still apply.
+</Callout>
+
+### Compute
+
+Every unit invocation is metered by memory × duration in **GB·milliseconds**.
+
+```
+cost = memory_GB × duration_ms × compute_rate × subscription_discount
+```
+
+### Storage
+
+Storage is split into two tiers:
+
+- **Active (hot)** — memory / data kept warm for fast access
+- **Retained (cold)** — data kept on disk when not actively used
+
+```
+hot_cost  = size_GB × time_ms × active_storage_rate  × subscription_discount
+cold_cost = size_GB × time_ms × retained_storage_rate × subscription_discount
+```
+
+### LLM tokens
+
+LLM usage is billed on **input** and **output** tokens separately. We apply a **platform margin** on top of each provider’s published input/output list price, then apply your tier’s subscription discount.
+
+We currently run **Gemini 3.1 Flash Lite Preview** for platform AI. See Google’s [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) for the provider’s current list rates.
+
+<Callout>
+  We do not republish per-model dollar tables here — provider list prices can
+  move independently. Your bill always uses the provider’s published rates,
+  plus our margin, plus your subscription discount.
+</Callout>
+
+---
+
+## Discounts
+
+Two discounts can lower what you pay:
+
+### 1. Annual billing discount (20% off)
+
+Applies when you choose **yearly billing** for a paid subscription plan (the plan you pick on the Packages page).
+
+| Billing choice | What you pay |
+| --- | --- |
+| **Monthly** | The plan’s listed monthly fee, charged each month |
+| **Annual** | `monthly fee × 12 × 0.80` — **20% off** the full-year total, paid once for 12 months |
+
+This discount applies **only to that subscription plan fee** — not to metered compute, storage, or LLM usage.
+
+<Callout type="info">
+  Example: a plan listed at **$10 / month** costs **$10** billed monthly, or
+  **$96 / year** billed annually (`10 × 12 × 0.80`) instead of $120.
+</Callout>
+
+### 2. Subscription discount (by tier)
+
+Your package tier lowers the **usage rates** for compute, storage, and LLM. Higher tiers = larger discount (you pay a smaller fraction of the base rate):
+
+| Tier | Subscription discount | You pay |
+| --- | --- | --- |
+| Tier 1 | `1.00` | Full base rate (no discount) |
+| Tier 2 | `1.00` | Full base rate (no discount) |
+| Tier 3 | `0.85` | **15% off** usage rates |
+| Tier 4 | `0.70` | **30% off** usage rates |
+
+```
+your_rate = base_rate × subscription_discount
+```
+
+---
+
+## Rates in plain language
+
+Base rates below are **before** the subscription discount. Multiply by your tier’s discount to get the rate you actually pay.
+
+Months below use **~730 hours** (average month).
+
+### Compute & storage base rates
+
+Conversion used everywhere below:
+
+```
+1 GB·hour  = 3,600,000 GB·ms
+1 GB·month ≈ 730 hours = 2,628,000,000 GB·ms
+```
+
+| Resource | Per GB·ms | Per GB·hour | Per GB·month (730 h) |
+| --- | --- | --- | --- |
+| Compute | **$8×10⁻⁹** | **$0.0288** | **$21.024** |
+| Active storage (hot) | **$1.5×10⁻⁹** | **$0.0054** | **$3.942** |
+| Retained storage (cold) | **$2.5×10⁻¹¹** | **$0.00009** | **$0.0657** |
+
+<Tabs items={['Tier 1–2', 'Tier 3 (−15%)', 'Tier 4 (−30%)']}>
+  <Tabs.Tab>
+
+    | Resource | Per GB·ms | Per GB·hour | Per GB·month (730 h) |
+    | --- | --- | --- | --- |
+    | Compute | $8×10⁻⁹ | $0.0288 | **$21.024** |
+    | Active storage | $1.5×10⁻⁹ | $0.0054 | **$3.942** |
+    | Retained storage | $2.5×10⁻¹¹ | $0.00009 | **$0.0657** |
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+    Rate = base × `0.85`
+
+    | Resource | Per GB·ms | Per GB·hour | Per GB·month (730 h) |
+    | --- | --- | --- | --- |
+    | Compute | $6.8×10⁻⁹ | $0.02448 | **$17.8704** |
+    | Active storage | $1.275×10⁻⁹ | $0.00459 | **$3.3507** |
+    | Retained storage | $2.125×10⁻¹¹ | $0.0000765 | **$0.055845** |
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+    Rate = base × `0.70`
+
+    | Resource | Per GB·ms | Per GB·hour | Per GB·month (730 h) |
+    | --- | --- | --- | --- |
+    | Compute | $5.6×10⁻⁹ | $0.02016 | **$14.7168** |
+    | Active storage | $1.05×10⁻⁹ | $0.00378 | **$2.7594** |
+    | Retained storage | $1.75×10⁻¹¹ | $0.000063 | **$0.04599** |
+
+  </Tabs.Tab>
+</Tabs>
+
+### Monthly cost examples (Tier 1)
+
+These help translate the rates into everyday usage. Scale by your subscription discount for higher tiers (`× 0.85` on Tier 3, `× 0.70` on Tier 4).
+
+| Scenario | Exact cost |
+| --- | --- |
+| **1 GB** of compute running continuously (730 h) | **$21.024** |
+| **10 GB·hours** of compute in a month | **$0.288** |
+| **100 GB·hours** of compute in a month | **$2.88** |
+| 128 MB function × **1M** calls × 100 ms each | **$0.1024** |
+| **512 MB** hot storage always on (730 h) | **$2.018304** |
+| **0.5 GB** hot storage always on (730 h) | **$1.971** |
+| **1 GB** hot storage always on (730 h) | **$3.942** |
+| **5 GB** hot storage always on (730 h) | **$19.71** |
+| **1 GB** cold storage always on (730 h) | **$0.0657** |
+| **10 GB** cold storage always on (730 h) | **$0.657** |
+
+<Callout>
+  “1 GB of compute running continuously” means 1 GB of memory allocated for
+  every millisecond of the month — useful as an upper-bound reference, not a
+  typical workload. Most apps use far less wall-clock compute time.
+</Callout>
+
+### LLM variables
+
+| Variable | Meaning |
+| --- | --- |
+| Provider list price | Published $/1M input and $/1M output tokens from the model vendor |
+| Platform margin | Markup on top of that list price (`rate × (1 + margin)`) — currently **margin = 2.0**, so you pay **3×** the provider list rate before subscription discount |
+| Subscription discount | Same tier table as compute/storage |
+| Current model | **Gemini 3.1 Flash Lite Preview** — [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing) |
+
+```
+customer_token_rate =
+  (provider_$per_million / 1_000_000)
+  × (1 + platform_margin)
+  × subscription_discount
+```
+
+---
+
+## Package limits
+
+Each package tier also caps how many **projects** and **stage runtimes** you can use:
+
+| Tier | Projects | Stage runtimes |
+| --- | --- | --- |
+| Tier 1 | **2** | **1** |
+| Tier 2 | **3** | **1** |
+| Tier 3 | **10** | **2** |
+| Tier 4 | **40** | **5** |
+
+<Callout type="info">
+  Production remains one runtime per project. Stage-runtime limits above are
+  the package caps for additional stage environments.
+</Callout>
+
+---
+
+## Summary
+
+1. You pay for **compute**, **hot storage**, **cold storage**, and **LLM tokens**.
+2. Higher tiers get a **subscription discount** on those usage rates (up to 30% off on Tier 4).
+3. Choosing **annual billing** takes **20% off the subscription plan fee** for the year (not usage).
+4. LLM bills follow provider list prices + our margin; we currently use Gemini 3.1 Flash Lite Preview.
+
+<Callout type="warning">
+  Rates, margins, discounts, and package limits can change. When they do, we
+  will inform you so you can plan ahead. Always treat the dashboard usage view
+  as the source of truth for your current period.
+</Callout>
+
+<Cards>
+  <Cards.Card title="Transparent costs (overview)" href="/about/advantages#transparent-pay-as-you-go-costs" />
+  <Cards.Card title="Runtimes" href="/platform/runtimes" />
+  <Cards.Card title="Security" href="/security-billing/security" />
+</Cards>
