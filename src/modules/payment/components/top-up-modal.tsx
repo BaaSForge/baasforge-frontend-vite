@@ -12,7 +12,7 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { useInitiateTopUpMutation } from "@/modules/payment";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 
 type TopUpModalProps = {
     open: boolean;
@@ -24,11 +24,12 @@ export function TopUpModal({ open, onOpenChange }: TopUpModalProps) {
     const [amount, setAmount] = useState("");
     const initiateTopUpMutation = useInitiateTopUpMutation();
 
-    useEffect(() => {
-        if (!open) {
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (!nextOpen) {
             setAmount("");
         }
-    }, [open]);
+        onOpenChange(nextOpen);
+    };
 
     const parsedAmount = Number.parseFloat(amount);
     const isValidAmount = Number.isFinite(parsedAmount) && parsedAmount >= 5;
@@ -39,13 +40,13 @@ export function TopUpModal({ open, onOpenChange }: TopUpModalProps) {
 
         initiateTopUpMutation.mutate(parsedAmount, {
             onSuccess: () => {
-                onOpenChange(false);
+                handleOpenChange(false);
             },
         });
     };
 
     return (
-        <CentricModal open={open} onOpenChange={onOpenChange} dismissOnOverlayClick>
+        <CentricModal open={open} onOpenChange={handleOpenChange} dismissOnOverlayClick>
             <CentricModalContent className="sm:max-w-md" showCloseButton>
                 <CentricModalHeader className="text-left">
                     <CentricModalTitle>Top up</CentricModalTitle>
@@ -79,7 +80,7 @@ export function TopUpModal({ open, onOpenChange }: TopUpModalProps) {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => handleOpenChange(false)}
                         disabled={initiateTopUpMutation.isPending}
                     >
                         Cancel

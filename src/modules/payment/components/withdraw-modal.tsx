@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/slider";
 import { cn, formatPrice } from "@/lib/utils";
 import { useBalanceQuery, useInitiateWithdrawalMutation, useSubscriptionReserveQuery } from "@/modules/payment";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 
 type WithdrawModalProps = {
     open: boolean;
@@ -71,11 +71,12 @@ export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
         return { left: `calc(${snapPercent}% + ${offsetPx}px)` };
     }, [snapPercent]);
 
-    useEffect(() => {
-        if (!open) {
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (!nextOpen) {
             setAmount("");
         }
-    }, [open]);
+        onOpenChange(nextOpen);
+    };
 
     const applyAmount = (next: number) => {
         const clamped = floorToCents(Math.min(Math.max(next, 0), availableBalance));
@@ -101,13 +102,13 @@ export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
 
         initiateWithdrawalMutation.mutate(parsedAmount, {
             onSuccess: () => {
-                onOpenChange(false);
+                handleOpenChange(false);
             },
         });
     };
 
     return (
-        <CentricModal open={open} onOpenChange={onOpenChange} dismissOnOverlayClick>
+        <CentricModal open={open} onOpenChange={handleOpenChange} dismissOnOverlayClick>
             <CentricModalContent className="sm:max-w-md" showCloseButton>
                 <CentricModalHeader className="text-left">
                     <CentricModalTitle>Withdraw</CentricModalTitle>
@@ -207,7 +208,7 @@ export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => handleOpenChange(false)}
                         disabled={initiateWithdrawalMutation.isPending}
                     >
                         Cancel
