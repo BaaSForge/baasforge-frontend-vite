@@ -19,6 +19,8 @@ export const QueryKeys = {
     PAYMENT_PACKAGES: ["payment", "packages"] as const,
     PAYMENT_PAID_PACKAGES: ["payment", "paid-packages"] as const,
     PAYMENT_BALANCE: ["payment", "balance"] as const,
+    PAYMENT_TOP_UPS: ["payment", "top-ups"] as const,
+    PAYMENT_WITHDRAWALS: ["payment", "withdrawals"] as const,
     projectDetail: (projectId: ProjectId) => ["project", "detail", projectId] as const,
     /**
      * One chat session: map of stable unit id (`stableUnitIdForRevisionCache`) → latest revision.

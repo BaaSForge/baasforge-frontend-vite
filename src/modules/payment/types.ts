@@ -43,4 +43,33 @@ export interface Balance {
     deposited: number;
     withdrawn: number;
     balance: number;
+    total_usage: number;
+}
+
+export interface TopUp {
+    id: string;
+    user_id: string;
+    amount: number;
+    gateway_metadata: unknown;
+    created_at: string;
+}
+
+export interface Withdrawal {
+    id: string;
+    user_id: string;
+    amount: number;
+    gateway_metadata: unknown;
+    created_at: string;
+}
+
+export interface InitiateTopUpResponse {
+    id: string;
+    amount: number;
+    created_at: string;
+}
+
+export interface InitiateWithdrawalResponse {
+    id: string;
+    amount: number;
+    created_at: string;
 }
