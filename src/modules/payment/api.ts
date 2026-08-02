@@ -1,11 +1,12 @@
 import type { ApiResponse } from "@/lib/api-client";
 import { apiClient } from "@/lib/api-client";
-import type { Package, PaidPackageResponse, PaymentResponse, PurchaseResponse } from "./types";
+import type { Balance, Package, PaidPackageResponse, PaymentResponse, PurchaseResponse } from "./types";
 
 const PAYMENTS_ENDPOINT = "/v1/payment/payments";
 const PACKAGES_ENDPOINT = "/v1/payment/packages";
 const PAID_PACKAGES_ENDPOINT = "/v1/payment/paid-packages";
 const PURCHASE_ENDPOINT = "/v1/payment/purchase";
+const BALANCE_ENDPOINT = "/v1/payment/balance";
 
 export function getPayments(): Promise<PaymentResponse[]> {
     return apiClient.get<ApiResponse<PaymentResponse[]>>(PAYMENTS_ENDPOINT).then((res) => res.data ?? []);
@@ -19,6 +20,15 @@ export function getPaidPackages(): Promise<PaidPackageResponse> {
     return apiClient
         .get<ApiResponse<PaidPackageResponse>>(PAID_PACKAGES_ENDPOINT)
         .then((res) => res.data ?? { payments: [], largest_tier: 0, can_purchase_trial: false });
+}
+
+export function getBalance(): Promise<Balance> {
+    return apiClient.get<ApiResponse<Balance>>(BALANCE_ENDPOINT).then((res) => {
+        if (!res.data) {
+            throw new Error("Balance response missing data");
+        }
+        return res.data;
+    });
 }
 
 export function purchasePackage(packageId: string): Promise<PurchaseResponse> {

@@ -30,7 +30,7 @@ export default function DashboardPaymentsPage() {
 
     return (
         <>
-            <PageTitleBox title="Payments" />
+            <PageTitleBox title="Balance & payments" />
             <Container>
                 <div className="flex flex-col gap-4 rounded-xl border bg-card p-4">
                     <div className="overflow-x-auto">

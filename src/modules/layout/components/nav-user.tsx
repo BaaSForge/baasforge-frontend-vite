@@ -1,10 +1,10 @@
-import { ChevronsUpDown, Clock, CreditCard, Gauge, Github, Keyboard, LogOut, Package, Sparkles } from "lucide-react";
+import { ChevronsUpDown, Clock, CreditCard, Gauge, Github, Keyboard, LogOut, Package, Sparkles, Wallet } from "lucide-react";
 
 import { GoogleIcon } from "@/components/icons/google-icon";
 import { Link, useLocation } from "react-router";
 
 import { SHORTCUT_LABELS } from "@/lib/unified-keyboard";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { appStateStore } from "@/modules/app-state";
 
 import { TimeLeftLabel } from "@/components/time-left-label";
@@ -25,7 +25,7 @@ import { useUpdateEffect } from "@/hooks/use-updated";
 import { useAuth } from "@/modules/auth";
 import { PlatformType, type User } from "@/modules/auth/types";
 import type { PaymentResponse } from "@/modules/payment";
-import { usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
+import { useBalanceQuery, usePackagesQuery, usePaidPackagesQuery } from "@/modules/payment";
 import { events, triggerAppEvent } from "@/services/events";
 import { getTimeLeft } from "@/utils/time";
 
@@ -105,6 +105,7 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
     const { user, isLoading, logout } = useAuth();
     const { data: packages = [] } = usePackagesQuery();
     const { data: paidData } = usePaidPackagesQuery();
+    const { data: balanceData } = useBalanceQuery();
     const payments = (paidData?.payments ?? []).map((p) => p.payment);
     const hasActivePayment = hasAnyActivePayment(payments);
     const nearestExpiring = getNearestExpiringPayment(payments);
@@ -112,6 +113,8 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
     const largestTier = paidData?.largest_tier ?? 0;
     const nextTierPackage = packages.filter((p) => p.tier > largestTier && !p.is_trial).sort((a, b) => a.tier - b.tier)[0];
     const hasMaxTier = !nextTierPackage;
+    const balance = balanceData?.balance;
+    const isNegativeBalance = balance != null && balance < 0;
     const location = useLocation();
 
     useUpdateEffect(() => {
@@ -144,7 +147,7 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
 
     return (
         <SidebarMenu>
-            <SidebarMenuItem className="mb-5">
+            <SidebarMenuItem className="mb-1">
                 {!hasActivePayment ? (
                     <HoverCard openDelay={0} closeDelay={0}>
                         <HoverCardTrigger asChild>
@@ -243,6 +246,118 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
                     })()
                 ) : null}
             </SidebarMenuItem>
+            {balance != null && (
+                <SidebarMenuItem className="mb-5">
+                    <HoverCard openDelay={0} closeDelay={0}>
+                        <HoverCardTrigger asChild>
+                            <Link
+                                to="/dashboard/payments"
+                                className={cn(
+                                    "group block rounded-xl outline-none transition-colors duration-200",
+                                    isNegativeBalance
+                                        ? "bg-red-50/80 hover:bg-red-100/90 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar dark:bg-red-950/40 dark:hover:bg-red-900/50"
+                                        : "bg-emerald-50/80 hover:bg-emerald-100/90 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50",
+                                    !promotionBoxExpanded && "bg-transparent p-0 hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent",
+                                    promotionBoxExpanded && "px-3 py-3",
+                                )}
+                                aria-label={`Balance ${formatPrice(balance)}`}
+                            >
+                                {promotionBoxExpanded ? (
+                                    <div className="min-w-0 space-y-1">
+                                        <p
+                                            className={cn(
+                                                "text-[11px] font-medium uppercase tracking-wide",
+                                                isNegativeBalance
+                                                    ? "text-red-700/70 dark:text-red-300/70"
+                                                    : "text-emerald-700/70 dark:text-emerald-300/70",
+                                            )}
+                                        >
+                                            Current balance
+                                        </p>
+                                        <p
+                                            className={cn(
+                                                "text-lg font-semibold leading-none tracking-tight tabular-nums",
+                                                isNegativeBalance
+                                                    ? "text-red-900 dark:text-red-50"
+                                                    : "text-emerald-900 dark:text-emerald-50",
+                                            )}
+                                        >
+                                            {formatPrice(balance)}
+                                        </p>
+                                        <p
+                                            className={cn(
+                                                "pt-0.5 text-xs font-medium transition-colors",
+                                                isNegativeBalance
+                                                    ? "text-red-600 group-hover:text-red-700 dark:text-red-400 dark:group-hover:text-red-300"
+                                                    : "text-emerald-600 group-hover:text-emerald-700 dark:text-emerald-400 dark:group-hover:text-emerald-300",
+                                            )}
+                                        >
+                                            Balance & payments →
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <span
+                                        className={cn(
+                                            "flex h-8 w-8 items-center justify-center rounded-xl",
+                                            isNegativeBalance
+                                                ? "bg-red-500/15 text-red-600 dark:bg-red-500/25 dark:text-red-300"
+                                                : "bg-emerald-500/15 text-emerald-600 dark:bg-emerald-500/25 dark:text-emerald-300",
+                                        )}
+                                    >
+                                        <Wallet className="size-4" />
+                                    </span>
+                                )}
+                            </Link>
+                        </HoverCardTrigger>
+                        {!promotionBoxExpanded && (
+                            <HoverCardContent side="right" align="center" className="w-56 rounded-xl p-0 shadow-none">
+                                <Link
+                                    to="/dashboard/payments"
+                                    className={cn(
+                                        "block rounded-xl p-3 outline-none transition-colors focus-visible:ring-2",
+                                        isNegativeBalance
+                                            ? "bg-red-50/80 hover:bg-red-100/90 focus-visible:ring-red-500 dark:bg-red-950/40 dark:hover:bg-red-900/50"
+                                            : "bg-emerald-50/80 hover:bg-emerald-100/90 focus-visible:ring-emerald-500 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50",
+                                    )}
+                                >
+                                    <div className="min-w-0 space-y-1">
+                                        <p
+                                            className={cn(
+                                                "text-[11px] font-medium uppercase tracking-wide",
+                                                isNegativeBalance
+                                                    ? "text-red-700/70 dark:text-red-300/70"
+                                                    : "text-emerald-700/70 dark:text-emerald-300/70",
+                                            )}
+                                        >
+                                            Current balance
+                                        </p>
+                                        <p
+                                            className={cn(
+                                                "text-lg font-semibold leading-none tracking-tight tabular-nums",
+                                                isNegativeBalance
+                                                    ? "text-red-900 dark:text-red-50"
+                                                    : "text-emerald-900 dark:text-emerald-50",
+                                            )}
+                                        >
+                                            {formatPrice(balance)}
+                                        </p>
+                                        <p
+                                            className={cn(
+                                                "pt-0.5 text-xs font-medium",
+                                                isNegativeBalance
+                                                    ? "text-red-600 dark:text-red-400"
+                                                    : "text-emerald-600 dark:text-emerald-400",
+                                            )}
+                                        >
+                                            Balance & payments →
+                                        </p>
+                                    </div>
+                                </Link>
+                            </HoverCardContent>
+                        )}
+                    </HoverCard>
+                </SidebarMenuItem>
+            )}
             <SidebarMenuItem>
                 <DropdownMenu
                     key={isMobile ? "mobile" : "desktop"}
@@ -323,7 +438,7 @@ export function NavUser({ onOpenShortcuts }: NavUserProps) {
                             <DropdownMenuItem asChild>
                                 <Link to="/dashboard/payments">
                                     <CreditCard />
-                                    Payments
+                                    Balance & payments
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>

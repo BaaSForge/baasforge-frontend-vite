@@ -36,3 +36,11 @@ export interface PurchaseResponse {
     package_id: string;
     expires_at: string;
 }
+
+export interface Balance {
+    package_deposits: number;
+    top_ups: number;
+    deposited: number;
+    withdrawn: number;
+    balance: number;
+}

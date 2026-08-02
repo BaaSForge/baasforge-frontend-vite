@@ -11,6 +11,7 @@ export function usePurchasePackageMutation() {
             // TODO: Invalidate only if the package is realy purchased
             queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAID_PACKAGES });
             queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAYMENTS });
+            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
         },
     });
 }

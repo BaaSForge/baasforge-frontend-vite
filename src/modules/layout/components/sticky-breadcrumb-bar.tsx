@@ -29,6 +29,7 @@ const SEGMENT_LABELS: Record<string, string> = {
     runtimes: "Runtimes",
     "runtime-env-vars": "Variables",
     usage: "Usage",
+    payments: "Balance & payments",
     "units-releases": "Units & releases",
 };
 
