@@ -3,11 +3,41 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }: React.ComponentProps<typeof SliderPrimitive.Root>) {
+export const SLIDER_THUMB_SIZE_PX = 16;
+
+type SliderMark = {
+    value: number;
+    className?: string;
+};
+
+/** Matches Radix thumb centering so marks align with the thumb center. */
+export function getSliderThumbCenterOffsetPx(percent: number, thumbSizePx = SLIDER_THUMB_SIZE_PX) {
+    const halfWidth = thumbSizePx / 2;
+    return halfWidth - (percent / 50) * halfWidth;
+}
+
+export function getSliderValuePercent(value: number, min: number, max: number) {
+    if (max <= min) return 0;
+    return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
+}
+
+function Slider({
+    className,
+    defaultValue,
+    value,
+    min = 0,
+    max = 100,
+    marks,
+    ...props
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+    marks?: SliderMark[];
+}) {
     const _values = React.useMemo(
         () => (Array.isArray(value) ? value : Array.isArray(defaultValue) ? defaultValue : [min, max]),
         [value, defaultValue, min, max],
     );
+
+    const range = max - min;
 
     return (
         <SliderPrimitive.Root
@@ -18,6 +48,7 @@ function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }
             max={max}
             className={cn(
                 "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
+                "[&>span:has([data-slot=slider-thumb])]:relative [&>span:has([data-slot=slider-thumb])]:z-[2]",
                 className,
             )}
             {...props}
@@ -33,6 +64,23 @@ function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }
                     className={cn("bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full")}
                 />
             </SliderPrimitive.Track>
+            {range > 0 &&
+                marks?.map((mark) => {
+                    const percent = getSliderValuePercent(mark.value, min, max);
+                    const offsetPx = getSliderThumbCenterOffsetPx(percent);
+                    return (
+                        <span
+                            key={mark.value}
+                            data-slot="slider-mark"
+                            aria-hidden
+                            className={cn(
+                                "bg-amber-500 pointer-events-none absolute top-1/2 z-[1] h-3 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full",
+                                mark.className,
+                            )}
+                            style={{ left: `calc(${percent}% + ${offsetPx}px)` }}
+                        />
+                    );
+                })}
             {Array.from({ length: _values.length }, (_, index) => (
                 <SliderPrimitive.Thumb
                     data-slot="slider-thumb"

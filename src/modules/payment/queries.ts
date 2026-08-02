@@ -1,6 +1,14 @@
 import { QueryKeys } from "@/constants/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import { getBalance, getPackages, getPaidPackages, getPayments, getTopUps, getWithdrawals } from "./api";
+import {
+    getBalance,
+    getPackages,
+    getPaidPackages,
+    getPayments,
+    getSubscriptionReserve,
+    getTopUps,
+    getWithdrawals,
+} from "./api";
 
 const BALANCE_REFETCH_INTERVAL_MS = 15 * 60 * 1000;
 
@@ -46,5 +54,13 @@ export function useWithdrawalsQuery() {
         queryKey: QueryKeys.PAYMENT_WITHDRAWALS,
         queryFn: getWithdrawals,
         refetchInterval: BALANCE_REFETCH_INTERVAL_MS,
+    });
+}
+
+export function useSubscriptionReserveQuery(enabled = true) {
+    return useQuery({
+        queryKey: QueryKeys.PAYMENT_SUBSCRIPTION_RESERVE,
+        queryFn: getSubscriptionReserve,
+        enabled,
     });
 }

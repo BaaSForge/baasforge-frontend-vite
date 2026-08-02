@@ -11,22 +11,65 @@ import {
 } from "@/components/ui/centric-modal";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import {
+    getSliderThumbCenterOffsetPx,
+    getSliderValuePercent,
+    Slider,
+} from "@/components/ui/slider";
 import { cn, formatPrice } from "@/lib/utils";
-import { useBalanceQuery, useInitiateWithdrawalMutation } from "@/modules/payment";
-import { useEffect, useId, useState } from "react";
+import { useBalanceQuery, useInitiateWithdrawalMutation, useSubscriptionReserveQuery } from "@/modules/payment";
+import { useEffect, useId, useMemo, useState } from "react";
 
 type WithdrawModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
 
+function floorToCents(value: number) {
+    return Math.floor(value * 100) / 100;
+}
+
+function formatAmountInput(value: number) {
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
 export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
     const formId = useId();
     const [amount, setAmount] = useState("");
     const { data: balance } = useBalanceQuery();
+    const { data: subscriptionReserve } = useSubscriptionReserveQuery(open);
     const initiateWithdrawalMutation = useInitiateWithdrawalMutation();
-    const availableBalance = balance?.balance ?? 0;
+
+    const availableBalance = floorToCents(balance?.balance ?? 0);
     const canWithdraw = availableBalance > 1;
+    const maxWithdrawWithoutCancel = floorToCents(
+        Math.min(subscriptionReserve?.max_withdraw_without_cancel ?? 0, availableBalance),
+    );
+    const hasSafeSnap = maxWithdrawWithoutCancel > 0 && maxWithdrawWithoutCancel < availableBalance;
+
+    const parsedAmount = Number.parseFloat(amount);
+    const sliderValue = Number.isFinite(parsedAmount)
+        ? Math.min(Math.max(floorToCents(parsedAmount), 0), availableBalance)
+        : 0;
+
+    const willCancelSubscription =
+        Number.isFinite(parsedAmount) &&
+        parsedAmount > 0 &&
+        parsedAmount > maxWithdrawWithoutCancel;
+
+    const isValidAmount =
+        canWithdraw && Number.isFinite(parsedAmount) && parsedAmount >= 1 && parsedAmount <= availableBalance;
+
+    const snapPercent = useMemo(() => {
+        if (!hasSafeSnap || availableBalance <= 0) return null;
+        return getSliderValuePercent(maxWithdrawWithoutCancel, 0, availableBalance);
+    }, [availableBalance, hasSafeSnap, maxWithdrawWithoutCancel]);
+
+    const snapLabelStyle = useMemo(() => {
+        if (snapPercent == null) return undefined;
+        const offsetPx = getSliderThumbCenterOffsetPx(snapPercent);
+        return { left: `calc(${snapPercent}% + ${offsetPx}px)` };
+    }, [snapPercent]);
 
     useEffect(() => {
         if (!open) {
@@ -34,9 +77,23 @@ export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
         }
     }, [open]);
 
-    const parsedAmount = Number.parseFloat(amount);
-    const isValidAmount =
-        canWithdraw && Number.isFinite(parsedAmount) && parsedAmount >= 1 && parsedAmount <= availableBalance;
+    const applyAmount = (next: number) => {
+        const clamped = floorToCents(Math.min(Math.max(next, 0), availableBalance));
+        setAmount(clamped === 0 ? "" : formatAmountInput(clamped));
+    };
+
+    const handleSliderChange = (values: number[]) => {
+        let next = floorToCents(values[0] ?? 0);
+
+        if (hasSafeSnap) {
+            const snapThreshold = Math.max(availableBalance * 0.03, 0.5);
+            if (Math.abs(next - maxWithdrawWithoutCancel) <= snapThreshold) {
+                next = maxWithdrawWithoutCancel;
+            }
+        }
+
+        applyAmount(next);
+    };
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -62,46 +119,82 @@ export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
                 <form
                     id={formId}
                     onSubmit={handleSubmit}
-                    className={cn("space-y-2", !canWithdraw && "pointer-events-none opacity-50")}
+                    className={cn("space-y-3", !canWithdraw && "pointer-events-none opacity-50")}
                     aria-disabled={!canWithdraw}
                 >
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="space-y-2">
                         <Label htmlFor="withdraw-amount">Amount</Label>
-                        <Button
-                            type="button"
-                            variant="link"
-                            size="sm"
-                            className="h-auto px-0 text-xs"
-                            disabled={!canWithdraw || initiateWithdrawalMutation.isPending}
-                            onClick={() => {
-                                const roundedDown = Math.floor(availableBalance * 100) / 100;
-                                setAmount(String(roundedDown));
-                            }}
-                        >
-                            Withdraw all
-                        </Button>
+                        <InputGroup>
+                            <InputGroupAddon align="inline-start">
+                                <InputGroupText>$</InputGroupText>
+                            </InputGroupAddon>
+                            <InputGroupInput
+                                id="withdraw-amount"
+                                type="number"
+                                inputMode="decimal"
+                                min="1"
+                                step="0.01"
+                                max={canWithdraw ? availableBalance : undefined}
+                                value={amount}
+                                onChange={(event) => setAmount(event.target.value)}
+                                disabled={!canWithdraw || initiateWithdrawalMutation.isPending}
+                                autoFocus={canWithdraw}
+                            />
+                        </InputGroup>
                     </div>
-                    <InputGroup>
-                        <InputGroupAddon align="inline-start">
-                            <InputGroupText>$</InputGroupText>
-                        </InputGroupAddon>
-                        <InputGroupInput
-                            id="withdraw-amount"
-                            type="number"
-                            inputMode="decimal"
-                            min="1"
-                            step="0.01"
-                            max={canWithdraw ? availableBalance : undefined}
-                            value={amount}
-                            onChange={(event) => setAmount(event.target.value)}
-                            disabled={!canWithdraw || initiateWithdrawalMutation.isPending}
-                            autoFocus={canWithdraw}
-                        />
-                    </InputGroup>
+
                     {canWithdraw ? (
-                        <p className="text-muted-foreground text-xs">
-                            Minimum is $1 · Available balance: {formatPrice(availableBalance)}
-                        </p>
+                        <div className="space-y-2 pt-1">
+                            <div className="px-1">
+                                {snapPercent != null && (
+                                    <div className="relative mb-1 h-3">
+                                        <span
+                                            className="text-muted-foreground absolute top-0 -translate-x-1/2 text-[10px] leading-none whitespace-nowrap"
+                                            style={snapLabelStyle}
+                                        >
+                                            Keep package
+                                        </span>
+                                    </div>
+                                )}
+                                <Slider
+                                    min={0}
+                                    max={availableBalance}
+                                    step={0.01}
+                                    value={[sliderValue]}
+                                    onValueChange={handleSliderChange}
+                                    marks={
+                                        hasSafeSnap
+                                            ? [{ value: maxWithdrawWithoutCancel }]
+                                            : undefined
+                                    }
+                                    disabled={
+                                        !canWithdraw ||
+                                        initiateWithdrawalMutation.isPending ||
+                                        availableBalance <= 0
+                                    }
+                                    aria-label="Withdrawal amount"
+                                />
+                            </div>
+                            <div className="text-muted-foreground flex items-center justify-between gap-2 text-xs">
+                                <span>{formatPrice(0)}</span>
+                                <span>{formatPrice(availableBalance)}</span>
+                            </div>
+                            {hasSafeSnap ? (
+                                <p className="text-muted-foreground text-xs">
+                                    Up to {formatPrice(maxWithdrawWithoutCancel)} keeps your active package. Minimum is $1.
+                                </p>
+                            ) : (
+                                <p className="text-muted-foreground text-xs">
+                                    Minimum is $1 · Available balance: {formatPrice(availableBalance)}
+                                </p>
+                            )}
+                            {willCancelSubscription ? (
+                                <p className="text-destructive text-xs" role="alert">
+                                    This withdrawal will cancel your active subscription package, and you’ll lose the
+                                    usage discount on future usage.
+                                </p>
+                            ) : null}
+                        </div>
                     ) : (
                         <p className="text-destructive text-xs">
                             You can’t withdraw because your balance isn’t high enough. Available balance:{" "}

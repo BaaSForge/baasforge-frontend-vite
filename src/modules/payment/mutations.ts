@@ -24,6 +24,7 @@ export function useInitiateTopUpMutation() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
             queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_TOP_UPS });
+            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_SUBSCRIPTION_RESERVE });
         },
     });
 }
@@ -36,6 +37,10 @@ export function useInitiateWithdrawalMutation() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
             queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_WITHDRAWALS });
+            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_SUBSCRIPTION_RESERVE });
+            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAID_PACKAGES });
+            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PACKAGES });
+            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAYMENTS });
         },
     });
 }

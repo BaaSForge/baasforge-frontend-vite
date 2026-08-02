@@ -66,7 +66,7 @@ function getNearestExpiringPayment(payments: PaymentResponse[]): {
     hoursLeft?: number;
 } | null {
     const candidates = payments
-        .filter((p) => p.is_success && p.expires_at)
+        .filter((p) => p.is_success && !p.cancelled_at && p.expires_at)
         .map((p) => {
             const info = getTimeLeft(p.expires_at);
 
@@ -91,7 +91,9 @@ function getNearestExpiringPayment(payments: PaymentResponse[]): {
 }
 
 function hasAnyActivePayment(payments: PaymentResponse[]): boolean {
-    return payments.some((p) => p.is_success && p.expires_at && getTimeLeft(p.expires_at).type === "active");
+    return payments.some(
+        (p) => p.is_success && !p.cancelled_at && p.expires_at && getTimeLeft(p.expires_at).type === "active",
+    );
 }
 
 type NavUserProps = {

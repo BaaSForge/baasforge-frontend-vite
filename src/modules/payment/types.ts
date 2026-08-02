@@ -8,6 +8,7 @@ export interface PaymentResponse {
     package_is_tiral: boolean;
     is_success: boolean;
     expires_at: string | null;
+    cancelled_at: string | null;
 }
 
 export interface Package {
@@ -72,4 +73,12 @@ export interface InitiateWithdrawalResponse {
     id: string;
     amount: number;
     created_at: string;
+}
+
+export interface SubscriptionReserve {
+    min_balance_to_keep: number;
+    max_withdraw_without_cancel: number;
+    balance: number;
+    effective_package_price: number;
+    period_usage_cost: number;
 }

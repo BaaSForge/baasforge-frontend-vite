@@ -267,24 +267,38 @@ export default function DashboardPaymentsPage() {
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant={payment.is_success ? "default" : "secondary"}>
-                                                                {payment.is_success ? "Success" : "Failed"}
-                                                            </Badge>
+                                                            {payment.cancelled_at ? (
+                                                                <Badge variant="destructive">Cancelled</Badge>
+                                                            ) : (
+                                                                <Badge variant={payment.is_success ? "default" : "secondary"}>
+                                                                    {payment.is_success ? "Success" : "Failed"}
+                                                                </Badge>
+                                                            )}
                                                         </TableCell>
                                                         <TableCell className="space-y-1">
-                                                            {expiry.type === "no_date" && (
-                                                                <span className="text-muted-foreground text-xs">No expiry</span>
-                                                            )}
-                                                            {(expiry.type === "expired" || expiry.type === "active") && (
-                                                                <Badge
-                                                                    variant={
-                                                                        variant === "destructive" ? "destructive" : "secondary"
-                                                                    }
-                                                                    className="text-xs"
-                                                                    title={expireTooltip}
-                                                                >
-                                                                    <TimeLeftLabel expiresAt={payment.expires_at} />
-                                                                </Badge>
+                                                            {payment.cancelled_at ? (
+                                                                <span className="text-muted-foreground">—</span>
+                                                            ) : (
+                                                                <>
+                                                                    {expiry.type === "no_date" && (
+                                                                        <span className="text-muted-foreground text-xs">
+                                                                            No expiry
+                                                                        </span>
+                                                                    )}
+                                                                    {(expiry.type === "expired" || expiry.type === "active") && (
+                                                                        <Badge
+                                                                            variant={
+                                                                                variant === "destructive"
+                                                                                    ? "destructive"
+                                                                                    : "secondary"
+                                                                            }
+                                                                            className="text-xs"
+                                                                            title={expireTooltip}
+                                                                        >
+                                                                            <TimeLeftLabel expiresAt={payment.expires_at} />
+                                                                        </Badge>
+                                                                    )}
+                                                                </>
                                                             )}
                                                         </TableCell>
                                                     </TableRow>

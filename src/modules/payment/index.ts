@@ -3,6 +3,7 @@ export {
     getPackages,
     getPaidPackages,
     getPayments,
+    getSubscriptionReserve,
     getTopUps,
     getWithdrawals,
     initiateTopUp,
@@ -19,6 +20,7 @@ export {
     usePackagesQuery,
     usePaidPackagesQuery,
     usePaymentsQuery,
+    useSubscriptionReserveQuery,
     useTopUpsQuery,
     useWithdrawalsQuery,
 } from "./queries";
@@ -31,6 +33,7 @@ export type {
     PaymentResponse,
     PaymentWithPackage,
     PurchaseResponse,
+    SubscriptionReserve,
     TopUp,
     Withdrawal,
 } from "./types";

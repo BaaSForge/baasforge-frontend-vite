@@ -8,6 +8,7 @@ import type {
     PaidPackageResponse,
     PaymentResponse,
     PurchaseResponse,
+    SubscriptionReserve,
     TopUp,
     Withdrawal,
 } from "./types";
@@ -21,6 +22,7 @@ const TOP_UPS_ENDPOINT = "/v1/payment/top-ups";
 const WITHDRAWALS_ENDPOINT = "/v1/payment/withdrawals";
 const INITIATE_TOP_UP_ENDPOINT = "/v1/payment/initiate-top-up";
 const INITIATE_WITHDRAWAL_ENDPOINT = "/v1/payment/initiate-withdrawal";
+const SUBSCRIPTION_RESERVE_ENDPOINT = "/v1/payment/subscription-reserve";
 
 export function getPayments(): Promise<PaymentResponse[]> {
     return apiClient.get<ApiResponse<PaymentResponse[]>>(PAYMENTS_ENDPOINT).then((res) => res.data ?? []);
@@ -40,6 +42,15 @@ export function getBalance(): Promise<Balance> {
     return apiClient.get<ApiResponse<Balance>>(BALANCE_ENDPOINT).then((res) => {
         if (!res.data) {
             throw new Error("Balance response missing data");
+        }
+        return res.data;
+    });
+}
+
+export function getSubscriptionReserve(): Promise<SubscriptionReserve> {
+    return apiClient.get<ApiResponse<SubscriptionReserve>>(SUBSCRIPTION_RESERVE_ENDPOINT).then((res) => {
+        if (!res.data) {
+            throw new Error("Subscription reserve response missing data");
         }
         return res.data;
     });
