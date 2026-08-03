@@ -7,6 +7,7 @@ import type {
     Package,
     PaidPackageResponse,
     PaymentResponse,
+    PurchasePackageInput,
     PurchaseResponse,
     SubscriptionReserve,
     TopUp,
@@ -64,13 +65,18 @@ export function getWithdrawals(): Promise<Withdrawal[]> {
     return apiClient.get<ApiResponse<Withdrawal[]>>(WITHDRAWALS_ENDPOINT).then((res) => res.data ?? []);
 }
 
-export function purchasePackage(packageId: string): Promise<PurchaseResponse> {
-    return apiClient.post<ApiResponse<PurchaseResponse>>(PURCHASE_ENDPOINT, { package_id: packageId }).then((res) => {
-        if (!res.data) {
-            throw new Error("Purchase response missing data");
-        }
-        return res.data;
-    });
+export function purchasePackage({ packageId, billingPeriod }: PurchasePackageInput): Promise<PurchaseResponse> {
+    return apiClient
+        .post<ApiResponse<PurchaseResponse>>(PURCHASE_ENDPOINT, {
+            package_id: packageId,
+            ...(billingPeriod != null ? { billing_period: billingPeriod } : {}),
+        })
+        .then((res) => {
+            if (!res.data) {
+                throw new Error("Purchase response missing data");
+            }
+            return res.data;
+        });
 }
 
 export function initiateTopUp(amount: number): Promise<void> {

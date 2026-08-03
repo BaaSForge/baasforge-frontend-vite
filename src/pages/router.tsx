@@ -1,4 +1,4 @@
-import { AuthLayout, AuthProvider } from "@/modules/auth";
+import { AuthLayout, AuthProvider, CenteredAuthPageLayout } from "@/modules/auth";
 import { AuthClosedGuard } from "@/modules/auth/components/auth-closed-guard";
 import { AuthOpenGuard } from "@/modules/auth/components/auth-open-guard";
 import { AppShell } from "@/modules/layout";
@@ -23,6 +23,9 @@ const ServerErrorPage = lazy(() => import("./errors/server/page"));
 const DashboardPage = lazy(() => import("./dashboard/page"));
 const DashboardPackagesPage = lazy(() => import("./dashboard/packages/page"));
 const DashboardPaymentsPage = lazy(() => import("./dashboard/payments/page"));
+const DashboardPurchasePage = lazy(() => import("./dashboard/purchase/page"));
+const DashboardBillingSuccessPage = lazy(() => import("./dashboard/billing/success/page"));
+const DashboardBillingCancelPage = lazy(() => import("./dashboard/billing/cancel/page"));
 const DashboardOverallUsagePage = lazy(() => import("./dashboard/usage/page"));
 const DashboardTokensPage = lazy(() => import("./dashboard/tokens/page"));
 const ShellLayout = lazy(() => import("./dashboard/shell-layout"));
@@ -72,6 +75,26 @@ export const appRoutes = [
                             {
                                 element: <AuthLayout />,
                                 children: [
+                                    {
+                                        element: <CenteredAuthPageLayout contentClassName="max-w-lg" />,
+                                        children: [
+                                            {
+                                                path: "dashboard/purchase",
+                                                page: ActivePage.DASHBOARD_PURCHASE,
+                                                element: <DashboardPurchasePage />,
+                                            },
+                                            {
+                                                path: "dashboard/billing/success",
+                                                page: ActivePage.DASHBOARD_BILLING_SUCCESS,
+                                                element: <DashboardBillingSuccessPage />,
+                                            },
+                                            {
+                                                path: "dashboard/billing/cancel",
+                                                page: ActivePage.DASHBOARD_BILLING_CANCEL,
+                                                element: <DashboardBillingCancelPage />,
+                                            },
+                                        ],
+                                    },
                                     {
                                         element: <AppShell />,
                                         children: [

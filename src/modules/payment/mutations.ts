@@ -7,11 +7,12 @@ export function usePurchasePackageMutation() {
 
     return useMutation({
         mutationFn: purchasePackage,
-        onSuccess: () => {
-            // TODO: Invalidate only if the package is realy purchased
-            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAID_PACKAGES });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAYMENTS });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
+        onSuccess: (data) => {
+            if (data.checkout_url == null) {
+                queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAID_PACKAGES });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAYMENTS });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
+            }
         },
     });
 }

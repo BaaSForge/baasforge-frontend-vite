@@ -3,4 +3,5 @@ export enum STORAGE_KEYS {
     UNITS_AND_RELEASES_SIDEBAR_COLLAPSED = "units_and_releases_sidebar_collapsed",
     UNITS_AND_RELEASES_GROUP_MODE = "units_and_releases_group_mode",
     ALL_UNIT_PAGES_SIZE = "all-unit-pages-size",
+    PACKAGE_BILLING_PERIOD = "package_billing_period",
 }

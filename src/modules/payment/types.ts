@@ -33,9 +33,22 @@ export interface PaidPackageResponse {
     can_purchase_trial: boolean;
 }
 
+export type BillingPeriod = "monthly" | "annual";
+
+export type PurchaseKind = "package" | "top_up" | "withdraw";
+
 export interface PurchaseResponse {
     package_id: string;
-    expires_at: string;
+    amount: number;
+    billing_period: BillingPeriod;
+    checkout_url: string | null;
+    session_id: string | null;
+    expires_at?: string | null;
+}
+
+export interface PurchasePackageInput {
+    packageId: string;
+    billingPeriod?: BillingPeriod;
 }
 
 export interface Balance {

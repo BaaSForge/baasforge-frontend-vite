@@ -3,6 +3,7 @@ export { AuthClosedGuard } from "./components/auth-closed-guard";
 export { AuthLayout } from "./components/auth-layout";
 export { AuthOpenGuard } from "./components/auth-open-guard";
 export { AuthProvider } from "./components/auth-provider";
+export { CenteredAuthPageLayout } from "./components/centered-auth-page-layout";
 export { LoginForm } from "./components/login-form";
 export { useAuth } from "./hooks";
 export type { UseAuthReturn } from "./hooks";
