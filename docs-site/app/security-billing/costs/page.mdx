@@ -17,6 +17,7 @@ Costs accumulate in real time and are visible in the dashboard during the billin
 
 <Cards>
   <Cards.Card title="What you pay for" href="#what-you-pay-for" />
+  <Cards.Card title="Balance & package credit" href="#balance--package-credit" />
   <Cards.Card title="Discounts" href="#discounts" />
   <Cards.Card title="Rates in plain language" href="#rates-in-plain-language" />
   <Cards.Card title="Package limits" href="#package-limits" />
@@ -78,6 +79,27 @@ We currently run **Gemini 3.1 Flash Lite Preview** for platform AI. Provider lis
 
 ---
 
+## Balance & package credit
+
+Your **balance** is prepaid credit used for metered usage (compute, storage, LLM). It increases when you:
+
+| Source | Amount added to balance |
+| --- | --- |
+| **Package purchase** | The **sale price you are charged** (after package and annual discounts) |
+| **Top-up** | The top-up amount you choose and pay |
+
+<Callout type="important">
+  **Pay $X → get $X credit.** Package discounts lower the sale price. We do
+  **not** charge the discounted price and credit the higher list price. Example:
+  a plan with list **$30 / month** and **20% off** charges **$24** on Stripe and
+  adds **$24** to your balance — not $30.
+</Callout>
+
+Package purchases also unlock **tier usage discounts** while the package is
+active. That is separate from the balance credit above.
+
+---
+
 ## Discounts
 
 <Callout type="info">
@@ -90,27 +112,29 @@ We currently run **Gemini 3.1 Flash Lite Preview** for platform AI. Provider lis
 </Callout>
 
 <Callout type="important">
-  **Credit stays; discounts need an active package.** Package credit remains in
-  your balance after the package period ends. Usage discounts apply only while
-  you have a non-expired package.
+  **Credit stays; usage discounts need an active package.** The balance credit
+  from a package purchase (the amount you paid) remains after the package period
+  ends. Usage-rate discounts apply only while you have a non-expired package.
 </Callout>
 
-Two discounts can lower what you pay:
+Two discounts can lower the **package sale price** (and therefore both the
+Stripe charge and the balance credit):
 
 ### 1. Annual billing discount (20% off)
 
 Applies when you choose **yearly billing** for a paid subscription plan (the plan you pick on the Packages page).
 
-| Billing choice | What you pay |
+| Billing choice | What you pay (and get as balance credit) |
 | --- | --- |
-| **Monthly** | The plan’s listed monthly fee, charged each month |
-| **Annual** | `monthly fee × 12 × 0.80` — **20% off** the full-year total, paid once for 12 months |
+| **Monthly** | The plan’s monthly sale price (after any package `% off`) |
+| **Annual** | `monthly sale price × 12 × 0.80` — **20% off** the full-year total, paid once for 12 months |
 
 This discount applies **only to that subscription plan fee** — not to metered compute, storage, or LLM usage.
 
 <Callout type="info">
-  Example: a plan listed at **$10 / month** costs **$10** billed monthly, or
-  **$96 / year** billed annually (`10 × 12 × 0.80`) instead of $120.
+  Example: a plan with monthly sale price **$10** costs **$10** billed monthly
+  (and credits $10), or **$96 / year** billed annually (`10 × 12 × 0.80`) and
+  credits $96 — instead of $120 list-year.
 </Callout>
 
 ### 2. Subscription discount (by tier)
@@ -287,11 +311,12 @@ and you keep its discount even if you withdraw the rest of your balance.
 
 ## Summary
 
-1. You pay for **compute**, **hot storage**, **disk storage**, and **LLM tokens**.
-2. Higher tiers get a **subscription discount** on those usage rates (up to 30% off on Tier 4).
-3. Choosing **annual billing** takes **20% off the subscription plan fee** for the year (not usage).
-4. LLM bills follow provider list prices + our margin (**1.25×** today); we currently use Gemini 3.1 Flash Lite Preview.
-5. Disk is **block storage**, not object storage — object storage will be a separate meter soon.
+1. You pay for **compute**, **hot storage**, **disk storage**, and **LLM tokens** from your balance.
+2. Package purchases and top-ups credit your balance by the **amount charged** (pay $X → get $X).
+3. Higher tiers get a **subscription discount** on those usage rates (up to 30% off on Tier 4).
+4. Choosing **annual billing** takes **20% off the subscription plan fee** for the year (not usage).
+5. LLM bills follow provider list prices + our margin (**1.25×** today); we currently use Gemini 3.1 Flash Lite Preview.
+6. Disk is **block storage**, not object storage — object storage will be a separate meter soon.
 
 <Callout type="warning">
   Rates, margins, discounts, and package limits can change. When they do, we

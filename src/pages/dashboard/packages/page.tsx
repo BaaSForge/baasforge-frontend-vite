@@ -5,6 +5,7 @@ import { ContentErrorState } from "@/components/content-error-state";
 import { ContentLoadingState } from "@/components/content-loading-state";
 import { PackageDescription } from "@/components/package-description";
 import { Container } from "@/components/page-container";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +24,7 @@ import {
     ANNUAL_BILLING_DISCOUNT_PERCENT,
     packageAmountForBillingPeriod,
 } from "@/modules/payment/lib/package-amount";
-import { InfoIcon, ShoppingCartIcon } from "lucide-react";
+import { Info, InfoIcon, ShoppingCartIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -88,6 +89,25 @@ export default function DashboardPackagesPage() {
         <>
             <Container className="pt-0">
                 <div className="py-4">
+                    <Alert className="mb-6 items-start">
+                        <Info />
+                        <AlertTitle>You pay the sale price — that amount is added to your balance</AlertTitle>
+                        <AlertDescription>
+                            <p>
+                                Package discounts lower what you are charged. Your balance increases by exactly that
+                                charged amount (for example, a $30 list plan at 20% off credits <span className="font-medium text-foreground">$24</span>
+                                , not $30). You also get tier usage discounts while the package is active. See{" "}
+                                <Link
+                                    to="/docs/security-billing/costs"
+                                    reloadDocument
+                                    className="text-foreground font-medium underline underline-offset-4"
+                                >
+                                    Costs &amp; Billing
+                                </Link>
+                                .
+                            </p>
+                        </AlertDescription>
+                    </Alert>
                     <div className="mb-6 flex justify-center">
                         <TooltipProvider>
                             <Tooltip open={annualTipOpen} disableHoverableContent>

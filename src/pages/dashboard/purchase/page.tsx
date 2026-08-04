@@ -342,7 +342,7 @@ export default function DashboardPurchasePage() {
                         ) : null}
                         <TableRow>
                             <TableCell className="text-muted-foreground">
-                                {isAnnual ? "Billed annually" : "Amount"}
+                                {isAnnual ? "Amount due (annual)" : "Amount due"}
                             </TableCell>
                             <TableCell className="text-right text-base font-semibold tabular-nums">
                                 {formatPrice(amount)}
@@ -351,10 +351,17 @@ export default function DashboardPurchasePage() {
                                 ) : null}
                             </TableCell>
                         </TableRow>
+                        <TableRow>
+                            <TableCell className="text-muted-foreground">Added to balance</TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">
+                                {formatPrice(amount)}
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
                 <p className="text-muted-foreground text-xs">
-                    You’ll be redirected to Stripe to complete payment securely.
+                    Discounts lower the sale price. Your balance increases by the amount charged (not the higher list
+                    price). You’ll be redirected to Stripe to complete payment securely.
                 </p>
                 {purchaseMutation.isError ? (
                     <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">

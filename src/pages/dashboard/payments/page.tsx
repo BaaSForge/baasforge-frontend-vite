@@ -193,8 +193,10 @@ export default function DashboardPaymentsPage() {
                     </AlertTitle>
                     <AlertDescription className="text-amber-900/80 dark:text-amber-100/80">
                         <p>
-                            Package credit remains in your balance after the package period ends. Usage discounts apply
-                            only while you have a non-expired package.
+                            Package purchases add the <span className="font-medium">amount you paid</span> to your
+                            balance (sale price after package/annual discounts — not the higher list price). That credit
+                            remains after the package period ends. Usage-rate discounts apply only while you have a
+                            non-expired package.
                         </p>
                     </AlertDescription>
                 </Alert>
