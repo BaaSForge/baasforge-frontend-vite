@@ -9,6 +9,8 @@ import {
     CentricModalHeader,
     CentricModalTitle,
 } from "@/components/ui/centric-modal";
+import { AlertCircle } from "lucide-react";
+/*
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,12 +21,14 @@ import {
 import { cn, formatPrice } from "@/lib/utils";
 import { useBalanceQuery, useInitiateWithdrawalMutation, useSubscriptionReserveQuery } from "@/modules/payment";
 import { useId, useMemo, useState } from "react";
+*/
 
 type WithdrawModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
 
+/*
 function floorToCents(value: number) {
     return Math.floor(value * 100) / 100;
 }
@@ -32,8 +36,35 @@ function floorToCents(value: number) {
 function formatAmountInput(value: number) {
     return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
+*/
 
 export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
+    // Temporarily disabled — restore the implementation below when re-enabling withdrawals.
+    return (
+        <CentricModal open={open} onOpenChange={onOpenChange} dismissOnOverlayClick>
+            <CentricModalContent className="sm:max-w-md" showCloseButton>
+                <CentricModalHeader className="text-left">
+                    <CentricModalTitle>Withdraw</CentricModalTitle>
+                    <CentricModalDescription className="text-left">
+                        Withdrawals are temporarily unavailable.
+                    </CentricModalDescription>
+                </CentricModalHeader>
+
+                <div className="flex items-start gap-2 rounded-lg border p-3 text-sm text-muted-foreground">
+                    <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    We’re working on withdrawals. Please try again later.
+                </div>
+
+                <CentricModalFooter className="gap-2 sm:justify-end">
+                    <Button type="button" onClick={() => onOpenChange(false)}>
+                        Close
+                    </Button>
+                </CentricModalFooter>
+            </CentricModalContent>
+        </CentricModal>
+    );
+
+    /*
     const formId = useId();
     const [amount, setAmount] = useState("");
     const { data: balance } = useBalanceQuery();
@@ -224,4 +255,5 @@ export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
             </CentricModalContent>
         </CentricModal>
     );
+    */
 }

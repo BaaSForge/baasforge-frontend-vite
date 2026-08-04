@@ -16,7 +16,9 @@ export default function DashboardBillingSuccessPage() {
     useEffect(() => {
         void queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAID_PACKAGES });
         void queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_PAYMENTS });
+        void queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_TOP_UPS });
         void queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
+        void queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_SUBSCRIPTION_RESERVE });
     }, [queryClient]);
 
     return (
@@ -25,7 +27,8 @@ export default function DashboardBillingSuccessPage() {
                 <CheckCircle2 className="size-12 text-emerald-500" aria-hidden />
                 <CardTitle className="text-xl">Payment successful</CardTitle>
                 <CardDescription>
-                    Your payment went through. Package access updates shortly after Stripe confirms the charge.
+                    Your payment went through. Balance and package access update shortly after Stripe confirms the
+                    charge.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-center text-sm text-muted-foreground">

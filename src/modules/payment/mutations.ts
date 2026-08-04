@@ -22,10 +22,12 @@ export function useInitiateTopUpMutation() {
 
     return useMutation({
         mutationFn: initiateTopUp,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_TOP_UPS });
-            queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_SUBSCRIPTION_RESERVE });
+        onSuccess: (data) => {
+            if (data.checkout_url == null) {
+                queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_BALANCE });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_TOP_UPS });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.PAYMENT_SUBSCRIPTION_RESERVE });
+            }
         },
     });
 }

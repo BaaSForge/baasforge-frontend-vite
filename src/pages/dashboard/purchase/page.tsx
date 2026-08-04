@@ -9,7 +9,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { formatPrice } from "@/lib/utils";
 import type { BillingPeriod, PurchaseKind } from "@/modules/payment";
-import { usePackagesQuery, usePurchasePackageMutation } from "@/modules/payment";
+import {
+    useInitiateTopUpMutation,
+    usePackagesQuery,
+    usePurchasePackageMutation,
+} from "@/modules/payment";
 import { packageAmountForBillingPeriod } from "@/modules/payment/lib/package-amount";
 import { AlertCircle, ArrowLeft, CreditCard } from "lucide-react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
@@ -23,6 +27,13 @@ function parseBillingPeriod(value: string | null): BillingPeriod {
     return value === "annual" ? "annual" : "monthly";
 }
 
+function parseTopUpAmount(value: string | null): number | null {
+    if (value == null || value === "") return null;
+    const amount = Number.parseFloat(value);
+    if (!Number.isFinite(amount) || amount < 5) return null;
+    return amount;
+}
+
 export default function DashboardPurchasePage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -30,9 +41,11 @@ export default function DashboardPurchasePage() {
     const kind = parsePurchaseKind(searchParams.get("kind"));
     const packageId = searchParams.get("package_id");
     const billingPeriod = parseBillingPeriod(searchParams.get("billing_period"));
+    const topUpAmount = parseTopUpAmount(searchParams.get("amount"));
 
     const { data: packages = [], isLoading, isError } = usePackagesQuery();
     const purchaseMutation = usePurchasePackageMutation();
+    const topUpMutation = useInitiateTopUpMutation();
 
     if (kind == null) {
         return (
@@ -44,7 +57,7 @@ export default function DashboardPurchasePage() {
                 <CardContent>
                     <ContentEmptyState
                         title="Nothing to purchase"
-                        description="Open this page from packages, top up, or withdraw with a valid kind query."
+                        description="Open this page from packages or top up with a valid kind query."
                     />
                 </CardContent>
                 <CardFooter>
@@ -59,17 +72,17 @@ export default function DashboardPurchasePage() {
         );
     }
 
-    if (kind === "top_up" || kind === "withdraw") {
+    if (kind === "withdraw") {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>{kind === "top_up" ? "Top up" : "Withdraw"}</CardTitle>
-                    <CardDescription>This purchase flow is not available yet.</CardDescription>
+                    <CardTitle>Withdraw</CardTitle>
+                    <CardDescription>Withdrawals are temporarily unavailable.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-start gap-2 rounded-lg border p-3 text-sm text-muted-foreground">
                         <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
-                        Stripe checkout for {kind === "top_up" ? "top up" : "withdraw"} will be added later.
+                        We’re working on withdrawals. Please try again later.
                     </div>
                 </CardContent>
                 <CardFooter>
@@ -78,6 +91,101 @@ export default function DashboardPurchasePage() {
                             <ArrowLeft className="size-4" aria-hidden />
                             Back to balance & payments
                         </Link>
+                    </Button>
+                </CardFooter>
+            </Card>
+        );
+    }
+
+    if (kind === "top_up") {
+        if (topUpAmount == null) {
+            return (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Top up</CardTitle>
+                        <CardDescription>A valid amount of at least $5 is required.</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link to="/dashboard/payments">
+                                <ArrowLeft className="size-4" aria-hidden />
+                                Back to balance & payments
+                            </Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+            );
+        }
+
+        const handleConfirmTopUp = () => {
+            if (topUpMutation.isPending) return;
+            topUpMutation.mutate(topUpAmount, {
+                onSuccess: (data) => {
+                    if (!data.checkout_url) return;
+                    window.location.assign(data.checkout_url);
+                },
+            });
+        };
+
+        const handleCancelTopUp = () => {
+            if (location.key !== "default" && window.history.length > 1) {
+                navigate(-1);
+                return;
+            }
+            navigate("/dashboard/payments");
+        };
+
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Confirm top up</CardTitle>
+                    <CardDescription>Review the amount, then continue to secure checkout.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className="text-muted-foreground">Type</TableCell>
+                                <TableCell className="text-right font-medium">Top up</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="text-muted-foreground">Amount</TableCell>
+                                <TableCell className="text-right text-base font-semibold tabular-nums">
+                                    {formatPrice(topUpAmount)}
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                    <p className="text-muted-foreground text-xs">
+                        You’ll be redirected to Stripe to complete payment securely. Funds are added after payment
+                        succeeds.
+                    </p>
+                    {topUpMutation.isError ? (
+                        <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+                            <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+                            {topUpMutation.error instanceof Error
+                                ? topUpMutation.error.message
+                                : "Top up failed. Please try again."}
+                        </div>
+                    ) : null}
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full sm:flex-1"
+                        onClick={handleCancelTopUp}
+                    >
+                        <ArrowLeft className="size-4" aria-hidden />
+                        Cancel
+                    </Button>
+                    <Button
+                        className="w-full sm:flex-1"
+                        onClick={handleConfirmTopUp}
+                        disabled={topUpMutation.isPending}
+                    >
+                        <CreditCard className="size-4" aria-hidden />
+                        {topUpMutation.isPending ? "Starting checkout…" : "Continue to payment"}
                     </Button>
                 </CardFooter>
             </Card>

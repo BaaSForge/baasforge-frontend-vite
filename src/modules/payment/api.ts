@@ -79,8 +79,13 @@ export function purchasePackage({ packageId, billingPeriod }: PurchasePackageInp
         });
 }
 
-export function initiateTopUp(amount: number): Promise<void> {
-    return apiClient.post<ApiResponse<InitiateTopUpResponse>>(INITIATE_TOP_UP_ENDPOINT, { amount }).then(() => undefined);
+export function initiateTopUp(amount: number): Promise<InitiateTopUpResponse> {
+    return apiClient.post<ApiResponse<InitiateTopUpResponse>>(INITIATE_TOP_UP_ENDPOINT, { amount }).then((res) => {
+        if (!res.data) {
+            throw new Error("Top up response missing data");
+        }
+        return res.data;
+    });
 }
 
 export function initiateWithdrawal(amount: number): Promise<void> {

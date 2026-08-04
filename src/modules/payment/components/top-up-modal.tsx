@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/centric-modal";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import { useInitiateTopUpMutation } from "@/modules/payment";
 import { useId, useState } from "react";
+import { useNavigate } from "react-router";
 
 type TopUpModalProps = {
     open: boolean;
@@ -21,8 +21,8 @@ type TopUpModalProps = {
 
 export function TopUpModal({ open, onOpenChange }: TopUpModalProps) {
     const formId = useId();
+    const navigate = useNavigate();
     const [amount, setAmount] = useState("");
-    const initiateTopUpMutation = useInitiateTopUpMutation();
 
     const handleOpenChange = (nextOpen: boolean) => {
         if (!nextOpen) {
@@ -36,13 +36,10 @@ export function TopUpModal({ open, onOpenChange }: TopUpModalProps) {
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        if (!isValidAmount || initiateTopUpMutation.isPending) return;
+        if (!isValidAmount) return;
 
-        initiateTopUpMutation.mutate(parsedAmount, {
-            onSuccess: () => {
-                handleOpenChange(false);
-            },
-        });
+        handleOpenChange(false);
+        navigate(`/dashboard/purchase?kind=top_up&amount=${encodeURIComponent(String(parsedAmount))}`);
     };
 
     return (
@@ -69,7 +66,6 @@ export function TopUpModal({ open, onOpenChange }: TopUpModalProps) {
                             step="0.01"
                             value={amount}
                             onChange={(event) => setAmount(event.target.value)}
-                            disabled={initiateTopUpMutation.isPending}
                             autoFocus
                         />
                     </InputGroup>
@@ -77,20 +73,11 @@ export function TopUpModal({ open, onOpenChange }: TopUpModalProps) {
                 </form>
 
                 <CentricModalFooter className="gap-2 sm:justify-end">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleOpenChange(false)}
-                        disabled={initiateTopUpMutation.isPending}
-                    >
+                    <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button
-                        type="submit"
-                        form={formId}
-                        disabled={!isValidAmount || initiateTopUpMutation.isPending}
-                    >
-                        {initiateTopUpMutation.isPending ? "Topping up…" : "Top up"}
+                    <Button type="submit" form={formId} disabled={!isValidAmount}>
+                        Continue
                     </Button>
                 </CentricModalFooter>
             </CentricModalContent>

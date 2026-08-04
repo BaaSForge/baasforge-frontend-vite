@@ -77,9 +77,9 @@ export interface Withdrawal {
 }
 
 export interface InitiateTopUpResponse {
-    id: string;
     amount: number;
-    created_at: string;
+    checkout_url: string | null;
+    session_id: string | null;
 }
 
 export interface InitiateWithdrawalResponse {
