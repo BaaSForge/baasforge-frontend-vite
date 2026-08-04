@@ -23,7 +23,7 @@ export default function DashboardBillingSuccessPage() {
 
     return (
         <Card>
-            <CardHeader className="items-center text-center">
+            <CardHeader className="justify-items-center text-center">
                 <CheckCircle2 className="size-12 text-emerald-500" aria-hidden />
                 <CardTitle className="text-xl">Payment successful</CardTitle>
                 <CardDescription>

@@ -8,7 +8,7 @@ import { Link } from "react-router";
 export default function DashboardBillingCancelPage() {
     return (
         <Card>
-            <CardHeader className="items-center text-center">
+            <CardHeader className="justify-items-center text-center">
                 <CircleX className="size-12 text-muted-foreground" aria-hidden />
                 <CardTitle className="text-xl">Payment cancelled</CardTitle>
                 <CardDescription>
