@@ -82,7 +82,17 @@ export default function DashboardPurchasePage() {
                 <CardContent>
                     <div className="flex items-start gap-2 rounded-lg border p-3 text-sm text-muted-foreground">
                         <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
-                        We’re working on withdrawals. Please try again later.
+                        <span>
+                            We’re working on withdrawals. Please try again later. If you need to withdraw now, contact us
+                            at{" "}
+                            <a
+                                href="mailto:support@baasforge.com"
+                                className="text-foreground underline underline-offset-2"
+                            >
+                                support@baasforge.com
+                            </a>
+                            .
+                        </span>
                     </div>
                 </CardContent>
                 <CardFooter>
