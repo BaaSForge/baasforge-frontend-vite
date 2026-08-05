@@ -452,14 +452,8 @@ function Styles() {
 function Magnetic({ to, variant, children }: { to: string; variant: "primary" | "secondary"; children: string }) {
     const ref = useRef<HTMLAnchorElement | null>(null);
     useMagnet(ref);
-    const className = `bf-pill ${variant}`;
-    const isSpaRoute = to.startsWith("/") && !to.startsWith("/docs");
-    return isSpaRoute ? (
-        <Link ref={ref} to={to} className={className}>
-            {children}
-        </Link>
-    ) : (
-        <a ref={ref} href={to} className={className}>
+    return (
+        <a ref={ref} href={to} className={`bf-pill ${variant}`}>
             {children}
         </a>
     );
@@ -519,10 +513,10 @@ function Navbar({ active }: { active: NavId }) {
                     <div className="flex items-center gap-3.5">
                         <div className="hidden items-center gap-3.5 xl:flex">
                             <Button variant="ghost" size="sm" className="rounded-full" asChild>
-                                <Link to={LOGIN_PATH} reloadDocument>Sign in</Link>
+                                <a href={LOGIN_PATH}>Sign in</a>
                             </Button>
                             <Button size="sm" className="rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
-                                <Link to={LOGIN_PATH} reloadDocument>Start building</Link>
+                                <a href={LOGIN_PATH}>Start building</a>
                             </Button>
                         </div>
                         <button ref={menuButtonRef} type="button" onClick={() => setMenuOpen((open) => !open)} className="bf-menu-toggle flex size-10 items-center justify-center rounded-md text-foreground hover:bg-foreground/8 xl:hidden" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} data-open={menuOpen}>
@@ -555,10 +549,10 @@ function Navbar({ active }: { active: NavId }) {
                 </nav>
                 <div className="bf-mobile-menu-actions">
                     <Button variant="outline" className="h-12 rounded-full" asChild>
-                        <Link className="bf-mobile-action" to={LOGIN_PATH} reloadDocument onClick={() => setMenuOpen(false)}>Sign in</Link>
+                        <a className="bf-mobile-action" href={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Sign in</a>
                     </Button>
                     <Button className="h-12 rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
-                        <Link className="bf-mobile-action" to={LOGIN_PATH} reloadDocument onClick={() => setMenuOpen(false)}>Start building</Link>
+                        <a className="bf-mobile-action" href={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Start building</a>
                     </Button>
                 </div>
             </div>
@@ -951,7 +945,7 @@ function Footer() {
                             <div>
                                 <h2 className="bf-footer-column-title">Resources</h2>
                                 <ul className="bf-footer-list">
-                                    <li><Link className="bf-footer-link" to="/docs" reloadDocument>Docs</Link></li>
+                                    <li><a className="bf-footer-link" href="/docs">Docs</a></li>
                                 </ul>
                             </div>
                             <div>
