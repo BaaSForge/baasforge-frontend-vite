@@ -84,6 +84,10 @@ function BalanceSummaryPanel({ balance, isLoading, isError }: { balance?: Balanc
                     </Link>
                     <span className="text-sm font-medium tabular-nums">{formatPrice(balance.total_usage)}</span>
                 </div>
+                <div className="flex items-center justify-between gap-4 py-2">
+                    <span className="text-muted-foreground text-sm">Withdrawable</span>
+                    <span className="text-sm font-medium tabular-nums">{formatPrice(balance.withdrawable)}</span>
+                </div>
             </div>
         </div>
     );
@@ -193,10 +197,10 @@ export default function DashboardPaymentsPage() {
                     </AlertTitle>
                     <AlertDescription className="text-amber-900/80 dark:text-amber-100/80">
                         <p>
-                            Package purchases add the <span className="font-medium">amount you paid</span> to your
-                            balance (sale price after package/annual discounts — not the higher list price). That credit
-                            remains after the package period ends. Usage-rate discounts apply only while you have a
-                            non-expired package.
+                            Package purchases credit the <span className="font-medium">full list price</span> to your
+                            balance (you still pay the discounted sale price). The discount bonus is for usage only and
+                            is not withdrawable. That credit remains after the package period ends. Usage-rate discounts
+                            apply only while you have a non-expired package.
                         </p>
                     </AlertDescription>
                 </Alert>

@@ -14,7 +14,10 @@ import {
     usePackagesQuery,
     usePurchasePackageMutation,
 } from "@/modules/payment";
-import { packageAmountForBillingPeriod } from "@/modules/payment/lib/package-amount";
+import {
+    packageAmountForBillingPeriod,
+    packageCreditForBillingPeriod,
+} from "@/modules/payment/lib/package-amount";
 import { AlertCircle, ArrowLeft, CreditCard } from "lucide-react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 
@@ -262,6 +265,7 @@ export default function DashboardPurchasePage() {
     }
 
     const amount = packageAmountForBillingPeriod(pkg, billingPeriod);
+    const creditAmount = packageCreditForBillingPeriod(pkg, billingPeriod);
     const isAnnual = billingPeriod === "annual";
     const monthlyEquivalent = isAnnual ? amount / 12 : null;
     if (amount <= 0) {
@@ -354,14 +358,14 @@ export default function DashboardPurchasePage() {
                         <TableRow>
                             <TableCell className="text-muted-foreground">Added to balance</TableCell>
                             <TableCell className="text-right font-medium tabular-nums">
-                                {formatPrice(amount)}
+                                {formatPrice(creditAmount)}
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
                 <p className="text-muted-foreground text-xs">
-                    Discounts lower the sale price. Your balance increases by the amount charged (not the higher list
-                    price). You’ll be redirected to Stripe to complete payment securely.
+                    Discounts lower what you pay. Your balance increases by the full list price; the discount bonus is
+                    for usage only and is not withdrawable. You’ll be redirected to Stripe to complete payment securely.
                 </p>
                 {purchaseMutation.isError ? (
                     <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">

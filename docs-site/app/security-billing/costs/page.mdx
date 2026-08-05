@@ -85,14 +85,24 @@ Your **balance** is prepaid credit used for metered usage (compute, storage, LLM
 
 | Source | Amount added to balance |
 | --- | --- |
-| **Package purchase** | The **sale price you are charged** (after package and annual discounts) |
+| **Paid package purchase** | The **list price** (before package/annual discounts) |
+| **Free plan** | **$5 / month** promotional credit ($0 charged), while you stay on Free |
 | **Top-up** | The top-up amount you choose and pay |
 
 <Callout type="important">
-  **Pay $X → get $X credit.** Package discounts lower the sale price. We do
-  **not** charge the discounted price and credit the higher list price. Example:
-  a plan with list **$30 / month** and **20% off** charges **$24** on Stripe and
-  adds **$24** to your balance — not $30.
+  **Pay the sale price → get list-price credit.** Discounts lower what Stripe
+  charges; your balance still increases by the full list price. Example: Team
+  charges **$119 / month** and adds **$140** to your balance. The **$21** bonus
+  is for usage only — you can withdraw at most what you paid (plus top-ups), not
+  the discount bonus.
+</Callout>
+
+<Callout type="info">
+  **Free plan:** claim Free once to start. Each month you stay on Free you get
+  **$5** balance credit at **$0** charge. When your Free period ends, it renews
+  automatically the next time you use the dashboard (balance / packages APIs).
+  You can also claim Free again after it expires if auto-renew has not run yet.
+  Upgrading to a paid plan stops Free renewals.
 </Callout>
 
 Package purchases also unlock **tier usage discounts** while the package is
@@ -113,28 +123,29 @@ active. That is separate from the balance credit above.
 
 <Callout type="important">
   **Credit stays; usage discounts need an active package.** The balance credit
-  from a package purchase (the amount you paid) remains after the package period
-  ends. Usage-rate discounts apply only while you have a non-expired package.
+  from a package purchase (list price) remains after the package period ends.
+  Usage-rate discounts apply only while you have a non-expired package.
 </Callout>
 
-Two discounts can lower the **package sale price** (and therefore both the
-Stripe charge and the balance credit):
+Two discounts can lower the **package sale price** (what you pay). Balance
+credit still uses the **list price**; the difference is promotional and not
+withdrawable:
 
 ### 1. Annual billing discount (20% off)
 
 Applies when you choose **yearly billing** for a paid subscription plan (the plan you pick on the Packages page).
 
-| Billing choice | What you pay (and get as balance credit) |
-| --- | --- |
-| **Monthly** | The plan’s monthly sale price (after any package `% off`) |
-| **Annual** | `monthly sale price × 12 × 0.80` — **20% off** the full-year total, paid once for 12 months |
+| Billing choice | What you pay | Balance credit |
+| --- | --- | --- |
+| **Monthly** | Monthly sale price (after any package `% off`) | Monthly **list** price |
+| **Annual** | `monthly sale × 12 × 0.80` — **20% off** the year, paid once | `monthly list × 12` |
 
 This discount applies **only to that subscription plan fee** — not to metered compute, storage, or LLM usage.
 
 <Callout type="info">
-  Example: a plan with monthly sale price **$10** costs **$10** billed monthly
-  (and credits $10), or **$96 / year** billed annually (`10 × 12 × 0.80`) and
-  credits $96 — instead of $120 list-year.
+  Example: list **$10 / month**, no package `% off`: pay **$10** monthly (credit
+  $10), or pay **$96 / year** annually (`10 × 12 × 0.80`) and credit **$120**
+  (list year). Only **$96** is withdrawable from that purchase.
 </Callout>
 
 ### 2. Subscription discount (by tier)
@@ -293,8 +304,9 @@ Each package tier also caps how many **projects** and **stage runtimes** you can
 
 ## Withdraw
 
-You can withdraw at any time. We only charge for what you have used, and you
-can withdraw any remaining balance.
+You can withdraw at any time. We only charge for what you have used. You can
+withdraw remaining **paid** balance (sale amounts + top-ups), not discount bonus
+credit that was added above what you paid.
 
 ### Keeping your package active
 
@@ -312,7 +324,7 @@ and you keep its discount even if you withdraw the rest of your balance.
 ## Summary
 
 1. You pay for **compute**, **hot storage**, **disk storage**, and **LLM tokens** from your balance.
-2. Package purchases and top-ups credit your balance by the **amount charged** (pay $X → get $X).
+2. Package purchases credit **list price** (you pay the discounted sale price); top-ups credit what you pay. Discount bonus is usage-only, not withdrawable.
 3. Higher tiers get a **subscription discount** on those usage rates (up to 30% off on Tier 4).
 4. Choosing **annual billing** takes **20% off the subscription plan fee** for the year (not usage).
 5. LLM bills follow provider list prices + our margin (**1.25×** today); we currently use Gemini 3.1 Flash Lite Preview.

@@ -80,7 +80,7 @@ export function WithdrawModal({ open, onOpenChange }: WithdrawModalProps) {
     const { data: subscriptionReserve } = useSubscriptionReserveQuery(open);
     const initiateWithdrawalMutation = useInitiateWithdrawalMutation();
 
-    const availableBalance = floorToCents(balance?.balance ?? 0);
+    const availableBalance = floorToCents(balance?.withdrawable ?? 0);
     const canWithdraw = availableBalance > 1;
     const maxWithdrawWithoutCancel = floorToCents(
         Math.min(subscriptionReserve?.max_withdraw_without_cancel ?? 0, availableBalance),

@@ -5,7 +5,7 @@ export const ANNUAL_BILLING_DISCOUNT = 0.2;
 
 export const ANNUAL_BILLING_DISCOUNT_PERCENT = Math.round(ANNUAL_BILLING_DISCOUNT * 100);
 
-/** Sale price charged and credited to balance (pay $X → get $X credit; not list price). */
+/** Sale price charged via Stripe (after package + annual discounts). */
 export function packageSubscriptionAmount(
     listMonthlyPrice: number,
     discountPercent: number | null | undefined,
@@ -19,6 +19,19 @@ export function packageSubscriptionAmount(
     return discountedMonthly;
 }
 
+/** Balance credit amount (list price; discounts are promotional / not withdrawable). */
+export function packageBalanceCreditAmount(
+    listMonthlyPrice: number,
+    _discountPercent: number | null | undefined,
+    billingPeriod: BillingPeriod,
+): number {
+    return billingPeriod === "annual" ? listMonthlyPrice * 12 : listMonthlyPrice;
+}
+
 export function packageAmountForBillingPeriod(pkg: Package, billingPeriod: BillingPeriod): number {
     return packageSubscriptionAmount(pkg.price, pkg.discount_percent, billingPeriod);
+}
+
+export function packageCreditForBillingPeriod(pkg: Package, billingPeriod: BillingPeriod): number {
+    return packageBalanceCreditAmount(pkg.price, pkg.discount_percent, billingPeriod);
 }

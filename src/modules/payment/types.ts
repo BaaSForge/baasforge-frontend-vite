@@ -58,6 +58,8 @@ export interface Balance {
     withdrawn: number;
     balance: number;
     total_usage: number;
+    /** Paid cash available to withdraw (excludes discount bonus credit). */
+    withdrawable: number;
 }
 
 export interface TopUp {

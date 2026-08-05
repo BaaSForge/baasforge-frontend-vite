@@ -91,12 +91,15 @@ export default function DashboardPackagesPage() {
                 <div className="py-4">
                     <Alert className="mb-6 items-start">
                         <Info />
-                        <AlertTitle>You pay the sale price — that amount is added to your balance</AlertTitle>
+                        <AlertTitle>You pay the sale price — the full list price is credited</AlertTitle>
                         <AlertDescription>
                             <p>
-                                Package discounts lower what you are charged. Your balance increases by exactly that
-                                charged amount (for example, a $30 list plan at 20% off credits <span className="font-medium text-foreground">$24</span>
-                                , not $30). You also get tier usage discounts while the package is active. See{" "}
+                                Package discounts lower what you are charged, but your balance increases by the
+                                list price (for example, Team charges{" "}
+                                <span className="font-medium text-foreground">$119</span> and credits{" "}
+                                <span className="font-medium text-foreground">$140</span>). The discount bonus is for
+                                usage only and is not withdrawable. You also get tier usage discounts while the
+                                package is active. See{" "}
                                 <Link
                                     to="/docs/security-billing/costs"
                                     reloadDocument
