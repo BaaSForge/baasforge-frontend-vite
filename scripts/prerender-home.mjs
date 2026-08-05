@@ -21,6 +21,12 @@ const legalPages = [
     },
 ];
 
+const pricingPage = {
+    path: "/pricing",
+    title: "Pricing | BaaSForge",
+    description: "Start free with BaaSForge, then choose a monthly or annual credit plan for compute, storage, and AI usage.",
+};
+
 function replaceMeta(html, selector, content) {
     const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return html.replace(new RegExp(`(<meta ${escapedSelector} content=")[^"]*(" \\/>)`), `$1${content}$2`);
@@ -62,8 +68,52 @@ function createLegalShell(template, page, content) {
         .replace('<div id="root"></div>', `<div id="root">${content}</div>`);
 }
 
+function createPricingShell(template, content) {
+    const canonicalUrl = `https://baasforge.com${pricingPage.path}`;
+    let html = template
+        .replace(/<title>[^<]*<\/title>/, `<title>${pricingPage.title}</title>`)
+        .replace(/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${canonicalUrl}" />`)
+        .replace(/\s*<script id="baasforge-homepage-schema"[\s\S]*?<\/script>/, "");
+
+    html = replaceMeta(html, 'name="description"', pricingPage.description);
+    html = replaceMeta(html, 'name="robots"', "index, follow, max-image-preview:large");
+    html = replaceMeta(html, 'property="og:type"', "website");
+    html = replaceMeta(html, 'property="og:title"', pricingPage.title);
+    html = replaceMeta(html, 'property="og:description"', pricingPage.description);
+    html = replaceMeta(html, 'property="og:url"', canonicalUrl);
+    html = replaceMeta(html, 'name="twitter:title"', pricingPage.title);
+    html = replaceMeta(html, 'name="twitter:description"', pricingPage.description);
+
+    const schema = JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: "BaaSForge",
+        description: pricingPage.description,
+        url: canonicalUrl,
+        brand: { "@type": "Brand", name: "BaaSForge" },
+    });
+
+    return html
+        .replace("</head>", `    <script id="baasforge-pricing-schema" type="application/ld+json">${schema}</script>\n  </head>`)
+        .replace('<div id="root"></div>', `<div id="root">${content}</div>`);
+}
+
+function createNotFoundShell(template, content) {
+    let html = template
+        .replace(/<title>[^<]*<\/title>/, "<title>404 | BaaSForge</title>")
+        .replace(/\s*<link rel="canonical" href="[^"]*" \/>/, "")
+        .replace(/\s*<script id="baasforge-homepage-schema"[\s\S]*?<\/script>/, "")
+        .replace(/\s*<meta property="og:[^"]+"[^>]*\/>/g, "")
+        .replace(/\s*<meta name="twitter:[^"]+"[^>]*\/>/g, "");
+
+    html = replaceMeta(html, 'name="description"', "The requested page could not be found on BaaSForge.");
+    html = replaceMeta(html, 'name="robots"', "noindex, nofollow");
+
+    return html.replace('<div id="root"></div>', `<div id="root" data-prerendered-page="not-found">${content}</div>`);
+}
+
 async function prerenderHome() {
-    const { renderHomePage, renderLegalPage } = await import(serverEntryPath);
+    const { renderHomePage, renderLegalPage, renderNotFoundPage, renderPricingPage } = await import(serverEntryPath);
     const template = fs.readFileSync(templatePath, "utf-8");
     const html = renderHomePage("/");
 
@@ -76,7 +126,15 @@ async function prerenderHome() {
             createLegalShell(template, page, renderLegalPage(page.path)),
         );
     }
-    console.log("Prerendered homepage and generated legal-page HTML shells");
+    fs.writeFileSync(
+        path.join(rootDir, "dist/pricing.html"),
+        createPricingShell(template, renderPricingPage()),
+    );
+    fs.writeFileSync(
+        path.join(rootDir, "dist/404.html"),
+        createNotFoundShell(template, renderNotFoundPage("/404")),
+    );
+    console.log("Prerendered homepage, pricing, legal, and not-found HTML shells");
 }
 
 prerenderHome().catch((error) => {
