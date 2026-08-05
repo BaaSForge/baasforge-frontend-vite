@@ -5,6 +5,7 @@ import { appRoutes } from "./router";
 
 export const ActivePage = {
     HOME: "HOME",
+    PRICING: "PRICING",
     LOGIN: "LOGIN",
     DASHBOARD: "DASHBOARD",
     DASHBOARD_PACKAGES: "DASHBOARD_PACKAGES",
