@@ -1,3 +1,5 @@
+export type BillingPeriod = "monthly" | "annual";
+
 export interface PaymentResponse {
     id: string;
     amount: number;
@@ -9,6 +11,7 @@ export interface PaymentResponse {
     is_success: boolean;
     expires_at: string | null;
     cancelled_at: string | null;
+    billing_period: BillingPeriod;
 }
 
 export interface Package {
@@ -32,8 +35,6 @@ export interface PaidPackageResponse {
     largest_tier: number;
     can_purchase_trial: boolean;
 }
-
-export type BillingPeriod = "monthly" | "annual";
 
 export type PurchaseKind = "package" | "top_up" | "withdraw";
 

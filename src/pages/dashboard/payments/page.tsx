@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { usePreferStackedLayout } from "@/hooks/use-prefer-stacked-layout";
 import { cn, formatPrice } from "@/lib/utils";
-import type { Balance, TopUp, Withdrawal } from "@/modules/payment";
+import type { Balance, PaymentResponse, TopUp, Withdrawal } from "@/modules/payment";
 import { useBalanceQuery, usePaymentsQuery, useTopUpsQuery, useWithdrawalsQuery } from "@/modules/payment";
 import { TopUpModal } from "@/modules/payment/components/top-up-modal";
 import { TrialBadge } from "@/modules/payment/components/trial-badge";
 import { WithdrawModal } from "@/modules/payment/components/withdraw-modal";
+import { packageBalanceCreditAmount } from "@/modules/payment/lib/package-amount";
 import {
     usePageTitleBoxHeight,
     useStickyBreadcrumbBarHeight,
@@ -34,6 +35,15 @@ function getExpiryBadgeVariant(info: TimeLeft): "destructive" | "secondary" | nu
         return "destructive";
     }
     return null;
+}
+
+function paymentCreditAmount(payment: PaymentResponse): number {
+    if (payment.package_price == null) return payment.amount;
+    return packageBalanceCreditAmount(
+        payment.package_price,
+        payment.package_discount,
+        payment.billing_period ?? "monthly",
+    );
 }
 
 const BALANCE_BREAKDOWN: { key: keyof Balance; label: string }[] = [
@@ -233,6 +243,7 @@ export default function DashboardPaymentsPage() {
                                             <TableRow>
                                                 <TableHead>Amount</TableHead>
                                                 <TableHead>Package</TableHead>
+                                                <TableHead>Period</TableHead>
                                                 <TableHead>Trial</TableHead>
                                                 <TableHead>Status</TableHead>
                                                 <TableHead>Expires</TableHead>
@@ -245,16 +256,17 @@ export default function DashboardPaymentsPage() {
                                                     ? `Expires at: ${formatDateTime(payment.expires_at)}`
                                                     : "";
                                                 const variant = getExpiryBadgeVariant(expiry);
+                                                const isAnnual = payment.billing_period === "annual";
                                                 return (
                                                     <TableRow key={payment.id}>
-                                                        <TableCell className="font-medium">
-                                                            {formatPrice(payment.amount)}
+                                                        <TableCell className="font-medium tabular-nums">
+                                                            {formatPrice(paymentCreditAmount(payment))}
                                                         </TableCell>
                                                         <TableCell>
                                                             {payment.package_title ?? "—"}
                                                             {payment.package_price != null && (
                                                                 <span className="text-muted-foreground ml-1 text-xs">
-                                                                    ({formatPrice(payment.package_price)}
+                                                                    ({formatPrice(payment.package_price)}/mo
                                                                     {payment.package_discount != null &&
                                                                         payment.package_discount > 0 && (
                                                                             <>, {payment.package_discount}% off</>
@@ -262,6 +274,11 @@ export default function DashboardPaymentsPage() {
                                                                     )
                                                                 </span>
                                                             )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Badge variant="secondary" className="capitalize">
+                                                                {isAnnual ? "Annual" : "Monthly"}
+                                                            </Badge>
                                                         </TableCell>
                                                         <TableCell>
                                                             {payment.package_is_tiral ? (
