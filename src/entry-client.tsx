@@ -4,7 +4,7 @@ import NotFoundPage from "@/pages/errors/not-found/page";
 import PrivacyPolicyPage from "@/pages/legal/privacy-policy/page";
 import TermsOfUsePage from "@/pages/legal/terms-of-use/page";
 import PricingPage from "@/pages/pricing/page";
-import { PublicQueryProvider } from "@/components/public-query-provider";
+import { QueryProvider } from "@/components/query-provider";
 import "@/styles/global.css";
 import { lazy, Suspense, useSyncExternalStore } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
@@ -44,12 +44,12 @@ const app = (
 
 const pricingApp = (
     <ThemeProvider defaultTheme="system" storageKey="ui-theme">
-        <PublicQueryProvider>
+        <QueryProvider>
             <BrowserRouter>
                 <PricingPage />
                 <DeferredCookieConsent />
             </BrowserRouter>
-        </PublicQueryProvider>
+        </QueryProvider>
     </ThemeProvider>
 );
 

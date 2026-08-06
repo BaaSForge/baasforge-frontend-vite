@@ -4,7 +4,7 @@ import NotFoundPage from "@/pages/errors/not-found/page";
 import PrivacyPolicyPage from "@/pages/legal/privacy-policy/page";
 import TermsOfUsePage from "@/pages/legal/terms-of-use/page";
 import PricingPage from "@/pages/pricing/page";
-import { PublicQueryProvider } from "@/components/public-query-provider";
+import { QueryProvider } from "@/components/query-provider";
 import { renderToString } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 
@@ -33,11 +33,11 @@ export function renderLegalPage(pathname: string) {
 export function renderPricingPage() {
     return renderToString(
         <ThemeProvider defaultTheme="system" storageKey="ui-theme">
-            <PublicQueryProvider>
+            <QueryProvider>
                 <MemoryRouter initialEntries={["/pricing"]}>
                     <PricingPage />
                 </MemoryRouter>
-            </PublicQueryProvider>
+            </QueryProvider>
         </ThemeProvider>,
     );
 }

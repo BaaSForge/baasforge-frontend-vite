@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
-export function PublicQueryProvider({ children }: { children: React.ReactNode }) {
-    const [queryClient] = useState(() => new QueryClient({
+type QueryClientFactory = () => QueryClient;
+
+function createPublicQueryClient() {
+    return new QueryClient({
         defaultOptions: {
             queries: {
                 retry: 1,
@@ -10,7 +12,17 @@ export function PublicQueryProvider({ children }: { children: React.ReactNode })
                 refetchOnWindowFocus: false,
             },
         },
-    }));
+    });
+}
+
+export function QueryProvider({
+    children,
+    createClient = createPublicQueryClient,
+}: {
+    children: React.ReactNode;
+    createClient?: QueryClientFactory;
+}) {
+    const [queryClient] = useState(createClient);
 
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
