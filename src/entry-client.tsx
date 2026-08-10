@@ -69,17 +69,21 @@ function legalApp(page: React.ReactNode) {
     );
 }
 
+function mountPublicApp(app: React.ReactNode) {
+    if (appRoot.hasChildNodes()) hydrateRoot(appRoot, app);
+    else createRoot(appRoot).render(app);
+}
+
 if (window.location.pathname === "/") {
-    hydrateRoot(appRoot, homeApp);
+    mountPublicApp(homeApp);
 } else if (window.location.pathname === "/pricing") {
-    if (appRoot.hasChildNodes()) hydrateRoot(appRoot, pricingApp);
-    else createRoot(appRoot).render(pricingApp);
+    mountPublicApp(pricingApp);
 } else if (window.location.pathname === "/privacy-policy") {
-    hydrateRoot(appRoot, legalApp(<PrivacyPolicyPage />));
+    mountPublicApp(legalApp(<PrivacyPolicyPage />));
 } else if (window.location.pathname === "/terms-of-use") {
-    hydrateRoot(appRoot, legalApp(<TermsOfUsePage />));
+    mountPublicApp(legalApp(<TermsOfUsePage />));
 } else if (appRoot.dataset.prerenderedPage === "not-found") {
-    hydrateRoot(appRoot, notFoundApp);
+    mountPublicApp(notFoundApp);
 } else {
     // The static fallback contains homepage markup. Remove it before mounting an
     // application route so login and dashboard transitions never reveal it.

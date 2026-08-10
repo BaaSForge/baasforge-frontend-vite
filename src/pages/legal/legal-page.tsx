@@ -157,7 +157,7 @@ export function LegalPage({ canonicalPath, content, dateModified, description, t
         <div className="bf-legal">
             <header className="bf-legal-nav">
                 <div className="bf-legal-nav-inner">
-                    <Link to="/" className="bf-legal-brand" aria-label="BaaSForge home">
+                    <Link to="/" reloadDocument className="bf-legal-brand" aria-label="BaaSForge home">
                         <AppLogoSquare className="size-[22px]" />
                         <span>BaaSForge</span>
                     </Link>
@@ -165,10 +165,18 @@ export function LegalPage({ canonicalPath, content, dateModified, description, t
                         <Link to="/docs" reloadDocument>
                             Docs
                         </Link>
-                        <Link to="/privacy-policy" aria-current={canonicalPath === "/privacy-policy" ? "page" : undefined}>
+                        <Link
+                            to="/privacy-policy"
+                            reloadDocument={canonicalPath !== "/privacy-policy"}
+                            aria-current={canonicalPath === "/privacy-policy" ? "page" : undefined}
+                        >
                             Privacy
                         </Link>
-                        <Link to="/terms-of-use" aria-current={canonicalPath === "/terms-of-use" ? "page" : undefined}>
+                        <Link
+                            to="/terms-of-use"
+                            reloadDocument={canonicalPath !== "/terms-of-use"}
+                            aria-current={canonicalPath === "/terms-of-use" ? "page" : undefined}
+                        >
                             Terms
                         </Link>
                         <button type="button" onClick={() => openCookieSettings()}>

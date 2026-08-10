@@ -23,7 +23,7 @@ function getActiveMarketingPage(pathname: string): MarketingPage | undefined {
 
 function Brand() {
     return (
-        <Link to="/" className="bf-logo" aria-label="BaaSForge home">
+        <Link to="/" reloadDocument className="bf-logo" aria-label="BaaSForge home">
             <AppLogoSquare className="size-[22px]" />
             BaaSForge
         </Link>
@@ -73,7 +73,7 @@ export function MarketingHeader() {
                             <Link
                                 key={label}
                                 to={href}
-                                reloadDocument={href === "/docs"}
+                                reloadDocument={!isCurrent}
                                 aria-current={isCurrent ? "page" : undefined}
                                 className="bf-nav-link border-b pb-[3px]"
                                 style={{
@@ -140,7 +140,7 @@ export function MarketingHeader() {
                         <Link
                             key={label}
                             to={href}
-                            reloadDocument={href === "/docs"}
+                            reloadDocument={!isCurrent}
                             aria-current={isCurrent ? "page" : undefined}
                             onClick={() => setMenuOpen(false)}
                             className="bf-nav-link bf-mobile-menu-link"
@@ -189,7 +189,7 @@ export function MarketingFooter() {
                                 <h2 className="bf-footer-column-title">Product</h2>
                                 <ul className="bf-footer-list">
                                     <li>
-                                        <Link className="bf-footer-link" to="/pricing">
+                                        <Link className="bf-footer-link" to="/pricing" reloadDocument>
                                             Pricing
                                         </Link>
                                     </li>

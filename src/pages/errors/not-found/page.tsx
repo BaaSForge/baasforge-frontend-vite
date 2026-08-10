@@ -52,7 +52,7 @@ export default function NotFoundPage() {
         <div className="bf-not-found">
             <header className="bf-not-found-nav">
                 <div className="bf-not-found-nav-inner">
-                    <Link to="/" className="bf-not-found-brand" aria-label="BaaSForge home">
+                    <Link to="/" reloadDocument className="bf-not-found-brand" aria-label="BaaSForge home">
                         <AppLogoSquare className="size-[22px]" />
                         <span>BaaSForge</span>
                     </Link>
@@ -91,7 +91,7 @@ export default function NotFoundPage() {
                             style={{ color: "var(--primary-foreground)" }}
                             asChild
                         >
-                            <Link to="/">Back to home</Link>
+                            <Link to="/" reloadDocument>Back to home</Link>
                         </Button>
                     </div>
                 </section>
