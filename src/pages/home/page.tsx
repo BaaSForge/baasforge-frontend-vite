@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AppLogoSquare } from "@/components/logo/app-logo-square";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMagnet } from "@/hooks/use-magnet";
 import { openCookieSettings } from "@/services/cookie-consent";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { type RefObject, type TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
@@ -17,16 +18,16 @@ const LOGIN_PATH = "/login";
 const HOME_TITLE = "BaaSForge | AI Backend Platform";
 const HOME_DESCRIPTION = "BaaSForge is an AI backend platform that turns plain-language requirements into production-ready APIs, workflows, workers, and data units.";
 const PHRASES = ["Mock APIs", "Payment workflows", "Approval flows", "Subscription logic", "Background jobs", "Stateful entities", "AI agent orchestration", "Tenant onboarding", "Multi-step sagas"];
-const NAV_LINKS = [
-    { href: "#what", id: "product", label: "Pitch", sections: ["what"] },
-    { href: "#how", id: "how", label: "Flow", sections: ["how"] },
-    { href: "#build", id: "units", label: "Units", sections: ["build"] },
-    { href: "#usecases", id: "use-cases", label: "Ship", sections: ["usecases"] },
-    { href: "#category", id: "why", label: "Edge", sections: ["category"] },
-    { href: "#debug", id: "reliability", label: "No Pager", sections: ["debug"] },
+const SECTION_LINKS = [
+    { href: "#what", id: "what", label: "The Pitch" },
+    { href: "#how", id: "how", label: "Build Flow" },
+    { href: "#build", id: "build", label: "Backend Units" },
+    { href: "#usecases", id: "usecases", label: "What Builders Ship" },
+    { href: "#category", id: "category", label: "BaaSForge Edge" },
+    { href: "#debug", id: "debug", label: "No-Pager Mode" },
 ] as const;
-type NavId = (typeof NAV_LINKS)[number]["id"];
-const OBSERVED_SECTION_IDS = NAV_LINKS.flatMap((link) => link.sections);
+type SectionId = (typeof SECTION_LINKS)[number]["id"];
+const OBSERVED_SECTION_IDS = SECTION_LINKS.map((link) => link.id);
 const STEPS = [
     ["01 / DESCRIBE", "Tell AI what you need.", "In plain language. No schema design, no boilerplate, no config files."],
     ["02 / BUILD", "AI writes the code.", "Every change passes compile, lint, and rule checks before it saves. You review."],
@@ -160,12 +161,8 @@ function HomePageSeo() {
     return null;
 }
 
-function getNavIdForSection(sectionId: string): NavId {
-    return NAV_LINKS.find((link) => link.sections.some((id) => id === sectionId))?.id ?? "product";
-}
-
 function useActiveSection() {
-    const [active, setActive] = useState<NavId>("product");
+    const [active, setActive] = useState<SectionId>("what");
     useEffect(() => {
         const updateActive = () => {
             const readLine = Math.min(window.innerHeight * 0.38, 360);
@@ -178,7 +175,7 @@ function useActiveSection() {
                     return { id: section.id, distance };
                 })
                 .sort((a, b) => a.distance - b.distance)[0]?.id;
-            setActive(current ? getNavIdForSection(current) : "product");
+            setActive((current as SectionId | undefined) ?? "what");
         };
         updateActive();
         window.addEventListener("scroll", updateActive, { passive: true });
@@ -211,74 +208,6 @@ function useReveal(ids: string[]) {
         return () => observer.disconnect();
     }, [key]);
     return visible;
-}
-
-function useMagnet(ref: RefObject<HTMLElement | null>) {
-    useEffect(() => {
-        const el = ref.current;
-        if (!el || typeof matchMedia === "undefined") return;
-        const hoverQuery = matchMedia("(hover:hover) and (pointer:fine)");
-        const reducedMotionQuery = matchMedia("(prefers-reduced-motion: reduce)");
-        if (!hoverQuery.matches || reducedMotionQuery.matches) return;
-        let tx = 0;
-        let ty = 0;
-        let cx = 0;
-        let cy = 0;
-        let raf = 0;
-        const ensureTick = () => {
-            if (!raf) raf = requestAnimationFrame(tick);
-        };
-        const tick = () => {
-            cx += (tx - cx) * 0.18;
-            cy += (ty - cy) * 0.18;
-            el.style.transform = `translate(${cx}px, ${cy}px)`;
-            if (Math.abs(tx - cx) > 0.1 || Math.abs(ty - cy) > 0.1) {
-                raf = requestAnimationFrame(tick);
-                return;
-            }
-            cx = tx;
-            cy = ty;
-            raf = 0;
-            if (tx === 0 && ty === 0) {
-                el.style.removeProperty("transform");
-                el.style.removeProperty("will-change");
-            }
-        };
-        const move = (event: MouseEvent) => {
-            const rect = el.getBoundingClientRect();
-            tx = (event.clientX - rect.left - rect.width / 2) * 0.28;
-            ty = (event.clientY - rect.top - rect.height / 2) * 0.32;
-            el.style.willChange = "transform";
-            ensureTick();
-        };
-        const leave = () => {
-            tx = 0;
-            ty = 0;
-            ensureTick();
-        };
-        const reduceMotion = (event: MediaQueryListEvent) => {
-            if (!event.matches) return;
-            cancelAnimationFrame(raf);
-            raf = 0;
-            tx = 0;
-            ty = 0;
-            cx = 0;
-            cy = 0;
-            el.style.removeProperty("transform");
-            el.style.removeProperty("will-change");
-        };
-        el.addEventListener("mousemove", move);
-        el.addEventListener("mouseleave", leave);
-        reducedMotionQuery.addEventListener("change", reduceMotion);
-        return () => {
-            cancelAnimationFrame(raf);
-            el.removeEventListener("mousemove", move);
-            el.removeEventListener("mouseleave", leave);
-            reducedMotionQuery.removeEventListener("change", reduceMotion);
-            el.style.removeProperty("transform");
-            el.style.removeProperty("will-change");
-        };
-    }, [ref]);
 }
 
 function setSvgValue(el: SVGElement, prop: StepPhase["prop"], value: number) {
@@ -431,6 +360,7 @@ function Styles() {
             .bf-page ::selection{background:var(--selection);color:var(--selection-foreground)}.bf-page a{color:inherit;text-decoration:none}.bf-page :where([data-slot="button"],.bf-pill,.bf-menu-toggle,.bf-nav-link,.bf-tabs-trigger,.bf-draft-toggle){-webkit-tap-highlight-color:transparent;touch-action:manipulation;scale:1}.bf-page [data-slot="button"]{transition-property:color,background-color,border-color,box-shadow,opacity,transform,scale;transition-duration:.15s;transition-timing-function:var(--motion-response)}.bf-page :where(.bf-pill,.bf-menu-toggle,.bf-nav-link,.bf-tabs-trigger,.bf-draft-toggle){transition-property:color,background-color,border-color,box-shadow,opacity,transform,scale;transition-duration:.18s;transition-timing-function:var(--motion-response)}.bf-page :where([data-slot="button"],.bf-pill,.bf-menu-toggle,.bf-nav-link,.bf-tabs-trigger,.bf-draft-toggle):not(:disabled):active{scale:.97;transition-duration:.1s;transition-timing-function:var(--motion-press)}.bf-container{max-width:1080px;margin:0 auto;padding:0 28px}
             .bf-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;letter-spacing:-.02em;color:var(--foreground)}
             .bf-nav{position:fixed;inset:0 0 auto;z-index:100;background:oklch(0.17 0.03 263 / .7);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%)}.bf-menu-toggle{position:relative}.bf-menu-icon{position:absolute;transition:opacity .2s var(--motion-response),transform .3s var(--motion-response)}.bf-menu-icon.menu{opacity:1;transform:rotate(0deg) scale(1)}.bf-menu-icon.close{opacity:0;transform:rotate(-45deg) scale(.72)}.bf-menu-toggle[data-open="true"] .bf-menu-icon.menu{opacity:0;transform:rotate(45deg) scale(.72)}.bf-menu-toggle[data-open="true"] .bf-menu-icon.close{opacity:1;transform:rotate(0deg) scale(1)}.bf-mobile-menu-backdrop{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s var(--motion-response),visibility 0s linear .28s}.bf-mobile-menu-backdrop[data-open="true"]{opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}.bf-mobile-menu{position:fixed;top:0;right:0;bottom:0;z-index:95;display:flex;width:360px;max-width:100vw;height:100dvh;flex-direction:column;padding-top:68px;background:var(--background);border-left:1px solid var(--border);opacity:0;visibility:hidden;pointer-events:none;transform:translateX(100%);transition:opacity .28s var(--motion-response),transform .34s var(--motion-response),visibility 0s linear .34s;will-change:opacity,transform}.bf-mobile-menu[data-open="true"]{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s}.bf-mobile-menu-nav{display:flex;width:100%;flex-direction:column;padding:40px 28px 0}.bf-mobile-menu-link{padding:10px 0;font-size:28px;font-weight:500;line-height:1.2}.bf-mobile-menu-actions{display:grid;width:100%;grid-template-columns:1fr 1fr;gap:12px;margin-top:auto;padding:32px 28px 28px}
+            .bf-primary-nav{align-items:center;gap:20px}.bf-section-rail{position:fixed;top:50%;right:clamp(20px,2.4vw,36px);z-index:80;display:none;opacity:0;pointer-events:none;transform:translate(8px,-50%);transition:opacity .28s var(--motion-response),transform .34s var(--motion-response)}@media(min-width:1280px){.bf-section-rail{display:block}}.bf-section-rail[data-visible="true"]{opacity:1;pointer-events:auto;transform:translate(0,-50%)}.bf-section-rail-inner{display:flex;width:40px;flex-direction:column;align-items:stretch;gap:1px;padding:7px 6px;border:1px solid transparent;border-radius:var(--radius-xl);background:transparent;overflow:hidden;transform-origin:right center;transition:width .28s var(--motion-response),background .24s var(--motion-response),border-color .24s var(--motion-response),box-shadow .24s var(--motion-response),backdrop-filter .24s var(--motion-response)}.bf-section-rail:hover .bf-section-rail-inner,.bf-section-rail:focus-within .bf-section-rail-inner{width:190px;border-color:var(--border);background:color-mix(in oklch,var(--background) 68%,transparent);box-shadow:0 18px 48px -30px rgba(0,0,0,.8);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%)}.bf-section-rail-link{display:grid;width:100%;height:32px;grid-template-columns:minmax(0,1fr) 26px;align-items:center;border-radius:var(--radius-md);padding:0 3px 0 10px;color:var(--muted-foreground);transition:background .16s ease,color .16s ease}.bf-section-rail:hover .bf-section-rail-link:hover,.bf-section-rail-link:focus-visible{background:color-mix(in oklch,var(--foreground) 6%,transparent);color:var(--foreground)}.bf-section-rail-label{display:flex;min-width:0;align-items:center;gap:9px;overflow:hidden;font-size:12px;font-weight:500;line-height:1.2;opacity:0;white-space:nowrap;transform:translateX(7px);transition:opacity .16s ease .02s,transform .24s var(--motion-response)}.bf-section-rail-label span{flex:0 0 auto;color:var(--muted-foreground);font-family:var(--font-mono);font-size:9px}.bf-section-rail:hover .bf-section-rail-label,.bf-section-rail:focus-within .bf-section-rail-label{opacity:1;transform:none}.bf-section-rail-link[aria-current="location"]{color:var(--primary)}.bf-section-rail-marker{justify-self:end;display:block;width:4px;height:4px;margin-right:4px;border-radius:9999px;background:color-mix(in oklch,var(--muted-foreground) 68%,transparent);transition:width .32s var(--motion-response),height .32s var(--motion-response),background .2s ease,box-shadow .24s ease}.bf-section-rail-link[data-complete="true"] .bf-section-rail-marker{background:color-mix(in oklch,var(--primary) 50%,var(--muted-foreground))}.bf-section-rail-link:hover .bf-section-rail-marker,.bf-section-rail-link:focus-visible .bf-section-rail-marker{width:9px;background:var(--foreground)}.bf-section-rail-link[aria-current="location"] .bf-section-rail-marker{width:15px;height:3px;background:var(--primary);box-shadow:0 0 14px color-mix(in oklch,var(--primary) 52%,transparent)}.bf-section-rail-current{position:absolute;top:50%;right:calc(100% + 10px);display:flex;width:max-content;align-items:center;gap:8px;padding:6px 9px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--popover);color:var(--foreground);box-shadow:0 12px 34px -22px rgba(0,0,0,.9);font-size:11.5px;font-weight:500;line-height:1.2;opacity:0;pointer-events:none;transform:translate(5px,-50%) scale(.98);transform-origin:right center;transition:opacity .16s ease,transform .2s var(--motion-response)}.bf-section-rail-current span{color:var(--muted-foreground);font-family:var(--font-mono);font-size:9px}.bf-section-rail-current[data-visible="true"]{opacity:1;transform:translate(0,-50%)}.bf-section-rail:hover .bf-section-rail-current,.bf-section-rail:focus-within .bf-section-rail-current{opacity:0;transform:translate(5px,-50%) scale(.98)}.bf-mobile-section-group{margin-top:22px;padding-top:22px;border-top:1px solid var(--border)}.bf-mobile-section-title{display:block;margin-bottom:12px;color:var(--muted-foreground);font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}.bf-mobile-section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.bf-mobile-section-link{display:flex;min-height:42px;align-items:center;gap:8px;border:1px solid transparent;border-radius:var(--radius-md);padding:8px 10px;color:var(--muted-foreground);font-size:13px;font-weight:500;line-height:1.25}.bf-mobile-section-link[aria-current="true"]{border-color:var(--border);background:var(--secondary);color:var(--foreground)}.bf-mobile-section-index{font-family:var(--font-mono);font-size:9px;opacity:.7}
             .bf-hero{position:relative;min-height:100svh;display:grid;grid-template-rows:2fr 1fr;align-items:stretch;text-align:center;overflow:hidden;padding:68px 24px 32px;background:var(--background)}
             .bf-hero-title-wrap{position:relative;display:grid;width:100%;place-items:center;perspective:800px}.bf-hero h1{position:relative;display:flex;align-items:baseline;justify-content:center;gap:clamp(10px,1.6vw,30px);max-width:1400px;margin:0 auto;color:var(--foreground);font-size:clamp(50px,12.8vw,210px);font-weight:700;letter-spacing:-.07em;line-height:.98;white-space:nowrap}
             .bf-char{display:inline-block;opacity:0;filter:blur(10px);transform:translateY(18px);animation:blurFocus .6s cubic-bezier(.16,1,.3,1) forwards}.bf-hero-support{position:relative;align-self:center;display:flex;flex-direction:column;align-items:center;gap:28px}.bf-copy{max-width:560px;margin:0;color:var(--foreground);font-size:22px;line-height:1.45;animation:blurFocus .6s cubic-bezier(.16,1,.3,1) .5s both}.bf-actions{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;animation:blurFocus .6s cubic-bezier(.16,1,.3,1) .65s both}.bf-pill{display:inline-flex;justify-content:center;border-radius:9999px;padding:14px 30px;font-size:15px;font-weight:600}.bf-pill.secondary{background:var(--secondary);color:var(--secondary-foreground);border:1px solid var(--border)}.bf-pill.primary{background:var(--primary);color:var(--primary-foreground)}.bf-down{color:var(--muted-foreground);animation:blurFocus .6s cubic-bezier(.16,1,.3,1) .8s both,bob 2.2s ease-in-out 2.8s infinite}
@@ -443,8 +373,13 @@ function Styles() {
             .bf-tabs-list{display:inline-flex;width:fit-content;align-items:center;gap:4px;border-bottom:1px solid var(--border);background:transparent;border-radius:0;height:auto;padding:0}.bf-tabs-trigger{display:inline-flex;height:40px;align-items:center;justify-content:center;gap:6px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent!important;box-shadow:none!important;padding:8px 4px;color:var(--muted-foreground);font-size:14px;font-weight:500;white-space:nowrap;transition:color .15s ease,border-color .15s ease}.bf-tabs-trigger:hover{color:var(--foreground)}.bf-tabs-trigger[data-state="active"]{color:var(--foreground);border-bottom-color:var(--foreground);background:transparent!important;box-shadow:none!important}@media(max-width:640px){.bf-tabs-list{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}.bf-tabs-trigger{width:100%!important}}
             .bf-carousel{position:relative;width:100%;height:380px;overflow:hidden;border-radius:var(--radius-sm);outline:none}.bf-carousel:focus-visible{box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.bf-carousel-track{position:absolute;top:0;left:0;width:100%;will-change:transform;transition:transform .9s var(--motion-response)}.bf-carousel-item{height:60px;width:100%;display:flex;align-items:center;font-size:clamp(22px,3vw,32px);font-weight:600;letter-spacing:-.01em;transition:color .72s var(--motion-response),opacity .72s var(--motion-response)}.bf-moat{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;padding:20px 4px;border-bottom:1px solid var(--border);font-weight:600;transform-origin:left center;transition:background .3s var(--motion-response),transform .35s var(--motion-response)}.bf-moat:hover{background:color-mix(in oklch,var(--foreground) 4%,transparent);transform:translateX(4px)}.bf-debug-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}.bf-debug-card{overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--shadow-sm);transition:border-color .3s,box-shadow .3s}.bf-debug-card.live{border-color:var(--foreground);box-shadow:0 0 0 1px rgba(var(--glow-rgb),.15),0 30px 80px -30px rgba(var(--glow-rgb),.2)}.bf-glow{position:absolute;left:50%;bottom:-220px;width:1000px;height:560px;transform:translateX(-50%);background:radial-gradient(ellipse at center,color-mix(in oklch,var(--foreground) 16%,transparent),transparent 62%);pointer-events:none;filter:blur(24px);animation:glowPulse 5s ease-in-out infinite}.bf-footer{position:relative;border-top:1px solid var(--border);padding:48px 0 42px;background:var(--background)}.bf-footer-inner{display:flex;flex-direction:column;gap:44px}.bf-footer-main{display:grid;grid-template-columns:minmax(280px,1fr) repeat(2,minmax(120px,160px));gap:56px}.bf-footer-brand{max-width:420px}.bf-footer-copy{margin:12px 0 0;color:var(--muted-foreground);font-size:13px;line-height:1.65}.bf-footer-nav{display:grid;grid-template-columns:subgrid;grid-column:2 / -1;gap:56px}.bf-footer-column-title{margin:1px 0 15px;color:var(--muted-foreground);font-size:11px;font-weight:500;line-height:1.4;text-transform:uppercase}.bf-footer-list{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:0;padding:0;list-style:none}.bf-footer-link{display:inline-flex;align-items:center;gap:5px;border:0;border-radius:4px;padding:0;background:transparent;color:color-mix(in oklch,var(--foreground) 82%,var(--muted-foreground));font:inherit;font-size:13px;font-weight:500;line-height:1.4;cursor:pointer;touch-action:manipulation;transition:color .16s cubic-bezier(.23,1,.32,1),transform .12s cubic-bezier(.23,1,.32,1)}.bf-footer-link svg{opacity:.6;transition:opacity .16s cubic-bezier(.23,1,.32,1),transform .16s cubic-bezier(.23,1,.32,1)}.bf-footer-link:active{transform:scale(.97)}.bf-footer-meta{display:flex;width:100%;align-items:center;justify-content:space-between;gap:32px}.bf-footer-mark{color:var(--muted-foreground);font-family:var(--font-mono);font-size:12px;line-height:1.4;white-space:nowrap}.bf-footer-legal{display:flex;align-items:center;gap:22px}@media(hover:hover) and (pointer:fine){.bf-footer-link:hover{color:var(--foreground)}.bf-footer-link:hover svg{opacity:1;transform:translate(1px,-1px)}}
             @keyframes blurFocus{from{opacity:0;filter:blur(10px);transform:translateY(18px)}to{opacity:1;filter:blur(0);transform:none}}@keyframes themeIconIn{from{opacity:0;transform:scale(.7) rotate(-90deg);filter:blur(4px)}to{opacity:1;transform:scale(1) rotate(0deg);filter:blur(0)}}@keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}@keyframes ctaPulse{0%{box-shadow:0 0 0 0 oklch(0.9 0.01 260 / .55)}70%{box-shadow:0 0 0 9px oklch(0.9 0.01 260 / 0)}100%{box-shadow:0 0 0 0 oklch(0.9 0.01 260 / 0)}}@keyframes glowPulse{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
-            @media(max-width:1024px){.bf-title.wrap{line-height:1.35}.bf-dash-grid{grid-template-columns:1fr;height:auto}.bf-convo{height:500px;border-right:0;border-bottom:1px solid var(--border)}.bf-draft.compact{position:absolute;top:0;right:0;bottom:0;width:min(88vw,380px);z-index:200;align-self:initial;overflow-y:auto;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);box-shadow:none;transition:transform .38s var(--motion-response),box-shadow .38s var(--motion-response);will-change:transform}.bf-draft.compact.open{transform:translateX(0);box-shadow:-24px 0 60px -20px rgba(0,0,0,.45)}.bf-steps{display:flex;gap:16px;margin-top:40px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.bf-unit-grid.compute,.bf-unit-grid.storage{display:flex;gap:14px;margin-top:18px;margin-left:-14px;margin-right:-14px;overflow-x:auto;padding:14px 14px 22px;scroll-padding-left:14px;scroll-snap-type:x proximity;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.bf-step,.bf-unit-card{min-width:300px;max-width:300px;flex:0 0 300px;scroll-snap-align:start}.bf-unit-card{scroll-snap-stop:always}.bf-step{border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--card);box-shadow:var(--shadow-sm);padding:26px 22px}.bf-steps-line{display:none}.bf-moat{align-items:flex-start;flex-direction:column}.bf-footer-main{grid-template-columns:minmax(260px,1fr) repeat(2,minmax(112px,140px));gap:36px}.bf-footer-nav{gap:36px}}@media(max-width:640px){.bf-mobile-menu-backdrop{display:none}.bf-mobile-menu{inset:0;width:auto;height:auto;min-height:100dvh;border-left:0;transform:translateY(-8px) scale(.992);transform-origin:top right}.bf-mobile-menu[data-open="true"]{transform:none}.bf-mobile-menu-nav{max-width:1080px;margin:0 auto;padding-top:48px}.bf-mobile-menu-link{padding:8px 0;font-size:clamp(32px,9vw,46px);line-height:1.13}.bf-mobile-menu-actions{max-width:1080px;margin-left:auto;margin-right:auto}.bf-container{padding:0 20px}.bf-hero{grid-template-rows:2fr 1fr;min-height:100svh;padding:68px 20px 24px}.bf-hero h1{flex-direction:column;align-items:center;gap:clamp(6px,2.4vw,16px);font-size:clamp(46px,17vw,90px);line-height:.98;white-space:normal}.bf-copy{max-width:100%;font-size:clamp(16px,5vw,22px);line-height:1.45}.bf-down{margin-top:0}.bf-dash{margin-left:-8px;margin-right:-8px}.bf-debug-grid{grid-template-columns:1fr;gap:32px}.bf-footer{padding:40px 0 36px}.bf-footer-inner{gap:34px}.bf-footer-main{display:flex;flex-direction:column;gap:34px}.bf-footer-brand{max-width:100%}.bf-footer-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.bf-footer-meta{align-items:flex-start;flex-direction:column-reverse;gap:18px}.bf-footer-legal{flex-wrap:wrap;gap:10px 18px}.bf-footer-mark{white-space:normal}}@media(prefers-reduced-transparency:reduce){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}}@media(prefers-contrast:more){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}.bf-muted{opacity:.72}.bf-page :focus-visible{outline-color:var(--foreground)}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bf-char{opacity:1!important;filter:none!important;transform:none!important}.bf-page *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.bf-reveal,.bf-empty,.bf-toast,.bf-draft-backdrop,.bf-unit-card,.bf-carousel-item{filter:none!important;transition:opacity .2s ease!important}.bf-draft,.bf-carousel-track,.bf-mobile-menu,.bf-mobile-menu-backdrop,.bf-menu-icon{transition:none!important}.bf-unit-status-label{transition:opacity 120ms ease!important;transform:none!important}.bf-footer-link,.bf-footer-link svg{transition:none!important}.bf-footer-link:hover svg{transform:none!important}.bf-page :where([data-slot="button"],.bf-pill,.bf-menu-toggle,.bf-nav-link,.bf-tabs-trigger,.bf-draft-toggle):active{scale:1!important}.bf-chip:hover,.bf-unit-card:hover,.bf-moat:hover{transform:none!important}}
+            @media(max-width:1024px){.bf-title.wrap{line-height:1.35}.bf-dash-grid{grid-template-columns:1fr;height:auto}.bf-convo{height:500px;border-right:0;border-bottom:1px solid var(--border)}.bf-draft.compact{position:absolute;top:0;right:0;bottom:0;width:min(88vw,380px);z-index:200;align-self:initial;overflow-y:auto;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);box-shadow:none;transition:transform .38s var(--motion-response),box-shadow .38s var(--motion-response);will-change:transform}.bf-draft.compact.open{transform:translateX(0);box-shadow:-24px 0 60px -20px rgba(0,0,0,.45)}.bf-steps{display:flex;gap:16px;margin-top:40px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.bf-unit-grid.compute,.bf-unit-grid.storage{display:flex;gap:14px;margin-top:18px;margin-left:-14px;margin-right:-14px;overflow-x:auto;padding:14px 14px 22px;scroll-padding-left:14px;scroll-snap-type:x proximity;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.bf-step,.bf-unit-card{min-width:300px;max-width:300px;flex:0 0 300px;scroll-snap-align:start}.bf-unit-card{scroll-snap-stop:always}.bf-step{border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--card);box-shadow:var(--shadow-sm);padding:26px 22px}.bf-steps-line{display:none}.bf-moat{align-items:flex-start;flex-direction:column}.bf-footer-main{grid-template-columns:minmax(260px,1fr) repeat(2,minmax(112px,140px));gap:36px}.bf-footer-nav{gap:36px}}@media(max-width:640px){.bf-mobile-menu-backdrop{display:none}.bf-mobile-menu{inset:0;width:auto;height:auto;min-height:100dvh;border-left:0;transform:translateY(-8px) scale(.992);transform-origin:top right}.bf-mobile-menu[data-open="true"]{transform:none}.bf-mobile-menu-nav{max-width:1080px;margin:0 auto;padding-top:34px;overflow-y:auto}.bf-mobile-menu-link{padding:7px 0;font-size:clamp(30px,8vw,42px);line-height:1.13}.bf-mobile-menu-actions{max-width:1080px;margin-left:auto;margin-right:auto}.bf-container{padding:0 20px}.bf-hero{grid-template-rows:2fr 1fr;min-height:100svh;padding:68px 20px 24px}.bf-hero h1{flex-direction:column;align-items:center;gap:clamp(6px,2.4vw,16px);font-size:clamp(46px,17vw,90px);line-height:.98;white-space:normal}.bf-copy{max-width:100%;font-size:clamp(16px,5vw,22px);line-height:1.45}.bf-down{margin-top:0}.bf-dash{margin-left:-8px;margin-right:-8px}.bf-debug-grid{grid-template-columns:1fr;gap:32px}.bf-footer{padding:40px 0 36px}.bf-footer-inner{gap:34px}.bf-footer-main{display:flex;flex-direction:column;gap:34px}.bf-footer-brand{max-width:100%}.bf-footer-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.bf-footer-meta{align-items:flex-start;flex-direction:column-reverse;gap:18px}.bf-footer-legal{flex-wrap:wrap;gap:10px 18px}.bf-footer-mark{white-space:normal}}@media(prefers-reduced-transparency:reduce){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}}@media(prefers-contrast:more){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}.bf-muted{opacity:.72}.bf-page :focus-visible{outline-color:var(--foreground)}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bf-char{opacity:1!important;filter:none!important;transform:none!important}.bf-page *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.bf-reveal,.bf-empty,.bf-toast,.bf-draft-backdrop,.bf-unit-card,.bf-carousel-item{filter:none!important;transition:opacity .2s ease!important}.bf-draft,.bf-carousel-track,.bf-mobile-menu,.bf-mobile-menu-backdrop,.bf-menu-icon{transition:none!important}.bf-unit-status-label{transition:opacity 120ms ease!important;transform:none!important}.bf-footer-link,.bf-footer-link svg{transition:none!important}.bf-footer-link:hover svg{transform:none!important}.bf-page :where([data-slot="button"],.bf-pill,.bf-menu-toggle,.bf-nav-link,.bf-tabs-trigger,.bf-draft-toggle):active{scale:1!important}.bf-chip:hover,.bf-unit-card:hover,.bf-moat:hover{transform:none!important}}
             @media(prefers-reduced-motion:reduce){.bf-page *{animation-delay:0ms!important}}
+            .bf-kicker{margin-bottom:18px}.bf-title,.bf-title.wrap{line-height:1.08;text-wrap:balance}.bf-pitch-copy{max-width:840px;margin:20px 0 0;color:var(--muted-foreground);font-size:clamp(20px,2.6vw,26px);line-height:1.5;text-wrap:pretty}.bf-section-copy{max-width:620px;margin:20px 0 0;color:var(--muted-foreground);font-size:17px;line-height:1.6;text-wrap:pretty}.bf-footer-copy{line-height:1.6;text-wrap:pretty}.bf-footer-main{grid-template-columns:minmax(280px,1fr) repeat(3,minmax(100px,140px));gap:48px}.bf-footer-nav{gap:48px}
+            @media(max-width:1024px){.bf-title.wrap{line-height:1.12}.bf-footer-main{grid-template-columns:minmax(240px,1fr) repeat(3,minmax(92px,120px));gap:32px}.bf-footer-nav{gap:32px}}
+            @media(max-width:640px){.bf-section{padding:82px 0}.bf-kicker{margin-bottom:16px}.bf-title,.bf-title.wrap{line-height:1.12}.bf-pitch-copy{margin-top:18px;font-size:18px;line-height:1.55}.bf-section-copy{margin-top:18px;font-size:16px;line-height:1.6}.bf-footer-main{gap:34px}.bf-footer-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}}
+            .bf-section-rail-inner{overflow:visible}.bf-section-rail:hover .bf-section-rail-inner,.bf-section-rail:focus-within .bf-section-rail-inner{width:40px;border-color:transparent;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}.bf-section-rail-link{position:relative;display:flex;width:26px;height:28px;grid-template-columns:none;align-items:center;justify-content:center;margin:0 auto;padding:0;border-radius:9999px;background:transparent}.bf-section-rail:hover .bf-section-rail-link:hover,.bf-section-rail-link:focus-visible{outline:none;background:transparent;box-shadow:none}.bf-section-rail-marker{justify-self:auto;margin-right:0}.bf-section-rail-label{position:absolute;top:50%;right:calc(100% + 9px);z-index:1;display:flex;width:max-content;min-width:0;align-items:center;gap:8px;overflow:visible;padding:6px 10px;border:1px solid var(--border);border-radius:9999px;background:var(--popover);box-shadow:0 12px 34px -22px rgba(0,0,0,.9);color:var(--foreground);line-height:1.2;opacity:0;pointer-events:none;transform:translate(6px,-50%) scale(.98);transform-origin:right center;transition:opacity .16s ease,transform .2s var(--motion-response)}.bf-section-rail:hover .bf-section-rail-label,.bf-section-rail:focus-within .bf-section-rail-label{opacity:0;transform:translate(6px,-50%) scale(.98)}.bf-section-rail-link:hover .bf-section-rail-label,.bf-section-rail-link:focus-visible .bf-section-rail-label{opacity:1;transform:translate(0,-50%) scale(1)}
+            .bf-mobile-section-link[aria-current="location"]{border-color:var(--border);background:var(--secondary);color:var(--foreground)}
         `}</style>
     );
 }
@@ -468,9 +403,77 @@ function Brand() {
     );
 }
 
-function Navbar({ active }: { active: NavId }) {
+function scrollToSection(index: number) {
+    const section = SECTION_LINKS[index];
+    if (!section) return;
+    const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById(section.id)?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    window.history.replaceState(null, "", section.href);
+}
+
+function SectionRail({ active }: { active: SectionId }) {
+    const [visible, setVisible] = useState(false);
+    const activeIndex = SECTION_LINKS.findIndex((link) => link.id === active);
+
+    useEffect(() => {
+        let frame = 0;
+        const updateVisibility = () => {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => {
+                const firstSection = document.getElementById("what");
+                const lastSection = document.getElementById("debug");
+                if (!firstSection || !lastSection) return;
+                const enteredContent = firstSection.getBoundingClientRect().top <= window.innerHeight * 0.72;
+                const beforeClosingCta = lastSection.getBoundingClientRect().bottom >= window.innerHeight * 0.62;
+                setVisible(enteredContent && beforeClosingCta);
+            });
+        };
+        updateVisibility();
+        window.addEventListener("scroll", updateVisibility, { passive: true });
+        window.addEventListener("resize", updateVisibility);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener("scroll", updateVisibility);
+            window.removeEventListener("resize", updateVisibility);
+        };
+    }, []);
+
+    return (
+        <nav className="bf-section-rail" aria-label="Homepage sections" data-visible={visible}>
+            <div className="bf-section-rail-inner">
+                {SECTION_LINKS.map((link, index) => (
+                    <a
+                        key={link.id}
+                        href={link.href}
+                        className="bf-section-rail-link"
+                        aria-current={active === link.id ? "location" : undefined}
+                        aria-label={`${String(index + 1).padStart(2, "0")} ${link.label}`}
+                        data-complete={index < activeIndex}
+                        onClick={(event) => {
+                            event.preventDefault();
+                            scrollToSection(index);
+                        }}
+                    >
+                        <span className="bf-section-rail-label" aria-hidden="true">
+                            <span>{String(index + 1).padStart(2, "0")}</span>
+                            {link.label}
+                        </span>
+                        <span className="bf-section-rail-marker" aria-hidden="true" />
+                    </a>
+                ))}
+            </div>
+        </nav>
+    );
+}
+
+function Navbar({ active }: { active: SectionId }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+
+    const goToSection = useCallback((index: number) => {
+        scrollToSection(index);
+        setMenuOpen(false);
+    }, []);
 
     useEffect(() => {
         if (!menuOpen) return;
@@ -503,12 +506,12 @@ function Navbar({ active }: { active: NavId }) {
             <nav className="bf-nav">
                 <div className="mx-auto flex h-[68px] max-w-[1080px] items-center justify-between px-7">
                     <Brand />
-                    <div className="hidden gap-5 text-sm xl:flex">
-                        {NAV_LINKS.map((link) => (
-                            <a key={link.label} href={link.href} aria-current={active === link.id ? "page" : undefined} className="bf-nav-link border-b pb-[3px]" style={{ color: active === link.id ? "var(--foreground)" : "var(--muted-foreground)", borderColor: active === link.id ? "var(--foreground)" : "transparent" }}>
-                                {link.label}
-                            </a>
-                        ))}
+                    <div className="bf-primary-nav hidden text-sm xl:flex" aria-label="Primary navigation">
+                        <Link to="/" aria-current="page" className="bf-nav-link border-b border-foreground pb-[3px] text-foreground">Pitch</Link>
+                        <Link to="/docs" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">Docs</Link>
+                        <Link to="/pricing" className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">
+                            Pricing
+                        </Link>
                     </div>
                     <div className="flex items-center gap-3.5">
                         <div className="hidden items-center gap-3.5 xl:flex">
@@ -541,11 +544,22 @@ function Navbar({ active }: { active: NavId }) {
                 role="dialog"
             >
                 <nav className="bf-mobile-menu-nav" aria-label="Mobile navigation">
-                    {NAV_LINKS.map((link) => (
-                        <a key={link.label} href={link.href} aria-current={active === link.id ? "page" : undefined} onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link" style={{ color: active === link.id ? "var(--foreground)" : "var(--muted-foreground)" }}>
-                            {link.label}
-                        </a>
-                    ))}
+                    <Link to="/" aria-current="page" onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-foreground">Pitch</Link>
+                    <Link to="/docs" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">Docs</Link>
+                    <Link to="/pricing" onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
+                        Pricing
+                    </Link>
+                    <div className="bf-mobile-section-group">
+                        <span className="bf-mobile-section-title">On this page</span>
+                        <div className="bf-mobile-section-grid">
+                            {SECTION_LINKS.map((link, index) => (
+                                <a key={link.id} href={link.href} className="bf-mobile-section-link" aria-current={active === link.id ? "location" : undefined} onClick={(event) => { event.preventDefault(); goToSection(index); }}>
+                                    <span className="bf-mobile-section-index">{String(index + 1).padStart(2, "0")}</span>
+                                    {link.label}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
                 </nav>
                 <div className="bf-mobile-menu-actions">
                     <Button variant="outline" className="h-12 rounded-full" asChild>
@@ -621,7 +635,7 @@ function What({ visible, compact }: { visible: boolean; compact: boolean }) {
                             <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> we'd had
                         </span>
                     </h2>
-                    <p className="mt-5 max-w-[840px] text-[clamp(20px,2.6vw,26px)] leading-[1.5] text-muted-foreground">Describe what your backend should do. AI writes it, you ship it to production, then AI knows what's broken before your users do.</p>
+                    <p className="bf-pitch-copy">Describe what your backend should do. AI writes it, you ship it to production, then AI knows what's broken before your users do.</p>
                     <div className="bf-chip-row">{["AI Chat", "CI/CD", "Monitoring", "Live Debugging", "Version Control"].map((chip) => <span key={chip} className="bf-chip">{chip}</span>)}</div>
                 </div>
                 <Dashboard compact={compact} />
@@ -787,7 +801,7 @@ function Build({ visible }: { visible: boolean }) {
                 <div className={`bf-reveal ${visible ? "visible" : ""}`}>
                     <span className="bf-kicker">03 · BACKEND UNITS</span>
                     <h2 className="bf-title wrap">BaaSForge creates your backend <span className="bf-muted">with Units.</span></h2>
-                    <p className="mt-[22px] max-w-[620px] text-[17px] leading-[1.6] text-muted-foreground">Based on the backend behavior you describe, BaaSForge intelligently arranges the right units and builds your APIs from these building blocks.</p>
+                    <p className="bf-section-copy">Based on the backend behavior you describe, BaaSForge intelligently arranges the right units and builds your APIs from these building blocks.</p>
                 </div>
                 <Tabs value={tab} onValueChange={setUnitTab} className="mt-12">
                     <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
@@ -926,7 +940,7 @@ function Debug({ visible }: { visible: boolean }) {
 }
 
 function Close() {
-    return <section className="relative overflow-hidden border-t py-[130px] text-center"><div className="bf-glow" /><div className="bf-container relative"><h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold tracking-[-.05em] text-transparent">Build Backend.</h2><div className="mt-[34px] flex justify-center gap-3.5"><Magnetic to="/docs" variant="secondary">Go to docs</Magnetic><Magnetic to={LOGIN_PATH} variant="primary">Start building</Magnetic></div><p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Free credit included, No payment info needed</p></div></section>;
+    return <section className="relative overflow-hidden border-t py-[130px] text-center"><div className="bf-glow" /><div className="bf-container relative"><h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold leading-[1.05] tracking-[-.05em] text-transparent">Build Backend.</h2><div className="mt-[34px] flex justify-center gap-3.5"><Magnetic to="/docs" variant="secondary">Go to docs</Magnetic><Magnetic to={LOGIN_PATH} variant="primary">Start building</Magnetic></div><p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Free credit included, No payment info needed</p></div></section>;
 }
 
 function Footer() {
@@ -942,6 +956,12 @@ function Footer() {
                             </p>
                         </div>
                         <nav className="bf-footer-nav" aria-label="Footer navigation">
+                            <div>
+                                <h2 className="bf-footer-column-title">Product</h2>
+                                <ul className="bf-footer-list">
+                                    <li><Link className="bf-footer-link" to="/pricing">Pricing</Link></li>
+                                </ul>
+                            </div>
                             <div>
                                 <h2 className="bf-footer-column-title">Resources</h2>
                                 <ul className="bf-footer-list">
@@ -998,6 +1018,7 @@ export default function HomePage() {
             <HomePageSeo />
             <Styles />
             <Navbar active={active} />
+            <SectionRail active={active} />
             <main>
                 <Hero />
                 <What visible={!!visible.what} compact={compact} />

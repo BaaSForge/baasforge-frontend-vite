@@ -14,6 +14,7 @@ import ProjectUnitsAndReleasesPage from "./dashboard/projects/[projectId]/units-
 import HomePage from "./home/page";
 import PrivacyPolicyPage from "./legal/privacy-policy/page";
 import TermsOfUsePage from "./legal/terms-of-use/page";
+import PricingPage from "./pricing/page";
 import { RootLayout } from "./root-layout";
 import { ActivePage, buildRouteExports, toRouterRoutes, type AppRouteObject, type PagePaths } from "./routes";
 
@@ -64,6 +65,11 @@ export const appRoutes = [
                         index: true,
                         page: ActivePage.HOME,
                         element: <HomePage />,
+                    },
+                    {
+                        path: "pricing",
+                        page: ActivePage.PRICING,
+                        element: <PricingPage />,
                     },
                     {
                         element: (

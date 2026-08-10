@@ -143,10 +143,11 @@ html:has(.bf-not-found) {
 
 .bf-not-found-copy {
     max-width: 680px;
-    margin: clamp(22px, 4vh, 42px) 0 0;
+    margin: clamp(24px, 3.5vh, 36px) 0 0;
     color: var(--muted-foreground);
     font-size: clamp(18px, 2.1vw, 25px);
-    line-height: 1.5;
+    line-height: 1.45;
+    text-wrap: balance;
     opacity: 0;
     filter: blur(10px);
     transform: translateY(18px);
@@ -209,8 +210,9 @@ html:has(.bf-not-found) {
     }
 
     .bf-not-found-copy {
-        max-width: 320px;
+        max-width: 340px;
         font-size: clamp(17px, 5.1vw, 20px);
+        line-height: 1.45;
     }
 
     .bf-not-found-actions {
