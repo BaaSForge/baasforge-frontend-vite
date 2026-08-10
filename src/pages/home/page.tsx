@@ -509,7 +509,7 @@ function Navbar({ active }: { active: SectionId }) {
                     <div className="bf-primary-nav hidden text-sm xl:flex" aria-label="Primary navigation">
                         <Link to="/" aria-current="page" className="bf-nav-link border-b border-foreground pb-[3px] text-foreground">Pitch</Link>
                         <Link to="/docs" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">Docs</Link>
-                        <Link to="/pricing" className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">
+                        <Link to="/pricing" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">
                             Pricing
                         </Link>
                     </div>
@@ -546,7 +546,7 @@ function Navbar({ active }: { active: SectionId }) {
                 <nav className="bf-mobile-menu-nav" aria-label="Mobile navigation">
                     <Link to="/" aria-current="page" onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-foreground">Pitch</Link>
                     <Link to="/docs" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">Docs</Link>
-                    <Link to="/pricing" onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
+                    <Link to="/pricing" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
                         Pricing
                     </Link>
                     <div className="bf-mobile-section-group">
@@ -959,7 +959,7 @@ function Footer() {
                             <div>
                                 <h2 className="bf-footer-column-title">Product</h2>
                                 <ul className="bf-footer-list">
-                                    <li><Link className="bf-footer-link" to="/pricing">Pricing</Link></li>
+                                    <li><Link className="bf-footer-link" to="/pricing" reloadDocument>Pricing</Link></li>
                                 </ul>
                             </div>
                             <div>
