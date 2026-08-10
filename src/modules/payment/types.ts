@@ -23,6 +23,7 @@ export interface Package {
     price: number;
     discount_percent: number | null;
     is_trial: boolean | null;
+    is_active?: boolean;
 }
 
 export interface PaymentWithPackage {
