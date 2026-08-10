@@ -89,9 +89,9 @@ export function MarketingHeader() {
                     <div className="flex items-center gap-3.5">
                         <div className="hidden items-center gap-3.5 xl:flex">
                             <Button variant="ghost" size="sm" className="rounded-full" asChild>
-                                <Link to="/login" reloadDocument>
+                                <a href="/login">
                                     Sign in
-                                </Link>
+                                </a>
                             </Button>
                             <Button
                                 size="sm"
@@ -99,9 +99,9 @@ export function MarketingHeader() {
                                 style={{ color: "var(--primary-foreground)" }}
                                 asChild
                             >
-                                <Link to="/login" reloadDocument>
+                                <a href="/login">
                                     Start building
-                                </Link>
+                                </a>
                             </Button>
                         </div>
                         <button
@@ -153,18 +153,18 @@ export function MarketingHeader() {
                 </nav>
                 <div className="bf-mobile-menu-actions">
                     <Button variant="outline" className="h-12 rounded-full" asChild>
-                        <Link className="bf-mobile-action" to="/login" reloadDocument onClick={() => setMenuOpen(false)}>
+                        <a className="bf-mobile-action" href="/login" onClick={() => setMenuOpen(false)}>
                             Sign in
-                        </Link>
+                        </a>
                     </Button>
                     <Button
                         className="h-12 rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80"
                         style={{ color: "var(--primary-foreground)" }}
                         asChild
                     >
-                        <Link className="bf-mobile-action" to="/login" reloadDocument onClick={() => setMenuOpen(false)}>
+                        <a className="bf-mobile-action" href="/login" onClick={() => setMenuOpen(false)}>
                             Start building
-                        </Link>
+                        </a>
                     </Button>
                 </div>
             </div>

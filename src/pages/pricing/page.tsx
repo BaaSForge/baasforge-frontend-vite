@@ -5,7 +5,6 @@ import { ANNUAL_BILLING_DISCOUNT_PERCENT, packageAmountForBillingPeriod, usePack
 import { BrainCircuit, ChevronDown, Cloud, Cpu, Database, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Link } from "react-router";
 import remarkGfm from "remark-gfm";
 
 import "./pricing.css";
@@ -64,9 +63,9 @@ function PricingMagneticLink({ children, className, to }: { children: string; cl
     const ref = useRef<HTMLAnchorElement | null>(null);
     useMagnet(ref);
     return (
-        <Link ref={ref} className={className} to={to} reloadDocument>
+        <a ref={ref} className={className} href={to}>
             {children}
-        </Link>
+        </a>
     );
 }
 
@@ -176,9 +175,9 @@ function PlanCard({ billingPeriod, pkg }: { billingPeriod: BillingPeriod; pkg: P
                 style={{ color: "var(--primary-foreground)" }}
                 asChild
             >
-                <Link to={href} reloadDocument>
+                <a href={href}>
                     {isFree ? "Start building" : `Get ${pkg.title}`}
-                </Link>
+                </a>
             </Button>
         </article>
     );
