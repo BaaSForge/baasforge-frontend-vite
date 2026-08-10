@@ -16,6 +16,8 @@ export {
     ANNUAL_BILLING_DISCOUNT,
     ANNUAL_BILLING_DISCOUNT_PERCENT,
     packageAmountForBillingPeriod,
+    packageBalanceCreditAmount,
+    packageCreditForBillingPeriod,
     packageSubscriptionAmount,
 } from "./lib/package-amount";
 export {

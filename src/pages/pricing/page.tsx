@@ -1,7 +1,14 @@
 import { MarketingFooter, MarketingHeader } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { useMagnet } from "@/hooks/use-magnet";
-import { ANNUAL_BILLING_DISCOUNT_PERCENT, packageAmountForBillingPeriod, usePackagesQuery, type BillingPeriod, type Package } from "@/modules/payment";
+import {
+    ANNUAL_BILLING_DISCOUNT_PERCENT,
+    packageAmountForBillingPeriod,
+    packageCreditForBillingPeriod,
+    usePackagesQuery,
+    type BillingPeriod,
+    type Package,
+} from "@/modules/payment";
 import { BrainCircuit, ChevronDown, Cloud, Cpu, Database, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -21,19 +28,22 @@ const METERS = [
 
 const RATES = [
     { amount: "$0.10", title: "1 million API calls", detail: "128 MB at 100 ms per request" },
-    { amount: "$3.94", title: "1 GB hot storage", detail: "Retained in memory for a full month" },
-    { amount: "$0.66", title: "10 GB disk storage", detail: "Retained for a full month" },
+    { amount: "$3.89", title: "1 GB hot storage", detail: "Retained in memory for a 30-day month" },
+    { amount: "$0.65", title: "10 GB disk storage", detail: "Retained for a 30-day month" },
 ] as const;
 
 const FAQS = [
     [
         "So the plan price is not an extra charge?",
-        "Correct. Every dollar you pay lands in your account as usable credit. Package and annual discounts lower both the amount charged and the credit deposited, while plan usage discounts make that credit go further.",
+        "Correct. Your plan payment becomes usable balance credit at the list price. Package and annual discounts lower what you are charged; the difference is promotional credit for usage. Higher tiers also spend that credit at a lower rate.",
     ],
-    ["Does unused credit roll over?", "Yes, for one month. Credit older than that expires, so your balance never exceeds two months of your plan."],
+    [
+        "Does unused credit roll over?",
+        "Yes. Unused balance credit stays until you spend it. Usage-rate discounts apply only while your plan period is active.",
+    ],
     [
         "What happens if I use more than my credit?",
-        "Paid plans keep running and the extra is billed at your tier's rate. Free plans pause until the next monthly credit arrives.",
+        "When your balance runs out, billing freezes and workloads pause until you add credit (top-up, renew, or upgrade). Free plans also renew with $5 each month while you stay on Free.",
     ],
     [
         "Do I pay for projects that are not running?",
@@ -41,13 +51,16 @@ const FAQS = [
     ],
     [
         "How does annual billing work?",
-        `Annual billing saves ${ANNUAL_BILLING_DISCOUNT_PERCENT}%. You are billed once for the year, and the amount paid is added to your credit balance.`,
+        `Annual billing saves ${ANNUAL_BILLING_DISCOUNT_PERCENT}% on the plan fee. You are billed once for the year, and twelve months of list-price credit is added to your balance.`,
     ],
     [
         "What is the difference between a project and a stage runtime?",
         "A project is one backend. A stage runtime is an additional deployment environment, such as staging alongside production. Production counts as one runtime per project on every plan.",
     ],
-    ["Can I change plans?", "Yes, at any time. Your available credit and usage rates change from that point forward."],
+    [
+        "Can I change plans?",
+        "You can upgrade to a higher tier at any time. Remaining credit stays, and usage rates follow the new tier from that point forward.",
+    ],
 ] as const;
 
 function formatPackagePrice(amount: number) {
@@ -146,9 +159,10 @@ function usePricingReveal() {
 
 function PlanCard({ billingPeriod, pkg }: { billingPeriod: BillingPeriod; pkg: Package }) {
     const periodAmount = packageAmountForBillingPeriod(pkg, billingPeriod);
+    const creditAmount = packageCreditForBillingPeriod(pkg, billingPeriod);
     const monthlyAmount = billingPeriod === "annual" ? periodAmount / 12 : periodAmount;
     const isFree = periodAmount <= 0;
-    const isFeatured = pkg.title.trim().toLowerCase() === "basic";
+    const isFeatured = pkg.title.trim().toLowerCase() === "team";
     const href = isFree ? "/dashboard/packages" : `/dashboard/purchase?kind=package&package_id=${encodeURIComponent(pkg.id)}&billing_period=${billingPeriod}`;
 
     return (
@@ -162,8 +176,8 @@ function PlanCard({ billingPeriod, pkg }: { billingPeriod: BillingPeriod; pkg: P
                 <span>/mo</span>
             </div>
             <p className="bf-pricing-credit">
-                {isFree ? "$5 in credit" : `${formatPackagePrice(periodAmount)} in credit`}
-                {!isFree && pkg.discount_percent != null && pkg.discount_percent > 0 && ` (${pkg.discount_percent}% off)`}
+                {isFree ? "$5 in credit" : `${formatPackagePrice(creditAmount)} in credit`}
+                {!isFree && pkg.discount_percent != null && pkg.discount_percent > 0 && ` (${pkg.discount_percent}% off plan fee)`}
             </p>
             {pkg.description && (
                 <div className="bf-pricing-description">
@@ -299,7 +313,7 @@ export default function PricingPage() {
                             ))}
                         </div>
                         <p className="bf-pricing-rate-note" data-pricing-reveal>
-                            Pro spends 15% below these. Ultra spends 30% below.
+                            Team spends 15% below these. Scale spends 30% below.
                         </p>
                     </div>
                 </section>
