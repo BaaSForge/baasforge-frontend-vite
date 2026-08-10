@@ -212,7 +212,7 @@ function Plans({ billingPeriod, setBillingPeriod }: { billingPeriod: BillingPeri
                 </button>
             </div>
             <p className="bf-pricing-tier-note" data-pricing-reveal>
-                Higher tiers spend credit at a lower rate, so the same dollar goes further.
+                Higher tiers make every dollar go further. Taxes calculated at checkout.
             </p>
             {isLoading ? (
                 <div className="bf-pricing-plan-grid" aria-label="Loading plans">
