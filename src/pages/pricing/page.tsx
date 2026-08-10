@@ -162,7 +162,7 @@ function PlanCard({ billingPeriod, pkg }: { billingPeriod: BillingPeriod; pkg: P
     const creditAmount = packageCreditForBillingPeriod(pkg, billingPeriod);
     const monthlyAmount = billingPeriod === "annual" ? periodAmount / 12 : periodAmount;
     const isFree = periodAmount <= 0;
-    const isFeatured = pkg.title.trim().toLowerCase() === "team";
+    const isFeatured = pkg.slug.trim().toLowerCase() === "solo";
     const href = isFree ? "/dashboard/packages" : `/dashboard/purchase?kind=package&package_id=${encodeURIComponent(pkg.id)}&billing_period=${billingPeriod}`;
 
     return (
