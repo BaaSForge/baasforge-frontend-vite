@@ -229,7 +229,7 @@ export default function DashboardPackagesPage() {
                                             ) : isFree ? (
                                                 <Button
                                                     className="w-full"
-                                                    disabled={isDisabled}
+                                                    disabled={isDisabled || isAnnual}
                                                     onClick={() => handleClaimFreePackage(pkg.id)}
                                                 >
                                                     <ShoppingCartIcon className="size-4" aria-hidden />
