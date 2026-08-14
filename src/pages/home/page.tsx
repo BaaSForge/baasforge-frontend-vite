@@ -338,7 +338,7 @@ function useWhatTitleFits(ref: RefObject<HTMLElement | null>) {
         const measure = () => {
             const styles = getComputedStyle(el);
             ctx.font = `${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
-            const lineWidth = ctx.measureText("We built the Backend platform").width;
+            const lineWidth = ctx.measureText("AI turns your description into").width;
             setFits(lineWidth <= el.clientWidth);
         };
         measure();
@@ -627,12 +627,12 @@ function What({ visible, compact }: { visible: boolean; compact: boolean }) {
                 <div className={`bf-reveal blur ${visible ? "visible" : ""}`}>
                     <span className="bf-kicker">01 · THE PITCH</span>
                     <h2 ref={titleRef} className="bf-title !leading-[1.18]">
-                        We built the Backend
-                        <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> platform
+                        AI turns your description
+                        <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> into
                         <br style={{ display: fitsTwoLines ? "initial" : "none" }} />{" "}
                         <span className="bf-muted">
-                            we wished
-                            <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> we'd had
+                            production-ready
+                            <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> code
                         </span>
                     </h2>
                     <p className="bf-pitch-copy">Describe what your backend should do. AI writes it, you ship it to production, then AI knows what's broken before your users do.</p>
@@ -940,7 +940,7 @@ function Debug({ visible }: { visible: boolean }) {
 }
 
 function Close() {
-    return <section className="relative overflow-hidden border-t py-[130px] text-center"><div className="bf-glow" /><div className="bf-container relative"><h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold leading-[1.05] tracking-[-.05em] text-transparent">Build Backend.</h2><div className="mt-[34px] flex justify-center gap-3.5"><Magnetic to="/docs" variant="secondary">Go to docs</Magnetic><Magnetic to={LOGIN_PATH} variant="primary">Start building</Magnetic></div><p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Free credit included, No payment info needed</p></div></section>;
+    return <section className="relative overflow-hidden border-t py-[130px] text-center"><div className="bf-glow" /><div className="bf-container relative"><h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold leading-[1.05] tracking-[-.05em] text-transparent">Build Backend.</h2><div className="mt-[34px] flex justify-center gap-3.5"><Magnetic to="/docs" variant="secondary">Go to docs</Magnetic><Magnetic to={LOGIN_PATH} variant="primary">Start building</Magnetic></div><p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Start Building Your Backend Today</p></div></section>;
 }
 
 function Footer() {
