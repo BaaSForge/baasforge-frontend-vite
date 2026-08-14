@@ -15,7 +15,7 @@ export const metadata = {
 
 **Variables** are per-runtime environment keys you configure in the dashboard. Unit code reads them at invoke time via the [SDK](/platform/sdk) (`sdk.getSecureEnv`) — not from hardcoded strings in source.
 
-Use them for API keys, tokens, webhook secrets, callback URLs, feature flags, and any other value that differs by stage vs production or should stay out of unit source.
+Use them for API keys, tokens, webhook secrets, callback URLs, feature flags, and any other value that differs by staging vs production or should stay out of unit source.
 
 <Callout type="important">
   Prefer Variables over putting config or secrets in unit code or chat. You manage values in the dashboard; the AI wires reads by **key name**. You never need to tell the AI how to call `getSecureEnv` — the platform already trains and enforces that.
@@ -46,7 +46,7 @@ If a plan needs a key that is missing, the Planner asks you to add it under Vari
 
 ## Updates without redeploy
 
-Changing a variable (or deleting it) invalidates the runtime cache immediately. The **next invoke** on that runtime loads the new value — stage and production alike. No release or redeploy required for value-only changes.
+Changing a variable (or deleting it) invalidates the runtime cache immediately. The **next invoke** on that runtime loads the new value — staging and production alike. No release or redeploy required for value-only changes.
 
 ## Manage in the dashboard
 

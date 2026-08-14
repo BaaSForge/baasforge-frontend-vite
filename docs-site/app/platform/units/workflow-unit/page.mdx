@@ -119,7 +119,7 @@ sequenceDiagram
 | Crash resilience | Sleep / promise / child wait survive pod restart |
 | Deterministic helpers | `ctx.date.now()` / `ctx.rand.*` stable across replay |
 | Per-step retry | Transient errors retry per `retryPolicy`; `TerminalError` does not |
-| Isolation | Different projects, stage runtimes, and production never share instances |
+| Isolation | Different projects, staging runtimes, and production never share instances |
 | Private triggers | Workflow HTTP surface is private (dashboard / SDK), not a public internet API |
 
 ## Create and change workflows (Develop)
@@ -139,9 +139,9 @@ Example: *“When a customer places an order, charge payment, reserve inventory,
 
 The AI produces the units and updates dependents. Drafts are not live until you release.
 
-### Release to stage
+### Release to staging
 
-In the release controller: **Release Stage** → pick a stage runtime → **Deploy**.
+In the release controller: **Release Stage** → pick a staging runtime → **Deploy**.
 
 ### Promote when ready
 
@@ -156,12 +156,12 @@ You do not need to name unit types (workflow, actor, queue worker, …), exports
 
 Workflow triggers are **private** (dashboard / SDK), not a public internet surface like API units. Prefer an **API** unit as the external gateway; use Live interaction to start, signal, and operate instances.
 
-### Stage
+### Staging
 
 <Steps>
 ### Open a runtime
 
-Select your project → sidebar **Runtimes** → pick the stage runtime you deployed to.
+Select your project → sidebar **Runtimes** → pick the staging runtime you deployed to.
 
 ### Open units
 
@@ -621,7 +621,7 @@ Secrets belong in dashboard **Variables** (Select project → **Variables**). Th
 | SDK chains (workflow → child / actor / queue worker) | Stay in the caller’s runtime scope |
 | Cross-project SDK calls | Not allowed — same `project_id` only |
 
-Test workflows on the stage runtime you released to before promoting. Cancelling a stage instance does not affect production.
+Test workflows on the staging runtime you released to before promoting. Cancelling a staging instance does not affect production.
 
 ## Limits and operational notes
 
@@ -687,8 +687,8 @@ Test workflows on the stage runtime you released to before promoting. Cancelling
 </Details>
 
 <Details>
-  <Summary>Confusing stage and production instances</Summary>
-  Same path on stage vs production are different executions. Always test on the stage runtime you released to.
+  <Summary>Confusing staging and production instances</Summary>
+  Same path on staging vs production are different executions. Always test on the staging runtime you released to.
 </Details>
 
 ## Quick reference

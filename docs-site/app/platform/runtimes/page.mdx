@@ -18,7 +18,7 @@ A **runtime** is a managed execution environment for one project. Unit code draf
 ```mermaid
 flowchart LR
   Chat[Develop chat — AI drafts units] --> Release[You release]
-  Release --> Stage[Stage runtime]
+  Release --> Stage[Staging runtime]
   Stage --> Prod[Production runtime]
   Stage --> Infra["Managed engines via @sdk"]
   Prod --> Infra
@@ -39,12 +39,12 @@ flowchart LR
 Units never open Redis, NATS, RabbitMQ, or database connections themselves. Durable mailboxes, queues, workflow journals, secrets, and cross-unit calls go through the [SDK](/platform/sdk) (`@sdk`). Under the hood the platform may use those engines — you only get unit types and SDK behaviors.
 
 <Callout type="info">
-  Same unit path in two projects, or on stage vs production, are separate worlds. Isolation is enforced on every `sdk.*` call.
+  Same unit path in two projects, or on staging vs production, are separate worlds. Isolation is enforced on every `sdk.*` call.
 </Callout>
 
-## Stage vs production
+## Staging vs production
 
-| | **Stage** | **Production** |
+| | **Staging** | **Production** |
 | --- | --- | --- |
 | Purpose | Validate before promote | Live customer-facing traffic |
 | Count per project | **2** today (`Stage 1`, `Stage 2`) | **Exactly 1** |
@@ -54,7 +54,7 @@ Units never open Redis, NATS, RabbitMQ, or database connections themselves. Dura
 New projects are created with **Stage 1**, **Stage 2**, and **Production**.
 
 <Callout>
-  Extra stage runtimes will be purchasable later. Most projects do not need many stages — the platform’s goal is a fast develop → stage → production cycle so parallel stage environments stay optional.
+  Extra staging runtimes will be purchasable later. Most projects do not need many staging environments — the platform’s goal is a fast develop → stage → production cycle so parallel staging environments stay optional.
 </Callout>
 
 <Callout type="error">
@@ -63,7 +63,7 @@ New projects are created with **Stage 1**, **Stage 2**, and **Production**.
 
 ## What belongs to a runtime
 
-Each runtime keeps its own copy of these — they do **not** bleed across stage runtimes or into production:
+Each runtime keeps its own copy of these — they do **not** bleed across staging runtimes or into production:
 
 | Belongs to the runtime | Notes |
 | --- | --- |
@@ -88,11 +88,11 @@ Deep dives: [Variables](/platform/variables) · [Releases](/platform/releases) �
 
 Production is listed under **Production runtimes**.
 
-When you deploy to a busy stage runtime, the UI offers **swap live release** — detach the current release and attach the new one.
+When you deploy to a busy staging runtime, the UI offers **swap live release** — detach the current release and attach the new one.
 
 ## How to use runtimes
 
-<Tabs items={['Find runtimes', 'Deploy to stage', 'Variables', 'Open units']}>
+<Tabs items={['Find runtimes', 'Deploy to staging', 'Variables', 'Open units']}>
   <Tabs.Tab>
     Select project → sidebar **Runtimes**.
 
@@ -108,7 +108,7 @@ When you deploy to a busy stage runtime, the UI offers **swap live release** —
 
     ### Release Stage
 
-    On the release controller → **Release Stage** → pick an idle runtime (**Deploy**) or a busy one (**swap**).
+    On the release controller → **Release Stage** → pick an idle runtime (**Deploy**) or a busy one (**Swap**).
 
     ### Validate
 
@@ -116,7 +116,7 @@ When you deploy to a busy stage runtime, the UI offers **swap live release** —
 
     ### Promote
 
-    Same chat → **Release production** when stage looks correct. See [Releases](/platform/releases).
+    Same chat → **Release production** when staging looks correct. See [Releases](/platform/releases).
     </Steps>
   </Tabs.Tab>
   <Tabs.Tab>
@@ -127,7 +127,7 @@ When you deploy to a busy stage runtime, the UI offers **swap live release** —
   <Tabs.Tab>
     | Environment | Path |
     | --- | --- |
-    | Stage | Select project → **Runtimes** → stage runtime → **Open Units** |
+    | Staging | Select project → **Runtimes** → stage runtime → **Open Units** |
     | Production | Select project → **Units & Releases** (or production runtime card → **Open Units**) |
   </Tabs.Tab>
 </Tabs>
@@ -149,10 +149,10 @@ When you deploy to a busy stage runtime, the UI offers **swap live release** —
 
   | Question | Answer |
   | --- | --- |
-  | What is a runtime? | Managed place your released units run for stage or production |
+  | What is a runtime? | Managed place your released units run for staging or production |
   | Who writes the code? | The AI — you prompt business intent |
   | How do units use Redis / NATS / DB? | Only via [SDK](/platform/sdk); engines are not exposed |
-  | How many stages? | 2 today; more purchasable soon |
-  | How many production? | Always 1; cannot increase |
+  | How many staging environments? | 2 today; more purchasable soon |
+  | How many production environment? | Always 1; cannot increase |
   | Idle vs busy? | No live release vs live release attached |
 </Details>

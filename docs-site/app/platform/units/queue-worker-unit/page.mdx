@@ -127,7 +127,7 @@ sequenceDiagram
 | Dead letter | Exhausted / terminal runs can invoke `onDeadLetter` once |
 | Timeout | `metadata.timeout` kills a stuck run (counts as retriable failure) |
 | Batching | `metadata.batch` flushes by size or batch timeout |
-| Isolation | Different projects, stage runtimes, and production never share runs |
+| Isolation | Different projects, staging runtimes, and production never share runs |
 | Private triggers | Queue worker HTTP surface is private (dashboard / SDK), not a public internet API |
 
 ## Create and change queue workers (Develop)
@@ -147,9 +147,9 @@ Example: *“After signup, send a welcome email without slowing down the signup 
 
 The AI produces the units and updates dependents. Drafts are not live until you release.
 
-### Release to stage
+### Release to staging
 
-In the release controller: **Release Stage** → pick a stage runtime → **Deploy**.
+In the release controller: **Release Stage** → pick a staging runtime → **Deploy**.
 
 ### Promote when ready
 
@@ -164,12 +164,12 @@ You do not need to name unit types (queue worker, API, …), exports, SDK helper
 
 Queue worker triggers are **private** (dashboard / SDK), not a public internet surface like API units. Prefer an **API** unit as the external gateway; use Live interaction to enqueue and operate runs.
 
-### Stage
+### Staging
 
 <Steps>
 ### Open a runtime
 
-Select your project → sidebar **Runtimes** → pick the stage runtime you deployed to.
+Select your project → sidebar **Runtimes** → pick the staging runtime you deployed to.
 
 ### Open units
 
@@ -579,7 +579,7 @@ Secrets belong in dashboard **Variables** (Select project → **Variables**). Th
 | Homonymous paths | Same path string on different runtimes never share jobs |
 | Cross-project SDK / status | Not allowed — same `project_id` only (wrong project → 404) |
 
-Test workers on the stage runtime you released to before promoting. Cancelling a stage run does not affect production.
+Test workers on the staging runtime you released to before promoting. Cancelling a staging run does not affect production.
 
 ## Limits and operational notes
 
@@ -639,8 +639,8 @@ Test workers on the stage runtime you released to before promoting. Cancelling a
 </Details>
 
 <Details>
-  <Summary>Confusing stage and production runs</Summary>
-  Same path on stage vs production are different queues. Always test on the stage runtime you released to.
+  <Summary>Confusing staging and production runs</Summary>
+  Same path on staging vs production are different queues. Always test on the staging runtime you released to.
 </Details>
 
 <Details>

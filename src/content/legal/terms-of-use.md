@@ -1,6 +1,6 @@
 # BaaSForge Terms of Use
 
-**Version 1.0 | Last updated: July 23, 2026**
+**Version 1.1 | Last updated: August 10, 2026**
 
 These Terms of Use ("Terms") govern access to and use of the BaaSForge website, console, CLI, API, and related services (together, the "Services"), provided by BForge Lab, operating under the BaaSForge brand ("BForge Lab," "we," "us"). By creating an account or using the Services, you agree to these Terms. If you are using the Services on behalf of an organization, you represent that you have authority to bind that organization, and "you" refers to that organization.
 
@@ -45,9 +45,31 @@ BaaSForge uses AI models to translate your prompts into backend code, configurat
 
 ---
 
-## 5. Fees and billing
+## 5. Fees, credits, usage, and refunds
 
-Paid plans are billed as described at **[baasforge.com/pricing]**, including any pay-as-you-go credit mechanic in effect at the time. Fees are exclusive of taxes unless stated otherwise. Except where required by law or separately agreed, fees are non-refundable. We may change pricing prospectively with notice; continued use after the effective date constitutes acceptance.
+Paid subscriptions, billing periods, usage rates, and included credits are described at **[baasforge.com/pricing]**. Fees are exclusive of applicable taxes unless stated otherwise.
+
+### Credits and usage
+
+Payments for a subscription add service credits to your BaaSForge balance. Usage charges are deducted from that balance as you use the Services. Promotional or bonus credits have no cash value and are not refundable or withdrawable.
+
+Unused credits remain available in your account under the conditions presented at the time of purchase. Cancelling a subscription prevents future renewals but does not automatically initiate a refund.
+
+### 14-day money-back guarantee
+
+Your first paid subscription is eligible for a refund if requested within 14 days of purchase. Any usage charges incurred during that period will be deducted from the refund.
+
+Renewals, top-ups, subsequent subscriptions, and promotional credits are not eligible for this guarantee.
+
+### Other refunds
+
+Usage charges that have already been incurred are non-refundable. Verified duplicate charges, unauthorized charges, and billing errors will be corrected or refunded as appropriate.
+
+Except for the 14-day money-back guarantee above or where required by applicable law, payments are non-refundable.
+
+### Consumer rights
+
+Nothing in these Terms limits or excludes rights that cannot be limited or excluded under applicable consumer protection laws. Consumers in jurisdictions with mandatory withdrawal, cancellation, or refund rights retain those rights.
 
 ---
 

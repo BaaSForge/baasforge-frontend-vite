@@ -22,7 +22,7 @@ flowchart LR
   Agents --> Drafts[Validated unit drafts]
   Drafts --> You
   You --> Release[You release]
-  Release --> Runtime[Stage / Production]
+  Release --> Runtime[Staging / Production]
   Runtime --> Debug[Debug + traces]
   Debug --> Develop
 ```
@@ -104,7 +104,7 @@ Call a live unit (Select project → **Runtimes** → runtime → **Open Units**
 
 ### Start Debug
 
-Select project → sidebar **Debug** → **Start Debug** → **by trace id** (paste IDs) or **by release** (stage/production + revision) → **let's start**.
+Select project → sidebar **Debug** → **Start Debug** → **by trace id** (paste IDs) or **by release** (staging/production + revision) → **let's start**.
 
 ### Describe the symptom
 
@@ -229,7 +229,7 @@ flowchart LR
 The AI is also trained to use platform primitives correctly (sync `sdk.*`, object-argument calls, durable workflow step rules, actor-per-entity design, secrets via `sdk.getSecureEnv`, and so on). Failures are returned into the agent loop so it can fix itself — you stay in business language.
 
 <Callout type="warning">
-  Validation is automatic, but **shipping is not**. A unit draft is still a draft until **you** release to stage and production.
+  Validation is automatic, but **shipping is not**. A unit draft is still a draft until **you** release to staging and production.
 </Callout>
 
 ---
@@ -244,13 +244,13 @@ The AI is also trained to use platform primitives correctly (sync `sdk.*`, objec
 
 ### Release and rollback
 
-- The Planner is instructed that it **cannot** create stage/production releases, open release dialogs, or deploy.
+- The Planner is instructed that it **cannot** create staging/production releases, open release dialogs, or deploy.
 - Rollback and release history are **your** controls in the dashboard ([Release History & Rollback](/platform/releases/release-history)).
 - You keep full authority over what is published.
 
 ### Project isolation
 
-SDK calls and unit graphs are scoped to the current project and runtime (stage vs production). The AI cannot reach another project’s units even if paths look the same.
+SDK calls and unit graphs are scoped to the current project and runtime (staging vs production). The AI cannot reach another project’s units even if paths look the same.
 
 ---
 
@@ -259,7 +259,7 @@ SDK calls and unit graphs are scoped to the current project and runtime (stage v
 | Mode | How | Lookback |
 | --- | --- | --- |
 | **By trace id** | Paste `X-Trace-Id` in **Start Debug** → **by trace id** | Entire that trace (no limited time window) |
-| **By release** | **Start Debug** → **by release** (stage or production revision) | About the **last 15 minutes** of release-scoped activity |
+| **By release** | **Start Debug** → **by release** (staging or production revision) | About the **last 15 minutes** of release-scoped activity |
 
 Navigation: Select project → **Debug** → **Start Debug** → choose mode → **let's start** → describe the issue.
 
@@ -452,10 +452,10 @@ Each example is something you can say almost verbatim. The AI decides APIs, dura
       Trace a1b2c3d4 — customer paid but never got a receipt. What happened, and fix it so receipt send failures retry without blocking the paid order.
     </Callout>
 
-    **Debug recent stage noise**
+    **Debug recent staging noise**
 
     <Callout>
-      Something is failing on the latest stage release for payouts in the last few minutes — dig into recent traces and tell me the most likely cause before we change anything.
+      Something is failing on the latest staging release for payouts in the last few minutes — dig into recent traces and tell me the most likely cause before we change anything.
     </Callout>
   </Tabs.Tab>
 </Tabs>

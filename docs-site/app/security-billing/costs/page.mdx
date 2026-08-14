@@ -36,7 +36,7 @@ Costs accumulate in real time and are visible in the dashboard during the billin
 | **LLM tokens** | Input + output tokens per model call | `tokens × provider list rate × (1 + platform margin) × subscription discount` |
 
 <Callout type="info">
-  Platform fees (subscription, per-project, per-unit, per-stage-runtime) are
+  Platform fees (subscription, per-project, per-unit, per-staging-runtime) are
   currently **$0** and are not charged. Usage rates above still apply.
 </Callout>
 
@@ -286,9 +286,9 @@ Tier 3 multiplies those by `0.85`; Tier 4 by `0.70`.
 
 ## Package limits
 
-Each package tier also caps how many **projects** and **stage runtimes** you can use:
+Each package tier also caps how many **projects** and **staging runtimes** you can use:
 
-| Tier | Projects | Stage runtimes |
+| Tier | Projects | Staging runtimes |
 | --- | --- | --- |
 | Tier 1 | **2** | **1** |
 | Tier 2 | **3** | **1** |
@@ -296,8 +296,8 @@ Each package tier also caps how many **projects** and **stage runtimes** you can
 | Tier 4 | **40** | **5** |
 
 <Callout type="info">
-  Production remains one runtime per project. Stage-runtime limits above are
-  the package caps for additional stage environments.
+  Production remains one runtime per project. Staging-runtime limits above are
+  the package caps for additional staging environments.
 </Callout>
 
 ---

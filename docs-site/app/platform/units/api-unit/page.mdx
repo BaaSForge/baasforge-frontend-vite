@@ -61,7 +61,7 @@ Unit path: `shop.orders.api.list-orders`
 Full unit id (with revision): `shop.orders.api.list-orders.3`  
 Trigger URL tail: `shop/orders/list-orders`
 
-## Trigger URLs (stage and production)
+## Trigger URLs (staging and production)
 
 Base host (current platform):
 
@@ -82,9 +82,9 @@ curl -X GET \
   "https://runtime.baasforge.com/api/v1/trigger/PROJECT_ID/shop/orders/list-orders?status=pending"
 ```
 
-### Stage
+### Staging
 
-Stage includes the **runtime id** so each chat/stage environment stays isolated:
+Staging includes the **runtime id** so each chat/staging environment stays isolated:
 
 ```
 https://runtime.baasforge.com/api/v1/trigger/{project_id}/stage/{runtime_id}/{context}/{module}/{unit_name}
@@ -99,7 +99,7 @@ curl -X POST \
   -d '{"sku":"sku_1","qty":2}'
 ```
 
-<Tabs items={['Production', 'Stage']}>
+<Tabs items={['Production', 'Staging']}>
   <Tabs.Tab>
     ```text copy
     /api/v1/trigger/{project_id}/{context}/{module}/{unit_name}
@@ -110,12 +110,12 @@ curl -X POST \
     ```text copy
     /api/v1/trigger/{project_id}/stage/{runtime_id}/{context}/{module}/{unit_name}
     ```
-    Loads the **stage** release bound to that `runtime_id`. Wrong or unknown runtime → unit not found.
+    Loads the **staging** release bound to that `runtime_id`. Wrong or unknown runtime → unit not found.
   </Tabs.Tab>
 </Tabs>
 
 <Callout type="info">
-Stage vs production is a **path** difference (`/stage/{runtime_id}/…`), not a different hostname. The same runtime host serves both.
+Staging vs production is a **path** difference (`/stage/{runtime_id}/…`), not a different hostname. The same runtime host serves both.
 </Callout>
 
 ## Public vs private triggers
@@ -135,7 +135,7 @@ Treat API URLs as internet-facing. When an endpoint needs auth, signature checks
 
 ## How to trigger an API unit
 
-Draft units from a chat are not callable until released. After a stage or production release is live, trigger via the dashboard **Live interaction** client, or any external HTTP client (`curl`, Postman, …). Cross-unit calls from other units use `fetch` (written by the AI).
+Draft units from a chat are not callable until released. After a staging or production release is live, trigger via the dashboard **Live interaction** client, or any external HTTP client (`curl`, Postman, …). Cross-unit calls from other units use `fetch` (written by the AI).
 
 The AI chooses `api_method` when creating or modifying the unit (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, `HEAD`). That value is stored in unit metadata and drives the dashboard client — call the endpoint with that method.
 
@@ -148,14 +148,14 @@ Releases are created from the AI chat, not a separate Deploy page.
 
 Select your project → sidebar **Develop** → open (or start) a conversation where the AI created the units.
 
-### Release to stage
+### Release to staging
 
 In the release controller (thread bottom / secondary sidebar): **Release Stage** → pick a stage runtime → **Deploy**.  
 For a later revision: **Deploy revision … to stage** → choose runtime → **Deploy**.
 
 ### (Optional) Release to production
 
-After testing on stage: **Release production** → confirm → **Deploy to production**  
+After testing on staging: **Release production** → confirm → **Deploy to production**
 (or **Deploy revision … to production**).
 </Steps>
 
@@ -169,12 +169,12 @@ The dashboard embeds a Postman-style client for each API unit under **Live inter
 Exported types power documentation **and** the Live interaction client. The AI must keep `RequestBody` / `QueryParams` / `ResponseBody` aligned with what the handler actually reads and writes.
 </Callout>
 
-**Stage (typical):**
+**Staging (typical):**
 
 <Steps>
 ### Open a runtime
 
-Select your project → sidebar **Runtimes** → pick a runtime under **Busy stage runtimes** (or the stage runtime you deployed to).
+Select your project → sidebar **Runtimes** → pick a runtime under **Busy stage runtimes** (or the staging runtime you deployed to).
 
 ### Open units
 
@@ -278,7 +278,7 @@ const resp = await fetch(url, {
 });
 ```
 
-`getApiUnitTriggerUrl` is runtime-aware: inside a stage trigger it emits a `/stage/{runtime_id}/…` URL; in production it emits the production URL.
+`getApiUnitTriggerUrl` is runtime-aware: inside a staging trigger it emits a `/stage/{runtime_id}/…` URL; in production it emits the production URL.
 
 ## Path, query, and body
 
@@ -581,7 +581,7 @@ Sync SDK helpers return plain values — unit code must not `await sdk.xxxSync(�
 
 ### Unit loaded from live release
 
-Production or stage release (by `runtime_id`) must contain the unit. Code is loaded from Postgres (Redis-cached), scoped by chat session in the release metadata.
+Production or staging release (by `runtime_id`) must contain the unit. Code is loaded from Postgres (Redis-cached), scoped by chat session in the release metadata.
 
 ### QuickJS handler run
 
@@ -600,7 +600,7 @@ sequenceDiagram
   participant QJS as QuickJS handleRequest
 
   Client->>Runtime: HTTP request (method + query + body)
-  Runtime->>Store: Load unit for prod or stage runtime
+  Runtime->>Store: Load unit for prod or staging runtime
   Runtime->>QJS: Run handleRequest(req, res)
   QJS-->>Runtime: status, headers, body
   Runtime-->>Client: HTTP response
@@ -615,7 +615,7 @@ sequenceDiagram
 | Default timeout | **30 seconds** |
 | Max timeout | **3600 seconds** (via `api_timeout_seconds` / metadata) |
 | Project isolation | SDK calls stay inside the same `project_id` |
-| Stage isolation | Stage URLs include `runtime_id`; production and stage state do not mix |
+| Staging isolation | Staging URLs include `runtime_id`; production and staging state do not mix |
 | Observability | Response header `X-Trace-Id` (full call + nested SDK spans); copy → **Debug** → **Start Debug** → **by trace id** |
 
 ## Common mistakes
@@ -652,7 +652,7 @@ sequenceDiagram
 | Entry point | `export async function handleRequest(req, res): Promise<void>` |
 | Unit path | `{context}.{module}.api.{unit_name}` (chosen by AI) |
 | Production URL | `https://runtime.baasforge.com/api/v1/trigger/{project_id}/{context}/{module}/{unit_name}` |
-| Stage URL | `https://runtime.baasforge.com/api/v1/trigger/{project_id}/stage/{runtime_id}/{context}/{module}/{unit_name}` |
+| Staging URL | `https://runtime.baasforge.com/api/v1/trigger/{project_id}/stage/{runtime_id}/{context}/{module}/{unit_name}` |
 | Auth | Public |
 | Path params | Not supported |
 | Query / body | Supported |

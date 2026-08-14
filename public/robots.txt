@@ -1,6 +1,10 @@
 User-agent: *
 Allow: /
+
+# Authenticated and non-public application routes.
 Disallow: /dashboard
 Disallow: /login
+Disallow: /500
+Disallow: /projects/documentation/
 
 Sitemap: https://baasforge.com/sitemap.xml

@@ -162,7 +162,7 @@ function PlanCard({ billingPeriod, pkg }: { billingPeriod: BillingPeriod; pkg: P
     const creditAmount = packageCreditForBillingPeriod(pkg, billingPeriod);
     const monthlyAmount = billingPeriod === "annual" ? periodAmount / 12 : periodAmount;
     const isFree = periodAmount <= 0;
-    const isFeatured = pkg.title.trim().toLowerCase() === "team";
+    const isFeatured = pkg.slug.trim().toLowerCase() === "solo";
     const href = isFree ? "/dashboard/packages" : `/dashboard/purchase?kind=package&package_id=${encodeURIComponent(pkg.id)}&billing_period=${billingPeriod}`;
 
     return (
@@ -212,7 +212,7 @@ function Plans({ billingPeriod, setBillingPeriod }: { billingPeriod: BillingPeri
                 </button>
             </div>
             <p className="bf-pricing-tier-note" data-pricing-reveal>
-                Higher tiers spend credit at a lower rate, so the same dollar goes further.
+                Higher tiers make every dollar go further. Taxes calculated at checkout.
             </p>
             {isLoading ? (
                 <div className="bf-pricing-plan-grid" aria-label="Loading plans">

@@ -12,7 +12,7 @@ export const metadata = {
 
 # Avoiding Conflicts
 
-BaaSForge avoids merge conflicts by keeping **one live production line**. Each Develop chat snapshots that production release as its base; stage and production releases from the chat are built on that snapshot — not on whatever became live later.
+BaaSForge avoids merge conflicts by keeping **one live production line**. Each Develop chat snapshots that production release as its base; staging and production releases from the chat are built on that snapshot — not on whatever became live later.
 
 That model matches **trunk-based development** — a common git strategy teams use on purpose: short-lived work off a single mainline, frequent integration to that trunk, and no long-lived diverging release trees. It keeps shipping simpler and easier to reason about. Here, Develop chats play the role of those short branches; production is the trunk.
 
@@ -50,7 +50,7 @@ flowchart TB
 | Shape | Meaning |
 | --- | --- |
 | **Production line** | One live production release at a time (trunk) |
-| **Chat → stage → prod** | Work branches from a prod baseline; promote only after stage |
+| **Chat → stage → prod** | Work branches from a prod baseline; promote only after staging |
 | **Parallel chat** | Same baseline as another chat — fine to explore; only one line should land on production |
 | **New chat after prod** | Starts from the latest live production — safe next cycle |
 
@@ -63,7 +63,7 @@ Select project → **Develop** → start a conversation (or open an existing one
 That session locks to the **production release that was live at creation**. The AI drafts units on that baseline plus this chat’s accepted changes.
 
 <Callout type="important">
-  Parallel chats that share the same baseline can each reach stage. **Only one** should be promoted to production. The next feature belongs in a **new** chat after that promote — otherwise you are racing the same trunk.
+  Parallel chats that share the same baseline can each reach staging. **Only one** should be promoted to production. The next feature belongs in a **new** chat after that promote — otherwise you are racing the same trunk.
 </Callout>
 
 ## Recommended cycle
@@ -73,7 +73,7 @@ That session locks to the **production release that was live at creation**. The 
 
 Select project → **Develop** → new chat. Describe the feature; let the AI draft units.
 
-### Stage, then test
+### Staging, then test
 
 Release controller → **Release Stage** → stage runtime. Validate via **Runtimes** → stage runtime → **Open Units** → **Live interaction**.
 
@@ -114,7 +114,7 @@ If you put an older production revision live again (Units & Releases → deploy 
 Deep dive: [Release History & Rollback](/platform/releases/release-history).
 
 <Callout type="info">
-  Stale base is a warning, not a lock. Stage deploy and further AI drafts in that chat stay available. The platform simplifies conflict handling by design: one trunk, chat-scoped snapshots, warn before overwrite.
+  Stale base is a warning, not a lock. Staging deploy and further AI drafts in that chat stay available. The platform simplifies conflict handling by design: one trunk, chat-scoped snapshots, warn before overwrite.
 </Callout>
 
 ## Related docs
@@ -135,7 +135,7 @@ Deep dive: [Release History & Rollback](/platform/releases/release-history).
   | Why no merge conflicts? | One live production line; each chat is a snapshot + deltas |
   | What does a new chat use? | Latest live production at creation time |
   | Parallel chats? | Explore freely; promote only one line to production |
-  | Best habit? | Feature chat → stage → test → production → new chat |
+  | Best habit? | Feature chat → staging → test → production → new chat |
   | What is Stale base? | Live prod moved via another chat; shipping here overwrites it |
   | Does stale block work? | No — warns in UI and before production deploy |
   | Rollback effect? | Chats based on the restored prod lose the stale warning |
