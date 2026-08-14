@@ -122,7 +122,7 @@ sequenceDiagram
 | --- | --- |
 | Sequential delivery | No interleaved handlers for the same `actorId` |
 | Atomic state | Mutations commit only on success |
-| Isolation | Different projects, units, instances, and stage runtimes do not share state |
+| Isolation | Different projects, units, instances, and staging runtimes do not share state |
 | Durable alarms | Named alarms survive crash / passivation / restart |
 | Retry + DLQ | Transient errors retry; `TerminalError` skips retries and can hit `onDeadLetter` |
 
@@ -143,9 +143,9 @@ Example: *“Each shopper has one active cart: add and remove items, change quan
 
 The AI produces the units and updates dependents. Drafts are not live until you release.
 
-### Release to stage
+### Release to staging
 
-In the release controller: **Release Stage** → pick a stage runtime → **Deploy**.
+In the release controller: **Release Stage** → pick a staging runtime → **Deploy**.
 
 ### Promote when ready
 
@@ -160,12 +160,12 @@ You do not need to name unit types (actor, workflow, API, …), exports, or SDK 
 
 Actor triggers are **private** (dashboard / SDK), not a public internet surface like API units. Prefer an **API unit** as the external gateway; use Live interaction to test and operate instances.
 
-### Stage
+### Staging
 
 <Steps>
 ### Open a runtime
 
-Select your project → sidebar **Runtimes** → pick the stage runtime you deployed to.
+Select your project → sidebar **Runtimes** → pick the staging runtime you deployed to.
 
 ### Open units
 
@@ -497,9 +497,9 @@ Secrets belong in dashboard **Variables** (Select project → **Variables**). Th
 | Same unit path on stage A vs stage B vs production | Separate state — never shared |
 | Same unit path, different revisions, same runtime | Same state and data — revisions share persistence on that runtime |
 | Same `actorId` across those environments | Still separate instances |
-| Homonymous paths via SDK chains | Runtime scope stays with the caller’s stage / production |
+| Homonymous paths via SDK chains | Runtime scope stays with the caller’s staging / production |
 
-Test actors on stage before promoting. Deleting or mutating a stage instance does not affect production.
+Test actors on staging before promoting. Deleting or mutating a staging instance does not affect production.
 
 ## Limits and operational notes
 
@@ -547,8 +547,8 @@ Test actors on stage before promoting. Deleting or mutating a stage instance doe
 </Details>
 
 <Details>
-  <Summary>Confusing stage and production instances</Summary>
-  Same path + same `actorId` on stage vs production are different rows. Always test on the stage runtime you released to.
+  <Summary>Confusing staging and production instances</Summary>
+  Same path + same `actorId` on staging vs production are different rows. Always test on the staging runtime you released to.
 </Details>
 
 ## Quick reference
@@ -564,7 +564,7 @@ Test actors on stage before promoting. Deleting or mutating a stage instance doe
 | Alarms | `ctx.setAlarm` / `ctx.cancelAlarm` / `onAlarm` |
 | Non-retriable | `throw new ctx.TerminalError(…)` |
 | Production URL | `/api/v1/trigger/actor/{project_id}/{context}/{module}/{unit}/{actorId}/…` |
-| Stage URL | `/api/v1/trigger/actor/{project_id}/stage/{runtime_id}/…` |
+| Staging URL | `/api/v1/trigger/actor/{project_id}/stage/{runtime_id}/…` |
 | Auth | Private |
 | Dashboard try-it | **Runtimes** → **Open Units** → actor → **Live interaction** → set **Actor instance id** |
 | Ops tabs | Handler · **Read state** · **Passivate** · **Delete instance** |

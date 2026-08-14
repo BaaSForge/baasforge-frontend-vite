@@ -48,7 +48,7 @@ explicit dependency graph.
 ```mermaid
 flowchart LR
   Chat[AI chat] -->|create / modify / remove| Drafts[Draft units]
-  Drafts -->|release controller| Stage[Stage release]
+  Drafts -->|release controller| Stage[Staging release]
   Stage -->|promote| Prod[Production release]
   Prod -->|live on runtime| Exec[runtime environment]
   Exec --> API[api]
@@ -65,7 +65,7 @@ flowchart LR
 | **Identity** | Path on disk | Four-segment unit path (+ integer revision) |
 | **Ownership** | Your git repo | Project + chat session on the platform |
 | **Editing** | IDE / PR | AI chat (manual edit is not possible) |
-| **Deploy** | Build pipeline you operate | Stage → production release from chat |
+| **Deploy** | Build pipeline you operate | Staging → production release from chat |
 | **Runtime** | Whatever you host | Managed QuickJS workers on BaaSForge runtimes |
 | **Coupling** | Imports / shared packages / HTTP | Type imports, `common` value imports, `@sdk` calls |
 
@@ -311,9 +311,9 @@ Nothing is saved until TypeScript compile, lint, and unit rules pass.
 A **release controller** appears under the assistant message when that turn
 changed units — view diffs, reject, or release.
 
-### Stage, then production
+### Staging, then production
 
-Build a stage release from the controller, validate on a stage runtime, then
+Build a staging release from the controller, validate on a staging runtime, then
 promote to production.
 </Steps>
 
@@ -342,7 +342,7 @@ A release is **not** a full rewrite of the project. It is composed of:
 ```mermaid
 flowchart TB
   Base[Base production units] --> Overlay[Overlay chat drafts]
-  Overlay --> Release[Stage / production release]
+  Overlay --> Release[Staging / production release]
 ```
 
 Same chat can produce multiple release controller turns; each eligible
@@ -362,7 +362,7 @@ derived from project + path (no custom path segments, no path params):
 https://runtime.baasforge.com/api/v1/trigger/{project_id}/{context}/{module}/{unit_name}
 ```
 
-**Stage**
+**Staging**
 
 ```
 https://runtime.baasforge.com/api/v1/trigger/{project_id}/stage/{runtime_id}/{context}/{module}/{unit_name}
@@ -399,7 +399,7 @@ No trigger URL. They only exist to be imported.
 
 <Tabs items={['From the internet', 'From another unit', 'From the dashboard']}>
   <Tabs.Tab>
-    Call the **API** trigger URL for a released API unit (stage or production
+    Call the **API** trigger URL for a released API unit (staging or production
     host). Use the built-in HTTP client or any external client.
   </Tabs.Tab>
   <Tabs.Tab>
@@ -430,8 +430,8 @@ sequenceDiagram
   alt Reject
     U->>RC: Reject changes
   else Ship
-    U->>RC: Stage release
-    RC->>RT: Attach to stage runtime
+    U->>RC: Staging release
+    RC->>RT: Attach to staging runtime
     U->>RC: Production release
     RC->>RT: Attach to production
   end

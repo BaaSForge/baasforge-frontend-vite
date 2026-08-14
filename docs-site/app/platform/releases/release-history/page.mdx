@@ -14,10 +14,10 @@ export const metadata = {
 
 Every production release stays in history. You can point production back at any previous revision — then point it forward again — as many times as you need. That control is yours in the dashboard; the AI cannot deploy or roll back.
 
-How releases are created (stage → production): [Releases](/platform/releases).
+How releases are created (staging → production): [Releases](/platform/releases).
 
 <Callout type="important">
-  **History is production-only.** The Units & Releases sidebar lists production releases. Stage runtimes show their current live release under **Runtimes** → that stage → **Open Units** — not this history list.
+  **History is production-only.** The Units & Releases sidebar lists production releases. Staging runtimes show their current live release under **Runtimes** → that stage → **Open Units** — not this history list.
 </Callout>
 
 ## Open history
@@ -67,7 +67,7 @@ Deploying or rolling back **does not wipe** production unit data (actor state, w
   Newer units may have **written or reshaped** that durable data. If you roll back to older units, those units may not understand fields, formats, or records the newer release created. Confirm the older revision can safely read (and leave) the data that already exists — or expect broken handlers / unexpected behavior until you move forward again or repair data.
 </Callout>
 
-Prefer validating risky unit/data changes on **stage** before production. See [Live interaction](/platform/live-interaction).
+Prefer validating risky unit/data changes on **staging** before production. See [Live interaction](/platform/live-interaction).
 
 ## Related docs
 

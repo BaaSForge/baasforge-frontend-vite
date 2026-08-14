@@ -45,12 +45,12 @@ Cross-unit orchestration is always `@sdk` (or HTTP for APIs). Executable units a
 
 ## Project isolation
 
-Every `sdk.*` call is scoped to the **current project** and the **runtime** the unit is running in (stage runtime id or production). There is **no** way to address another project's units, actors, workflows, or queues through the SDK.
+Every `sdk.*` call is scoped to the **current project** and the **runtime** the unit is running in (staging runtime id or production). There is **no** way to address another project's units, actors, workflows, or queues through the SDK.
 
-Same unit path in two projects = two separate worlds. Same path in stage vs production = separate instances and queues.
+Same unit path in two projects = two separate worlds. Same path in staging vs production = separate instances and queues.
 
 <Callout type="warning">
-Isolation is platform-enforced. The AI cannot “reach across” projects or stage/prod boundaries via `@sdk`, even if paths look identical.
+Isolation is platform-enforced. The AI cannot “reach across” projects or staging/prod boundaries via `@sdk`, even if paths look identical.
 </Callout>
 
 ## Modules
@@ -141,7 +141,7 @@ All cross-unit host calls live on `sdk`. Names ending in `Sync` return **plain v
 
 | Method | Returns | Behavior |
 | --- | --- | --- |
-| `getApiUnitTriggerUrl({ unitPathOrId })` | `string` | Full trigger URL for an **api** unit (stage-aware) |
+| `getApiUnitTriggerUrl({ unitPathOrId })` | `string` | Full trigger URL for an **api** unit (staging-aware) |
 | `getSecureEnv(key)` | `string` | Runtime variable; encrypted values decrypted |
 | `callActorAndWaitForResultSync({ unitPath, actorId, handler, payload?, opts? })` | `TResult` | Block until actor handler finishes (default timeout **30s**) |
 | `sendActorMessageSync({ unitPath, actorId, handler, payload? })` | `{ delivered: true }` | Fire-and-forget into actor mailbox |
@@ -266,7 +266,7 @@ const echoed = sdk.callWorkflowHandlerAndWaitForResultSync<
 ```
   </Tabs.Tab>
   <Tabs.Tab>
-Resolve a stage-aware trigger URL, then `fetch`:
+Resolve a staging-aware trigger URL, then `fetch`:
 
 ```typescript copy filename="api-to-api-via-sdk.ts"
 import { sdk } from "@sdk";

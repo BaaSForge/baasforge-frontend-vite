@@ -19,12 +19,12 @@ A **release** is a deployable snapshot of validated unit changes. Think of it as
 ```mermaid
 flowchart LR
   Chat[Develop chat — AI drafts units] --> RC[Release controller — you]
-  RC --> Stage[Stage release on a stage runtime]
+  RC --> Stage[Staging release on a staging runtime]
   Stage --> Prod[Production release]
 ```
 
 <Callout type="important">
-  The AI prepares drafts. **Only you** create stage / production releases and deploy. There is no IDE — you describe business behavior in chat; the AI authors units. Technical rules are already trained and enforced; you do not prompt coding conventions.
+  The AI prepares drafts. **Only you** create staging / production releases and deploy. There is no IDE — you describe business behavior in chat; the AI authors units. Technical rules are already trained and enforced; you do not prompt coding conventions.
 </Callout>
 
 ## Mental model
@@ -34,7 +34,7 @@ flowchart LR
 | Release | A deployable build / git tag | Snapshot of base production units + this chat’s accepted drafts |
 | Revision | Version number | Dotted number for releases (e.g. `15.4`); say **revision**, not “version” |
 | Line | Trunk-based mainline | One live production at a time; each chat starts from the production that was live when the chat opened |
-| Stage → prod | Promote after QA | You must create a **stage** release first; production copies that proven snapshot |
+| Staging → prod | Promote after QA | You must create a **staging** release first; production copies that proven snapshot |
 
 A release is **not** a full rewrite of the project. It is:
 
@@ -54,24 +54,24 @@ Same chat can offer several release-controller turns (e.g. after more AI changes
 | **You** | Describe intent in Develop | Yes — release controller and Units & Releases |
 | **AI** | Writes and validates units | **No** — cannot open release dialogs or deploy |
 
-## Stage, then production
+## Staging, then production
 
 <Steps>
 ### Draft in Develop
 
 Select project → **Develop** → describe product behavior. When a turn changes units, a **release controller** appears under that message.
 
-### Release Stage
+### Release to staging
 
-On the controller → **Release Stage** → pick an idle stage runtime (**Deploy**) or a busy one (**swap live release**). That creates a stage release and attaches it to the runtime.
+On the controller → **Release Stage** → pick an idle stage runtime (**Deploy**) or a busy one (**swap live release**). That creates a staging release and attaches it to the runtime.
 
 ### Validate
 
-Select project → **Runtimes** → that stage runtime → **Open Units** → unit → **Live interaction**. Prefer stage before promote.
+Select project → **Runtimes** → that stage runtime → **Open Units** → unit → **Live interaction**. Prefer staging before promote.
 
 ### Release production
 
-Same chat → **Release production** after stage looks correct. Production is created **from that stage release** (no recalculating the unit set) and goes live on the project’s single production runtime.
+Same chat → **Release production** after staging looks correct. Production is created **from that staging release** (no recalculating the unit set) and goes live on the project’s single production runtime.
 
 ### Start a new chat
 
@@ -79,11 +79,11 @@ Select project → **Develop** → start a **new** conversation for the next fea
 </Steps>
 
 <Callout type="important">
-  **Prefer a new chat after you release to production.** Stage releases stay visible only in the chat that introduced them. A new chat sees the **latest production** release as its baseline — not stage drafts from other sessions. That clears long history (better AI accuracy) and keeps a separate chat trail per feature.
+  **Prefer a new chat after you release to production.** Staging releases stay visible only in the chat that introduced them. A new chat sees the **latest production** release as its baseline — not staging drafts from other sessions. That clears long history (better AI accuracy) and keeps a separate chat trail per feature.
 </Callout>
 
 <Callout>
-  You can redeploy an existing stage or production revision to a runtime later from the same controller (or from Units & Releases for production history).
+  You can redeploy an existing staging or production revision to a runtime later from the same controller (or from Units & Releases for production history).
 </Callout>
 
 <Callout type="info">
@@ -132,13 +132,13 @@ Test units that support Live interaction (API, actor, workflow, queue worker) fr
 
 | Environment | Path |
 | --- | --- |
-| Stage | Select project → **Runtimes** → stage runtime → **Open Units** → All units tab → unit → **Live interaction** |
+| Staging | Select project → **Runtimes** → stage runtime → **Open Units** → All units tab → unit → **Live interaction** |
 | Production | Select project → **Units & Releases** (or production runtime → **Open Units**) → All units tab → unit → **Live interaction** |
 
 Live interaction is available only when that release is **currently live** on the runtime you opened. Historical / non-live revisions can be browsed, but Live interaction is disabled.
 
 <Callout type="error">
-  You **can** Live-interact with production units. That hits real production traffic and data — use stage for everyday validation.
+  You **can** Live-interact with production units. That hits real production traffic and data — use staging for everyday validation.
 </Callout>
 
 More: [Live interaction](/platform/live-interaction).
@@ -178,8 +178,8 @@ Deep dive: [Release History & Rollback](/platform/releases/release-history).
   | --- | --- |
   | What is a release? | Deployable snapshot of chat-scoped unit changes, attached to a runtime |
   | Who releases? | You — never the AI |
-  | Stage required first? | Yes — production is promoted from a stage release |
-  | After production? | Open a **new** Develop chat — baseline is latest prod; stage stays chat-scoped |
+  | Staging required first? | Yes — production is promoted from a staging release |
+  | After production? | Open a **new** Develop chat — baseline is latest prod; staging stays chat-scoped |
   | New release clears runtime data? | No — unit data on that runtime stays (classic in-place upgrade) |
   | See a runtime’s units? | Runtimes → Open Units |
   | New vs all units? | Tabs on the release units page |

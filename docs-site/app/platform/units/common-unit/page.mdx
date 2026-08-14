@@ -173,7 +173,7 @@ export type Money = { cents: number; currency: string };
 | Put here | Do not put here |
 | --- | --- |
 | Pure helpers, formatters, validators, shared types | API keys, tokens, passwords, connection strings |
-| Non-secret constants (e.g. default page size `20`) | Stage/production-specific secrets |
+| Non-secret constants (e.g. default page size `20`) | Staging/production-specific secrets |
 
 **Dashboard path for variables:**
 
@@ -349,9 +349,9 @@ Example: *“Format money the same way on list-orders and create-order — curre
 
 The AI creates or updates the shared helpers and the units that use them. Drafts are not live until you release.
 
-### Release to stage
+### Release to staging
 
-In the release controller: **Release Stage** → pick a stage runtime → **Deploy**.
+In the release controller: **Release Stage** → pick a staging runtime → **Deploy**.
 
 ### Promote when ready
 
@@ -360,12 +360,12 @@ In the release controller: **Release Stage** → pick a stage runtime → **Depl
 
 ### Find common units in the dashboard
 
-<Tabs items={['Stage', 'Production']}>
+<Tabs items={['Staging', 'Production']}>
   <Tabs.Tab>
     <Steps>
 ### Open a runtime
 
-Select your project → sidebar **Runtimes** → pick a stage runtime.
+Select your project → sidebar **Runtimes** → pick a staging runtime.
 
 ### Open units
 
@@ -390,7 +390,7 @@ Tab **All units** → filter **common** unit type → unit card.
 </Tabs>
 
 <Callout type="info">
-Common unit cards have **no Live interaction** toggle. To verify shared code, trigger an **API** (or other executable) unit that imports it — stage or production — and inspect the response / trace.
+Common unit cards have **no Live interaction** toggle. To verify shared code, trigger an **API** (or other executable) unit that imports it — staging or production — and inspect the response / trace.
 </Callout>
 
 **How to test shared helpers end-to-end:**
@@ -398,7 +398,7 @@ Common unit cards have **no Live interaction** toggle. To verify shared code, tr
 <Steps>
 ### Release both units
 
-Release the common unit **and** the API (or actor / workflow / queue worker) that imports it to the same stage or production release.
+Release the common unit **and** the API (or actor / workflow / queue worker) that imports it to the same staging or production release.
 
 ### Trigger the executable
 
@@ -410,11 +410,11 @@ Select your project → **Runtimes** → **Open Units** → API unit card → **
 Copy **`X-Trace-Id`** from the response → sidebar **Debug** → **Start Debug** → **by trace id**.
 </Steps>
 
-## Stage vs production
+## Staging vs production
 
-Common units are released like every other unit. The same unit path can resolve to **different compiled code** per stage runtime vs production — stage isolation applies to commons too.
+Common units are released like every other unit. The same unit path can resolve to **different compiled code** per staging runtime vs production — staging isolation applies to commons too.
 
-Ask the AI for stage-specific behavior when needed; do not assume a stage common automatically matches production until you promote.
+Ask the AI for staging-specific behavior when needed; do not assume a common unit in staging automatically matches production until you promote.
 
 ## Dependencies (`depends_on`)
 
@@ -434,7 +434,7 @@ When a common unit’s exports change, the AI automatically scans dependents and
 | Packages / `node:*` | Same allowlist as other units |
 | Secrets | Dashboard **Variables** (AI discovers keys automatically) — never in common source |
 | Project isolation | Imports stay inside the same project |
-| Stage isolation | Stage runtime loads that stage’s common revision |
+| Staging isolation | Each staging runtime loads its own common revision |
 
 ## Common mistakes
 
@@ -470,7 +470,7 @@ When a common unit’s exports change, the AI automatically scans dependents and
 
 <Details>
   <Summary>Releasing a caller without the common it imports</Summary>
-  Both the common and the importing unit must be in the live stage/production release, or the runtime cannot load the module.
+  Both the common and the importing unit must be in the live staging/production release, or the runtime cannot load the module.
 </Details>
 
 ## Quick reference
