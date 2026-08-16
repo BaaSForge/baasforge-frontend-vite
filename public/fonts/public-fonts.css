@@ -1,0 +1,23 @@
+@font-face {
+    font-family: "Geist Mono";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/fonts/geist-mono-latin.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url("/fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans Hero";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("/fonts/plus-jakarta-sans-hero-700.woff2") format("woff2");
+}

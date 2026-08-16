@@ -59,6 +59,12 @@ export default defineConfig(({ mode }) => {
         },
         build: {
             chunkSizeWarningLimit: 500,
+            rollupOptions: {
+                input: {
+                    main: path.resolve(__dirname, "./index.html"),
+                    "public-global": path.resolve(__dirname, "./src/styles/public-global.css"),
+                },
+            },
         },
     };
 });

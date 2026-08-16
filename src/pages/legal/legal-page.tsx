@@ -1,4 +1,4 @@
-import { AppLogoSquare } from "@/components/logo/app-logo-square";
+import { MarketingLogoSquare } from "@/components/logo/marketing-logo-square";
 import { openCookieSettings } from "@/services/cookie-consent";
 import { Children, cloneElement, isValidElement, useEffect, type ReactNode } from "react";
 import type { Components } from "react-markdown";
@@ -158,7 +158,7 @@ export function LegalPage({ canonicalPath, content, dateModified, description, t
             <header className="bf-legal-nav">
                 <div className="bf-legal-nav-inner">
                     <Link to="/" reloadDocument className="bf-legal-brand" aria-label="BaaSForge home">
-                        <AppLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
+                        <MarketingLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
                         <span>BaaSForge</span>
                     </Link>
                     <nav className="bf-legal-links" aria-label="Legal">

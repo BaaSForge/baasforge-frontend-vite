@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AppLogoSquare } from "@/components/logo/app-logo-square";
+import { MarketingLogoSquare } from "@/components/logo/marketing-logo-square";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMagnet } from "@/hooks/use-magnet";
@@ -397,7 +397,7 @@ function Magnetic({ to, variant, children }: { to: string; variant: "primary" | 
 function Brand() {
     return (
         <Link to="/" className="bf-logo">
-            <AppLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
+            <MarketingLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
             BaaSForge
         </Link>
     );

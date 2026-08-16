@@ -1,4 +1,4 @@
-import { AppLogoSquare } from "@/components/logo/app-logo-square";
+import { MarketingLogoSquare } from "@/components/logo/marketing-logo-square";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { Link } from "react-router";
@@ -53,7 +53,7 @@ export default function NotFoundPage() {
             <header className="bf-not-found-nav">
                 <div className="bf-not-found-nav-inner">
                     <Link to="/" reloadDocument className="bf-not-found-brand" aria-label="BaaSForge home">
-                        <AppLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
+                        <MarketingLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
                         <span>BaaSForge</span>
                     </Link>
                 </div>
