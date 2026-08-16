@@ -53,7 +53,7 @@ export default function NotFoundPage() {
             <header className="bf-not-found-nav">
                 <div className="bf-not-found-nav-inner">
                     <Link to="/" reloadDocument className="bf-not-found-brand" aria-label="BaaSForge home">
-                        <AppLogoSquare className="size-[22px]" />
+                        <AppLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
                         <span>BaaSForge</span>
                     </Link>
                 </div>

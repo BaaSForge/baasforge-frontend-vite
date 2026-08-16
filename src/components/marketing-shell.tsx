@@ -24,7 +24,7 @@ function getActiveMarketingPage(pathname: string): MarketingPage | undefined {
 function Brand() {
     return (
         <Link to="/" reloadDocument className="bf-logo" aria-label="BaaSForge home">
-            <AppLogoSquare className="size-[22px]" />
+            <AppLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
             BaaSForge
         </Link>
     );

@@ -1,8 +1,5 @@
-import { lazy, Suspense, useSyncExternalStore } from "react";
-
-const CookieConsentHost = lazy(() =>
-    import("@/components/cookie-consent").then((module) => ({ default: module.CookieConsentHost })),
-);
+import { PublicCookieConsentHost } from "@/components/cookie-consent/public-cookie-consent";
+import { useSyncExternalStore } from "react";
 
 export function DeferredCookieConsent() {
     const mounted = useSyncExternalStore(
@@ -11,9 +8,5 @@ export function DeferredCookieConsent() {
         () => false,
     );
 
-    return mounted ? (
-        <Suspense fallback={null}>
-            <CookieConsentHost />
-        </Suspense>
-    ) : null;
+    return mounted ? <PublicCookieConsentHost /> : null;
 }

@@ -158,7 +158,7 @@ export function LegalPage({ canonicalPath, content, dateModified, description, t
             <header className="bf-legal-nav">
                 <div className="bf-legal-nav-inner">
                     <Link to="/" reloadDocument className="bf-legal-brand" aria-label="BaaSForge home">
-                        <AppLogoSquare className="size-[22px]" />
+                        <AppLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
                         <span>BaaSForge</span>
                     </Link>
                     <nav className="bf-legal-links" aria-label="Legal">
