@@ -59,27 +59,6 @@ export default defineConfig(({ mode }) => {
         },
         build: {
             chunkSizeWarningLimit: 500,
-            rollupOptions: {
-                output: {
-                    // Manual Chunks to separate vendor code
-                    manualChunks(id) {
-                        if (id.includes("node_modules")) {
-                            if (/node_modules\/(@tailwindcss\/|tailwindcss(?:-|$|\/)|tailwind-merge)/.test(id)) {
-                                return "vendor-tailwindcss";
-                            }
-                            // Split out utility libraries
-                            if (id.includes("qr-code-styling")) {
-                                return "vendor-utils";
-                            }
-                            // Split out Data fetching
-                            if (id.includes("@tanstack")) {
-                                return "vendor-query";
-                            }
-                            return "vendor-general";
-                        }
-                    },
-                },
-            },
         },
     };
 });
