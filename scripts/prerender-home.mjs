@@ -5,11 +5,7 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const templatePath = path.join(rootDir, "dist/index.html");
 const serverEntryPath = path.join(rootDir, "dist/server/entry-server.js");
-const assetsDir = path.join(rootDir, "dist/assets");
-const publicFontStylesPath = path.join(rootDir, "public/fonts/public-fonts.css");
-const heroFontPath = path.join(rootDir, "public/fonts/plus-jakarta-sans-hero-700.woff2");
 const siteUrl = "https://baasforge.com";
-const publicFontAssets = `    <link rel="stylesheet" href="/fonts/public-fonts.css" />`;
 
 const legalPageDefaults = {
     ogType: "article",
@@ -50,31 +46,6 @@ function replaceMeta(html, selector, content) {
     return html.replace(new RegExp(`(<meta ${escapedSelector} content=")[^"]*(" \\/>)`), `$1${content}$2`);
 }
 
-function addPublicFontAssets(html) {
-    return html.replace("</head>", `${publicFontAssets}\n  </head>`);
-}
-
-function findPublicStylesheet() {
-    const filename = fs.readdirSync(assetsDir).find((entry) => /^public-global-.*\.css$/.test(entry));
-    if (filename == null) throw new Error("Public stylesheet was not emitted by Vite");
-    return `/assets/${filename}`;
-}
-
-function replaceAppStylesheet(html, publicStylesheet) {
-    return html.replace(
-        /<link rel="stylesheet" crossorigin href="\/assets\/[^\"]+\.css">/,
-        `<link rel="stylesheet" crossorigin href="${publicStylesheet}">`,
-    );
-}
-
-function selectRouteStylesheet(html, publicStylesheet, publicFontStyles) {
-    return html.replace(
-        /<link rel="stylesheet" crossorigin href="(\/assets\/[^\"]+\.css)">/,
-        (_, dashboardStylesheet) =>
-            `<script>if(location.pathname==="/"){const f=document.createElement("style");f.dataset.baasforgePublicFonts="";f.textContent=${JSON.stringify(publicFontStyles)};document.head.append(f)}</script><link id="baasforge-route-styles" rel="stylesheet" blocking="render" crossorigin><script>document.getElementById("baasforge-route-styles").href=location.pathname==="/"?${JSON.stringify(publicStylesheet)}:${JSON.stringify(dashboardStylesheet)}</script>`,
-    );
-}
-
 function createStructuredData(page, canonicalUrl) {
     if (page.schemaType === "Product") {
         return {
@@ -102,9 +73,9 @@ function createStructuredData(page, canonicalUrl) {
     };
 }
 
-function createPublicPageShell(template, publicStylesheet, page, content) {
+function createPublicPageShell(template, page, content) {
     const canonicalUrl = `${siteUrl}${page.path}`;
-    let html = replaceAppStylesheet(addPublicFontAssets(template), publicStylesheet)
+    let html = template
         .replace(/<title>[^<]*<\/title>/, `<title>${page.title}</title>`)
         .replace(/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${canonicalUrl}" />`)
         .replace(/\s*<script id="baasforge-homepage-schema"[\s\S]*?<\/script>/, "");
@@ -126,8 +97,8 @@ function createPublicPageShell(template, publicStylesheet, page, content) {
         .replace('<div id="root"></div>', `<div id="root">${content}</div>`);
 }
 
-function createNotFoundShell(template, publicStylesheet, content) {
-    let html = replaceAppStylesheet(addPublicFontAssets(template), publicStylesheet)
+function createNotFoundShell(template, content) {
+    let html = template
         .replace(/<title>[^<]*<\/title>/, "<title>404 | BaaSForge</title>")
         .replace(/\s*<link rel="canonical" href="[^"]*" \/>/, "")
         .replace(/\s*<script id="baasforge-homepage-schema"[\s\S]*?<\/script>/, "")
@@ -143,31 +114,24 @@ function createNotFoundShell(template, publicStylesheet, content) {
 async function prerenderHome() {
     const { renderHomePage, renderLegalPage, renderNotFoundPage, renderPricingPage } = await import(serverEntryPath);
     const template = fs.readFileSync(templatePath, "utf-8");
-    const publicStylesheet = findPublicStylesheet();
-    const heroFontData = fs.readFileSync(heroFontPath).toString("base64");
-    const publicFontStyles = fs
-        .readFileSync(publicFontStylesPath, "utf-8")
-        .replace('/fonts/plus-jakarta-sans-hero-700.woff2', `data:font/woff2;base64,${heroFontData}`);
     const html = renderHomePage("/");
 
-    // The homepage shell is also nginx's dashboard fallback, so its route-specific
-    // font assets are attached by the client dispatcher only on the public route.
-    const rendered = selectRouteStylesheet(template, publicStylesheet, publicFontStyles).replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+    const rendered = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
 
     fs.writeFileSync(templatePath, rendered);
     for (const page of legalPages) {
         fs.writeFileSync(
             path.join(rootDir, `dist${page.path}.html`),
-            createPublicPageShell(template, publicStylesheet, page, renderLegalPage(page.path)),
+            createPublicPageShell(template, page, renderLegalPage(page.path)),
         );
     }
     fs.writeFileSync(
         path.join(rootDir, "dist/pricing.html"),
-        createPublicPageShell(template, publicStylesheet, pricingPage, renderPricingPage()),
+        createPublicPageShell(template, pricingPage, renderPricingPage()),
     );
     fs.writeFileSync(
         path.join(rootDir, "dist/404.html"),
-        createNotFoundShell(template, publicStylesheet, renderNotFoundPage("/404")),
+        createNotFoundShell(template, renderNotFoundPage("/404")),
     );
     console.log("Prerendered homepage, pricing, legal, and not-found HTML shells");
 }

@@ -1,3 +1,4 @@
+@import "./public-fonts.css";
 @import "tailwindcss" source(none);
 
 @source "../pages/home/page.tsx";

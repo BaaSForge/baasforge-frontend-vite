@@ -4,7 +4,41 @@ import path from "path";
 import {
     defineConfig,
     // loadEnv,
+    type Plugin,
 } from "vite";
+
+const appShellRoutes = [
+    /^\/(?:login|dashboard)(?:\/|$)/,
+    /^\/projects\/documentation\/[^/]+\/share\/[^/]+\/?$/,
+    /^\/(?:500|terms-of-service)\/?$/,
+];
+
+function appShellRouting(): Plugin {
+    const rewriteAppRoute = (request: { url?: string }) => {
+        if (request.url == null) return;
+
+        const url = new URL(request.url, "http://localhost");
+        if (appShellRoutes.some((route) => route.test(url.pathname))) {
+            request.url = `/app.html${url.search}`;
+        }
+    };
+
+    return {
+        name: "baasforge-app-shell-routing",
+        configureServer(server) {
+            server.middlewares.use((request, _response, next) => {
+                rewriteAppRoute(request);
+                next();
+            });
+        },
+        configurePreviewServer(server) {
+            server.middlewares.use((request, _response, next) => {
+                rewriteAppRoute(request);
+                next();
+            });
+        },
+    };
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -12,6 +46,7 @@ export default defineConfig(({ mode }) => {
 
     return {
         plugins: [
+            appShellRouting(),
             react({
                 babel: {
                     plugins: [["babel-plugin-react-compiler"]],
@@ -62,7 +97,7 @@ export default defineConfig(({ mode }) => {
             rollupOptions: {
                 input: {
                     main: path.resolve(__dirname, "./index.html"),
-                    "public-global": path.resolve(__dirname, "./src/styles/public-global.css"),
+                    app: path.resolve(__dirname, "./app.html"),
                 },
             },
         },
