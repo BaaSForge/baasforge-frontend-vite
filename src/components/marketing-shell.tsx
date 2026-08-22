@@ -1,4 +1,4 @@
-import { AppLogoSquare } from "@/components/logo/app-logo-square";
+import { MarketingLogoSquare } from "@/components/logo/marketing-logo-square";
 import { Button } from "@/components/ui/button";
 import { openCookieSettings } from "@/services/cookie-consent";
 import { ArrowUpRight, Menu, X } from "lucide-react";
@@ -24,7 +24,7 @@ function getActiveMarketingPage(pathname: string): MarketingPage | undefined {
 function Brand() {
     return (
         <Link to="/" reloadDocument className="bf-logo" aria-label="BaaSForge home">
-            <AppLogoSquare className="size-[22px]" />
+            <MarketingLogoSquare width={22} height={22} sizes="22px" className="size-[22px]" />
             BaaSForge
         </Link>
     );
