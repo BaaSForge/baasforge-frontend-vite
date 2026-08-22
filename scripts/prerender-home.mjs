@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { defaultTreeAdapter, html, parse, parseFragment, serialize } from "parse5";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const templatePath = path.join(rootDir, "dist/index.html");
@@ -41,9 +42,98 @@ const pricingPage = {
     twitterCard: "summary_large_image",
 };
 
-function replaceMeta(html, selector, content) {
-    const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return html.replace(new RegExp(`(<meta ${escapedSelector} content=")[^"]*(" \\/>)`), `$1${content}$2`);
+function getAttribute(element, name) {
+    return defaultTreeAdapter.getAttrList(element).find((attribute) => attribute.name === name)?.value;
+}
+
+function setAttribute(element, name, value) {
+    const attributes = defaultTreeAdapter.getAttrList(element);
+    const attribute = attributes.find((candidate) => candidate.name === name);
+
+    if (attribute == null) {
+        attributes.push({ name, value });
+        return;
+    }
+
+    attribute.value = value;
+}
+
+function findElements(node, predicate, matches = []) {
+    for (const child of node.childNodes ?? []) {
+        if (!defaultTreeAdapter.isElementNode(child)) continue;
+        if (predicate(child)) matches.push(child);
+        findElements(child, predicate, matches);
+    }
+
+    return matches;
+}
+
+function findElement(node, predicate) {
+    return findElements(node, predicate)[0];
+}
+
+function requireElement(node, predicate, description) {
+    const element = findElement(node, predicate);
+    if (element == null) throw new Error(`Expected ${description} in the HTML template`);
+    return element;
+}
+
+function findElementByAttribute(document, tagName, attributeName, attributeValue) {
+    return findElement(document, (element) => defaultTreeAdapter.getTagName(element) === tagName && getAttribute(element, attributeName) === attributeValue);
+}
+
+function requireElementByAttribute(document, tagName, attributeName, attributeValue) {
+    return requireElement(
+        document,
+        (element) => defaultTreeAdapter.getTagName(element) === tagName && getAttribute(element, attributeName) === attributeValue,
+        `<${tagName} ${attributeName}="${attributeValue}">`,
+    );
+}
+
+function replaceChildren(element, content) {
+    for (const child of [...defaultTreeAdapter.getChildNodes(element)]) {
+        defaultTreeAdapter.detachNode(child);
+    }
+
+    const fragment = parseFragment(element, content);
+    for (const child of [...defaultTreeAdapter.getChildNodes(fragment)]) {
+        defaultTreeAdapter.detachNode(child);
+        defaultTreeAdapter.appendChild(element, child);
+    }
+}
+
+function setTextContent(element, content) {
+    replaceChildren(element, "");
+    defaultTreeAdapter.appendChild(element, defaultTreeAdapter.createTextNode(content));
+}
+
+function setMetaContent(document, attributeName, attributeValue, content) {
+    const meta = requireElementByAttribute(document, "meta", attributeName, attributeValue);
+    setAttribute(meta, "content", content);
+}
+
+function removeElement(element) {
+    if (element != null) defaultTreeAdapter.detachNode(element);
+}
+
+function setRootContent(document, content, attributes = {}) {
+    const root = requireElementByAttribute(document, "div", "id", "root");
+    replaceChildren(root, content);
+
+    for (const [name, value] of Object.entries(attributes)) {
+        setAttribute(root, name, value);
+    }
+}
+
+function appendStructuredData(document, page, canonicalUrl) {
+    const head = requireElement(document, (element) => defaultTreeAdapter.getTagName(element) === "head", "<head>");
+    const schema = defaultTreeAdapter.createElement("script", html.NS.HTML, [
+        { name: "id", value: page.schemaId },
+        { name: "type", value: "application/ld+json" },
+    ]);
+
+    defaultTreeAdapter.appendChild(schema, defaultTreeAdapter.createTextNode(JSON.stringify(createStructuredData(page, canonicalUrl))));
+    defaultTreeAdapter.appendChild(head, schema);
 }
 
 function createStructuredData(page, canonicalUrl) {
@@ -75,64 +165,61 @@ function createStructuredData(page, canonicalUrl) {
 
 function createPublicPageShell(template, page, content) {
     const canonicalUrl = `${siteUrl}${page.path}`;
-    let html = template
-        .replace(/<title>[^<]*<\/title>/, `<title>${page.title}</title>`)
-        .replace(/<link rel="canonical" href="[^"]*" \/>/, `<link rel="canonical" href="${canonicalUrl}" />`)
-        .replace(/\s*<script id="baasforge-homepage-schema"[\s\S]*?<\/script>/, "");
+    const document = parse(template);
+    const title = requireElement(document, (element) => defaultTreeAdapter.getTagName(element) === "title", "<title>");
+    const canonical = requireElementByAttribute(document, "link", "rel", "canonical");
 
-    html = replaceMeta(html, 'name="description"', page.description);
-    html = replaceMeta(html, 'name="robots"', "index, follow, max-image-preview:large");
-    html = replaceMeta(html, 'property="og:type"', page.ogType);
-    html = replaceMeta(html, 'property="og:title"', page.title);
-    html = replaceMeta(html, 'property="og:description"', page.description);
-    html = replaceMeta(html, 'property="og:url"', canonicalUrl);
-    html = replaceMeta(html, 'name="twitter:card"', page.twitterCard);
-    html = replaceMeta(html, 'name="twitter:title"', page.title);
-    html = replaceMeta(html, 'name="twitter:description"', page.description);
+    setTextContent(title, page.title);
+    setAttribute(canonical, "href", canonicalUrl);
+    removeElement(findElementByAttribute(document, "script", "id", "baasforge-homepage-schema"));
+    setMetaContent(document, "name", "description", page.description);
+    setMetaContent(document, "name", "robots", "index, follow, max-image-preview:large");
+    setMetaContent(document, "property", "og:type", page.ogType);
+    setMetaContent(document, "property", "og:title", page.title);
+    setMetaContent(document, "property", "og:description", page.description);
+    setMetaContent(document, "property", "og:url", canonicalUrl);
+    setMetaContent(document, "name", "twitter:card", page.twitterCard);
+    setMetaContent(document, "name", "twitter:title", page.title);
+    setMetaContent(document, "name", "twitter:description", page.description);
+    appendStructuredData(document, page, canonicalUrl);
+    setRootContent(document, content);
 
-    const schema = JSON.stringify(createStructuredData(page, canonicalUrl));
-
-    return html
-        .replace("</head>", `    <script id="${page.schemaId}" type="application/ld+json">${schema}</script>\n  </head>`)
-        .replace('<div id="root"></div>', `<div id="root">${content}</div>`);
+    return serialize(document);
 }
 
 function createNotFoundShell(template, content) {
-    let html = template
-        .replace(/<title>[^<]*<\/title>/, "<title>404 | BaaSForge</title>")
-        .replace(/\s*<link rel="canonical" href="[^"]*" \/>/, "")
-        .replace(/\s*<script id="baasforge-homepage-schema"[\s\S]*?<\/script>/, "")
-        .replace(/\s*<meta property="og:[^"]+"[^>]*\/>/g, "")
-        .replace(/\s*<meta name="twitter:[^"]+"[^>]*\/>/g, "");
+    const document = parse(template);
+    const title = requireElement(document, (element) => defaultTreeAdapter.getTagName(element) === "title", "<title>");
 
-    html = replaceMeta(html, 'name="description"', "The requested page could not be found on BaaSForge.");
-    html = replaceMeta(html, 'name="robots"', "noindex, nofollow");
+    setTextContent(title, "404 | BaaSForge");
+    removeElement(findElementByAttribute(document, "link", "rel", "canonical"));
+    removeElement(findElementByAttribute(document, "script", "id", "baasforge-homepage-schema"));
 
-    return html.replace('<div id="root"></div>', `<div id="root" data-prerendered-page="not-found">${content}</div>`);
+    const socialMeta = findElements(document, (element) => {
+        if (defaultTreeAdapter.getTagName(element) !== "meta") return false;
+        return getAttribute(element, "property")?.startsWith("og:") || getAttribute(element, "name")?.startsWith("twitter:");
+    });
+    socialMeta.forEach(removeElement);
+
+    setMetaContent(document, "name", "description", "The requested page could not be found on BaaSForge.");
+    setMetaContent(document, "name", "robots", "noindex, nofollow");
+    setRootContent(document, content, { "data-prerendered-page": "not-found" });
+
+    return serialize(document);
 }
 
 async function prerenderHome() {
     const { renderHomePage, renderLegalPage, renderNotFoundPage, renderPricingPage } = await import(serverEntryPath);
     const template = fs.readFileSync(templatePath, "utf-8");
-    const html = renderHomePage("/");
+    const homeDocument = parse(template);
+    setRootContent(homeDocument, renderHomePage("/"));
 
-    const rendered = template.replace('<div id="root"></div>', `<div id="root">${html}</div>`);
-
-    fs.writeFileSync(templatePath, rendered);
+    fs.writeFileSync(templatePath, serialize(homeDocument));
     for (const page of legalPages) {
-        fs.writeFileSync(
-            path.join(rootDir, `dist${page.path}.html`),
-            createPublicPageShell(template, page, renderLegalPage(page.path)),
-        );
+        fs.writeFileSync(path.join(rootDir, `dist${page.path}.html`), createPublicPageShell(template, page, renderLegalPage(page.path)));
     }
-    fs.writeFileSync(
-        path.join(rootDir, "dist/pricing.html"),
-        createPublicPageShell(template, pricingPage, renderPricingPage()),
-    );
-    fs.writeFileSync(
-        path.join(rootDir, "dist/404.html"),
-        createNotFoundShell(template, renderNotFoundPage("/404")),
-    );
+    fs.writeFileSync(path.join(rootDir, "dist/pricing.html"), createPublicPageShell(template, pricingPage, renderPricingPage()));
+    fs.writeFileSync(path.join(rootDir, "dist/404.html"), createNotFoundShell(template, renderNotFoundPage("/404")));
     console.log("Prerendered homepage, pricing, legal, and not-found HTML shells");
 }
 
