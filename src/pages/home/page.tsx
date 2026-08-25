@@ -2,6 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MarketingLogoSquare } from "@/components/logo/marketing-logo-square";
+import stepOneMark from "@/assets/home/steps/step-01-mark.svg";
+import stepOneMessage from "@/assets/home/steps/step-01-message.svg";
+import stepTwoInputSides from "@/assets/home/steps/step-02-input-sides.svg";
+import stepTwoInputTop from "@/assets/home/steps/step-02-input-top.svg";
+import stepTwoOutput from "@/assets/home/steps/step-02-output.svg";
+import { StepThreeArtwork } from "./step-three-artwork";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMagnet } from "@/hooks/use-magnet";
@@ -228,32 +234,15 @@ function readSvgValue(phase: RuntimeStepPhase) {
     return Number.isNaN(value) ? phase.to : value;
 }
 
-function useStepHoverAnimations(ref: RefObject<HTMLElement | null>) {
+function useStepHoverAnimations(ref: RefObject<HTMLElement | null>, enabled = true) {
     useEffect(() => {
         const container = ref.current;
-        if (!container) return;
+        if (!container || !enabled) return;
         const reducedMotionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+        const hoverQuery = matchMedia("(hover: hover) and (pointer: fine)");
         const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
-        const activeAnims: ({ phases: RuntimeStepPhase[]; cancel: () => void } | null)[] = [null, null, null];
-        const activeSettles: (((() => void) | null))[] = [null, null, null];
-
-        const settlePhases = (phases: RuntimeStepPhase[]) => {
-            const settleDuration = 320;
-            const startPhases = phases.map((phase) => ({ ...phase, startVal: readSvgValue(phase) }));
-            let raf = 0;
-            const start = performance.now();
-            const tick = (now: number) => {
-                const t = Math.min((now - start) / settleDuration, 1);
-                const eased = easeInOut(t);
-                startPhases.forEach((phase) => setSvgValue(phase.el, phase.prop, (phase.startVal ?? phase.to) + (phase.to - (phase.startVal ?? phase.to)) * eased));
-                if (t < 1) raf = requestAnimationFrame(tick);
-                else startPhases.forEach((phase) => clearSvgValue(phase.el, phase.prop));
-            };
-            raf = requestAnimationFrame(tick);
-            return () => cancelAnimationFrame(raf);
-        };
-
-        const runStepAnim = (div: Element, def: { duration: number; phases: StepPhase[] }) => {
+        const activeAnims: ({ cancel: () => void } | null)[] = [null, null, null];
+        const runStepAnim = (div: Element, def: { duration: number; phases: StepPhase[] }, onComplete: () => void) => {
             const preFade = 280;
             const phases = def.phases.map((phase) => ({ ...phase, el: div.querySelector<SVGElement>(phase.sel) })).filter((phase): phase is RuntimeStepPhase => !!phase.el);
             const prePhases = phases.map((phase) => ({ ...phase, startVal: readSvgValue(phase) }));
@@ -274,57 +263,124 @@ function useStepHoverAnimations(ref: RefObject<HTMLElement | null>) {
                         const local = Math.max(0, Math.min(1, (tMain - phase.t0) / Math.max(phase.t1 - phase.t0, 0.001)));
                         setSvgValue(phase.el, phase.prop, phase.from + (phase.to - phase.from) * easeInOut(local));
                     });
-                    if (tMain < 1) raf = requestAnimationFrame(mainTick);
-                    else phases.forEach((phase) => clearSvgValue(phase.el, phase.prop));
+                    if (tMain < 1) {
+                        raf = requestAnimationFrame(mainTick);
+                    } else {
+                        phases.forEach((phase) => clearSvgValue(phase.el, phase.prop));
+                        onComplete();
+                    }
                 };
                 raf = requestAnimationFrame(mainTick);
             };
             raf = requestAnimationFrame(preTick);
-            return { phases, cancel: () => cancelAnimationFrame(raf) };
+            return { cancel: () => {
+                cancelAnimationFrame(raf);
+                phases.forEach((phase) => clearSvgValue(phase.el, phase.prop));
+            } };
         };
 
         const stepDivs = [...container.querySelectorAll("[data-step-anim]")];
         const cleanups = stepDivs.flatMap((div, index) => {
+            if (index === 1) {
+                const stepTwoOutput = div.querySelector<HTMLElement>(".bf-step-two-output");
+                if (!stepTwoOutput) return [];
+                let running = false;
+                const finish = (event: AnimationEvent) => {
+                    if (event.animationName !== "stepTwoOutput") return;
+                    running = false;
+                    div.removeAttribute("data-step-two-active");
+                };
+                const enter = () => {
+                    if (reducedMotionQuery.matches || !hoverQuery.matches || running) return;
+                    running = true;
+                    div.setAttribute("data-step-two-active", "");
+                };
+                stepTwoOutput.addEventListener("animationend", finish);
+                stepTwoOutput.addEventListener("animationcancel", finish);
+                div.addEventListener("mouseenter", enter);
+                return [() => {
+                    div.removeEventListener("mouseenter", enter);
+                    stepTwoOutput.removeEventListener("animationend", finish);
+                    stepTwoOutput.removeEventListener("animationcancel", finish);
+                    div.removeAttribute("data-step-two-active");
+                }];
+            }
+            if (index === 2) {
+                const stepThreeCore = div.querySelector<SVGElement>(".bf-step-three-core");
+                if (!stepThreeCore) return [];
+                let running = false;
+                const finish = (event: AnimationEvent) => {
+                    if (event.animationName !== "stepThreeCore") return;
+                    running = false;
+                    div.removeAttribute("data-step-three-active");
+                };
+                const enter = () => {
+                    if (reducedMotionQuery.matches || !hoverQuery.matches || running) return;
+                    running = true;
+                    div.setAttribute("data-step-three-active", "");
+                };
+                stepThreeCore.addEventListener("animationend", finish);
+                stepThreeCore.addEventListener("animationcancel", finish);
+                div.addEventListener("mouseenter", enter);
+                return [() => {
+                    div.removeEventListener("mouseenter", enter);
+                    stepThreeCore.removeEventListener("animationend", finish);
+                    stepThreeCore.removeEventListener("animationcancel", finish);
+                    div.removeAttribute("data-step-three-active");
+                }];
+            }
             const def = STEP_ANIMS[index];
             if (!def) return [];
+            const stepOneMark = div.querySelector<HTMLElement>(".bf-step-one-mark");
+            if (index === 0 && stepOneMark) {
+                let running = false;
+                const finish = () => {
+                    running = false;
+                    div.removeAttribute("data-step-one-active");
+                };
+                const enter = () => {
+                    if (reducedMotionQuery.matches || !hoverQuery.matches || running) return;
+                    running = true;
+                    div.setAttribute("data-step-one-active", "");
+                };
+                stepOneMark.addEventListener("animationend", finish);
+                stepOneMark.addEventListener("animationcancel", finish);
+                div.addEventListener("mouseenter", enter);
+                return [() => {
+                    div.removeEventListener("mouseenter", enter);
+                    stepOneMark.removeEventListener("animationend", finish);
+                    stepOneMark.removeEventListener("animationcancel", finish);
+                    div.removeAttribute("data-step-one-active");
+                }];
+            }
             const enter = () => {
-                if (reducedMotionQuery.matches) return;
-                activeSettles[index]?.();
-                activeSettles[index] = null;
-                activeAnims[index]?.cancel();
-                activeAnims[index] = runStepAnim(div, def);
-            };
-            const leave = () => {
-                const active = activeAnims[index];
-                if (!active) return;
-                active.cancel();
-                activeAnims[index] = null;
-                activeSettles[index] = settlePhases(active.phases);
+                if (reducedMotionQuery.matches || !hoverQuery.matches || activeAnims[index]) return;
+                activeAnims[index] = runStepAnim(div, def, () => {
+                    activeAnims[index] = null;
+                });
             };
             div.addEventListener("mouseenter", enter);
-            div.addEventListener("mouseleave", leave);
-            return [() => div.removeEventListener("mouseenter", enter), () => div.removeEventListener("mouseleave", leave)];
+            return [() => div.removeEventListener("mouseenter", enter)];
         });
         const reduceMotion = (event: MediaQueryListEvent) => {
             if (!event.matches) return;
+            stepDivs.forEach((div) => {
+                div.removeAttribute("data-step-one-active");
+                div.removeAttribute("data-step-two-active");
+                div.removeAttribute("data-step-three-active");
+            });
             activeAnims.forEach((anim, index) => {
                 anim?.cancel();
-                anim?.phases.forEach((phase) => clearSvgValue(phase.el, phase.prop));
                 activeAnims[index] = null;
-            });
-            activeSettles.forEach((settle, index) => {
-                settle?.();
-                activeSettles[index] = null;
             });
         };
         reducedMotionQuery.addEventListener("change", reduceMotion);
         return () => {
             cleanups.forEach((cleanup) => cleanup());
             activeAnims.forEach((anim) => anim?.cancel());
-            activeSettles.forEach((settle) => settle?.());
             reducedMotionQuery.removeEventListener("change", reduceMotion);
         };
-    }, [ref]);
+    }, [ref, enabled]);
 }
 
 function useWhatTitleFits(ref: RefObject<HTMLElement | null>) {
@@ -367,13 +423,19 @@ function Styles() {
             .bf-section{position:relative;padding:100px 0;border-top:1px solid var(--border)}.bf-section.alt{background:var(--alt-bg)}.bf-kicker{display:block;margin-bottom:22px;color:var(--muted-foreground);font-family:var(--font-mono);font-size:11.5px;letter-spacing:.08em}.bf-title{margin:0;color:var(--foreground);font-size:clamp(28px,4.4vw,46px);font-weight:600;letter-spacing:-.035em;line-height:1.05}.bf-title.wrap{line-height:1.05}.bf-muted{opacity:.55}.bf-reveal{opacity:0;transform:translateY(20px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}.bf-reveal.blur{filter:blur(10px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1),filter .8s cubic-bezier(.16,1,.3,1)}.bf-reveal.visible{opacity:1;transform:none}.bf-reveal.blur.visible{filter:blur(0)}
             .bf-chip-row{display:flex;gap:10px;flex-wrap:nowrap;overflow-x:auto;overflow-y:visible;margin-top:26px;margin-left:-14px;padding:10px 14px 14px}.bf-chip{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:9999px;border:1px solid var(--border);padding:6px 13px;color:var(--foreground);font-size:13.5px;font-weight:500;white-space:nowrap;transition:transform .45s cubic-bezier(.16,1,.3,1),border-color .45s ease,box-shadow .45s ease}@media(hover:hover){.bf-chip:hover{transform:translateY(-1px) scale(1.03);border-color:var(--accent-glow);box-shadow:0 10px 22px -18px rgba(var(--glow-rgb),.72),0 0 0 1px rgba(var(--glow-rgb),.16)}}
             .bf-dash{position:relative;margin-top:52px;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--card);box-shadow:var(--shadow-sm);transition:box-shadow .4s cubic-bezier(.16,1,.3,1)}.bf-dash.active{box-shadow:0 40px 120px -40px rgba(var(--glow-rgb),.22),0 0 0 1px rgba(var(--glow-rgb),.15)}.bf-dash-grid{display:grid;grid-template-columns:1fr 340px;height:500px}.bf-convo{display:flex;flex-direction:column;border-right:1px solid var(--border)}.bf-bar{display:flex;align-items:center;gap:8px;height:52px;padding:0 18px;border-bottom:1px solid var(--border)}.bf-window-dot{width:11px;height:11px;border-radius:50%;background:var(--secondary)}.bf-chat{position:relative;display:flex;flex:1;flex-direction:column;gap:14px;overflow-y:auto;padding:22px 22px 10px}.bf-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1)}.bf-msg{max-width:88%;padding:12px 15px;border-radius:12px;font-size:14px;line-height:1.55;animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both}.bf-msg.user{align-self:flex-end;border:1px solid var(--border);border-bottom-right-radius:2px;background:var(--secondary);color:var(--secondary-foreground)}.bf-msg.ai{align-self:flex-start;border:1px solid var(--border);border-top-left-radius:2px;background:var(--secondary);color:var(--muted-foreground)}.bf-input{display:flex;align-items:center;gap:10px;padding:16px 18px;border-top:1px solid var(--border)}.bf-draft{display:flex;flex-direction:column;align-self:start}.bf-draft-card{border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);padding:14px 15px;transition:opacity .24s cubic-bezier(.23,1,.32,1),transform .24s cubic-bezier(.23,1,.32,1)}.bf-unit-status{display:inline-grid;align-items:center;font-weight:600}.bf-unit-status-label{grid-area:1 / 1;display:inline-flex;align-items:center;gap:4px;transition:opacity 160ms cubic-bezier(.23,1,.32,1),transform 160ms cubic-bezier(.23,1,.32,1)}.bf-unit-status-pending{color:var(--muted-foreground);opacity:1;transform:none}.bf-unit-status-live{color:oklch(.78 .19 150);opacity:0;transform:translateY(2px) scale(.95)}.bf-unit-status[data-live="true"] .bf-unit-status-pending{opacity:0;transform:translateY(-2px) scale(.98)}.bf-unit-status[data-live="true"] .bf-unit-status-live{opacity:1;transform:none}.bf-draft-backdrop{position:absolute;inset:0;z-index:199;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .4s ease}.bf-pulse{display:inline-flex;border-radius:var(--radius-md);animation:ctaPulse 1.8s cubic-bezier(.4,0,.6,1) infinite}.bf-toast{position:absolute;top:16px;left:50%;z-index:6;display:flex;align-items:center;gap:10px;width:max-content;max-width:420px;padding:13px 18px 13px 14px;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--popover);color:var(--foreground);box-shadow:0 10px 34px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.3);opacity:0;pointer-events:none;transform:translate(-50%,-10px);transition:opacity .3s cubic-bezier(.16,1,.3,1),transform .3s cubic-bezier(.16,1,.3,1)}.bf-toast.visible{opacity:1;transform:translate(-50%,0)}
-            .bf-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:48px;position:relative}.bf-steps-line{position:absolute;top:85px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border) 12%,var(--border) 88%,transparent);pointer-events:none;z-index:0}.bf-step{position:relative;z-index:1;padding:0 30px;cursor:default}
+            .bf-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:48px;position:relative}.bf-step{position:relative;z-index:1;padding:0 30px;cursor:default}
+            .bf-step-art{--step-glow-soft:drop-shadow(0 8px 14px rgba(223,142,89,.08));--step-glow-accent:drop-shadow(0 0 8px rgba(223,142,89,.28));position:relative;width:100%;height:220px;overflow:hidden;margin-bottom:26px;background:transparent;isolation:isolate}.bf-step-one-stage,.bf-step-two-stage,.bf-step-three-svg{position:absolute;top:50%;left:50%;width:min(100%,320px);aspect-ratio:1}.bf-step-one-stage{transform:translate(-50%,-50%) scale(1.3) translateY(6%)}.bf-step-two-stage{transform:translate(-50%,-50%) scale(1.225) translateY(4.8%)}.bf-step-three-svg{transform:translate(-50%,-50%)}.bf-step-one-platform{position:absolute;left:27.4%;top:37%;width:45%;height:28.2%;animation:stepOnePlatform 2s 1;animation-name:none}.bf-step-one-platform svg{display:block;width:100%;height:100%;overflow:visible}.bf-step-one-frame{transform-box:fill-box;transform-origin:center;animation:stepOneFrame 2s 1;animation-name:none}.bf-step-one-mark{position:absolute;left:37.16%;top:43.05%;z-index:2;width:24.07%;height:auto;transform-origin:center;animation:stepOneMark 2s 1;animation-name:none}.bf-step-one-message{position:absolute;left:56.95%;top:21.57%;z-index:3;width:15.4%;height:auto;transform-origin:center;animation:stepOneMessage 2s 1;animation-name:none}@media(hover:hover) and (pointer:fine){.bf-step[data-step-one-active] .bf-step-one-platform{animation-name:stepOnePlatform}.bf-step[data-step-one-active] .bf-step-one-frame{animation-name:stepOneFrame}.bf-step[data-step-one-active] .bf-step-one-mark{animation-name:stepOneMark}.bf-step[data-step-one-active] .bf-step-one-message{animation-name:stepOneMessage}}
+            .bf-step-two-layer{position:absolute;left:27.4%;display:grid;width:44.9%;height:25.93%;place-items:center}.bf-step-two-layer::before{display:block;width:57.74%;aspect-ratio:1;border-radius:2.2%;content:"";transform:rotate(-30deg) scaleY(.866) skewX(30deg)}.bf-step-two-layer-back{top:41.94%}.bf-step-two-layer-back::before{background:color-mix(in oklch,var(--foreground) 7%,transparent)}.bf-step-two-layer-middle{top:39.35%}.bf-step-two-layer-middle::before{border:1px solid #737373}.bf-step-two-editor{position:absolute;left:27.4%;top:37.04%;z-index:1;display:grid;width:44.9%;height:25.93%;place-items:center}.bf-step-two-editor-shell{display:flex;width:57.74%;aspect-ratio:1;flex-direction:column;overflow:hidden;border:1px solid #df8e59;border-radius:2.2%;background:var(--alt-bg);transform:rotate(-30deg) scaleY(.866) skewX(30deg)}.bf-step-two-toolbar{display:flex;height:8.58%;flex:0 0 auto;align-items:center;gap:1.43%;border-bottom:1px solid #404040;background:#262626;padding:0 2.86%}.bf-step-two-dot{width:2.15%;aspect-ratio:1;border-radius:50%}.bf-step-two-dot:nth-child(1){background:#f87171}.bf-step-two-dot:nth-child(2){background:#facc15}.bf-step-two-dot:nth-child(3){background:#4ade80}.bf-step-two-body{display:flex;min-height:0;flex:1}.bf-step-two-sidebar{width:25.72%;border-right:1px solid #404040;padding:2.86%}.bf-step-two-sidebar::before{display:block;width:100%;height:5.2%;border-radius:2px;background:#d4d4d4;content:""}.bf-step-two-code{position:relative;flex:1}.bf-step-two-code span{position:absolute;height:1.1%;border-radius:999px;background:#fafafa;transform-origin:left center;animation-duration:.54s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-fill-mode:both;animation-name:none}.bf-step-two-code span:nth-child(1){left:9.1%;top:9.6%;width:40.9%}.bf-step-two-code span:nth-child(2){left:9.1%;top:17.9%;width:51.4%}.bf-step-two-code span:nth-child(3){left:12%;top:22.7%;width:43.3%}.bf-step-two-code span:nth-child(4){left:12%;top:26.2%;width:51.9%}.bf-step-two-code span:nth-child(5){left:13.9%;top:30.6%;width:17.8%}.bf-step-two-code span:nth-child(6){left:13.9%;top:34.1%;width:16.3%}.bf-step-two-code span:nth-child(7){left:13.9%;top:38.5%;width:13%}.bf-step-two-code span:nth-child(8){left:13.9%;top:42.8%;width:16.8%}.bf-step-two-code span:nth-child(9){left:12%;top:47.2%;width:3.4%}.bf-step-two-code span:nth-child(10){left:12%;top:51.1%;width:50.5%}.bf-step-two-code span:nth-child(11){left:12%;top:59.4%;width:58.7%}.bf-step-two-code span:nth-child(12){left:12%;top:63.3%;width:77.9%}.bf-step-two-code span:nth-child(13){left:12%;top:71.6%;width:35.6%}.bf-step-two-code span:nth-child(14){left:12%;top:75.5%;width:79.3%}.bf-step-two-code span:nth-child(15){left:12%;top:79.5%;width:2.9%}.bf-step-two-input{position:absolute;inset:0;z-index:2}.bf-step-two-input-sides{position:absolute;left:29.84%;top:38.72%;z-index:2;width:9.08%;height:auto}.bf-step-two-input-top{position:absolute;left:27.96%;top:35.09%;z-index:3;display:grid;width:12.84%;height:7.41%;place-items:center}.bf-step-two-input-top-face{position:relative;width:57.74%;aspect-ratio:1;transform:rotate(-30deg) scaleY(.866) skewX(30deg)}.bf-step-two-input-top-face img{position:absolute;inset:-1.25%;display:block;width:102.5%;height:102.5%;max-width:none}.bf-step-two-output{position:absolute;left:56.94%;top:21.57%;z-index:2;width:15.58%;height:auto;transform-origin:center}.bf-step-two-layer,.bf-step-two-editor,.bf-step-two-input,.bf-step-two-output{animation-duration:2.1s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-iteration-count:1;animation-fill-mode:both;animation-name:none}.bf-step-two-code span:nth-child(1){animation-delay:.34s}.bf-step-two-code span:nth-child(2){animation-delay:.38s}.bf-step-two-code span:nth-child(3){animation-delay:.42s}.bf-step-two-code span:nth-child(4){animation-delay:.46s}.bf-step-two-code span:nth-child(5){animation-delay:.50s}.bf-step-two-code span:nth-child(6){animation-delay:.54s}.bf-step-two-code span:nth-child(7){animation-delay:.58s}.bf-step-two-code span:nth-child(8){animation-delay:.62s}.bf-step-two-code span:nth-child(9){animation-delay:.66s}.bf-step-two-code span:nth-child(10){animation-delay:.70s}.bf-step-two-code span:nth-child(11){animation-delay:.74s}.bf-step-two-code span:nth-child(12){animation-delay:.78s}.bf-step-two-code span:nth-child(13){animation-delay:.82s}.bf-step-two-code span:nth-child(14){animation-delay:.86s}.bf-step-two-code span:nth-child(15){animation-delay:.90s}@media(hover:hover) and (pointer:fine){.bf-step[data-step-two-active] .bf-step-two-layer-back{animation-name:stepTwoLayerBack}.bf-step[data-step-two-active] .bf-step-two-layer-middle{animation-name:stepTwoLayerMiddle}.bf-step[data-step-two-active] .bf-step-two-editor{animation-name:stepTwoEditor}.bf-step[data-step-two-active] .bf-step-two-input{animation-name:stepTwoInput}.bf-step[data-step-two-active] .bf-step-two-output{animation-name:stepTwoOutput}.bf-step[data-step-two-active] .bf-step-two-code span{animation-name:stepTwoCodeLine}}
+            .bf-step-three-svg{display:block;height:auto;overflow:visible}.bf-step-three-payload{transform-box:view-box;transform-origin:center}.bf-step-three-core{transform-box:fill-box;transform-origin:center}.bf-step-three-target{opacity:0}.bf-step-three-payload,.bf-step-three-core,.bf-step-three-side-guides,.bf-step-three-center-guide,.bf-step-three-destination,.bf-step-three-target{animation-duration:2.1s;animation-timing-function:cubic-bezier(.22,1,.36,1);animation-iteration-count:1;animation-fill-mode:both;animation-name:none}@media(hover:hover) and (pointer:fine){.bf-step[data-step-three-active] .bf-step-three-payload{animation-name:stepThreePayload}.bf-step[data-step-three-active] .bf-step-three-core{animation-name:stepThreeCore}.bf-step[data-step-three-active] .bf-step-three-destination{animation-name:stepThreeDestination}.bf-step[data-step-three-active] .bf-step-three-side-guides,.bf-step[data-step-three-active] .bf-step-three-center-guide{animation-name:stepThreeGuide}.bf-step[data-step-three-active] .bf-step-three-target{animation-name:stepThreeTarget}}
             .bf-steps,.bf-unit-grid{scrollbar-width:none}.bf-steps::-webkit-scrollbar,.bf-unit-grid::-webkit-scrollbar{display:none}
             .bf-unit-grid{display:grid;gap:14px;margin-top:32px}.bf-unit-grid.compute{grid-template-columns:repeat(4,minmax(0,1fr))}.bf-unit-grid.storage{grid-template-columns:repeat(3,minmax(0,1fr))}.bf-unit-card{height:226px;border-radius:var(--radius-xl);outline:1px solid transparent;outline-offset:-1px;transition:transform .45s cubic-bezier(.16,1,.3,1),outline-color .45s ease,box-shadow .45s ease}@media(hover:hover){.bf-unit-card:hover{transform:translateY(-1px) scale(1.03);outline-color:var(--accent-glow);box-shadow:0 10px 22px -18px rgba(var(--glow-rgb),.72),0 0 0 1px rgba(var(--glow-rgb),.16)}}
             .bf-tabs-list{display:inline-flex;width:fit-content;align-items:center;gap:4px;border-bottom:1px solid var(--border);background:transparent;border-radius:0;height:auto;padding:0}.bf-tabs-trigger{display:inline-flex;height:40px;align-items:center;justify-content:center;gap:6px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent!important;box-shadow:none!important;padding:8px 4px;color:var(--muted-foreground);font-size:14px;font-weight:500;white-space:nowrap;transition:color .15s ease,border-color .15s ease}.bf-tabs-trigger:hover{color:var(--foreground)}.bf-tabs-trigger[data-state="active"]{color:var(--foreground);border-bottom-color:var(--foreground);background:transparent!important;box-shadow:none!important}@media(max-width:640px){.bf-tabs-list{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}.bf-tabs-trigger{width:100%!important}}
             .bf-carousel{position:relative;width:100%;height:380px;overflow:hidden;border-radius:var(--radius-sm);outline:none;touch-action:pan-y}.bf-carousel:focus-visible{box-shadow:0 0 0 2px var(--background),0 0 0 4px var(--ring)}.bf-carousel-track{position:absolute;top:0;left:0;width:100%;will-change:transform;transition:transform .72s var(--motion-response)}.bf-carousel-item{height:60px;width:100%;display:flex;align-items:center;font-size:clamp(22px,3vw,32px);font-weight:600;letter-spacing:-.01em;transition:color .64s var(--motion-response),opacity .64s var(--motion-response)}.bf-moat{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;padding:20px 4px;border-bottom:1px solid var(--border);font-weight:600;transform-origin:left center;transition:background .3s var(--motion-response),transform .35s var(--motion-response)}.bf-moat:hover{background:color-mix(in oklch,var(--foreground) 4%,transparent);transform:translateX(4px)}.bf-debug-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}.bf-debug-card{overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--shadow-sm);transition:border-color .45s var(--motion-response),box-shadow .45s var(--motion-response)}.bf-debug-card.live{border-color:var(--foreground);box-shadow:0 0 0 1px rgba(var(--glow-rgb),.15),0 30px 80px -30px rgba(var(--glow-rgb),.2)}.bf-debug-query,.bf-debug-response{opacity:0;transform:translate3d(0,10px,0);transition:opacity .55s var(--motion-response),transform .55s var(--motion-response);will-change:opacity,transform}.bf-debug-query{transition-delay:.12s}.bf-debug-response{transition-delay:.46s}.bf-debug-card.live .bf-debug-query,.bf-debug-card.live .bf-debug-response{opacity:1;transform:translate3d(0,0,0)}.bf-glow{position:absolute;left:50%;bottom:-220px;width:1000px;height:560px;transform:translateX(-50%);background:radial-gradient(ellipse at center,color-mix(in oklch,var(--foreground) 16%,transparent),transparent 62%);pointer-events:none;filter:blur(24px);animation:glowPulse 5s ease-in-out infinite}.bf-footer{position:relative;border-top:1px solid var(--border);padding:48px 0 42px;background:var(--background)}.bf-footer-inner{display:flex;flex-direction:column;gap:44px}.bf-footer-main{display:grid;grid-template-columns:minmax(280px,1fr) repeat(2,minmax(120px,160px));gap:56px}.bf-footer-brand{max-width:420px}.bf-footer-copy{margin:12px 0 0;color:var(--muted-foreground);font-size:13px;line-height:1.65}.bf-footer-nav{display:grid;grid-template-columns:subgrid;grid-column:2 / -1;gap:56px}.bf-footer-column-title{margin:1px 0 15px;color:var(--muted-foreground);font-size:11px;font-weight:500;line-height:1.4;text-transform:uppercase}.bf-footer-list{display:flex;flex-direction:column;align-items:flex-start;gap:10px;margin:0;padding:0;list-style:none}.bf-footer-link{display:inline-flex;align-items:center;gap:5px;border:0;border-radius:4px;padding:0;background:transparent;color:color-mix(in oklch,var(--foreground) 82%,var(--muted-foreground));font:inherit;font-size:13px;font-weight:500;line-height:1.4;cursor:pointer;touch-action:manipulation;transition:color .16s cubic-bezier(.23,1,.32,1),transform .12s cubic-bezier(.23,1,.32,1)}.bf-footer-link svg{opacity:.6;transition:opacity .16s cubic-bezier(.23,1,.32,1),transform .16s cubic-bezier(.23,1,.32,1)}.bf-footer-link:active{transform:scale(.97)}.bf-footer-meta{display:flex;width:100%;align-items:center;justify-content:space-between;gap:32px}.bf-footer-mark{color:var(--muted-foreground);font-family:var(--font-mono);font-size:12px;line-height:1.4;white-space:nowrap}.bf-footer-legal{display:flex;align-items:center;gap:22px}@media(hover:hover) and (pointer:fine){.bf-footer-link:hover{color:var(--foreground)}.bf-footer-link:hover svg{opacity:1;transform:translate(1px,-1px)}}
             @keyframes blurFocus{from{opacity:0;filter:blur(10px);transform:translateY(18px)}to{opacity:1;filter:blur(0);transform:none}}@keyframes themeIconIn{from{opacity:0;transform:scale(.7) rotate(-90deg);filter:blur(4px)}to{opacity:1;transform:scale(1) rotate(0deg);filter:blur(0)}}@keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}@keyframes ctaPulse{0%{box-shadow:0 0 0 0 oklch(0.9 0.01 260 / .55)}70%{box-shadow:0 0 0 9px oklch(0.9 0.01 260 / 0)}100%{box-shadow:0 0 0 0 oklch(0.9 0.01 260 / 0)}}@keyframes glowPulse{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.06)}}
-            @media(max-width:1024px){.bf-title.wrap{line-height:1.35}.bf-dash-grid{grid-template-columns:1fr;height:auto}.bf-convo{height:500px;border-right:0;border-bottom:1px solid var(--border)}.bf-draft.compact{position:absolute;top:0;right:0;bottom:0;width:min(88vw,380px);z-index:200;align-self:initial;overflow-y:auto;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);box-shadow:none;transition:transform .38s var(--motion-response),box-shadow .38s var(--motion-response);will-change:transform}.bf-draft.compact.open{transform:translateX(0);box-shadow:-24px 0 60px -20px rgba(0,0,0,.45)}.bf-steps{display:flex;gap:16px;margin-top:40px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.bf-unit-grid.compute,.bf-unit-grid.storage{display:flex;gap:14px;margin-top:18px;margin-left:-14px;margin-right:-14px;overflow-x:auto;padding:14px 14px 22px;scroll-padding-left:14px;scroll-snap-type:x proximity;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.bf-step,.bf-unit-card{min-width:300px;max-width:300px;flex:0 0 300px;scroll-snap-align:start}.bf-unit-card{scroll-snap-stop:always}.bf-step{border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--card);box-shadow:var(--shadow-sm);padding:26px 22px}.bf-steps-line{display:none}.bf-moat{align-items:flex-start;flex-direction:column}.bf-footer-main{grid-template-columns:minmax(260px,1fr) repeat(2,minmax(112px,140px));gap:36px}.bf-footer-nav{gap:36px}}@media(max-width:640px){.bf-mobile-menu-backdrop{display:none}.bf-mobile-menu{inset:0;width:auto;height:auto;min-height:100dvh;border-left:0;transform:translateY(-8px) scale(.992);transform-origin:top right}.bf-mobile-menu[data-open="true"]{transform:none}.bf-mobile-menu-nav{max-width:1080px;margin:0 auto;padding-top:34px;overflow-y:auto}.bf-mobile-menu-link{padding:7px 0;font-size:clamp(30px,8vw,42px);line-height:1.13}.bf-mobile-menu-actions{max-width:1080px;margin-left:auto;margin-right:auto}.bf-container{padding:0 20px}.bf-carousel{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.bf-hero{grid-template-rows:2fr 1fr;min-height:100svh;padding:68px 20px 24px}.bf-hero h1{flex-direction:column;align-items:center;gap:clamp(6px,2.4vw,16px);font-size:clamp(46px,17vw,90px);line-height:.98;white-space:normal}.bf-copy{max-width:100%;font-size:clamp(16px,5vw,22px);line-height:1.45}.bf-down{margin-top:0}.bf-dash{margin-left:-8px;margin-right:-8px}.bf-debug-grid{grid-template-columns:1fr;gap:32px}.bf-footer{padding:40px 0 36px}.bf-footer-inner{gap:34px}.bf-footer-main{display:flex;flex-direction:column;gap:34px}.bf-footer-brand{max-width:100%}.bf-footer-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.bf-footer-meta{align-items:flex-start;flex-direction:column-reverse;gap:18px}.bf-footer-legal{flex-wrap:wrap;gap:10px 18px}.bf-footer-mark{white-space:normal}}@media(prefers-reduced-transparency:reduce){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}}@media(prefers-contrast:more){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}.bf-muted{opacity:.72}.bf-page :focus-visible{outline-color:var(--foreground)}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bf-char{opacity:1!important;filter:none!important;transform:none!important}.bf-page *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.bf-reveal,.bf-empty,.bf-toast,.bf-draft-backdrop,.bf-unit-card,.bf-carousel-item{filter:none!important;transition:opacity .2s ease!important}.bf-draft,.bf-carousel-track,.bf-mobile-menu,.bf-mobile-menu-backdrop,.bf-menu-icon{transition:none!important}.bf-unit-status-label{transition:opacity 120ms ease!important;transform:none!important}.bf-footer-link,.bf-footer-link svg{transition:none!important}.bf-footer-link:hover svg{transform:none!important}.bf-page :where([data-slot="button"],.bf-pill,.bf-menu-toggle,.bf-nav-link,.bf-tabs-trigger,.bf-draft-toggle):active{scale:1!important}.bf-chip:hover,.bf-unit-card:hover,.bf-moat:hover{transform:none!important}}
+            @keyframes stepOnePlatform{0%,100%{transform:translateY(0);filter:none;animation-timing-function:cubic-bezier(.25,.1,.25,1)}40%{transform:translateY(-2.15%);filter:var(--step-glow-soft);animation-timing-function:linear}75%{transform:translateY(-2.15%);filter:var(--step-glow-soft);animation-timing-function:cubic-bezier(.25,.1,.25,1)}}@keyframes stepOneFrame{0%,100%{transform:translateY(0) scale(1);animation-timing-function:cubic-bezier(.25,.1,.25,1)}40%{transform:translateY(-1.7%) scale(1.02);animation-timing-function:linear}75%{transform:translateY(-1.7%) scale(1.02);animation-timing-function:cubic-bezier(.25,.1,.25,1)}}@keyframes stepOneMark{0%,100%{transform:translateY(0) rotate(0deg) scale(1);filter:none}25%{transform:translateY(-6%) rotate(0deg) scale(1.08);filter:none}30%{transform:translateY(-8%) rotate(3deg) scale(1.08)}35%{transform:translateY(-8%) rotate(2deg) scale(1.03)}45%{transform:translateY(-8%) rotate(1deg) scale(1.06)}50%{transform:translateY(-8%) rotate(0deg) scale(1.05)}55%,75%{transform:translateY(-8%) rotate(0deg) scale(1.04);filter:var(--step-glow-accent)}}@keyframes stepOneMessage{0%,100%{transform:translate(0,0) scale(1)}27.5%{transform:translate(0,0) scale(.92)}52.5%,75%{transform:translate(3%,-8.6%) scale(1.08)}}
+            @keyframes stepThreeCore{0%,12%,100%{transform:scale(1);opacity:1}20%{transform:scale(1.06);opacity:1}58%,78%{transform:scale(.92);opacity:.94}84%{transform:scale(.98);opacity:0}}@keyframes stepThreePayload{0%,12%,100%{transform:translateY(0)}58%,84%{transform:translateY(18%)}}@keyframes stepThreeGuide{0%,20%,100%{stroke-dashoffset:0;opacity:1}52%,84%{stroke-dashoffset:-28;opacity:0}}@keyframes stepThreeDestination{0%,48%,100%{filter:none}58%,82%{filter:drop-shadow(0 0 10px rgba(223,142,89,.16))}}@keyframes stepThreeTarget{0%,52%,100%{opacity:0}58%,82%{opacity:.26}}
+            @keyframes stepTwoLayerBack{0%,100%{transform:translate3d(0,0,0)}30%,72%{transform:translate3d(0,6%,0)}}@keyframes stepTwoLayerMiddle{0%,100%{transform:translate3d(0,0,0)}28%,74%{transform:translate3d(0,3%,0)}}@keyframes stepTwoEditor{0%,100%{transform:translate3d(0,0,0);filter:none}26%,74%{transform:translate3d(0,-2%,0);filter:var(--step-glow-soft)}}@keyframes stepTwoInput{0%,100%{transform:translate3d(0,0,0) scale(1)}14%{transform:translate3d(-1.5%,-1%,0) scale(.96)}38%,66%{transform:translate3d(8.5%,2%,0) scale(1.02)}}@keyframes stepTwoCodeLine{from{opacity:.14;transform:scaleX(.08)}to{opacity:1;transform:scaleX(1)}}@keyframes stepTwoOutput{0%,42%,100%{transform:translate3d(0,0,0) scale(1);filter:none}58%,76%{transform:translate3d(6%,-12%,0) scale(1.05);filter:var(--step-glow-accent)}}
+            @media(max-width:1024px){.bf-title.wrap{line-height:1.35}.bf-dash-grid{grid-template-columns:1fr;height:auto}.bf-convo{height:500px;border-right:0;border-bottom:1px solid var(--border)}.bf-draft.compact{position:absolute;top:0;right:0;bottom:0;width:min(88vw,380px);z-index:200;align-self:initial;overflow-y:auto;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);box-shadow:none;transition:transform .38s var(--motion-response),box-shadow .38s var(--motion-response);will-change:transform}.bf-draft.compact.open{transform:translateX(0);box-shadow:-24px 0 60px -20px rgba(0,0,0,.45)}.bf-steps{display:flex;gap:16px;margin-top:40px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.bf-unit-grid.compute,.bf-unit-grid.storage{display:flex;gap:14px;margin-top:18px;margin-left:-14px;margin-right:-14px;overflow-x:auto;padding:14px 14px 22px;scroll-padding-left:14px;scroll-snap-type:x proximity;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}.bf-step,.bf-unit-card{min-width:300px;max-width:300px;flex:0 0 300px;scroll-snap-align:start}.bf-unit-card{scroll-snap-stop:always}.bf-step{border:1px solid var(--border);border-radius:var(--radius-xl);background:var(--card);box-shadow:var(--shadow-sm);padding:26px 22px}.bf-moat{align-items:flex-start;flex-direction:column}.bf-footer-main{grid-template-columns:minmax(260px,1fr) repeat(2,minmax(112px,140px));gap:36px}.bf-footer-nav{gap:36px}}@media(max-width:640px){.bf-mobile-menu-backdrop{display:none}.bf-mobile-menu{inset:0;width:auto;height:auto;min-height:100dvh;border-left:0;transform:translateY(-8px) scale(.992);transform-origin:top right}.bf-mobile-menu[data-open="true"]{transform:none}.bf-mobile-menu-nav{max-width:1080px;margin:0 auto;padding-top:34px;overflow-y:auto}.bf-mobile-menu-link{padding:7px 0;font-size:clamp(30px,8vw,42px);line-height:1.13}.bf-mobile-menu-actions{max-width:1080px;margin-left:auto;margin-right:auto}.bf-container{padding:0 20px}.bf-carousel{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.bf-hero{grid-template-rows:2fr 1fr;min-height:100svh;padding:68px 20px 24px}.bf-hero h1{flex-direction:column;align-items:center;gap:clamp(6px,2.4vw,16px);font-size:clamp(46px,17vw,90px);line-height:.98;white-space:normal}.bf-copy{max-width:100%;font-size:clamp(16px,5vw,22px);line-height:1.45}.bf-down{margin-top:0}.bf-dash{margin-left:-8px;margin-right:-8px}.bf-debug-grid{grid-template-columns:1fr;gap:32px}.bf-footer{padding:40px 0 36px}.bf-footer-inner{gap:34px}.bf-footer-main{display:flex;flex-direction:column;gap:34px}.bf-footer-brand{max-width:100%}.bf-footer-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}.bf-footer-meta{align-items:flex-start;flex-direction:column-reverse;gap:18px}.bf-footer-legal{flex-wrap:wrap;gap:10px 18px}.bf-footer-mark{white-space:normal}}@media(prefers-reduced-transparency:reduce){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}}@media(prefers-contrast:more){.bf-nav{background:var(--background);backdrop-filter:none;-webkit-backdrop-filter:none}.bf-muted{opacity:.72}.bf-page :focus-visible{outline-color:var(--foreground)}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bf-char{opacity:1!important;filter:none!important;transform:none!important}.bf-page *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.bf-reveal,.bf-empty,.bf-toast,.bf-draft-backdrop,.bf-unit-card,.bf-carousel-item{filter:none!important;transition:opacity .2s ease!important}.bf-draft,.bf-carousel-track,.bf-mobile-menu,.bf-mobile-menu-backdrop,.bf-menu-icon{transition:none!important}.bf-unit-status-label{transition:opacity 120ms ease!important;transform:none!important}.bf-footer-link,.bf-footer-link svg{transition:none!important}.bf-footer-link:hover svg{transform:none!important}.bf-page :where([data-slot="button"],.bf-pill,.bf-menu-toggle,.bf-nav-link,.bf-tabs-trigger,.bf-draft-toggle):active{scale:1!important}.bf-chip:hover,.bf-unit-card:hover,.bf-moat:hover{transform:none!important}}
             @media(prefers-reduced-motion:reduce){.bf-page *{animation-delay:0ms!important}}
             .bf-kicker{margin-bottom:18px}.bf-title,.bf-title.wrap{line-height:1.08;text-wrap:balance}.bf-pitch-copy{max-width:840px;margin:20px 0 0;color:var(--muted-foreground);font-size:clamp(20px,2.6vw,26px);line-height:1.5;text-wrap:pretty}.bf-section-copy{max-width:620px;margin:20px 0 0;color:var(--muted-foreground);font-size:17px;line-height:1.6;text-wrap:pretty}.bf-footer-copy{line-height:1.6;text-wrap:pretty}.bf-footer-main{grid-template-columns:minmax(280px,1fr) repeat(3,minmax(100px,140px));gap:48px}.bf-footer-nav{gap:48px}
             @media(max-width:1024px){.bf-title.wrap{line-height:1.12}.bf-footer-main{grid-template-columns:minmax(240px,1fr) repeat(3,minmax(92px,120px));gap:32px}.bf-footer-nav{gap:32px}}
@@ -753,13 +815,92 @@ function Dashboard({ compact }: { compact: boolean }) {
 
 function How({ visible }: { visible: boolean }) {
     const stepsRef = useRef<HTMLDivElement | null>(null);
-    useStepHoverAnimations(stepsRef);
-    return <section id="how" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">02 · BUILD FLOW</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">Three steps.</span> <span className="bf-muted whitespace-nowrap">Live in production.</span></h2></div><div ref={stepsRef} className={`bf-steps bf-reveal ${visible ? "visible" : ""}`}><div className="bf-steps-line" />{STEPS.map((step, index) => <div key={step[0]} className="bf-step" data-step-anim><StepSvg index={index} /><div className="mb-4 font-mono text-xl font-bold tracking-[0.02em]">{step[0]}</div><p className="m-0 text-[15.5px] leading-[1.65] text-muted-foreground"><strong className="font-bold text-foreground">{step[1]}</strong> {step[2]}</p></div>)}</div></div></section>;
+    const [artworkReady, setArtworkReady] = useState(false);
+    useStepHoverAnimations(stepsRef, artworkReady);
+    useEffect(() => {
+        const target = stepsRef.current;
+        if (!target || artworkReady) return;
+        if (!("IntersectionObserver" in window)) {
+            const timeout = globalThis.setTimeout(() => setArtworkReady(true), 0);
+            return () => globalThis.clearTimeout(timeout);
+        }
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (!entry.isIntersecting) return;
+                setArtworkReady(true);
+                observer.disconnect();
+            },
+            { rootMargin: "200px 0px" },
+        );
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, [artworkReady]);
+    return <section id="how" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">02 · BUILD FLOW</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">Three steps.</span> <span className="bf-muted whitespace-nowrap">Live in production.</span></h2></div><div ref={stepsRef} className={`bf-steps bf-reveal ${visible ? "visible" : ""}`}>{STEPS.map((step, index) => <div key={step[0]} className="bf-step" data-step-anim><StepSvg index={index} ready={artworkReady} /><div className="mb-4 font-mono text-xl font-bold tracking-[0.02em]">{step[0]}</div><p className="m-0 text-[15.5px] leading-[1.65] text-muted-foreground"><strong className="font-bold text-foreground">{step[1]}</strong> {step[2]}</p></div>)}</div></div></section>;
 }
 
-function StepSvg({ index }: { index: number }) {
+function StepOneArtwork() {
+    return (
+        <div className="bf-step-art" aria-hidden="true">
+            <div className="bf-step-one-stage">
+                <div className="bf-step-one-platform">
+                    <svg viewBox="0 0 486 305" fill="none">
+                        <g className="bf-step-one-base">
+                            <path d="M1 140 243 1l242 139-242 140L1 140Z" fill="var(--alt-bg)" stroke="#404040" strokeWidth="2" />
+                            <path d="m1 140 242 140v24L1 164v-24Z" fill="var(--alt-bg)" stroke="#404040" strokeWidth="2" strokeLinejoin="bevel" />
+                            <path d="m243 280 242-140v24L243 304v-24Z" fill="var(--alt-bg)" stroke="#404040" strokeWidth="2" strokeLinejoin="bevel" />
+                        </g>
+                        <g className="bf-step-one-frame">
+                            <path d="m243 21 208 119-208 120L35 140 243 21Z" stroke="#404040" strokeWidth="1.5" />
+                            <path d="m210 40 33-19 33 19M418 121l33 19-33 19M276 241l-33 19-33-19M68 159l-33-19 33-19" stroke="#D4D4D4" strokeWidth="3" />
+                        </g>
+                    </svg>
+                </div>
+                <img className="bf-step-one-mark" src={stepOneMark} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} />
+                <img className="bf-step-one-message" src={stepOneMessage} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} />
+            </div>
+        </div>
+    );
+}
+
+function StepSvg({ index, ready }: { index: number; ready: boolean }) {
+    if (!ready) return <div className="bf-step-art" aria-hidden="true" />;
+    if (index === 0) return <StepOneArtwork />;
+    if (index === 1) return <StepTwoArtwork />;
+    if (index === 2) return <StepThreeArtwork />;
+    return <LegacyStepSvg index={index} />;
+}
+
+function StepTwoArtwork() {
+    return (
+        <div className="bf-step-art" aria-hidden="true">
+            <div className="bf-step-two-stage">
+                <div className="bf-step-two-layer bf-step-two-layer-back" />
+                <div className="bf-step-two-layer bf-step-two-layer-middle" />
+                <div className="bf-step-two-editor">
+                    <div className="bf-step-two-editor-shell">
+                        <div className="bf-step-two-toolbar">
+                            <i className="bf-step-two-dot" />
+                            <i className="bf-step-two-dot" />
+                            <i className="bf-step-two-dot" />
+                        </div>
+                        <div className="bf-step-two-body">
+                            <div className="bf-step-two-sidebar" />
+                            <div className="bf-step-two-code">{Array.from({ length: 15 }, (_, line) => <span key={line} />)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="bf-step-two-input">
+                    <img className="bf-step-two-input-sides" src={stepTwoInputSides} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} />
+                    <div className="bf-step-two-input-top"><div className="bf-step-two-input-top-face"><img src={stepTwoInputTop} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} /></div></div>
+                </div>
+                <img className="bf-step-two-output" src={stepTwoOutput} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} />
+            </div>
+        </div>
+    );
+}
+
+function LegacyStepSvg({ index }: { index: number }) {
     if (index === 0) return <div className="mb-[26px] flex h-[220px] items-center justify-center"><svg viewBox="-18 0 160 160" className="h-[190px] w-[190px] overflow-visible"><g fill="none" strokeLinecap="round" strokeLinejoin="round"><rect fill="var(--secondary)" stroke="var(--muted-foreground)" x="14" y="8" width="96" height="42" rx="10" vectorEffect="non-scaling-stroke" /><polyline fill="var(--secondary)" stroke="var(--muted-foreground)" points="32,50 32,62 44,50" vectorEffect="non-scaling-stroke" /><line data-a="l1" stroke="var(--foreground)" strokeWidth="1.2" x1="28" y1="22" x2="64" y2="22" strokeDasharray="36" strokeDashoffset="0" vectorEffect="non-scaling-stroke" /><line data-a="l2" stroke="var(--muted-foreground)" x1="28" y1="34" x2="84" y2="34" strokeDasharray="56" strokeDashoffset="0" vectorEffect="non-scaling-stroke" /><g data-a="arr"><line stroke="var(--muted-foreground)" x1="46" y1="74" x2="46" y2="94" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--muted-foreground)" points="40,88 46,96 52,88" vectorEffect="non-scaling-stroke" /></g><g data-a="cube"><polygon fill="var(--secondary)" fillOpacity=".7" stroke="var(--muted-foreground)" points="46,104 78,122 46,140 14,122" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".7" stroke="var(--muted-foreground)" points="14,122 46,140 46,158 14,140" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".7" stroke="var(--muted-foreground)" points="78,122 46,140 46,158 78,140" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--foreground)" points="46,104 78,122 46,140 14,122 46,104" vectorEffect="non-scaling-stroke" /></g></g></svg></div>;
-    if (index === 1) return <div className="mb-[26px] flex h-[220px] items-center justify-center"><svg viewBox="0 0 160 160" className="h-[190px] w-[190px] overflow-visible"><g fill="none" strokeLinecap="round" strokeLinejoin="round"><g data-a="p1"><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="50,30 92,52 50,74 8,52" vectorEffect="non-scaling-stroke" /></g><g data-a="p2"><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="60,58 102,80 60,102 18,80" vectorEffect="non-scaling-stroke" /></g><g data-a="p3"><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="50,86 92,108 50,130 8,108" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--foreground)" points="50,86 92,108 50,130 8,108 50,86" vectorEffect="non-scaling-stroke" /></g><g data-a="chk"><circle fill="var(--secondary)" fillOpacity=".8" stroke="var(--foreground)" cx="124" cy="44" r="19" vectorEffect="non-scaling-stroke" /><polyline data-a="chk-line" stroke="var(--foreground)" strokeWidth="1.4" strokeDasharray="30" strokeDashoffset="0" points="114,44 121,51 136,36" vectorEffect="non-scaling-stroke" /></g></g></svg></div>;
     return <div className="mb-[26px] flex h-[220px] items-center justify-center"><svg viewBox="0 0 160 160" className="h-[190px] w-[190px] overflow-visible"><g fill="none" strokeLinecap="round" strokeLinejoin="round"><g data-a="tcube"><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="80,14 112,32 80,50 48,32" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="48,32 80,50 80,68 48,50" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="112,32 80,50 80,68 112,50" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--foreground)" points="80,14 112,32 80,50 48,32 80,14" vectorEffect="non-scaling-stroke" /></g><g data-a="dashes"><line stroke="var(--muted-foreground)" x1="64" y1="76" x2="64" y2="96" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" /><line stroke="var(--muted-foreground)" x1="96" y1="76" x2="96" y2="96" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" /></g><g data-a="diamond"><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="80,104 122,126 80,148 38,126" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--foreground)" points="80,104 122,126 80,148 38,126 80,104" vectorEffect="non-scaling-stroke" /></g></g></svg></div>;
 }
 
