@@ -2,6 +2,7 @@
 @import "tailwindcss" source(none);
 
 @source "../pages/home/page.tsx";
+@source "../pages/careers/**/*.tsx";
 @source "../pages/pricing/**/*.tsx";
 @source "../pages/legal/**/*.tsx";
 @source "../pages/errors/not-found/**/*.tsx";

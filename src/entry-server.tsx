@@ -1,5 +1,6 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import HomePage from "@/pages/home/page";
+import CareersPage from "@/pages/careers/page";
 import NotFoundPage from "@/pages/errors/not-found/page";
 import PrivacyPolicyPage from "@/pages/legal/privacy-policy/page";
 import TermsOfUsePage from "@/pages/legal/terms-of-use/page";
@@ -18,6 +19,16 @@ export function renderHomePage() {
     );
 
     return html;
+}
+
+export function renderCareersPage() {
+    return renderToString(
+        <ThemeProvider defaultTheme="system" storageKey="ui-theme">
+            <MemoryRouter initialEntries={["/careers"]}>
+                <CareersPage />
+            </MemoryRouter>
+        </ThemeProvider>,
+    );
 }
 
 export function renderLegalPage(pathname: string) {
