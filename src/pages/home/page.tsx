@@ -1,13 +1,12 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { MarketingLogoSquare } from "@/components/logo/marketing-logo-square";
 import stepOneMark from "@/assets/home/steps/step-01-mark.svg";
 import stepOneMessage from "@/assets/home/steps/step-01-message.svg";
 import stepTwoInputSides from "@/assets/home/steps/step-02-input-sides.svg";
 import stepTwoInputTop from "@/assets/home/steps/step-02-input-top.svg";
 import stepTwoOutput from "@/assets/home/steps/step-02-output.svg";
-import { StepThreeArtwork } from "./step-three-artwork";
+import { MarketingLogoSquare } from "@/components/logo/marketing-logo-square";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMagnet } from "@/hooks/use-magnet";
@@ -15,6 +14,7 @@ import { openCookieSettings } from "@/services/cookie-consent";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { type RefObject, type TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router";
+import { StepThreeArtwork } from "./step-three-artwork";
 
 type UnitKind = "api" | "workflow" | "queue" | "actor" | "sql" | "graph" | "record" | "object" | "vector" | "common";
 type StepPhase = { sel: string; prop: "strokeDashoffset" | "opacity"; from: number; to: number; t0: number; t1: number };
@@ -22,8 +22,19 @@ type RuntimeStepPhase = StepPhase & { el: SVGElement; startVal?: number };
 
 const LOGIN_PATH = "/login";
 const HOME_TITLE = "BaaSForge | AI Backend Platform";
-const HOME_DESCRIPTION = "BaaSForge is an AI backend platform that turns plain-language requirements into production-ready APIs, workflows, workers, and data units.";
-const PHRASES = ["Mock APIs", "Payment workflows", "Approval flows", "Subscription logic", "Background jobs", "Stateful entities", "AI agent orchestration", "Tenant onboarding", "Multi-step sagas"];
+const HOME_DESCRIPTION =
+    "BaaSForge is an AI backend platform that turns plain-language requirements into production-ready APIs, workflows, workers, and data units.";
+const PHRASES = [
+    "Mock APIs",
+    "Payment workflows",
+    "Approval flows",
+    "Subscription logic",
+    "Background jobs",
+    "Stateful entities",
+    "AI agent orchestration",
+    "Tenant onboarding",
+    "Multi-step sagas",
+];
 const SECTION_LINKS = [
     { href: "#what", id: "what", label: "The Pitch" },
     { href: "#how", id: "how", label: "Build Flow" },
@@ -244,14 +255,18 @@ function useStepHoverAnimations(ref: RefObject<HTMLElement | null>, enabled = tr
         const activeAnims: ({ cancel: () => void } | null)[] = [null, null, null];
         const runStepAnim = (div: Element, def: { duration: number; phases: StepPhase[] }, onComplete: () => void) => {
             const preFade = 280;
-            const phases = def.phases.map((phase) => ({ ...phase, el: div.querySelector<SVGElement>(phase.sel) })).filter((phase): phase is RuntimeStepPhase => !!phase.el);
+            const phases = def.phases
+                .map((phase) => ({ ...phase, el: div.querySelector<SVGElement>(phase.sel) }))
+                .filter((phase): phase is RuntimeStepPhase => !!phase.el);
             const prePhases = phases.map((phase) => ({ ...phase, startVal: readSvgValue(phase) }));
             let raf = 0;
             const preStart = performance.now();
             const preTick = (now: number) => {
                 const t = Math.min((now - preStart) / preFade, 1);
                 const eased = easeInOut(t);
-                prePhases.forEach((phase) => setSvgValue(phase.el, phase.prop, (phase.startVal ?? phase.to) + (phase.from - (phase.startVal ?? phase.to)) * eased));
+                prePhases.forEach((phase) =>
+                    setSvgValue(phase.el, phase.prop, (phase.startVal ?? phase.to) + (phase.from - (phase.startVal ?? phase.to)) * eased),
+                );
                 if (t < 1) {
                     raf = requestAnimationFrame(preTick);
                     return;
@@ -273,10 +288,12 @@ function useStepHoverAnimations(ref: RefObject<HTMLElement | null>, enabled = tr
                 raf = requestAnimationFrame(mainTick);
             };
             raf = requestAnimationFrame(preTick);
-            return { cancel: () => {
+            return {
+                cancel: () => {
                 cancelAnimationFrame(raf);
                 phases.forEach((phase) => clearSvgValue(phase.el, phase.prop));
-            } };
+                },
+            };
         };
 
         const stepDivs = [...container.querySelectorAll("[data-step-anim]")];
@@ -298,12 +315,14 @@ function useStepHoverAnimations(ref: RefObject<HTMLElement | null>, enabled = tr
                 stepTwoOutput.addEventListener("animationend", finish);
                 stepTwoOutput.addEventListener("animationcancel", finish);
                 div.addEventListener("mouseenter", enter);
-                return [() => {
+                return [
+                    () => {
                     div.removeEventListener("mouseenter", enter);
                     stepTwoOutput.removeEventListener("animationend", finish);
                     stepTwoOutput.removeEventListener("animationcancel", finish);
                     div.removeAttribute("data-step-two-active");
-                }];
+                    },
+                ];
             }
             if (index === 2) {
                 const stepThreeCore = div.querySelector<SVGElement>(".bf-step-three-core");
@@ -322,12 +341,14 @@ function useStepHoverAnimations(ref: RefObject<HTMLElement | null>, enabled = tr
                 stepThreeCore.addEventListener("animationend", finish);
                 stepThreeCore.addEventListener("animationcancel", finish);
                 div.addEventListener("mouseenter", enter);
-                return [() => {
+                return [
+                    () => {
                     div.removeEventListener("mouseenter", enter);
                     stepThreeCore.removeEventListener("animationend", finish);
                     stepThreeCore.removeEventListener("animationcancel", finish);
                     div.removeAttribute("data-step-three-active");
-                }];
+                    },
+                ];
             }
             const def = STEP_ANIMS[index];
             if (!def) return [];
@@ -346,12 +367,14 @@ function useStepHoverAnimations(ref: RefObject<HTMLElement | null>, enabled = tr
                 stepOneMark.addEventListener("animationend", finish);
                 stepOneMark.addEventListener("animationcancel", finish);
                 div.addEventListener("mouseenter", enter);
-                return [() => {
+                return [
+                    () => {
                     div.removeEventListener("mouseenter", enter);
                     stepOneMark.removeEventListener("animationend", finish);
                     stepOneMark.removeEventListener("animationcancel", finish);
                     div.removeAttribute("data-step-one-active");
-                }];
+                    },
+                ];
             }
             const enter = () => {
                 if (reducedMotionQuery.matches || !hoverQuery.matches || activeAnims[index]) return;
@@ -569,8 +592,12 @@ function Navbar({ active }: { active: SectionId }) {
                 <div className="mx-auto flex h-[68px] max-w-[1080px] items-center justify-between px-7">
                     <Brand />
                     <div className="bf-primary-nav hidden text-sm xl:flex" aria-label="Primary navigation">
-                        <Link to="/" aria-current="page" className="bf-nav-link border-b border-foreground pb-[3px] text-foreground">Pitch</Link>
-                        <Link to="/docs" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">Docs</Link>
+                        <Link to="/" aria-current="page" className="bf-nav-link border-b border-foreground pb-[3px] text-foreground">
+                            Pitch
+                        </Link>
+                        <Link to="/docs" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">
+                            Docs
+                        </Link>
                         <Link to="/pricing" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">
                             Pricing
                         </Link>
@@ -580,34 +607,39 @@ function Navbar({ active }: { active: SectionId }) {
                             <Button variant="ghost" size="sm" className="rounded-full" asChild>
                                 <a href={LOGIN_PATH}>Sign in</a>
                             </Button>
-                            <Button size="sm" className="rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
+                            <Button
+                                size="sm"
+                                className="rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80"
+                                style={{ color: "var(--primary-foreground)" }}
+                                asChild
+                            >
                                 <a href={LOGIN_PATH}>Start building</a>
                             </Button>
                         </div>
-                        <button ref={menuButtonRef} type="button" onClick={() => setMenuOpen((open) => !open)} className="bf-menu-toggle flex size-10 items-center justify-center rounded-md text-foreground hover:bg-foreground/8 xl:hidden" aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} data-open={menuOpen}>
+                        <button
+                            ref={menuButtonRef}
+                            type="button"
+                            onClick={() => setMenuOpen((open) => !open)}
+                            className="bf-menu-toggle flex size-10 items-center justify-center rounded-md text-foreground hover:bg-foreground/8 xl:hidden"
+                            aria-label={menuOpen ? "Close menu" : "Open menu"}
+                            aria-expanded={menuOpen}
+                            data-open={menuOpen}
+                        >
                             <Menu className="bf-menu-icon menu size-[18px]" />
                             <X className="bf-menu-icon close size-[18px]" />
                         </button>
                     </div>
                 </div>
             </nav>
-            <div
-                className="bf-mobile-menu-backdrop xl:hidden"
-                aria-hidden={!menuOpen}
-                data-open={menuOpen}
-                onClick={() => setMenuOpen(false)}
-            />
-            <div
-                className="bf-mobile-menu xl:hidden"
-                aria-hidden={!menuOpen}
-                aria-label="Navigation menu"
-                data-open={menuOpen}
-                inert={!menuOpen}
-                role="dialog"
-            >
+            <div className="bf-mobile-menu-backdrop xl:hidden" aria-hidden={!menuOpen} data-open={menuOpen} onClick={() => setMenuOpen(false)} />
+            <div className="bf-mobile-menu xl:hidden" aria-hidden={!menuOpen} aria-label="Navigation menu" data-open={menuOpen} inert={!menuOpen} role="dialog">
                 <nav className="bf-mobile-menu-nav" aria-label="Mobile navigation">
-                    <Link to="/" aria-current="page" onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-foreground">Pitch</Link>
-                    <Link to="/docs" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">Docs</Link>
+                    <Link to="/" aria-current="page" onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-foreground">
+                        Pitch
+                    </Link>
+                    <Link to="/docs" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
+                        Docs
+                    </Link>
                     <Link to="/pricing" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
                         Pricing
                     </Link>
@@ -615,7 +647,16 @@ function Navbar({ active }: { active: SectionId }) {
                         <span className="bf-mobile-section-title">On this page</span>
                         <div className="bf-mobile-section-grid">
                             {SECTION_LINKS.map((link, index) => (
-                                <a key={link.id} href={link.href} className="bf-mobile-section-link" aria-current={active === link.id ? "location" : undefined} onClick={(event) => { event.preventDefault(); goToSection(index); }}>
+                                <a
+                                    key={link.id}
+                                    href={link.href}
+                                    className="bf-mobile-section-link"
+                                    aria-current={active === link.id ? "location" : undefined}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        goToSection(index);
+                                    }}
+                                >
                                     <span className="bf-mobile-section-index">{String(index + 1).padStart(2, "0")}</span>
                                     {link.label}
                                 </a>
@@ -625,10 +666,18 @@ function Navbar({ active }: { active: SectionId }) {
                 </nav>
                 <div className="bf-mobile-menu-actions">
                     <Button variant="outline" className="h-12 rounded-full" asChild>
-                        <a className="bf-mobile-action" href={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Sign in</a>
+                        <a className="bf-mobile-action" href={LOGIN_PATH} onClick={() => setMenuOpen(false)}>
+                            Sign in
+                        </a>
                     </Button>
-                    <Button className="h-12 rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80" style={{ color: "var(--primary-foreground)" }} asChild>
-                        <a className="bf-mobile-action" href={LOGIN_PATH} onClick={() => setMenuOpen(false)}>Start building</a>
+                    <Button
+                        className="h-12 rounded-full bg-primary font-semibold hover:bg-primary/90 active:bg-primary/80"
+                        style={{ color: "var(--primary-foreground)" }}
+                        asChild
+                    >
+                        <a className="bf-mobile-action" href={LOGIN_PATH} onClick={() => setMenuOpen(false)}>
+                            Start building
+                        </a>
                     </Button>
                 </div>
             </div>
@@ -642,11 +691,7 @@ function Hero() {
             <div className="bf-hero-title-wrap">
                 <h1 aria-label="Build Backend.">
                     {"Build Backend.".split(" ").map((word) => (
-                        <span
-                            key={word}
-                            className="bf-char inline-block whitespace-nowrap"
-                            aria-hidden="true"
-                        >
+                        <span key={word} className="bf-char inline-block whitespace-nowrap" aria-hidden="true">
                             {word}
                         </span>
                     ))}
@@ -693,8 +738,16 @@ function What({ visible, compact }: { visible: boolean; compact: boolean }) {
                             <br style={{ display: fitsTwoLines ? "none" : "initial" }} /> code
                         </span>
                     </h2>
-                    <p className="bf-pitch-copy">Describe what your backend should do. AI writes it, you ship it to production, then AI knows what's broken before your users do.</p>
-                    <div className="bf-chip-row">{["AI Chat", "CI/CD", "Monitoring", "Live Debugging", "Version Control"].map((chip) => <span key={chip} className="bf-chip">{chip}</span>)}</div>
+                    <p className="bf-pitch-copy">
+                        Describe what your backend should do. AI writes it, you ship it to production, then AI knows what's broken before your users do.
+                    </p>
+                    <div className="bf-chip-row">
+                        {["AI Chat", "CI/CD", "Monitoring", "Live Debugging", "Version Control"].map((chip) => (
+                            <span key={chip} className="bf-chip">
+                                {chip}
+                            </span>
+                        ))}
+                    </div>
                 </div>
                 <Dashboard compact={compact} />
             </div>
@@ -761,21 +814,31 @@ function Dashboard({ compact }: { compact: boolean }) {
         setToast(false);
         for (let index = 0; index < units.length; index += 1) {
             if (!reducedMotion && index > 0) await wait(70);
-            setUnits((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, live: true } : item));
+            setUnits((items) => items.map((item, itemIndex) => (itemIndex === index ? { ...item, live: true } : item)));
         }
         setDeploy("done");
     };
     return (
         <div className={`bf-dash ${active ? "active" : ""}`}>
-            <div className={`bf-draft-backdrop ${compact && draftOpen ? "visible" : ""}`} onClick={() => setDraftOpen(false)} style={{ opacity: compact && draftOpen ? 1 : 0, pointerEvents: compact && draftOpen ? "auto" : "none" }} />
+            <div
+                className={`bf-draft-backdrop ${compact && draftOpen ? "visible" : ""}`}
+                onClick={() => setDraftOpen(false)}
+                style={{ opacity: compact && draftOpen ? 1 : 0, pointerEvents: compact && draftOpen ? "auto" : "none" }}
+            />
             <div className={`bf-toast ${toast ? "visible" : ""}`} style={{ zIndex: compact && draftOpen ? 260 : 6 }}>
                 <span className="flex size-[18px] items-center justify-center rounded-full bg-foreground text-[11px] text-background">✓</span>
-                <div><div className="text-[13.5px] font-semibold">Deploying has started</div><div className="text-xs text-muted-foreground">Building units and provisioning runtime.</div></div>
+                <div>
+                    <div className="text-[13.5px] font-semibold">Deploying has started</div>
+                    <div className="text-xs text-muted-foreground">Building units and provisioning runtime.</div>
+                </div>
             </div>
             <div className="bf-dash-grid">
                 <div className="bf-convo">
                     <div className="bf-bar">
-                        <span className="bf-window-dot" /><span className="bf-window-dot" /><span className="bf-window-dot" /><span className="ml-2 font-mono text-[12.5px] text-muted-foreground">Conversation</span>
+                        <span className="bf-window-dot" />
+                        <span className="bf-window-dot" />
+                        <span className="bf-window-dot" />
+                        <span className="ml-2 font-mono text-[12.5px] text-muted-foreground">Conversation</span>
                         {compact && !draftOpen && (
                             <button
                                 type="button"
@@ -783,7 +846,17 @@ function Dashboard({ compact }: { compact: boolean }) {
                                 className="bf-draft-toggle ml-auto inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:border-[var(--accent-glow)] hover:bg-accent hover:text-accent-foreground"
                             >
                                 Draft units
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                >
                                     <line x1="5" y1="12" x2="19" y2="12" />
                                     <polyline points="12 5 19 12 12 19" />
                                 </svg>
@@ -791,21 +864,111 @@ function Dashboard({ compact }: { compact: boolean }) {
                         )}
                     </div>
                     <div className="bf-chat">
-                        <div className="bf-empty" style={{ opacity: message ? 0 : 1, transform: message ? "translateY(-26px) scale(.97)" : "none" }}><div className="text-[17px] font-semibold">What would you like to build?</div></div>
+                        <div className="bf-empty" style={{ opacity: message ? 0 : 1, transform: message ? "translateY(-26px) scale(.97)" : "none" }}>
+                            <div className="text-[17px] font-semibold">What would you like to build?</div>
+                        </div>
                         {message && <div className="bf-msg user">I want to create an app for a running coach to give exercise plans to her trainees.</div>}
-                        {steps.map((step) => <div key={step.text} className="flex items-center gap-2 font-mono text-[12.5px] text-muted-foreground transition-[opacity,transform] duration-200 ease-out" style={{ opacity: step.show ? 1 : 0, transform: step.show ? "none" : "translateY(4px)" }}><span className="size-1.5 rounded-full" style={{ background: step.done ? "var(--foreground)" : "var(--muted-foreground)", boxShadow: step.done ? "0 0 8px rgba(var(--glow-rgb),.5)" : "none" }} />{step.text}</div>)}
-                        {reply && <div className="bf-msg ai">The core actors have been created: <b className="font-medium text-foreground">coach.profile.actor.coach</b>, <b className="font-medium text-foreground">trainee.profile.actor.trainee</b>, and <b className="font-medium text-foreground">training.plan.actor.plan</b>. Ready to review the draft units.</div>}
+                        {steps.map((step) => (
+                            <div
+                                key={step.text}
+                                className="flex items-center gap-2 font-mono text-[12.5px] text-muted-foreground transition-[opacity,transform] duration-200 ease-out"
+                                style={{ opacity: step.show ? 1 : 0, transform: step.show ? "none" : "translateY(4px)" }}
+                            >
+                                <span
+                                    className="size-1.5 rounded-full"
+                                    style={{
+                                        background: step.done ? "var(--foreground)" : "var(--muted-foreground)",
+                                        boxShadow: step.done ? "0 0 8px rgba(var(--glow-rgb),.5)" : "none",
+                                    }}
+                                />
+                                {step.text}
+                            </div>
+                        ))}
+                        {reply && (
+                            <div className="bf-msg ai">
+                                The core actors have been created: <b className="font-medium text-foreground">coach.profile.actor.coach</b>,{" "}
+                                <b className="font-medium text-foreground">trainee.profile.actor.trainee</b>, and{" "}
+                                <b className="font-medium text-foreground">training.plan.actor.plan</b>. Ready to review the draft units.
+                            </div>
+                        )}
                     </div>
                     <div className="bf-input">
-                        <div className="flex-1 font-mono text-[13px] text-muted-foreground">{message ? "Type a message, Shift+Enter for new line" : "I want to create an app for a running coach to give exercise plans to her trainees."}{!message && <span className="ml-0.5 inline-block h-3.5 w-[7px] animate-[blink_1s_steps(2)_infinite] bg-foreground align-[-2px]" />}</div>
-                        <span className={!running && deploy !== "ready" && deploy !== "done" ? "bf-pulse" : "inline-flex"}><Button size="sm" onClick={send} disabled={running}>Send ↑</Button></span>
+                        <div className="flex-1 font-mono text-[13px] text-muted-foreground">
+                            {message
+                                ? "Type a message, Shift+Enter for new line"
+                                : "I want to create an app for a running coach to give exercise plans to her trainees."}
+                            {!message && <span className="ml-0.5 inline-block h-3.5 w-[7px] animate-[blink_1s_steps(2)_infinite] bg-foreground align-[-2px]" />}
+                    </div>
+                        <span className={!running && deploy !== "ready" && deploy !== "done" ? "bf-pulse" : "inline-flex"}>
+                            <Button size="sm" onClick={send} disabled={running}>
+                                Send ↑
+                            </Button>
+                        </span>
                     </div>
                 </div>
-                <div className={`bf-draft ${compact ? `compact ${draftOpen ? "open" : ""}` : ""}`} aria-hidden={compact && !draftOpen} inert={compact && !draftOpen}>
-                    <div className="flex h-[52px] items-center justify-between border-b px-[18px]"><span className="font-mono text-xs text-muted-foreground">DRAFT UNITS</span><span className="flex items-center gap-2"><span className={deploy === "ready" ? "bf-pulse" : "inline-flex"}><Button variant="outline" size="sm" onClick={runDeploy} disabled={deploy === "disabled" || deploy === "deploying" || deploy === "done"} className="h-[30px] gap-1.5">{deploy === "deploying" && <Spinner className="size-3.5" />}{deploy === "done" ? "Deployed" : deploy === "deploying" ? "Deploying" : "Deploy"}</Button></span>{compact && <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => setDraftOpen(false)} aria-label="Close draft units"><X className="size-4" /></Button>}</span></div>
+                <div
+                    className={`bf-draft ${compact ? `compact ${draftOpen ? "open" : ""}` : ""}`}
+                    aria-hidden={compact && !draftOpen}
+                    inert={compact && !draftOpen}
+                >
+                    <div className="flex h-[52px] items-center justify-between border-b px-[18px]">
+                        <span className="font-mono text-xs text-muted-foreground">DRAFT UNITS</span>
+                        <span className="flex items-center gap-2">
+                            <span className={deploy === "ready" ? "bf-pulse" : "inline-flex"}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={runDeploy}
+                                    disabled={deploy === "disabled" || deploy === "deploying" || deploy === "done"}
+                                    className="h-[30px] gap-1.5"
+                                >
+                                    {deploy === "deploying" && <Spinner className="size-3.5" />}
+                                    {deploy === "done" ? "Deployed" : deploy === "deploying" ? "Deploying" : "Deploy"}
+                                </Button>
+                            </span>
+                            {compact && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => setDraftOpen(false)}
+                                    aria-label="Close draft units"
+                                >
+                                    <X className="size-4" />
+                                </Button>
+                            )}
+                        </span>
+                </div>
                     <div className="flex flex-col gap-2.5 p-4">
-                        {units.length === 0 && <div className="px-1 py-3.5 text-[13px] leading-6 text-muted-foreground">Units will appear here once BaaSForge starts building.</div>}
-                        {units.map((unit) => <div key={unit.name} className="bf-draft-card" style={{ opacity: unit.show ? 1 : 0, transform: unit.show ? "none" : "translateY(8px) scale(.98)" }}><div className="mb-2 font-mono text-[11.5px] text-muted-foreground">{unit.name}</div><div className="mb-2.5 text-[12.5px] leading-5 text-muted-foreground">{unit.desc}</div><div className="flex gap-2 text-[11px]"><span className="rounded-[5px] border bg-secondary px-2 py-0.5 text-foreground">⛁ Actor</span><span className="bf-unit-status" data-live={unit.live}><span className="sr-only">{unit.live ? "Live" : "Not shipped"}</span><span className="bf-unit-status-label bf-unit-status-pending" aria-hidden="true">Not shipped</span><span className="bf-unit-status-label bf-unit-status-live" aria-hidden="true"><span className="size-1.5 rounded-full bg-[oklch(0.78_0.19_150)]" />Live</span></span></div></div>)}
+                        {units.length === 0 && (
+                            <div className="px-1 py-3.5 text-[13px] leading-6 text-muted-foreground">
+                                Units will appear here once BaaSForge starts building.
+                            </div>
+                        )}
+                        {units.map((unit) => (
+                            <div
+                                key={unit.name}
+                                className="bf-draft-card"
+                                style={{ opacity: unit.show ? 1 : 0, transform: unit.show ? "none" : "translateY(8px) scale(.98)" }}
+                            >
+                                <div className="mb-2 font-mono text-[11.5px] text-muted-foreground">{unit.name}</div>
+                                <div className="mb-2.5 text-[12.5px] leading-5 text-muted-foreground">{unit.desc}</div>
+                                <div className="flex gap-2 text-[11px]">
+                                    <span className="rounded-[5px] border bg-secondary px-2 py-0.5 text-foreground">⛁ Actor</span>
+                                    <span className="bf-unit-status" data-live={unit.live}>
+                                        <span className="sr-only">{unit.live ? "Live" : "Not shipped"}</span>
+                                        <span className="bf-unit-status-label bf-unit-status-pending" aria-hidden="true">
+                                            Not shipped
+                                        </span>
+                                        <span className="bf-unit-status-label bf-unit-status-live" aria-hidden="true">
+                                            <span className="size-1.5 rounded-full bg-[oklch(0.78_0.19_150)]" />
+                                            Live
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -835,7 +998,29 @@ function How({ visible }: { visible: boolean }) {
         observer.observe(target);
         return () => observer.disconnect();
     }, [artworkReady]);
-    return <section id="how" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">02 · BUILD FLOW</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">Three steps.</span> <span className="bf-muted whitespace-nowrap">Live in production.</span></h2></div><div ref={stepsRef} className={`bf-steps bf-reveal ${visible ? "visible" : ""}`}>{STEPS.map((step, index) => <div key={step[0]} className="bf-step" data-step-anim><StepSvg index={index} ready={artworkReady} /><div className="mb-4 font-mono text-xl font-bold tracking-[0.02em]">{step[0]}</div><p className="m-0 text-[15.5px] leading-[1.65] text-muted-foreground"><strong className="font-bold text-foreground">{step[1]}</strong> {step[2]}</p></div>)}</div></div></section>;
+    return (
+        <section id="how" className="bf-section alt">
+            <div className="bf-container">
+                <div className={`bf-reveal ${visible ? "visible" : ""}`}>
+                    <span className="bf-kicker">02 · BUILD FLOW</span>
+                    <h2 className="bf-title wrap">
+                        <span className="whitespace-nowrap">Three steps.</span> <span className="bf-muted whitespace-nowrap">Live in production.</span>
+                    </h2>
+                </div>
+                <div ref={stepsRef} className={`bf-steps bf-reveal ${visible ? "visible" : ""}`}>
+                    {STEPS.map((step, index) => (
+                        <div key={step[0]} className="bf-step" data-step-anim>
+                            <StepSvg index={index} ready={artworkReady} />
+                            <div className="mb-4 font-mono text-xl font-bold tracking-[0.02em]">{step[0]}</div>
+                            <p className="m-0 text-[15.5px] leading-[1.65] text-muted-foreground">
+                                <strong className="font-bold text-foreground">{step[1]}</strong> {step[2]}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
 }
 
 function StepOneArtwork() {
@@ -885,13 +1070,29 @@ function StepTwoArtwork() {
                         </div>
                         <div className="bf-step-two-body">
                             <div className="bf-step-two-sidebar" />
-                            <div className="bf-step-two-code">{Array.from({ length: 15 }, (_, line) => <span key={line} />)}</div>
+                            <div className="bf-step-two-code">
+                                {Array.from({ length: 15 }, (_, line) => (
+                                    <span key={line} />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div className="bf-step-two-input">
-                    <img className="bf-step-two-input-sides" src={stepTwoInputSides} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} />
-                    <div className="bf-step-two-input-top"><div className="bf-step-two-input-top-face"><img src={stepTwoInputTop} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} /></div></div>
+                    <img
+                        className="bf-step-two-input-sides"
+                        src={stepTwoInputSides}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                        draggable={false}
+                    />
+                    <div className="bf-step-two-input-top">
+                        <div className="bf-step-two-input-top-face">
+                            <img src={stepTwoInputTop} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} />
+                        </div>
+                    </div>
                 </div>
                 <img className="bf-step-two-output" src={stepTwoOutput} alt="" loading="lazy" decoding="async" fetchPriority="low" draggable={false} />
             </div>
@@ -900,8 +1101,123 @@ function StepTwoArtwork() {
 }
 
 function LegacyStepSvg({ index }: { index: number }) {
-    if (index === 0) return <div className="mb-[26px] flex h-[220px] items-center justify-center"><svg viewBox="-18 0 160 160" className="h-[190px] w-[190px] overflow-visible"><g fill="none" strokeLinecap="round" strokeLinejoin="round"><rect fill="var(--secondary)" stroke="var(--muted-foreground)" x="14" y="8" width="96" height="42" rx="10" vectorEffect="non-scaling-stroke" /><polyline fill="var(--secondary)" stroke="var(--muted-foreground)" points="32,50 32,62 44,50" vectorEffect="non-scaling-stroke" /><line data-a="l1" stroke="var(--foreground)" strokeWidth="1.2" x1="28" y1="22" x2="64" y2="22" strokeDasharray="36" strokeDashoffset="0" vectorEffect="non-scaling-stroke" /><line data-a="l2" stroke="var(--muted-foreground)" x1="28" y1="34" x2="84" y2="34" strokeDasharray="56" strokeDashoffset="0" vectorEffect="non-scaling-stroke" /><g data-a="arr"><line stroke="var(--muted-foreground)" x1="46" y1="74" x2="46" y2="94" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--muted-foreground)" points="40,88 46,96 52,88" vectorEffect="non-scaling-stroke" /></g><g data-a="cube"><polygon fill="var(--secondary)" fillOpacity=".7" stroke="var(--muted-foreground)" points="46,104 78,122 46,140 14,122" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".7" stroke="var(--muted-foreground)" points="14,122 46,140 46,158 14,140" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".7" stroke="var(--muted-foreground)" points="78,122 46,140 46,158 78,140" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--foreground)" points="46,104 78,122 46,140 14,122 46,104" vectorEffect="non-scaling-stroke" /></g></g></svg></div>;
-    return <div className="mb-[26px] flex h-[220px] items-center justify-center"><svg viewBox="0 0 160 160" className="h-[190px] w-[190px] overflow-visible"><g fill="none" strokeLinecap="round" strokeLinejoin="round"><g data-a="tcube"><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="80,14 112,32 80,50 48,32" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="48,32 80,50 80,68 48,50" vectorEffect="non-scaling-stroke" /><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="112,32 80,50 80,68 112,50" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--foreground)" points="80,14 112,32 80,50 48,32 80,14" vectorEffect="non-scaling-stroke" /></g><g data-a="dashes"><line stroke="var(--muted-foreground)" x1="64" y1="76" x2="64" y2="96" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" /><line stroke="var(--muted-foreground)" x1="96" y1="76" x2="96" y2="96" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" /></g><g data-a="diamond"><polygon fill="var(--secondary)" fillOpacity=".8" stroke="var(--muted-foreground)" points="80,104 122,126 80,148 38,126" vectorEffect="non-scaling-stroke" /><polyline stroke="var(--foreground)" points="80,104 122,126 80,148 38,126 80,104" vectorEffect="non-scaling-stroke" /></g></g></svg></div>;
+    if (index === 0)
+        return (
+            <div className="mb-[26px] flex h-[220px] items-center justify-center">
+                <svg viewBox="-18 0 160 160" className="h-[190px] w-[190px] overflow-visible">
+                    <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+                        <rect
+                            fill="var(--secondary)"
+                            stroke="var(--muted-foreground)"
+                            x="14"
+                            y="8"
+                            width="96"
+                            height="42"
+                            rx="10"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        <polyline fill="var(--secondary)" stroke="var(--muted-foreground)" points="32,50 32,62 44,50" vectorEffect="non-scaling-stroke" />
+                        <line
+                            data-a="l1"
+                            stroke="var(--foreground)"
+                            strokeWidth="1.2"
+                            x1="28"
+                            y1="22"
+                            x2="64"
+                            y2="22"
+                            strokeDasharray="36"
+                            strokeDashoffset="0"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        <line
+                            data-a="l2"
+                            stroke="var(--muted-foreground)"
+                            x1="28"
+                            y1="34"
+                            x2="84"
+                            y2="34"
+                            strokeDasharray="56"
+                            strokeDashoffset="0"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        <g data-a="arr">
+                            <line stroke="var(--muted-foreground)" x1="46" y1="74" x2="46" y2="94" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" />
+                            <polyline stroke="var(--muted-foreground)" points="40,88 46,96 52,88" vectorEffect="non-scaling-stroke" />
+                        </g>
+                        <g data-a="cube">
+                            <polygon
+                                fill="var(--secondary)"
+                                fillOpacity=".7"
+                                stroke="var(--muted-foreground)"
+                                points="46,104 78,122 46,140 14,122"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                            <polygon
+                                fill="var(--secondary)"
+                                fillOpacity=".7"
+                                stroke="var(--muted-foreground)"
+                                points="14,122 46,140 46,158 14,140"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                            <polygon
+                                fill="var(--secondary)"
+                                fillOpacity=".7"
+                                stroke="var(--muted-foreground)"
+                                points="78,122 46,140 46,158 78,140"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                            <polyline stroke="var(--foreground)" points="46,104 78,122 46,140 14,122 46,104" vectorEffect="non-scaling-stroke" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        );
+    return (
+        <div className="mb-[26px] flex h-[220px] items-center justify-center">
+            <svg viewBox="0 0 160 160" className="h-[190px] w-[190px] overflow-visible">
+                <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+                    <g data-a="tcube">
+                        <polygon
+                            fill="var(--secondary)"
+                            fillOpacity=".8"
+                            stroke="var(--muted-foreground)"
+                            points="80,14 112,32 80,50 48,32"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        <polygon
+                            fill="var(--secondary)"
+                            fillOpacity=".8"
+                            stroke="var(--muted-foreground)"
+                            points="48,32 80,50 80,68 48,50"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        <polygon
+                            fill="var(--secondary)"
+                            fillOpacity=".8"
+                            stroke="var(--muted-foreground)"
+                            points="112,32 80,50 80,68 112,50"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        <polyline stroke="var(--foreground)" points="80,14 112,32 80,50 48,32 80,14" vectorEffect="non-scaling-stroke" />
+                    </g>
+                    <g data-a="dashes">
+                        <line stroke="var(--muted-foreground)" x1="64" y1="76" x2="64" y2="96" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" />
+                        <line stroke="var(--muted-foreground)" x1="96" y1="76" x2="96" y2="96" strokeDasharray="3 5" vectorEffect="non-scaling-stroke" />
+                    </g>
+                    <g data-a="diamond">
+                        <polygon
+                            fill="var(--secondary)"
+                            fillOpacity=".8"
+                            stroke="var(--muted-foreground)"
+                            points="80,104 122,126 80,148 38,126"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                        <polyline stroke="var(--foreground)" points="80,104 122,126 80,148 38,126 80,104" vectorEffect="non-scaling-stroke" />
+                    </g>
+                </g>
+            </svg>
+        </div>
+    );
 }
 
 function Build({ visible }: { visible: boolean }) {
@@ -937,14 +1253,28 @@ function Build({ visible }: { visible: boolean }) {
             <div className="bf-container">
                 <div className={`bf-reveal ${visible ? "visible" : ""}`}>
                     <span className="bf-kicker">03 · BACKEND UNITS</span>
-                    <h2 className="bf-title wrap">BaaSForge creates your backend <span className="bf-muted">with Units.</span></h2>
-                    <p className="bf-section-copy">Based on the backend behavior you describe, BaaSForge intelligently arranges the right units and builds your APIs from these building blocks.</p>
+                    <h2 className="bf-title wrap">
+                        BaaSForge creates your backend <span className="bf-muted">with Units.</span>
+                    </h2>
+                    <p className="bf-section-copy">
+                        Based on the backend behavior you describe, BaaSForge intelligently arranges the right units and builds your APIs from these building
+                        blocks.
+                    </p>
                 </div>
                 <Tabs value={tab} onValueChange={setUnitTab} className="mt-12">
                     <div className="overflow-x-auto [-webkit-overflow-scrolling:touch]">
                         <TabsList className="bf-tabs-list">
                             <TabsTrigger value="compute" className="bf-tabs-trigger w-[160px]">
-                                <svg viewBox="0 0 24 24" className="size-[15px] shrink-0" stroke="currentColor" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    className="size-[15px] shrink-0"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    strokeWidth="1.6"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                >
                                     <rect x="7" y="7" width="10" height="10" rx="2" />
                                     <path d="M9.5 2v3M14.5 2v3M9.5 19v3M14.5 19v3M2 9.5h3M2 14.5h3M19 9.5h3M19 14.5h3" />
                                     <path d="M10 12h4" />
@@ -952,7 +1282,16 @@ function Build({ visible }: { visible: boolean }) {
                                 Compute
                             </TabsTrigger>
                             <TabsTrigger value="storage" className="bf-tabs-trigger w-[120px]">
-                                <svg viewBox="0 0 24 24" className="size-[15px] shrink-0" stroke="currentColor" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    className="size-[15px] shrink-0"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    strokeWidth="1.6"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    aria-hidden="true"
+                                >
                                     <ellipse cx="12" cy="6" rx="7" ry="3" />
                                     <path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6" />
                                     <path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6" />
@@ -962,10 +1301,18 @@ function Build({ visible }: { visible: boolean }) {
                         </TabsList>
                     </div>
                     <TabsContent value="compute" style={tabContentStyle}>
-                        <div className="bf-unit-grid compute">{COMPUTE_UNITS.map((unit) => <UnitCard key={unit.title} unit={unit} />)}</div>
+                        <div className="bf-unit-grid compute">
+                            {COMPUTE_UNITS.map((unit) => (
+                                <UnitCard key={unit.title} unit={unit} />
+                            ))}
+                        </div>
                     </TabsContent>
                     <TabsContent value="storage" style={tabContentStyle}>
-                        <div className="bf-unit-grid storage">{STORAGE_UNITS.map((unit) => <UnitCard key={unit.title} unit={unit} />)}</div>
+                        <div className="bf-unit-grid storage">
+                            {STORAGE_UNITS.map((unit) => (
+                                <UnitCard key={unit.title} unit={unit} />
+                            ))}
+                        </div>
                     </TabsContent>
                 </Tabs>
             </div>
@@ -974,7 +1321,26 @@ function Build({ visible }: { visible: boolean }) {
 }
 
 function UnitCard({ unit }: { unit: Unit }) {
-    return <div className="bf-unit-card"><Card className="h-full shadow-none"><CardContent className="flex h-[176px] flex-col px-6 pb-3"><div className="mb-[18px] flex items-start justify-between"><div className="flex size-[46px] items-center justify-center rounded-md border bg-secondary"><UnitIcon kind={unit.icon} /></div>{unit.status && <Badge variant="secondary" className="rounded-md">{unit.status}</Badge>}</div><h3 className="mb-2 text-[19px] font-semibold tracking-[-.02em]">{unit.title}</h3><p className="m-0 text-[14.5px] leading-[1.55] text-muted-foreground">{unit.desc}</p></CardContent></Card></div>;
+    return (
+        <div className="bf-unit-card">
+            <Card className="h-full shadow-none">
+                <CardContent className="flex h-[176px] flex-col px-6 pb-3">
+                    <div className="mb-[18px] flex items-start justify-between">
+                        <div className="flex size-[46px] items-center justify-center rounded-md border bg-secondary">
+                            <UnitIcon kind={unit.icon} />
+                        </div>
+                        {unit.status && (
+                            <Badge variant="secondary" className="rounded-md">
+                                {unit.status}
+                            </Badge>
+                        )}
+                    </div>
+                    <h3 className="mb-2 text-[19px] font-semibold tracking-[-.02em]">{unit.title}</h3>
+                    <p className="m-0 text-[14.5px] leading-[1.55] text-muted-foreground">{unit.desc}</p>
+                </CardContent>
+            </Card>
+        </div>
+    );
 }
 
 function UseCases({ visible }: { visible: boolean }) {
@@ -1026,20 +1392,85 @@ function UseCases({ visible }: { visible: boolean }) {
         return () => window.clearTimeout(fallback);
     }, [index, jump, reducedMotion, resetLoop]);
 
-    useEffect(() => () => {
+    useEffect(
+        () => () => {
         if (resetFrameRef.current !== null) cancelAnimationFrame(resetFrameRef.current);
-    }, []);
+        },
+        [],
+    );
 
     const onTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
         if (event.target !== event.currentTarget || event.propertyName !== "transform" || index < PHRASES.length * 2) return;
         resetLoop();
     };
 
-    return <section ref={sectionRef} id="usecases" className="bf-section"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">04 · WHAT BUILDERS SHIP</span><h2 className="bf-title wrap"><span className="whitespace-nowrap">The top builders use</span> <span className="whitespace-nowrap"><span className="bf-muted">BaaSForge</span> for:</span></h2></div><div className={`bf-carousel mt-11 bf-reveal ${visible ? "visible" : ""}`} role="region" aria-label="BaaSForge use cases"><div className="bf-carousel-track" onTransitionEnd={onTransitionEnd} style={{ transform: `translateY(calc(190px - 30px - ${index * 60}px))`, transition: jump ? "none" : undefined }}>{items.map((item, itemIndex) => { const distance = Math.abs(itemIndex - index); const opacity = distance === 0 ? 1 : distance === 1 ? 0.45 : distance === 2 ? 0.22 : 0.14; return <div key={`${item}-${itemIndex}`} className="bf-carousel-item" aria-hidden={distance !== 0} style={{ opacity, color: distance === 0 ? "var(--foreground)" : "var(--muted-foreground)", transition: jump ? "none" : undefined }}>{item}</div>; })}</div></div></div></section>;
+    return (
+        <section ref={sectionRef} id="usecases" className="bf-section">
+            <div className="bf-container">
+                <div className={`bf-reveal ${visible ? "visible" : ""}`}>
+                    <span className="bf-kicker">04 · WHAT BUILDERS SHIP</span>
+                    <h2 className="bf-title wrap">
+                        <span className="whitespace-nowrap">The top builders use</span>{" "}
+                        <span className="whitespace-nowrap">
+                            <span className="bf-muted">BaaSForge</span> for:
+                        </span>
+                    </h2>
+                </div>
+                <div className={`bf-carousel mt-11 bf-reveal ${visible ? "visible" : ""}`} role="region" aria-label="BaaSForge use cases">
+                    <div
+                        className="bf-carousel-track"
+                        onTransitionEnd={onTransitionEnd}
+                        style={{ transform: `translateY(calc(190px - 30px - ${index * 60}px))`, transition: jump ? "none" : undefined }}
+                    >
+                        {items.map((item, itemIndex) => {
+                            const distance = Math.abs(itemIndex - index);
+                            const opacity = distance === 0 ? 1 : distance === 1 ? 0.45 : distance === 2 ? 0.22 : 0.14;
+                            return (
+                                <div
+                                    key={`${item}-${itemIndex}`}
+                                    className="bf-carousel-item"
+                                    aria-hidden={distance !== 0}
+                                    style={{
+                                        opacity,
+                                        color: distance === 0 ? "var(--foreground)" : "var(--muted-foreground)",
+                                        transition: jump ? "none" : undefined,
+                                    }}
+                                >
+                                    {item}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
 }
 
 function Category({ visible }: { visible: boolean }) {
-    return <section id="category" className="bf-section alt"><div className="bf-container"><div className={`bf-reveal ${visible ? "visible" : ""}`}><span className="bf-kicker">05 · THE BAASFORGE EDGE</span><h2 className="bf-title wrap">Why builders choose <span className="bf-muted">BaaSForge.</span></h2></div><div className={`mt-11 flex flex-col border-t bf-reveal ${visible ? "visible" : ""}`}>{MOATS.map(([title, desc]) => <div key={title} className="bf-moat"><span className="shrink-0 text-[19.5px] tracking-[-.01em]"><span className="mr-2.5 inline-block size-1.5 rounded-full bg-foreground align-middle" />{title}</span><span className="text-[15px] font-normal leading-[1.5] text-muted-foreground">{desc}</span></div>)}</div></div></section>;
+    return (
+        <section id="category" className="bf-section alt">
+            <div className="bf-container">
+                <div className={`bf-reveal ${visible ? "visible" : ""}`}>
+                    <span className="bf-kicker">05 · THE BAASFORGE EDGE</span>
+                    <h2 className="bf-title wrap">
+                        Why builders choose <span className="bf-muted">BaaSForge.</span>
+                    </h2>
+                </div>
+                <div className={`mt-11 flex flex-col border-t bf-reveal ${visible ? "visible" : ""}`}>
+                    {MOATS.map(([title, desc]) => (
+                        <div key={title} className="bf-moat">
+                            <span className="shrink-0 text-[19.5px] tracking-[-.01em]">
+                                <span className="mr-2.5 inline-block size-1.5 rounded-full bg-foreground align-middle" />
+                                {title}
+                            </span>
+                            <span className="text-[15px] font-normal leading-[1.5] text-muted-foreground">{desc}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
 }
 
 function Debug({ visible }: { visible: boolean }) {
@@ -1075,11 +1506,73 @@ function Debug({ visible }: { visible: boolean }) {
     const pre = needle === -1 ? text : text.slice(0, needle);
     const mid = needle === -1 ? "" : "charge.worker";
     const post = needle === -1 ? "" : text.slice(needle + mid.length);
-    return <section id="debug" className="bf-section"><div className="bf-container"><div className={`bf-debug-grid bf-reveal ${visible ? "visible" : ""}`}><div><span className="bf-kicker">06 · NO-PAGER MODE</span><h2 className="bf-title">Built for your <span className="bf-muted">freedom.</span></h2><p className="mt-[22px] max-w-[620px] text-[17px] leading-[1.6] text-muted-foreground">BaaSForge is the support behind you. Even when things go wrong, it traces production, catches the failure, and clears the mess — before your users ever find out.</p></div><div ref={ref} className={`bf-debug-card ${started ? "live" : ""}`}><div className="flex items-center gap-2 border-b px-4 py-3 font-mono text-xs text-muted-foreground"><span className="size-1.5 rounded-full bg-foreground" style={{ animation: started ? "pulseDot 1.8s ease-in-out infinite" : "none" }} />observability · trace #4471</div><div className="flex flex-col gap-3 p-4"><div className="bf-debug-query max-w-[78%] self-end rounded-[12px_12px_2px_12px] bg-foreground px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-background">Why did checkout fail at 14:22?</div><div className="bf-debug-response grid max-w-[92%] self-start rounded-[2px_12px_12px_12px] border bg-secondary px-3.5 py-3 font-mono text-[13px] leading-[1.6] text-secondary-foreground"><span aria-hidden="true" className="invisible col-start-1 row-start-1">{DEBUG_TEXT}</span><span className="col-start-1 row-start-1">{pre}<span className="font-semibold text-foreground">{mid}</span>{post}{text.length > 0 && text.length < DEBUG_TEXT.length && <span className="inline-block h-3.5 w-[7px] animate-[pulseDot_1.4s_ease-in-out_infinite] bg-foreground align-[-2px]" />}</span></div></div></div></div></div></section>;
+    return (
+        <section id="debug" className="bf-section">
+            <div className="bf-container">
+                <div className={`bf-debug-grid bf-reveal ${visible ? "visible" : ""}`}>
+                    <div>
+                        <span className="bf-kicker">06 · NO-PAGER MODE</span>
+                        <h2 className="bf-title">
+                            Built for your <span className="bf-muted">freedom.</span>
+                        </h2>
+                        <p className="mt-[22px] max-w-[620px] text-[17px] leading-[1.6] text-muted-foreground">
+                            BaaSForge is the support behind you. Even when things go wrong, it traces production, catches the failure, and clears the mess —
+                            before your users ever find out.
+                        </p>
+                    </div>
+                    <div ref={ref} className={`bf-debug-card ${started ? "live" : ""}`}>
+                        <div className="flex items-center gap-2 border-b px-4 py-3 font-mono text-xs text-muted-foreground">
+                            <span
+                                className="size-1.5 rounded-full bg-foreground"
+                                style={{ animation: started ? "pulseDot 1.8s ease-in-out infinite" : "none" }}
+                            />
+                            observability · trace #4471
+                        </div>
+                        <div className="flex flex-col gap-3 p-4">
+                            <div className="bf-debug-query max-w-[78%] self-end rounded-[12px_12px_2px_12px] bg-foreground px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-background">
+                                Why did checkout fail at 14:22?
+                            </div>
+                            <div className="bf-debug-response grid max-w-[92%] self-start rounded-[2px_12px_12px_12px] border bg-secondary px-3.5 py-3 font-mono text-[13px] leading-[1.6] text-secondary-foreground">
+                                <span aria-hidden="true" className="invisible col-start-1 row-start-1">
+                                    {DEBUG_TEXT}
+                                </span>
+                                <span className="col-start-1 row-start-1">
+                                    {pre}
+                                    <span className="font-semibold text-foreground">{mid}</span>
+                                    {post}
+                                    {text.length > 0 && text.length < DEBUG_TEXT.length && (
+                                        <span className="inline-block h-3.5 w-[7px] animate-[pulseDot_1.4s_ease-in-out_infinite] bg-foreground align-[-2px]" />
+                                    )}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
 }
 
 function Close() {
-    return <section className="relative overflow-hidden border-t py-[130px] text-center"><div className="bf-glow" /><div className="bf-container relative"><h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold leading-[1.05] tracking-[-.05em] text-transparent">Build Backend.</h2><div className="mt-[34px] flex justify-center gap-3.5"><Magnetic to="/docs" variant="secondary">Go to docs</Magnetic><Magnetic to={LOGIN_PATH} variant="primary">Start building</Magnetic></div><p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Start Building Your Backend Today</p></div></section>;
+    return (
+        <section className="relative overflow-hidden border-t py-[130px] text-center">
+            <div className="bf-glow" />
+            <div className="bf-container relative">
+                <h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold leading-[1.05] tracking-[-.05em] text-transparent">
+                    Build Backend.
+                </h2>
+                <div className="mt-[34px] flex justify-center gap-3.5">
+                    <Magnetic to="/docs" variant="secondary">
+                        Go to docs
+                    </Magnetic>
+                    <Magnetic to={LOGIN_PATH} variant="primary">
+                        Start building
+                    </Magnetic>
+                </div>
+                <p className="mt-[26px] font-mono text-[13px] text-muted-foreground">Start Building Your Backend Today</p>
+            </div>
+        </section>
+    );
 }
 
 function Footer() {
@@ -1098,21 +1591,52 @@ function Footer() {
                             <div>
                                 <h2 className="bf-footer-column-title">Product</h2>
                                 <ul className="bf-footer-list">
-                                    <li><Link className="bf-footer-link" to="/pricing" reloadDocument>Pricing</Link></li>
+                                    <li>
+                                        <Link className="bf-footer-link" to="/pricing" reloadDocument>
+                                            Pricing
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link className="bf-footer-link" to="/careers" reloadDocument>
+                                            Careers
+                                        </Link>
+                                    </li>
                                 </ul>
                             </div>
                             <div>
                                 <h2 className="bf-footer-column-title">Resources</h2>
                                 <ul className="bf-footer-list">
-                                    <li><a className="bf-footer-link" href="/docs">Docs</a></li>
+                                    <li>
+                                        <a className="bf-footer-link" href="/docs">
+                                            Docs
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                             <div>
                                 <h2 className="bf-footer-column-title">Social</h2>
                                 <ul className="bf-footer-list">
                                     <li>
-                                        <a className="bf-footer-link" href="https://www.linkedin.com/company/baasforge/" target="_blank" rel="noreferrer" aria-label="BaaSForge on LinkedIn">
+                                        <a
+                                            className="bf-footer-link"
+                                            href="https://www.linkedin.com/company/baasforge/"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            aria-label="BaaSForge on LinkedIn"
+                                        >
                                             LinkedIn
+                                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            className="bf-footer-link"
+                                            href="https://www.youtube.com/@BaaSForgeai"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            aria-label="BaaSForge on YouTube"
+                                        >
+                                            YouTube
                                             <ArrowUpRight className="size-3.5" aria-hidden="true" />
                                         </a>
                                     </li>
@@ -1123,9 +1647,15 @@ function Footer() {
                     <div className="bf-footer-meta">
                         <span className="bf-footer-mark">© 2026 BaaSForge</span>
                         <div className="bf-footer-legal">
-                            <Link className="bf-footer-link" to="/privacy-policy" reloadDocument>Privacy</Link>
-                            <Link className="bf-footer-link" to="/terms-of-use" reloadDocument>Terms</Link>
-                            <button type="button" className="bf-footer-link" onClick={() => openCookieSettings()}>Cookies</button>
+                            <Link className="bf-footer-link" to="/privacy-policy" reloadDocument>
+                                Privacy
+                            </Link>
+                            <Link className="bf-footer-link" to="/terms-of-use" reloadDocument>
+                                Terms
+                            </Link>
+                            <button type="button" className="bf-footer-link" onClick={() => openCookieSettings()}>
+                                Cookies
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1135,17 +1665,110 @@ function Footer() {
 }
 
 function UnitIcon({ kind }: { kind: UnitKind }) {
-    const props = { className: "size-[21px]", fill: "none", stroke: "var(--foreground)", strokeWidth: 1.5, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-    if (kind === "api") return <svg viewBox="0 0 24 24" {...props}><path d="M8 8l-4 4 4 4" /><path d="M16 8l4 4-4 4" /><path d="M14 5l-4 14" /></svg>;
-    if (kind === "workflow") return <svg viewBox="0 0 24 24" {...props}><rect x="4" y="4" width="4" height="4" rx="1" /><rect x="16" y="10" width="4" height="4" rx="1" /><rect x="4" y="16" width="4" height="4" rx="1" /><path d="M8 6h3.5a4.5 4.5 0 0 1 4.3 3.2" /><path d="M16 13.5a4.5 4.5 0 0 1-4.5 4.5H8" /><path d="M13.8 7.6l2 1.7-2 1.7" /></svg>;
-    if (kind === "queue") return <svg viewBox="0 0 24 24" {...props}><path d="M5 6h14" /><path d="M5 12h14" /><path d="M5 18h10" /><path d="M17 16l2 2-2 2" /></svg>;
-    if (kind === "actor") return <svg viewBox="0 0 24 24" {...props}><rect x="4" y="4" width="16" height="16" rx="3.5" /><circle cx="12" cy="10" r="2.3" /><path d="M8.5 16c.7-2 2-3 3.5-3s2.8 1 3.5 3" /></svg>;
-    if (kind === "sql") return <svg viewBox="0 0 24 24" {...props}><ellipse cx="12" cy="5.5" rx="7" ry="3" /><path d="M5 5.5v9c0 1.7 3.1 3 7 3s7-1.3 7-3v-9" /><path d="M5 10c0 1.7 3.1 3 7 3s7-1.3 7-3" /><path d="M8.5 20h7" /><path d="M12 17.5V20" /></svg>;
-    if (kind === "graph") return <svg viewBox="0 0 24 24" {...props}><circle cx="7" cy="7" r="2.2" /><circle cx="17" cy="7" r="2.2" /><circle cx="6" cy="17" r="2.2" /><circle cx="18" cy="17" r="2.2" /><path d="M9.1 7h5.8M7 9.2v5.6M17 9.2l1 5.6M8 15.5l7.5-7" /><path d="M8.2 17h7.6" /></svg>;
-    if (kind === "record") return <svg viewBox="0 0 24 24" {...props}><rect x="5" y="4" width="14" height="16" rx="2" /><path d="M8 8h8M8 12h8M8 16h5" /></svg>;
-    if (kind === "object") return <svg viewBox="0 0 24 24" {...props}><path d="M5 8.5h14l-1.2 10A2 2 0 0 1 15.8 20H8.2a2 2 0 0 1-2-1.5L5 8.5Z" /><path d="M8 8.5V6.8A2.8 2.8 0 0 1 10.8 4h2.4A2.8 2.8 0 0 1 16 6.8v1.7" /><path d="M9 12h6" /><path d="M9 15h4" /></svg>;
-    if (kind === "vector") return <svg viewBox="0 0 24 24" {...props}><path d="M5 19V5" /><path d="M5 19h14" /><circle cx="9" cy="15" r="1.4" fill="var(--foreground)" stroke="none" /><circle cx="13" cy="10" r="1.4" fill="var(--foreground)" stroke="none" /><circle cx="17" cy="7" r="1.4" fill="var(--foreground)" stroke="none" /><path d="M9 15l4-5 4-3" /><path d="M8 8l2.2 1.4M15 15l-2.2-1.4" opacity=".45" /></svg>;
-    return <svg viewBox="0 0 24 24" {...props}><rect x="4" y="5" width="7" height="6" rx="1.5" /><rect x="13" y="5" width="7" height="6" rx="1.5" /><rect x="8.5" y="14" width="7" height="6" rx="1.5" /><path d="M11 8h2" /><path d="M12 11v3" /><path d="M8.5 17H7a3 3 0 0 1-3-3v-1" /><path d="M15.5 17H17a3 3 0 0 0 3-3v-1" /></svg>;
+    const props = {
+        className: "size-[21px]",
+        fill: "none",
+        stroke: "var(--foreground)",
+        strokeWidth: 1.5,
+        strokeLinecap: "round" as const,
+        strokeLinejoin: "round" as const,
+    };
+    if (kind === "api")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <path d="M8 8l-4 4 4 4" />
+                <path d="M16 8l4 4-4 4" />
+                <path d="M14 5l-4 14" />
+            </svg>
+        );
+    if (kind === "workflow")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <rect x="4" y="4" width="4" height="4" rx="1" />
+                <rect x="16" y="10" width="4" height="4" rx="1" />
+                <rect x="4" y="16" width="4" height="4" rx="1" />
+                <path d="M8 6h3.5a4.5 4.5 0 0 1 4.3 3.2" />
+                <path d="M16 13.5a4.5 4.5 0 0 1-4.5 4.5H8" />
+                <path d="M13.8 7.6l2 1.7-2 1.7" />
+            </svg>
+        );
+    if (kind === "queue")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <path d="M5 6h14" />
+                <path d="M5 12h14" />
+                <path d="M5 18h10" />
+                <path d="M17 16l2 2-2 2" />
+            </svg>
+        );
+    if (kind === "actor")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <rect x="4" y="4" width="16" height="16" rx="3.5" />
+                <circle cx="12" cy="10" r="2.3" />
+                <path d="M8.5 16c.7-2 2-3 3.5-3s2.8 1 3.5 3" />
+            </svg>
+        );
+    if (kind === "sql")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <ellipse cx="12" cy="5.5" rx="7" ry="3" />
+                <path d="M5 5.5v9c0 1.7 3.1 3 7 3s7-1.3 7-3v-9" />
+                <path d="M5 10c0 1.7 3.1 3 7 3s7-1.3 7-3" />
+                <path d="M8.5 20h7" />
+                <path d="M12 17.5V20" />
+            </svg>
+        );
+    if (kind === "graph")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <circle cx="7" cy="7" r="2.2" />
+                <circle cx="17" cy="7" r="2.2" />
+                <circle cx="6" cy="17" r="2.2" />
+                <circle cx="18" cy="17" r="2.2" />
+                <path d="M9.1 7h5.8M7 9.2v5.6M17 9.2l1 5.6M8 15.5l7.5-7" />
+                <path d="M8.2 17h7.6" />
+            </svg>
+        );
+    if (kind === "record")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <rect x="5" y="4" width="14" height="16" rx="2" />
+                <path d="M8 8h8M8 12h8M8 16h5" />
+            </svg>
+        );
+    if (kind === "object")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <path d="M5 8.5h14l-1.2 10A2 2 0 0 1 15.8 20H8.2a2 2 0 0 1-2-1.5L5 8.5Z" />
+                <path d="M8 8.5V6.8A2.8 2.8 0 0 1 10.8 4h2.4A2.8 2.8 0 0 1 16 6.8v1.7" />
+                <path d="M9 12h6" />
+                <path d="M9 15h4" />
+            </svg>
+        );
+    if (kind === "vector")
+        return (
+            <svg viewBox="0 0 24 24" {...props}>
+                <path d="M5 19V5" />
+                <path d="M5 19h14" />
+                <circle cx="9" cy="15" r="1.4" fill="var(--foreground)" stroke="none" />
+                <circle cx="13" cy="10" r="1.4" fill="var(--foreground)" stroke="none" />
+                <circle cx="17" cy="7" r="1.4" fill="var(--foreground)" stroke="none" />
+                <path d="M9 15l4-5 4-3" />
+                <path d="M8 8l2.2 1.4M15 15l-2.2-1.4" opacity=".45" />
+            </svg>
+        );
+    return (
+        <svg viewBox="0 0 24 24" {...props}>
+            <rect x="4" y="5" width="7" height="6" rx="1.5" />
+            <rect x="13" y="5" width="7" height="6" rx="1.5" />
+            <rect x="8.5" y="14" width="7" height="6" rx="1.5" />
+            <path d="M11 8h2" />
+            <path d="M12 11v3" />
+            <path d="M8.5 17H7a3 3 0 0 1-3-3v-1" />
+            <path d="M15.5 17H17a3 3 0 0 0 3-3v-1" />
+        </svg>
+    );
 }
 
 export default function HomePage() {

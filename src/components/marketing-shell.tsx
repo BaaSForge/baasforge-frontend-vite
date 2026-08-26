@@ -89,9 +89,7 @@ export function MarketingHeader() {
                     <div className="flex items-center gap-3.5">
                         <div className="hidden items-center gap-3.5 xl:flex">
                             <Button variant="ghost" size="sm" className="rounded-full" asChild>
-                                <a href="/login">
-                                    Sign in
-                                </a>
+                                <a href="/login">Sign in</a>
                             </Button>
                             <Button
                                 size="sm"
@@ -99,9 +97,7 @@ export function MarketingHeader() {
                                 style={{ color: "var(--primary-foreground)" }}
                                 asChild
                             >
-                                <a href="/login">
-                                    Start building
-                                </a>
+                                <a href="/login">Start building</a>
                             </Button>
                         </div>
                         <button
@@ -119,20 +115,8 @@ export function MarketingHeader() {
                     </div>
                 </div>
             </nav>
-            <div
-                className="bf-mobile-menu-backdrop xl:hidden"
-                aria-hidden={!menuOpen}
-                data-open={menuOpen}
-                onClick={() => setMenuOpen(false)}
-            />
-            <div
-                className="bf-mobile-menu xl:hidden"
-                data-open={menuOpen}
-                aria-hidden={!menuOpen}
-                aria-label="Navigation menu"
-                inert={!menuOpen}
-                role="dialog"
-            >
+            <div className="bf-mobile-menu-backdrop xl:hidden" aria-hidden={!menuOpen} data-open={menuOpen} onClick={() => setMenuOpen(false)} />
+            <div className="bf-mobile-menu xl:hidden" data-open={menuOpen} aria-hidden={!menuOpen} aria-label="Navigation menu" inert={!menuOpen} role="dialog">
                 <nav className="bf-mobile-menu-nav" aria-label="Mobile navigation">
                     {MARKETING_LINKS.map(({ id, label, href }) => {
                         const isCurrent = currentPage === id;
@@ -193,6 +177,11 @@ export function MarketingFooter() {
                                             Pricing
                                         </Link>
                                     </li>
+                                    <li>
+                                        <Link className="bf-footer-link" to="/careers" reloadDocument>
+                                            Careers
+                                        </Link>
+                                    </li>
                                 </ul>
                             </div>
                             <div>
@@ -217,6 +206,18 @@ export function MarketingFooter() {
                                             aria-label="BaaSForge on LinkedIn"
                                         >
                                             LinkedIn
+                                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            className="bf-footer-link"
+                                            href="https://www.youtube.com/@BaaSForgeai"
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            aria-label="BaaSForge on YouTube"
+                                        >
+                                            YouTube
                                             <ArrowUpRight className="size-3.5" aria-hidden="true" />
                                         </a>
                                     </li>

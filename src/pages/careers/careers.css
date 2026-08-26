@@ -1,0 +1,439 @@
+html:has(.bf-careers-page) {
+    --font-sans: "Plus Jakarta Sans", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --background: oklch(0.17 0.032 264);
+    --foreground: oklch(0.96 0.012 260);
+    --card: oklch(0.21 0.034 264);
+    --card-foreground: oklch(0.96 0.012 260);
+    --primary: oklch(0.74 0.15 260);
+    --primary-foreground: oklch(0.15 0.03 264);
+    --secondary: oklch(0.27 0.038 264);
+    --secondary-foreground: oklch(0.96 0.012 260);
+    --muted: oklch(0.25 0.034 264);
+    --muted-foreground: oklch(0.67 0.03 260);
+    --accent: oklch(0.31 0.045 264);
+    --accent-foreground: oklch(0.96 0.012 260);
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 16%);
+    --ring: oklch(0.56 0.06 260);
+    --accent-glow: oklch(0.68 0.12 260);
+    --glow-rgb: 145, 175, 255;
+    --motion-response: cubic-bezier(0.22, 1, 0.36, 1);
+    --motion-press: cubic-bezier(0.2, 0.8, 0.2, 1);
+    scrollbar-gutter: stable;
+    background: var(--background);
+}
+
+body[data-scroll-locked]:has(.bf-careers-dialog-overlay) {
+    margin-right: 0 !important;
+}
+
+.bf-careers-page {
+    min-height: 100svh;
+    overflow-x: hidden;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+}
+
+.bf-careers-page * {
+    box-sizing: border-box;
+}
+.bf-careers-page ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+.bf-careers-page a {
+    color: inherit;
+    text-decoration: none;
+}
+.bf-careers-container {
+    width: min(1080px, calc(100% - 56px));
+    margin-inline: auto;
+}
+.bf-careers-kicker {
+    display: block;
+    margin-bottom: 18px;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+}
+.bf-careers-openings {
+    min-height: calc(100svh - 1px);
+    padding: 164px 0 128px;
+    background: color-mix(in oklch, var(--background) 82%, black);
+}
+.bf-careers-heading {
+    max-width: 680px;
+}
+.bf-careers-heading h1 {
+    margin: 0;
+    font-size: clamp(36px, 5.4vw, 62px);
+    font-weight: 650;
+    letter-spacing: 0;
+    line-height: 1.08;
+    text-wrap: balance;
+}
+.bf-careers-heading > p {
+    max-width: 620px;
+    margin: 20px 0 0;
+    color: var(--muted-foreground);
+    font-size: 17px;
+    line-height: 1.65;
+    text-wrap: pretty;
+}
+.bf-careers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 52px;
+}
+.bf-careers-role {
+    display: grid;
+    min-height: 116px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 32px;
+    padding: 26px 28px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+    animation: bfCareersCardIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    transition:
+        transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.45s ease,
+        box-shadow 0.45s ease;
+}
+.bf-careers-role:nth-child(2) {
+    animation-delay: 65ms;
+}
+.bf-careers-role:nth-child(3) {
+    animation-delay: 130ms;
+}
+.bf-careers-role-copy h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.3;
+}
+.bf-careers-role-meta {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 10px 0 0;
+    color: var(--muted-foreground);
+    font-size: 14px;
+    line-height: 1.5;
+}
+.bf-careers-detail-trigger {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    background: transparent;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 550;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s var(--motion-response);
+}
+.bf-careers-detail-trigger svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s var(--motion-response);
+}
+.bf-careers-page :focus-visible,
+.bf-careers-dialog-content :focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 3px;
+}
+
+.bf-careers-dialog-overlay {
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    background: rgb(3 8 20 / 72%);
+    backdrop-filter: blur(8px);
+}
+.bf-careers-dialog-content {
+    position: fixed;
+    z-index: 101;
+    top: 50%;
+    left: 50%;
+    width: min(680px, calc(100% - 32px));
+    max-height: min(760px, calc(100dvh - 32px));
+    padding: 38px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    background: var(--card);
+    box-shadow: 0 28px 80px rgb(0 0 0 / 42%);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    transform: translate(-50%, -50%);
+}
+.bf-careers-dialog-overlay[data-state="open"] {
+    animation: bfCareersOverlayIn 0.2s ease-out;
+}
+.bf-careers-dialog-overlay[data-state="closed"] {
+    animation: bfCareersOverlayOut 0.16s ease-in;
+}
+.bf-careers-dialog-content[data-state="open"] {
+    animation: bfCareersDialogIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bf-careers-dialog-content[data-state="closed"] {
+    animation: bfCareersDialogOut 0.16s ease-in;
+}
+.bf-careers-dialog-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: inline-flex;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--secondary);
+    color: var(--foreground);
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+.bf-careers-dialog-close svg {
+    width: 17px;
+    height: 17px;
+}
+.bf-careers-dialog-heading {
+    padding-right: 48px;
+}
+.bf-careers-dialog-heading .bf-careers-role-meta {
+    margin-top: 0;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.bf-careers-dialog-heading h2 {
+    margin: 14px 0 0;
+    font-size: clamp(30px, 5vw, 42px);
+    font-weight: 650;
+    letter-spacing: 0;
+    line-height: 1.12;
+}
+.bf-careers-dialog-heading > p:last-child {
+    margin: 18px 0 0;
+    color: var(--muted-foreground);
+    font-size: 16px;
+    line-height: 1.65;
+}
+.bf-careers-dialog-sections {
+    display: grid;
+    gap: 26px;
+    margin-top: 34px;
+}
+.bf-careers-dialog-sections section {
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+.bf-careers-dialog-sections h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+.bf-careers-dialog-sections p {
+    margin: 10px 0 0;
+    color: var(--muted-foreground);
+    font-size: 14.5px;
+    line-height: 1.72;
+    text-wrap: pretty;
+}
+.bf-careers-apply {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 34px;
+    padding-inline: 24px;
+    border-radius: 9999px;
+    background: var(--primary);
+    color: var(--primary-foreground) !important;
+    font-size: 13.5px;
+    font-weight: 650;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition:
+        background-color 0.18s var(--motion-response),
+        box-shadow 0.18s var(--motion-response),
+        scale 0.14s var(--motion-response);
+}
+.bf-careers-apply svg {
+    width: 15px;
+    height: 15px;
+    transition: transform 0.18s var(--motion-response);
+}
+.bf-careers-apply:active {
+    scale: 0.97;
+    transition-duration: 0.1s;
+    transition-timing-function: var(--motion-press);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .bf-careers-role:hover {
+        border-color: var(--accent-glow);
+        box-shadow:
+            0 10px 22px -18px rgb(var(--glow-rgb) / 72%),
+            0 0 0 1px rgb(var(--glow-rgb) / 16%);
+        transform: translateY(-1px) scale(1.03);
+    }
+    .bf-careers-detail-trigger:hover {
+        color: var(--foreground);
+    }
+    .bf-careers-detail-trigger:hover svg {
+        transform: translateX(2px);
+    }
+    .bf-careers-dialog-close:hover {
+        border-color: color-mix(in oklch, var(--accent-glow) 55%, var(--border));
+        background: color-mix(in oklch, var(--secondary) 90%, white);
+    }
+    .bf-careers-apply:hover {
+        background: color-mix(in oklch, var(--primary) 90%, white);
+        box-shadow: 0 10px 24px -18px rgb(var(--glow-rgb) / 72%);
+    }
+    .bf-careers-apply:hover svg {
+        transform: translate(1px, -1px);
+    }
+}
+
+@media (max-width: 640px) {
+    .bf-careers-container {
+        width: min(100% - 40px, 1080px);
+    }
+    .bf-careers-openings {
+        padding: 132px 0 92px;
+    }
+    .bf-careers-heading > p {
+        font-size: 15.5px;
+    }
+    .bf-careers-list {
+        margin-top: 38px;
+    }
+    .bf-careers-role {
+        min-height: 104px;
+        gap: 14px;
+        padding: 20px;
+    }
+    .bf-careers-role-copy h3 {
+        font-size: 18px;
+    }
+    .bf-careers-role-meta {
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 12px;
+    }
+    .bf-careers-detail-trigger {
+        gap: 4px;
+        font-size: 0;
+    }
+    .bf-careers-detail-trigger::before {
+        font-size: 13px;
+        content: "Details";
+    }
+    .bf-careers-dialog-content {
+        width: calc(100% - 24px);
+        max-height: calc(100dvh - 24px);
+        padding: 28px 22px 24px;
+    }
+    .bf-careers-dialog-close {
+        top: 16px;
+        right: 16px;
+    }
+    .bf-careers-dialog-heading {
+        padding-right: 44px;
+    }
+    .bf-careers-apply {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bf-careers-role,
+    .bf-careers-dialog-overlay,
+    .bf-careers-dialog-content {
+        animation: none !important;
+    }
+    .bf-careers-role:hover {
+        transform: none;
+    }
+    .bf-careers-role,
+    .bf-careers-detail-trigger,
+    .bf-careers-detail-trigger svg,
+    .bf-careers-dialog-close,
+    .bf-careers-apply,
+    .bf-careers-apply svg {
+        transition: none;
+    }
+}
+
+@keyframes bfCareersCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes bfCareersOverlayIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bfCareersOverlayOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes bfCareersDialogIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes bfCareersDialogOut {
+    from {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
+    }
+}

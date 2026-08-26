@@ -93,6 +93,7 @@ export default defineConfig(({ mode }) => {
             noExternal: ["react-router", "react-router/dom"],
         },
         build: {
+            manifest: true,
             chunkSizeWarningLimit: 500,
             rollupOptions: {
                 input: {

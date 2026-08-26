@@ -15,6 +15,12 @@ async function startClient(root: HTMLElement) {
         return;
     }
 
+    if (pathname === "/careers") {
+        const { mountCareersClient } = await import("@/entries/careers-client");
+        mountCareersClient(root);
+        return;
+    }
+
     if (pathname === "/pricing") {
         const { mountPricingClient } = await import("@/entries/pricing-client");
         mountPricingClient(root);
