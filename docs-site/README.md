@@ -1,6 +1,6 @@
 # BaaSForge Docs
 
-Static [Nextra](https://nextra.site/) docs site (React pages, no MDX required).
+Static [Nextra](https://nextra.site/) docs site.
 
 Run all commands from `docs-site/`:
 
@@ -15,4 +15,4 @@ From the SPA repo root, the landing page links to `/docs` (proxied to `:1220` in
 
 ## Add a page
 
-Create `app/your-page/page.tsx`, register it in `app/_meta.global.tsx`, and wrap content with `DocsPage` + theme components from `components/docs-content.tsx`.
+Create `app/your-page/page.mdx`, then register it in `app/_meta.global.tsx`. Use components from `nextra/components` when needed.
