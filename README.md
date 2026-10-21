@@ -1,8 +1,64 @@
-# BaaSForge frontend
+<p align="center">
+  <img src="./public/logo-256x256.png" alt="BaaSForge logo" width="96" height="96">
+</p>
+<h1 align="center">BaaSForge frontend</h1>
+<p align="center"><strong>The BaaSForge dashboard, public pages, and documentation.</strong></p>
+<p align="center">
+  <a href="#local-development">Get started</a> ·
+  <a href="#documentation">Documentation</a> ·
+  <a href="#contributing">Contribute</a>
+</p>
+
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/BaaSForge/baasforge-frontend-vite?style=flat)](https://github.com/BaaSForge/baasforge-frontend-vite)
+[![Issues](https://img.shields.io/github/issues/BaaSForge/baasforge-frontend-vite)](https://github.com/BaaSForge/baasforge-frontend-vite/issues)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
+[![Support](https://img.shields.io/badge/support-GitHub%20Issues-181717?logo=github)](#community-and-support)
+
+<p align="center">
+  <a href="docs/assets/dashboard-conversation.png">
+    <img src="docs/assets/dashboard-conversation-framed.png" alt="BaaSForge dashboard with project navigation, a development conversation, and draft units." width="1000">
+  </a>
+</p>
+
+The BaaSForge dashboard: project navigation, development conversations, and draft units in one workspace.
+
+## Contents
+
+- [Why BaaSForge?](#why-baasforge)
+- [Ecosystem](#ecosystem)
+- [Application areas](#application-areas)
+- [How it works](#how-it-works)
+- [Local development](#local-development)
+- [Documentation](#documentation)
+- [Production](#production)
+- [CI/CD](#cicd)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Community and support](#community-and-support)
+- [Code of Conduct](#code-of-conduct)
+- [Security](#security)
+- [License](#license)
+
+## Why BaaSForge?
+
+BaaSForge is for developers and small teams who want to describe a backend in plain language and ship APIs, workflows, and queue workers to production.
+
+New to BaaSForge? Start with the [main backend repository](https://github.com/BaaSForge/baasforge-backend-actix) for the project introduction and ecosystem setup. This repository is the home of the [documentation site source](docs-site).
 
 React/Vite application with a static Next.js/Nextra documentation site.
 
 > **Naming:** BaaSForge was previously named BAAL. Old paths or configuration that use `BAAL` refer to the same application. Use `BaaSForge` in new code and documentation.
+
+## Ecosystem
+
+The [backend repository](https://github.com/BaaSForge/baasforge-backend-actix) is the main entry point. Use the runtime and frontend repositories for their respective parts of the system.
+
+| Repository | Start here |
+| --- | --- |
+| [Backend](https://github.com/BaaSForge/baasforge-backend-actix) | Main entry point and control plane |
+| [Runtime](https://github.com/BaaSForge/baasforge-runtime-actix) | Execution plane |
+| [Frontend](https://github.com/BaaSForge/baasforge-frontend-vite) | Dashboard, public pages, and documentation |
 
 ## Application areas
 
@@ -177,3 +233,55 @@ git push origin v1.2.3-stage.0
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) before you submit changes.
+
+## Roadmap
+
+Where BaaSForge is heading:
+
+- [ ] Performance & runtime durability
+- [ ] Stream processing and WebSocket / realtime units
+- [ ] Storage pattern units
+- [ ] Monitoring, alerting, and collaboration
+
+<details>
+<summary><strong>Explore more planned capabilities</strong></summary>
+
+- Event and schedule triggers
+- SDK convenience helpers
+- Files and search behaviors
+- Unit marketplace
+- Third-party integrations
+
+</details>
+
+> These plans are directional. Timing and order may change.
+
+**[Explore the full roadmap →](https://baasforge.com/docs/about/future-plans)**
+
+See [Units](https://baasforge.com/docs/platform/units) for what is available now.
+
+Roadmap documentation lives in [`docs-site/app/about/future-plans/page.mdx`](docs-site/app/about/future-plans/page.mdx).
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Documentation fixes, reproducible bug reports, and focused improvements are welcome.
+Browse [open issues](https://github.com/BaaSForge/baasforge-frontend-vite/issues), or explain a proposed change before starting substantial work.
+
+## Community and support
+
+- [Report a bug or suggest an improvement](https://github.com/BaaSForge/baasforge-frontend-vite/issues).
+- Include reproduction steps and the relevant repository when asking for help.
+- If BaaSForge is useful to you, consider starring the repository or sharing what you built.
+
+## Code of Conduct
+
+Read our [Code of Conduct](CODE_OF_CONDUCT.md) for community standards and private reporting instructions.
+
+## Security
+
+Read our [Security Policy](SECURITY.md) to report a vulnerability privately and understand the scope of security maintenance.
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).
