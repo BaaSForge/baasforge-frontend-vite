@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { ShinyButton } from "@/components/ui/shiny-button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMagnet } from "@/hooks/use-magnet";
 import { openCookieSettings } from "@/services/cookie-consent";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Github, Menu, X } from "lucide-react";
 import { type RefObject, type TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router";
 import { StepThreeArtwork } from "./step-three-artwork";
@@ -21,9 +22,12 @@ type StepPhase = { sel: string; prop: "strokeDashoffset" | "opacity"; from: numb
 type RuntimeStepPhase = StepPhase & { el: SVGElement; startVal?: number };
 
 const LOGIN_PATH = "/login";
-const HOME_TITLE = "BaaSForge | AI Backend Platform";
+const GITHUB_ORGANIZATION_URL = "https://github.com/BaaSForge/";
+const GITHUB_REPOSITORY_URL = "https://github.com/BaaSForge/baasforge-backend-actix";
+const HOME_URL = "https://baasforge.com/";
+const HOME_TITLE = "BaaSForge | Open-Source AI Backend Platform";
 const HOME_DESCRIPTION =
-    "BaaSForge is an AI backend platform that turns plain-language requirements into production-ready APIs, workflows, workers, and data units.";
+    "BaaSForge is an open-source AI backend platform. Describe APIs, workflows, and queue workers in plain language and ship from prompt to production.";
 const PHRASES = [
     "Mock APIs",
     "Payment workflows",
@@ -123,21 +127,33 @@ function useMedia(query: string) {
 function HomePageSeo() {
     useEffect(() => {
         const previousTitle = document.title;
-        const canonicalUrl = `${window.location.origin}${window.location.pathname}`;
+        const restoreMeta: (() => void)[] = [];
         document.title = HOME_TITLE;
 
         const upsertMeta = (selector: string, attribute: "name" | "property", value: string, content: string) => {
-            const meta = document.head.querySelector<HTMLMetaElement>(selector) ?? document.head.appendChild(document.createElement("meta"));
+            const existing = document.head.querySelector<HTMLMetaElement>(selector);
+            const meta = existing ?? document.head.appendChild(document.createElement("meta"));
+            const previousContent = meta.getAttribute("content");
             meta.setAttribute(attribute, value);
             meta.content = content;
-            return meta;
+            restoreMeta.push(() => {
+                if (!existing) meta.remove();
+                else if (previousContent === null) meta.removeAttribute("content");
+                else meta.content = previousContent;
+            });
         };
-        const description = upsertMeta('meta[name="description"]', "name", "description", HOME_DESCRIPTION);
-        const openGraphUrl = upsertMeta('meta[property="og:url"]', "property", "og:url", canonicalUrl);
-        const twitterCard = upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
-        const canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]') ?? document.head.appendChild(document.createElement("link"));
+        upsertMeta('meta[name="description"]', "name", "description", HOME_DESCRIPTION);
+        upsertMeta('meta[property="og:title"]', "property", "og:title", HOME_TITLE);
+        upsertMeta('meta[property="og:description"]', "property", "og:description", HOME_DESCRIPTION);
+        upsertMeta('meta[property="og:url"]', "property", "og:url", HOME_URL);
+        upsertMeta('meta[name="twitter:title"]', "name", "twitter:title", HOME_TITLE);
+        upsertMeta('meta[name="twitter:description"]', "name", "twitter:description", HOME_DESCRIPTION);
+        upsertMeta('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
+        const existingCanonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+        const canonical = existingCanonical ?? document.head.appendChild(document.createElement("link"));
+        const previousCanonicalHref = canonical.getAttribute("href");
         canonical.rel = "canonical";
-        canonical.href = canonicalUrl;
+        canonical.href = HOME_URL;
 
         const existingSchema = document.querySelector<HTMLScriptElement>("#baasforge-homepage-schema");
         const schema = existingSchema ?? document.createElement("script");
@@ -153,15 +169,22 @@ function HomePageSeo() {
                 {
                     "@type": "Organization",
                     name: "BaaSForge",
-                    url: window.location.origin,
-                    logo: `${window.location.origin}/logo-256x256.png`,
+                    url: HOME_URL,
+                    logo: `${HOME_URL}logo-256x256.png`,
                     description: HOME_DESCRIPTION,
+                    sameAs: [GITHUB_ORGANIZATION_URL],
                 },
                 {
                     "@type": "WebSite",
                     name: "BaaSForge",
-                    url: window.location.origin,
+                    url: HOME_URL,
                     description: HOME_DESCRIPTION,
+                },
+                {
+                    "@type": "SoftwareSourceCode",
+                    name: "BaaSForge Backend",
+                    codeRepository: GITHUB_REPOSITORY_URL,
+                    license: "https://www.apache.org/licenses/LICENSE-2.0.html",
                 },
             ],
         });
@@ -169,10 +192,10 @@ function HomePageSeo() {
             document.title = previousTitle;
             if (existingSchema) schema.text = previousSchemaText;
             else schema.remove();
-            canonical.remove();
-            openGraphUrl.remove();
-            description.content = HOME_DESCRIPTION;
-            twitterCard.content = "summary_large_image";
+            if (!existingCanonical) canonical.remove();
+            else if (previousCanonicalHref === null) canonical.removeAttribute("href");
+            else canonical.setAttribute("href", previousCanonicalHref);
+            restoreMeta.forEach((restore) => restore());
         };
     }, []);
     return null;
@@ -465,6 +488,12 @@ function Styles() {
             @media(max-width:640px){.bf-section{padding:82px 0}.bf-kicker{margin-bottom:16px}.bf-title,.bf-title.wrap{line-height:1.12}.bf-pitch-copy{margin-top:18px;font-size:18px;line-height:1.55}.bf-section-copy{margin-top:18px;font-size:16px;line-height:1.6}.bf-footer-main{gap:34px}.bf-footer-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}}
             .bf-section-rail-inner{overflow:visible}.bf-section-rail:hover .bf-section-rail-inner,.bf-section-rail:focus-within .bf-section-rail-inner{width:40px;border-color:transparent;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}.bf-section-rail-link{position:relative;display:flex;width:26px;height:28px;grid-template-columns:none;align-items:center;justify-content:center;margin:0 auto;padding:0;border-radius:9999px;background:transparent}.bf-section-rail:hover .bf-section-rail-link:hover,.bf-section-rail-link:focus-visible{outline:none;background:transparent;box-shadow:none}.bf-section-rail-marker{justify-self:auto;margin-right:0}.bf-section-rail-label{position:absolute;top:50%;right:calc(100% + 9px);z-index:1;display:flex;width:max-content;min-width:0;align-items:center;gap:8px;overflow:visible;padding:6px 10px;border:1px solid var(--border);border-radius:9999px;background:var(--popover);box-shadow:0 12px 34px -22px rgba(0,0,0,.9);color:var(--foreground);line-height:1.2;opacity:0;pointer-events:none;transform:translate(6px,-50%) scale(.98);transform-origin:right center;transition:opacity .16s ease,transform .2s var(--motion-response)}.bf-section-rail:hover .bf-section-rail-label,.bf-section-rail:focus-within .bf-section-rail-label{opacity:0;transform:translate(6px,-50%) scale(.98)}.bf-section-rail-link:hover .bf-section-rail-label,.bf-section-rail-link:focus-visible .bf-section-rail-label{opacity:1;transform:translate(0,-50%) scale(1)}
             .bf-mobile-section-link[aria-current="location"]{border-color:var(--border);background:var(--secondary);color:var(--foreground)}
+            .bf-page .bf-mobile-menu-nav{min-height:0;overflow-y:auto;overscroll-behavior:contain}.bf-page .bf-mobile-menu-actions{flex-shrink:0}
+            .bf-hero-heading-group{display:flex;width:100%;min-width:0;flex-direction:column;align-items:center;gap:32px}
+            .bf-page .bf-announcement{--announcement-accent:#ffaf74;--shiny-sheen-opacity:.22;display:inline-flex;max-width:100%;min-height:44px;align-items:center;justify-content:center;gap:10px;border-radius:9999px;padding:6px 7px 6px 14px;color:var(--announcement-accent);font-size:12px;line-height:1.4;touch-action:manipulation;box-shadow:0 0 30px -7px color-mix(in srgb,var(--announcement-accent) 28%,transparent)}
+            .bf-announcement-label{font-weight:600;white-space:nowrap}.bf-announcement-action{display:inline-flex;align-items:center;gap:6px;border-radius:9999px;padding:7px 10px;background:var(--announcement-accent);color:var(--background);font-weight:500;white-space:nowrap}.bf-page .bf-announcement:focus-visible{outline:2px solid var(--announcement-accent);outline-offset:5px}
+            @media(max-width:480px){.bf-hero-heading-group{gap:26px}.bf-page .bf-announcement{gap:7px;padding-left:10px;font-size:11px}.bf-announcement-action{gap:4px;padding-right:8px;padding-left:8px}.bf-announcement-content>svg{width:14px;height:14px}}
+            @media(prefers-reduced-motion:reduce){.bf-page .bf-announcement{transition:none}}
         `}</style>
     );
 }
@@ -601,6 +630,16 @@ function Navbar({ active }: { active: SectionId }) {
                         <Link to="/pricing" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">
                             Pricing
                         </Link>
+                        <a
+                            href={GITHUB_ORGANIZATION_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="BaaSForge on GitHub (opens in a new tab)"
+                            className="bf-nav-link inline-flex items-center gap-1.5 whitespace-nowrap border-b border-transparent pb-[3px] text-muted-foreground"
+                        >
+                            <Github className="size-4 shrink-0" aria-hidden="true" />
+                            GitHub
+                        </a>
                     </div>
                     <div className="flex items-center gap-3.5">
                         <div className="hidden items-center gap-3.5 xl:flex">
@@ -643,6 +682,17 @@ function Navbar({ active }: { active: SectionId }) {
                     <Link to="/pricing" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
                         Pricing
                     </Link>
+                    <a
+                        href={GITHUB_ORGANIZATION_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="BaaSForge on GitHub (opens in a new tab)"
+                        onClick={() => setMenuOpen(false)}
+                        className="bf-nav-link bf-mobile-menu-link inline-flex items-center gap-3 text-muted-foreground"
+                    >
+                        <Github className="size-6 shrink-0" aria-hidden="true" />
+                        GitHub
+                    </a>
                     <div className="bf-mobile-section-group">
                         <span className="bf-mobile-section-title">On this page</span>
                         <div className="bf-mobile-section-grid">
@@ -689,13 +739,43 @@ function Hero() {
     return (
         <header className="bf-hero">
             <div className="bf-hero-title-wrap">
-                <h1 aria-label="Build Backend.">
-                    {"Build Backend.".split(" ").map((word) => (
-                        <span key={word} className="bf-char inline-block whitespace-nowrap" aria-hidden="true">
-                            {word}
-                        </span>
-                    ))}
-                </h1>
+                <div className="bf-hero-heading-group">
+                    <ShinyButton
+                        asChild
+                        className="bf-announcement"
+                        fillColor="color-mix(in srgb, #ffaf74 10%, var(--background))"
+                        labelColor="#ffaf74"
+                        accentColor="#ffaf74"
+                        accentSoftColor="#ffd0ad"
+                        sweepDuration={4}
+                        easeDuration={0.25}
+                        cornerRadius={9999}
+                        speckleOpacity={0.12}
+                    >
+                        <a
+                            href={GITHUB_ORGANIZATION_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Now open source. Explore BaaSForge on GitHub (opens in a new tab)"
+                        >
+                            <span className="shiny-button-content bf-announcement-content">
+                                <Github className="size-4 shrink-0" aria-hidden="true" />
+                                <span className="bf-announcement-label">Now open source</span>
+                                <span className="bf-announcement-action">
+                                    Explore on GitHub
+                                    <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+                                </span>
+                            </span>
+                        </a>
+                    </ShinyButton>
+                    <h1 aria-label="Build Backend.">
+                        {"Build Backend.".split(" ").map((word) => (
+                            <span key={word} className="bf-char inline-block whitespace-nowrap" aria-hidden="true">
+                                {word}
+                            </span>
+                        ))}
+                    </h1>
+                </div>
             </div>
             <div className="bf-hero-support">
                 <p className="bf-copy">
@@ -1609,6 +1689,18 @@ function Footer() {
                                     <li>
                                         <a className="bf-footer-link" href="/docs">
                                             Docs
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a
+                                            className="bf-footer-link"
+                                            href={GITHUB_ORGANIZATION_URL}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="BaaSForge on GitHub (opens in a new tab)"
+                                        >
+                                            GitHub
+                                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
                                         </a>
                                     </li>
                                 </ul>
