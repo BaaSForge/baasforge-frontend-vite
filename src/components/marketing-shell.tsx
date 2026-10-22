@@ -212,7 +212,7 @@ export function MarketingFooter() {
                                     <li>
                                         <a
                                             className="bf-footer-link"
-                                            href="https://www.youtube.com/@BaaSForgeai"
+                                            href="https://www.youtube.com/@BaaSForge"
                                             target="_blank"
                                             rel="noreferrer"
                                             aria-label="BaaSForge on YouTube"
