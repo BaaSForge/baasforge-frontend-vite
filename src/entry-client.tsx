@@ -27,6 +27,12 @@ async function startClient(root: HTMLElement) {
         return;
     }
 
+    if (pathname === "/recipes" || pathname === "/templates") {
+        const { mountTemplatesClient } = await import("@/entries/templates-client");
+        mountTemplatesClient(root);
+        return;
+    }
+
     if (pathname === "/privacy-policy" || pathname === "/terms-of-use") {
         const { mountLegalClient } = await import("@/entries/legal-client");
         mountLegalClient(root, pathname);

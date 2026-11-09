@@ -30,3 +30,6 @@ docs-site/node_modules
 # Environment variables
 .env
 .env.local
+
+# Agent configuration
+.agents

@@ -1,7 +1,8 @@
 @import "./public-fonts.css";
 @import "tailwindcss" source(none);
 
-@source "../pages/home/page.tsx";
+@source "../pages/home/**/*.tsx";
+@source "../pages/templates/**/*.tsx";
 @source "../pages/careers/**/*.tsx";
 @source "../pages/pricing/**/*.tsx";
 @source "../pages/legal/**/*.tsx";
@@ -122,4 +123,37 @@ details summary::-webkit-details-marker {
     li {
         text-align: start;
     }
+}
+
+@keyframes radar-pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.85;
+    }
+    18% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+    }
+}
+
+.animate-radar-pulse {
+    animation: radar-pulse 4.5s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+@keyframes bob-down {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(6px);
+    }
+}
+
+.animate-bob-down {
+    animation: bob-down 2s ease-in-out infinite;
 }

@@ -1,5 +1,7 @@
 import type { SyntaxHighlighterProps } from "react-syntax-highlighter";
-import { nightOwl, oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import nightOwl from "react-syntax-highlighter/dist/esm/styles/prism/night-owl";
+import oneDark from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
+import oneLight from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
 import type { ResolvedAppTheme } from "@/components/theme-provider/hooks";
 
 type PrismStyle = NonNullable<SyntaxHighlighterProps["style"]>;

@@ -4,7 +4,7 @@ import { mainSidebarStore } from "@/stores/main-sidebar";
 import { secondarySidebarStore } from "@/stores/secondary-sidebar";
 import { createStore } from "zustand";
 
-import { ActivePage } from "@/pages/routes";
+import { ActivePage } from "@/pages/active-page";
 import { type AppSearchParams, type PathParams, type RouteState } from "./resolve-active-page";
 
 export type AppState = {
