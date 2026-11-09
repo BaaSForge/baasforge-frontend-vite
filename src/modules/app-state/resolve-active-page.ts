@@ -1,6 +1,7 @@
 import type { UIMatch } from "react-router";
 
-import { ActivePage, type ActivePage as ActivePageType, type AppRouteHandle } from "@/pages/routes";
+import { ActivePage, type ActivePage as ActivePageType } from "@/pages/active-page";
+import type { AppRouteHandle } from "@/pages/routes";
 
 export type PathParams = Record<string, string>;
 

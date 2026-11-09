@@ -15,8 +15,10 @@ import HomePage from "./home/page";
 import PrivacyPolicyPage from "./legal/privacy-policy/page";
 import TermsOfUsePage from "./legal/terms-of-use/page";
 import PricingPage from "./pricing/page";
+import TemplatesPage from "./templates/page";
 import { RootLayout } from "./root-layout";
-import { ActivePage, buildRouteExports, toRouterRoutes, type AppRouteObject, type PagePaths } from "./routes";
+import { ActivePage } from "./active-page";
+import { buildRouteExports, toRouterRoutes, type AppRouteObject, type PagePaths } from "./routes";
 
 const GeneralErrorPage = lazy(() => import("./errors/global/page"));
 const NotFoundPage = lazy(() => import("./errors/not-found/page"));
@@ -70,6 +72,16 @@ export const appRoutes = [
                         path: "pricing",
                         page: ActivePage.PRICING,
                         element: <PricingPage />,
+                    },
+                    {
+                        path: "recipes",
+                        page: ActivePage.TEMPLATES,
+                        element: <TemplatesPage />,
+                    },
+                    {
+                        path: "templates",
+                        page: ActivePage.TEMPLATES,
+                        element: <TemplatesPage />,
                     },
                     {
                         element: (
@@ -284,6 +296,9 @@ const routeExports = buildRouteExports(appRoutes);
 
 export const paths = routeExports.paths satisfies PagePaths;
 
-export const router = createBrowserRouter(toRouterRoutes(appRoutes));
+export const router =
+    typeof document !== "undefined"
+        ? createBrowserRouter(toRouterRoutes(appRoutes))
+        : (null as unknown as ReturnType<typeof createBrowserRouter>);
 
 export default router;

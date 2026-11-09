@@ -1,43 +1,10 @@
 import { matchRoutes } from "react-router";
 import type { RouteObject } from "react-router";
 
+import { ActivePage, type AppPage } from "./active-page";
 import { appRoutes } from "./router";
 
-export const ActivePage = {
-    HOME: "HOME",
-    PRICING: "PRICING",
-    LOGIN: "LOGIN",
-    DASHBOARD: "DASHBOARD",
-    DASHBOARD_PACKAGES: "DASHBOARD_PACKAGES",
-    DASHBOARD_PAYMENTS: "DASHBOARD_PAYMENTS",
-    DASHBOARD_PURCHASE: "DASHBOARD_PURCHASE",
-    DASHBOARD_BILLING_SUCCESS: "DASHBOARD_BILLING_SUCCESS",
-    DASHBOARD_BILLING_CANCEL: "DASHBOARD_BILLING_CANCEL",
-    DASHBOARD_USAGE: "DASHBOARD_USAGE",
-    DASHBOARD_TOKENS: "DASHBOARD_TOKENS",
-    PROJECTS: "PROJECTS",
-    CREATE_PROJECT: "CREATE_PROJECT",
-    PROJECT_SHELL: "PROJECT_SHELL",
-    PROJECT_OVERVIEW: "PROJECT_OVERVIEW",
-    PROJECT_SETTINGS_INFO: "PROJECT_SETTINGS_INFO",
-    PROJECT_SETTINGS_DELETE: "PROJECT_SETTINGS_DELETE",
-    NEW_CHAT: "NEW_CHAT",
-    CHAT: "CHAT",
-    UNITS_RELEASES: "UNITS_RELEASES",
-    UNITS_RELEASES_DETAIL: "UNITS_RELEASES_DETAIL",
-    RUNTIMES: "RUNTIMES",
-    RUNTIME_DETAIL: "RUNTIME_DETAIL",
-    RUNTIME_UNITS_RELEASES: "RUNTIME_UNITS_RELEASES",
-    RUNTIME_ENV_VARS: "RUNTIME_ENV_VARS",
-    PROJECT_USAGE: "PROJECT_USAGE",
-    DOCUMENTATION_SHARE: "DOCUMENTATION_SHARE",
-    SERVER_ERROR: "SERVER_ERROR",
-    UNKNOWN: "UNKNOWN",
-} as const;
-
-export type ActivePage = (typeof ActivePage)[keyof typeof ActivePage];
-
-export type AppPage = Exclude<ActivePage, typeof ActivePage.UNKNOWN>;
+export { ActivePage, type AppPage } from "./active-page";
 
 export type AppRouteHandle = {
     page: ActivePage;

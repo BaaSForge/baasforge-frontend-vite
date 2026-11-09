@@ -8,14 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { ShinyButton } from "@/components/ui/shiny-button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMagnet } from "@/hooks/use-magnet";
 import { openCookieSettings } from "@/services/cookie-consent";
 import { ArrowUpRight, Github, Menu, X } from "lucide-react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { type RefObject, type TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Link } from "react-router";
 import { StepThreeArtwork } from "./step-three-artwork";
+import { HeroScrollReveal } from "./hero/hero-scroll-reveal";
 
 type UnitKind = "api" | "workflow" | "queue" | "actor" | "sql" | "graph" | "record" | "object" | "vector" | "common";
 type StepPhase = { sel: string; prop: "strokeDashoffset" | "opacity"; from: number; to: number; t0: number; t1: number };
@@ -40,6 +41,7 @@ const PHRASES = [
     "Multi-step sagas",
 ];
 const SECTION_LINKS = [
+    { href: "#scenarios-section", id: "scenarios-section", label: "Playbook" },
     { href: "#what", id: "what", label: "The Pitch" },
     { href: "#how", id: "how", label: "Build Flow" },
     { href: "#build", id: "build", label: "Backend Units" },
@@ -451,11 +453,11 @@ function useWhatTitleFits(ref: RefObject<HTMLElement | null>) {
     return fits;
 }
 
-function Styles() {
+export function Styles() {
     return (
         <style>{`
             html { scroll-behavior: smooth; scrollbar-gutter: stable; }
-            .bf-page{--font-sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-heading:var(--font-sans);--font-mono:"Geist Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--radius:0.625rem;--radius-sm:calc(var(--radius)*.6);--radius-md:calc(var(--radius)*.8);--radius-lg:var(--radius);--radius-xl:calc(var(--radius)*1.4);--radius-full:9999px;--motion-response:cubic-bezier(.22,1,.36,1);--motion-press:cubic-bezier(.2,.8,.2,1);--background:oklch(1 0 0);--foreground:oklch(0% 0 0);--card:oklch(1 0 0);--card-foreground:oklch(0% 0 0);--popover:oklch(1 0 0);--popover-foreground:oklch(0% 0 0);--primary:oklch(0% 0 0);--primary-foreground:oklch(.985 0 0);--secondary:oklch(.97 0 0);--secondary-foreground:oklch(.205 0 0);--muted:oklch(.97 0 0);--muted-foreground:oklch(.556 0 0);--accent:oklch(.97 0 0);--accent-foreground:oklch(.205 0 0);--destructive:oklch(.577 .245 27.325);--destructive-foreground:oklch(.97 .01 17);--border:oklch(.922 0 0);--input:oklch(.922 0 0);--ring:oklch(.708 0 0);--surface:oklch(.98 0 0);--surface-foreground:var(--foreground);--code:var(--surface);--code-foreground:var(--surface-foreground);--code-highlight:oklch(.96 0 0);--code-number:oklch(.56 0 0);--selection:oklch(0% 0 0);--selection-foreground:oklch(1 0 0);--shadow-xs:0 1px 2px 0 rgb(0 0 0 / .05);--shadow-sm:0 1px 3px 0 rgb(0 0 0 / .1),0 1px 2px -1px rgb(0 0 0 / .1);--shadow-md:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1);--shadow-lg:0 10px 15px -3px rgb(0 0 0 / .1),0 4px 6px -4px rgb(0 0 0 / .1);--alt-bg:oklch(.97 0 0);--glow-rgb:0,0,0;--accent-glow:oklch(0.65 0.02 260);font-family:var(--font-sans);font-optical-sizing:auto;line-height:1.5;background:var(--background);color:var(--foreground);min-height:100vh;overflow-x:hidden;transition:background .4s ease,color .4s ease}
+            .bf-page{--font-sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-heading:var(--font-sans);--font-mono:"Geist Mono",ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;--radius:0.625rem;--radius-sm:calc(var(--radius)*.6);--radius-md:calc(var(--radius)*.8);--radius-lg:var(--radius);--radius-xl:calc(var(--radius)*1.4);--radius-full:9999px;--motion-response:cubic-bezier(.22,1,.36,1);--motion-press:cubic-bezier(.2,.8,.2,1);--background:oklch(1 0 0);--foreground:oklch(0% 0 0);--card:oklch(1 0 0);--card-foreground:oklch(0% 0 0);--popover:oklch(1 0 0);--popover-foreground:oklch(0% 0 0);--primary:oklch(0% 0 0);--primary-foreground:oklch(.985 0 0);--secondary:oklch(.97 0 0);--secondary-foreground:oklch(.205 0 0);--muted:oklch(.97 0 0);--muted-foreground:oklch(.556 0 0);--accent:oklch(.97 0 0);--accent-foreground:oklch(.205 0 0);--destructive:oklch(.577 .245 27.325);--destructive-foreground:oklch(.97 .01 17);--border:oklch(.922 0 0);--input:oklch(.922 0 0);--ring:oklch(.708 0 0);--surface:oklch(.98 0 0);--surface-foreground:var(--foreground);--code:var(--surface);--code-foreground:var(--surface-foreground);--code-highlight:oklch(.96 0 0);--code-number:oklch(.56 0 0);--selection:oklch(0% 0 0);--selection-foreground:oklch(1 0 0);--shadow-xs:0 1px 2px 0 rgb(0 0 0 / .05);--shadow-sm:0 1px 3px 0 rgb(0 0 0 / .1),0 1px 2px -1px rgb(0 0 0 / .1);--shadow-md:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1);--shadow-lg:0 10px 15px -3px rgb(0 0 0 / .1),0 4px 6px -4px rgb(0 0 0 / .1);--alt-bg:oklch(.97 0 0);--glow-rgb:0,0,0;--accent-glow:oklch(0.65 0.02 260);font-family:var(--font-sans);font-optical-sizing:auto;line-height:1.5;background:var(--background);color:var(--foreground);min-height:100vh;overflow-x:clip;transition:background .4s ease,color .4s ease}
             .bf-page.dark{--background:oklch(.145 0 0);--foreground:oklch(.985 0 0);--card:oklch(.205 0 0);--card-foreground:oklch(.985 0 0);--popover:oklch(.205 0 0);--popover-foreground:oklch(.985 0 0);--primary:oklch(.922 0 0);--primary-foreground:oklch(.205 0 0);--secondary:oklch(.269 0 0);--secondary-foreground:oklch(.985 0 0);--muted:oklch(.269 0 0);--muted-foreground:oklch(.708 0 0);--accent:oklch(.371 0 0);--accent-foreground:oklch(.985 0 0);--destructive:oklch(.704 .191 22.216);--destructive-foreground:oklch(.58 .22 27);--border:oklch(1 0 0 / 10%);--input:oklch(1 0 0 / 15%);--ring:oklch(.556 0 0);--surface:oklch(.2 0 0);--surface-foreground:oklch(.708 0 0);--code:var(--surface);--code-foreground:var(--surface-foreground);--code-highlight:oklch(.27 0 0);--code-number:oklch(.72 0 0);--selection:oklch(.922 0 0);--selection-foreground:oklch(.205 0 0);--alt-bg:oklch(.08 0 0);--glow-rgb:255,255,255;--accent-glow:oklch(0.9 0.01 260)}
             .bf-page.midnight{--background:oklch(0.17 0.032 264);--foreground:oklch(0.96 0.012 260);--card:oklch(0.21 0.034 264);--card-foreground:oklch(0.96 0.012 260);--popover:oklch(0.21 0.034 264);--popover-foreground:oklch(0.96 0.012 260);--primary:oklch(0.74 0.15 260);--primary-foreground:oklch(0.15 0.03 264);--secondary:oklch(0.27 0.038 264);--secondary-foreground:oklch(0.96 0.012 260);--muted:oklch(0.25 0.034 264);--muted-foreground:oklch(0.67 0.03 260);--accent:oklch(0.31 0.045 264);--accent-foreground:oklch(0.96 0.012 260);--border:oklch(1 0 0 / 12%);--input:oklch(1 0 0 / 16%);--ring:oklch(0.56 0.06 260);--alt-bg:oklch(.14 .03 264);--glow-rgb:145,175,255;--accent-glow:oklch(0.68 0.12 260);--selection:var(--primary);--selection-foreground:var(--primary-foreground)}
             .bf-page.dense{--alt-bg:oklch(.08 0 0);--glow-rgb:255,255,255;--accent-glow:oklch(0.9 0.01 260)}.bf-page{--font-sans:"Plus Jakarta Sans",sans-serif;--font-heading:var(--font-sans)}
@@ -580,9 +582,12 @@ function SectionRail({ active }: { active: SectionId }) {
     );
 }
 
-function Navbar({ active }: { active: SectionId }) {
+export function Navbar({ active, currentPath }: { active?: SectionId; currentPath?: string }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+
+    const isRecipes = currentPath === "/recipes" || currentPath === "/templates";
+    const isHome = !isRecipes;
 
     const goToSection = useCallback((index: number) => {
         scrollToSection(index);
@@ -618,11 +623,23 @@ function Navbar({ active }: { active: SectionId }) {
     return (
         <>
             <nav className="bf-nav">
-                <div className="mx-auto flex h-[68px] max-w-[1080px] items-center justify-between px-7">
+                <div className="relative mx-auto flex h-[68px] max-w-[1080px] items-center justify-between px-7">
                     <Brand />
-                    <div className="bf-primary-nav hidden text-sm xl:flex" aria-label="Primary navigation">
-                        <Link to="/" aria-current="page" className="bf-nav-link border-b border-foreground pb-[3px] text-foreground">
+                    <div className="bf-primary-nav hidden text-sm xl:flex xl:absolute xl:left-1/2 xl:-translate-x-1/2" aria-label="Primary navigation">
+                        <Link
+                            to="/"
+                            aria-current={isHome ? "page" : undefined}
+                            className={`bf-nav-link border-b pb-[3px] ${isHome ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"}`}
+                        >
                             Pitch
+                        </Link>
+                        <Link
+                            to="/recipes"
+                            reloadDocument
+                            aria-current={isRecipes ? "page" : undefined}
+                            className={`bf-nav-link border-b pb-[3px] ${isRecipes ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"}`}
+                        >
+                            Recipes
                         </Link>
                         <Link to="/docs" reloadDocument className="bf-nav-link border-b border-transparent pb-[3px] text-muted-foreground">
                             Docs
@@ -675,6 +692,9 @@ function Navbar({ active }: { active: SectionId }) {
                 <nav className="bf-mobile-menu-nav" aria-label="Mobile navigation">
                     <Link to="/" aria-current="page" onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-foreground">
                         Pitch
+                    </Link>
+                    <Link to="/recipes" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
+                        Recipes
                     </Link>
                     <Link to="/docs" reloadDocument onClick={() => setMenuOpen(false)} className="bf-nav-link bf-mobile-menu-link text-muted-foreground">
                         Docs
@@ -732,72 +752,6 @@ function Navbar({ active }: { active: SectionId }) {
                 </div>
             </div>
         </>
-    );
-}
-
-function Hero() {
-    return (
-        <header className="bf-hero">
-            <div className="bf-hero-title-wrap">
-                <div className="bf-hero-heading-group">
-                    <ShinyButton
-                        asChild
-                        className="bf-announcement"
-                        fillColor="color-mix(in srgb, #ffaf74 10%, var(--background))"
-                        labelColor="#ffaf74"
-                        accentColor="#ffaf74"
-                        accentSoftColor="#ffd0ad"
-                        sweepDuration={4}
-                        easeDuration={0.25}
-                        cornerRadius={9999}
-                        speckleOpacity={0.12}
-                    >
-                        <a
-                            href={GITHUB_ORGANIZATION_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Now open source. Explore BaaSForge on GitHub (opens in a new tab)"
-                        >
-                            <span className="shiny-button-content bf-announcement-content">
-                                <Github className="size-4 shrink-0" aria-hidden="true" />
-                                <span className="bf-announcement-label">Now open source</span>
-                                <span className="bf-announcement-action">
-                                    Explore on GitHub
-                                    <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
-                                </span>
-                            </span>
-                        </a>
-                    </ShinyButton>
-                    <h1 aria-label="Build Backend.">
-                        {"Build Backend.".split(" ").map((word) => (
-                            <span key={word} className="bf-char inline-block whitespace-nowrap" aria-hidden="true">
-                                {word}
-                            </span>
-                        ))}
-                    </h1>
-                </div>
-            </div>
-            <div className="bf-hero-support">
-                <p className="bf-copy">
-                    <span className="whitespace-nowrap">BaaSForge delivers</span> <span className="whitespace-nowrap">your whole backend,</span>
-                    <br />
-                    from prompt to production.
-                </p>
-                <div className="bf-actions">
-                    <Magnetic to="/docs" variant="secondary">
-                        Go to docs
-                    </Magnetic>
-                    <Magnetic to={LOGIN_PATH} variant="primary">
-                        Start building
-                    </Magnetic>
-                </div>
-                <div className="bf-down">
-                    <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.6">
-                        <path d="M12 4v14M6 13l6 6 6-6" />
-                    </svg>
-                </div>
-            </div>
-        </header>
     );
 }
 
@@ -1596,7 +1550,7 @@ function Debug({ visible }: { visible: boolean }) {
                             Built for your <span className="bf-muted">freedom.</span>
                         </h2>
                         <p className="mt-[22px] max-w-[620px] text-[17px] leading-[1.6] text-muted-foreground">
-                            BaaSForge is the support behind you. Even when things go wrong, it traces production, catches the failure, and clears the mess —
+                            BaaSForge is the support behind you. Even when things go wrong, it traces production, catches the failure, and clears the mess,
                             before your users ever find out.
                         </p>
                     </div>
@@ -1635,7 +1589,7 @@ function Debug({ visible }: { visible: boolean }) {
 
 function Close() {
     return (
-        <section className="relative overflow-hidden border-t py-[130px] text-center">
+        <section className="relative overflow-hidden border-t py-[80px] sm:py-[120px] text-center">
             <div className="bf-glow" />
             <div className="bf-container relative">
                 <h2 className="m-0 whitespace-nowrap bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text text-[clamp(40px,7.5vw,90px)] font-bold leading-[1.05] tracking-[-.05em] text-transparent">
@@ -1655,104 +1609,165 @@ function Close() {
     );
 }
 
-function Footer() {
+export function Footer() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [footerHeight, setFooterHeight] = useState<number>(300);
+
+    useEffect(() => {
+        if (!contentRef.current) return;
+        const updateHeight = () => {
+            if (contentRef.current) {
+                setFooterHeight(contentRef.current.offsetHeight);
+            }
+        };
+        updateHeight();
+        const ro = new ResizeObserver(updateHeight);
+        ro.observe(contentRef.current);
+        return () => ro.disconnect();
+    }, []);
+
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start end", "end end"],
+    });
+
+    const y = useTransform(scrollYProgress, [0, 1], [-45, 0]);
+    const opacity = useTransform(scrollYProgress, [0, 0.85], [0.4, 1]);
+    const scale = useTransform(scrollYProgress, [0, 1], [0.97, 1]);
+
     return (
-        <footer className="bf-footer">
-            <div className="bf-container">
-                <div className="bf-footer-inner">
-                    <div className="bf-footer-main">
-                        <div className="bf-footer-brand">
-                            <Brand />
-                            <p className="bf-footer-copy">
-                                We got tired of juggling different tools and infrastructure just to ship a backend. So we built the one we wished we'd had.
-                            </p>
+        <div
+            ref={containerRef}
+            className="relative w-full"
+            style={{
+                height: footerHeight || undefined,
+                clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)",
+            }}
+        >
+            <div
+                className="fixed bottom-0 left-0 w-full z-0 flex flex-col justify-end pointer-events-auto"
+                style={{ height: footerHeight || undefined }}
+            >
+                <motion.footer
+                    ref={contentRef}
+                    style={{ y, opacity, scale }}
+                    className="bf-footer w-full"
+                >
+                    <div className="bf-container">
+                        <div className="bf-footer-inner">
+                            <div className="bf-footer-main">
+                                <div className="bf-footer-brand">
+                                    <Brand />
+                                    <p className="bf-footer-copy">
+                                        We got tired of juggling different tools and infrastructure just to ship a backend. So we built the one we wished we'd had.
+                                    </p>
+                                    <div className="mt-4 flex items-center gap-2.5 text-xs font-mono text-muted-foreground">
+                                        <span className="relative flex size-2.5 items-center justify-center">
+                                            <span className="absolute inline-flex size-full animate-radar-pulse rounded-full bg-emerald-400 opacity-75" />
+                                            <span className="relative inline-flex size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399,0_0_16px_#10b981]" />
+                                        </span>
+                                        <span>All systems operational · v2.4</span>
+                                    </div>
+                                </div>
+                                <nav className="bf-footer-nav" aria-label="Footer navigation">
+                                    <div>
+                                        <h2 className="bf-footer-column-title">Product</h2>
+                                        <ul className="bf-footer-list">
+                                            <li>
+                                                <Link className="bf-footer-link" to="/recipes" reloadDocument>
+                                                    Recipes
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link className="bf-footer-link" to="/pricing" reloadDocument>
+                                                    Pricing
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <a className="bf-footer-link" href="/#what">
+                                                    Overview
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h2 className="bf-footer-column-title">Resources</h2>
+                                        <ul className="bf-footer-list">
+                                            <li>
+                                                <a className="bf-footer-link" href="/docs">
+                                                    Docs
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    className="bf-footer-link"
+                                                    href={GITHUB_ORGANIZATION_URL}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    aria-label="BaaSForge on GitHub (opens in a new tab)"
+                                                >
+                                                    GitHub
+                                                    <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h2 className="bf-footer-column-title">Company</h2>
+                                        <ul className="bf-footer-list">
+                                            <li>
+                                                <Link className="bf-footer-link" to="/careers" reloadDocument>
+                                                    Careers
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    className="bf-footer-link"
+                                                    href="https://www.linkedin.com/company/baasforge/"
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    aria-label="BaaSForge on LinkedIn"
+                                                >
+                                                    LinkedIn
+                                                    <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    className="bf-footer-link"
+                                                    href="https://www.youtube.com/@BaaSForge"
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    aria-label="BaaSForge on YouTube"
+                                                >
+                                                    YouTube
+                                                    <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </nav>
+                            </div>
+                            <div className="bf-footer-meta">
+                                <span className="bf-footer-mark">© 2026 BaaSForge</span>
+                                <div className="bf-footer-legal">
+                                    <Link className="bf-footer-link" to="/privacy-policy" reloadDocument>
+                                        Privacy
+                                    </Link>
+                                    <Link className="bf-footer-link" to="/terms-of-use" reloadDocument>
+                                        Terms
+                                    </Link>
+                                    <button type="button" className="bf-footer-link" onClick={() => openCookieSettings()}>
+                                        Cookies
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <nav className="bf-footer-nav" aria-label="Footer navigation">
-                            <div>
-                                <h2 className="bf-footer-column-title">Product</h2>
-                                <ul className="bf-footer-list">
-                                    <li>
-                                        <Link className="bf-footer-link" to="/pricing" reloadDocument>
-                                            Pricing
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link className="bf-footer-link" to="/careers" reloadDocument>
-                                            Careers
-                                        </Link>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h2 className="bf-footer-column-title">Resources</h2>
-                                <ul className="bf-footer-list">
-                                    <li>
-                                        <a className="bf-footer-link" href="/docs">
-                                            Docs
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            className="bf-footer-link"
-                                            href={GITHUB_ORGANIZATION_URL}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            aria-label="BaaSForge on GitHub (opens in a new tab)"
-                                        >
-                                            GitHub
-                                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h2 className="bf-footer-column-title">Social</h2>
-                                <ul className="bf-footer-list">
-                                    <li>
-                                        <a
-                                            className="bf-footer-link"
-                                            href="https://www.linkedin.com/company/baasforge/"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            aria-label="BaaSForge on LinkedIn"
-                                        >
-                                            LinkedIn
-                                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            className="bf-footer-link"
-                                            href="https://www.youtube.com/@BaaSForge"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            aria-label="BaaSForge on YouTube"
-                                        >
-                                            YouTube
-                                            <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </nav>
                     </div>
-                    <div className="bf-footer-meta">
-                        <span className="bf-footer-mark">© 2026 BaaSForge</span>
-                        <div className="bf-footer-legal">
-                            <Link className="bf-footer-link" to="/privacy-policy" reloadDocument>
-                                Privacy
-                            </Link>
-                            <Link className="bf-footer-link" to="/terms-of-use" reloadDocument>
-                                Terms
-                            </Link>
-                            <button type="button" className="bf-footer-link" onClick={() => openCookieSettings()}>
-                                Cookies
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                </motion.footer>
             </div>
-        </footer>
+        </div>
     );
 }
 
@@ -1873,8 +1888,8 @@ export default function HomePage() {
             <Styles />
             <Navbar active={active} />
             <SectionRail active={active} />
-            <main>
-                <Hero />
+            <main className="relative z-10 bg-[var(--background)] border-b border-[var(--border)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35)]">
+                <HeroScrollReveal />
                 <What visible={!!visible.what} compact={compact} />
                 <How visible={!!visible.how} />
                 <Build visible={!!visible.build} />
